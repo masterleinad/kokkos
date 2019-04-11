@@ -202,20 +202,20 @@ endif()  # KOKKOS_SEPARATE_LIBS
 
 # Install the kokkos headers
 INSTALL (DIRECTORY
-         EXPORT KokkosTargets
          ${Kokkos_SOURCE_DIR}/core/src/
+         EXPORT KokkosTargets
          DESTINATION ${KOKKOS_HEADER_DIR}
          FILES_MATCHING PATTERN "*.hpp"
 )
 INSTALL (DIRECTORY
-         EXPORT KokkosTargets
          ${Kokkos_SOURCE_DIR}/containers/src/
+         EXPORT KokkosTargets
          DESTINATION ${KOKKOS_HEADER_DIR}
          FILES_MATCHING PATTERN "*.hpp"
 )
 INSTALL (DIRECTORY
-         EXPORT KokkosTargets
          ${Kokkos_SOURCE_DIR}/algorithms/src/
+         EXPORT KokkosTargets
          DESTINATION ${KOKKOS_HEADER_DIR}
          FILES_MATCHING PATTERN "*.hpp"
 )
@@ -234,10 +234,10 @@ export(TARGETS ${Kokkos_LIBRARIES_NAMES}
 export(PACKAGE Kokkos)
 
 # Create the KokkosConfig.cmake and KokkosConfigVersion files
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+file(RELATIVE_PATH REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}"
    "${INSTALL_INCLUDE_DIR}")
 # ... for the build tree
-set(CONF_INCLUDE_DIRS "${Kokkos_SOURCE_DIR}" "${Kokkos_BINARY_DIR}")
+set(CONF_INCLUDE_DIRS "${Kokkos_SOURCE_DIR}/include" "${Kokkos_BINARY_DIR}/include")
 configure_file(${Kokkos_SOURCE_DIR}/cmake/KokkosConfig.cmake.in
   "${Kokkos_BINARY_DIR}/KokkosConfig.cmake" @ONLY)
 # ... for the install tree
@@ -248,13 +248,11 @@ configure_file(${Kokkos_SOURCE_DIR}/cmake/KokkosConfig.cmake.in
 # Install the KokkosConfig.cmake and KokkosConfigVersion.cmake
 install(FILES
   "${Kokkos_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/KokkosConfig.cmake"
-  DESTINATION "${INSTALL_CMAKE_DIR}")
+  DESTINATION "${CMAKE_INSTALL_PREFIX}")
 
-#This seems not to do anything?
-#message(STATUS "KokkosTargets: " ${KokkosTargets})
 # Install the export set for use with the install-tree
-INSTALL(EXPORT KokkosTargets DESTINATION
-       "${INSTALL_CMAKE_DIR}")
+install(EXPORT KokkosTargets DESTINATION
+        "${CMAKE_INSTALL_PREFIX}")
 
 # build and install pkgconfig file
 CONFIGURE_FILE(core/src/kokkos.pc.in kokkos.pc @ONLY)
