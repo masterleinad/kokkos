@@ -237,7 +237,7 @@ export(PACKAGE Kokkos)
 file(RELATIVE_PATH REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}"
    "${INSTALL_INCLUDE_DIR}")
 # ... for the build tree
-set(CONF_INCLUDE_DIRS "${Kokkos_SOURCE_DIR}/include" "${Kokkos_BINARY_DIR}/include")
+set(CONF_INCLUDE_DIRS "${Kokkos_SOURCE_DIR}/core/src;${Kokkos_BINARY_DIR}")
 configure_file(${Kokkos_SOURCE_DIR}/cmake/KokkosConfig.cmake.in
   "${Kokkos_BINARY_DIR}/KokkosConfig.cmake" @ONLY)
 # ... for the install tree
