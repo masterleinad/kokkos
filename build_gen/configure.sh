@@ -15,3 +15,5 @@ make -j install
 
 export PKG_CONFIG_PATH=${PWD}/install/lib/pkgconfig/:${PKG_CONFIG_PATH}
 echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
+
+tree ${KOKKOS_PATH}/build_gen/build/install &> ${KOKKOS_PATH}/build_gen/gen_tree

@@ -15,3 +15,5 @@ make -j install
 
 export PKG_CONFIG_PATH=${PWD}/install/lib/pkgconfig/:${PKG_CONFIG_PATH}
 echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
+
+tree ${KOKKOS_PATH}/build_cmake/build/install &> ${KOKKOS_PATH}/build_cmake/cmake_tree
