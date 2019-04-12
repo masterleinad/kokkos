@@ -2,7 +2,16 @@
 KOKKOS_PATH=/tmp/kokkos
 
 mkdir -p build && cd build || exit 1
-${KOKKOS_PATH}/generate_makefile.bash --arch=Volta70 --with-cuda
+${KOKKOS_PATH}/generate_makefile.bash \
+ --arch=Volta70 \
+ --with-cuda \
+ --with-cuda-options=enable_lambda \
+ --compiler=/tmp/kokkos/bin/nvcc_wrapper
+
+# missing --expt-extended-lambda if not nvcc_wrapper
 
 make -j
 make -j install
+
+export PKG_CONFIG_PATH=${PWD}/install/lib/pkgconfig/:${PKG_CONFIG_PATH}
+echo "PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}"
