@@ -1,0 +1,22 @@
+version: '3.7'
+services:
+  kokkos_dev:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: tail -f /dev/null
+    volumes:
+      - ..:/tmp/kokkos
+        #- ./passwd:/etc/passwd:ro
+        #- ./group:/etc/group:ro
+      - $HOME/.ssh:$HOME/.ssh:ro
+      - $HOME/.gitconfig:$HOME/.gitconfig:ro
+    environment:
+      - KOKKOS_DIR=/tmp/kokkos
+      #- TERM=xterm
+    working_dir: /tmp/kokkos
+    network_mode: host
+    # $(id -u):$(id -g)
+    user: 38588:100
+    security_opt:
+      - seccomp:unconfined
