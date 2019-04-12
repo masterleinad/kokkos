@@ -85,6 +85,14 @@
 |   |-- Kokkos_View.hpp
 |   |-- Kokkos_WorkGraphPolicy.hpp
 |   |-- Kokkos_hwloc.hpp
+|   |-- OpenMP
+|   |   |-- Kokkos_OpenMP_Exec.hpp
+|   |   |-- Kokkos_OpenMP_Parallel.hpp
+|   |   |-- Kokkos_OpenMP_Task.hpp
+|   |   |-- Kokkos_OpenMP_Team.hpp
+|   |   |-- Kokkos_OpenMP_ViewCopyETIAvail.hpp
+|   |   |-- Kokkos_OpenMP_ViewCopyETIDecl.hpp
+|   |   `-- Kokkos_OpenMP_WorkGraphPolicy.hpp
 |   `-- impl
 |       |-- KokkosExp_Host_IterateTile.hpp
 |       |-- KokkosExp_ViewMapping.hpp
@@ -166,4 +174,4 @@
     `-- pkgconfig
         `-- kokkos.pc
 
-6 directories, 160 files
+7 directories, 167 files

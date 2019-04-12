@@ -9,3 +9,7 @@ pkg_check_modules(KOKKOS IMPORTED_TARGET kokkos)
 target_link_libraries(test_kokkos PRIVATE PkgConfig::KOKKOS)
 
 target_link_libraries(test_kokkos PRIVATE /tmp/kokkos/build_gen/build/install/lib/libkokkos.a)
+
+find_package(OpenMP REQUIRED)
+target_link_libraries(test_kokkos PRIVATE OpenMP::OpenMP_CXX)
+
