@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 
 project (Tutorial)
 
-SET(CMAKE_CXX_FLAGS "--std=c++11 -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored -expt-extended-lambda -arch=sm_70")
+SET(CMAKE_CXX_FLAGS "--std=c++11 -Xcudafe --diag_suppress=esa_on_defaulted_function_ignored -expt-extended-lambda -arch=sm_70 -fopenmp")
 
 add_executable(test_kokkos test_kokkos.cpp)
 
