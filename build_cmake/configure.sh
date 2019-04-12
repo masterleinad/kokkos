@@ -4,6 +4,7 @@ export KOKKOS_PATH=/tmp/kokkos
 mkdir -p build && cd build || exit 1
 cmake -DKOKKOS_ARCH=Volta70 \
       -DKOKKOS_ENABLE_CUDA=ON \
+      -DKOKKOS_ENABLE_OPENMP=ON \
       -DKOKKOS_ENABLE_CUDA_LAMBDA=ON \
       -DCMAKE_CXX_COMPILER=/tmp/kokkos/bin/nvcc_wrapper \
       -DCMAKE_INSTALL_PREFIX=${PWD}/install \
