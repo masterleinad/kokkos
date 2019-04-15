@@ -1,2 +1,2 @@
-FROM nvidia/cuda:10.1-devel
-RUN apt update && apt install -y sudo vim clang-6.0 clang-format-6.0 clang-tidy-6.0 ctags gdb git cmake tree pkg-config
+FROM nvidia/cuda:9.2-devel
+RUN apt update && apt install -y sudo vim clang-7 clang ctags gdb git cmake tree pkg-config
