@@ -2,7 +2,7 @@
 export KOKKOS_PATH=/tmp/kokkos
 
 mkdir -p build && cd build || exit 1
-cmake -DKOKKOS_ARCH=Volta70 \
+cmake -DKOKKOS_ARCH=SNB,Volta70 \
       -DKOKKOS_ENABLE_CUDA=ON \
       -DKOKKOS_ENABLE_OPENMP=ON \
       -DKOKKOS_ENABLE_CUDA_LAMBDA=ON \

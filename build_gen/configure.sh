@@ -3,7 +3,7 @@ KOKKOS_PATH=/tmp/kokkos
 
 mkdir -p build && cd build || exit 1
 ${KOKKOS_PATH}/generate_makefile.bash \
- --arch=Volta70 \
+ --arch=SNB,Volta70 \
  --with-cuda \
  --with-openmp \
  --with-cuda-options=enable_lambda \

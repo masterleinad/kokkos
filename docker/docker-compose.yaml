@@ -17,6 +17,6 @@ services:
     working_dir: /tmp/kokkos
     network_mode: host
     # $(id -u):$(id -g)
-    user: 38588:100
+    #user: 38588:100
     security_opt:
       - seccomp:unconfined
