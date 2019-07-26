@@ -579,7 +579,9 @@ define KOKKOS_FORCEINLINE_FUNCTION inline
 #define KOKKOS_ENABLE_TASKDAG
 #endif
 #else
+#ifndef KOKKOS_ENABLE_HIP
 #define KOKKOS_ENABLE_TASKDAG
+#endif
 #endif
 
 #if defined(KOKKOS_ENABLE_CUDA)
