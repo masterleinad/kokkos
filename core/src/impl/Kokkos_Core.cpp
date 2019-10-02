@@ -263,7 +263,7 @@ void initialize_internal(const InitArguments& args) {
     } else {
       Kokkos::Experimental::HIP::impl_initialize();
     }
-    std::cout << "Kokkos::initialize() fyi: ROCm enabled and initialized"
+    std::cout << "Kokkos::initialize() fyi: HIP enabled and initialized"
               << std::endl;
   }
 #endif
