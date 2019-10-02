@@ -135,7 +135,7 @@ Options can be enabled by specifiying `-DKokkos_ENABLE_X`.
     * BOOL Default: OFF
 * Kokkos_ENABLE_CUDA_CONSTEXPR
     * Whether to activate experimental relaxed constexpr functions
-    * BOOL Default: ON
+    * BOOL Default: OFF
 * Kokkos_ENABLE_CUDA_LAMBDA
     * Whether to activate experimental lambda features
     * BOOL Default: ON
