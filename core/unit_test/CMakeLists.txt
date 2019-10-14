@@ -86,7 +86,6 @@ foreach(Tag Threads;Serial;OpenMP;Cuda)
       ${dir}/Test${Tag}_TeamScratch.cpp
       ${dir}/Test${Tag}_TeamTeamSize.cpp
       ${dir}/Test${Tag}_TeamVectorRange.cpp
-      ${dir}/Test${Tag}_UniqueToken.cpp
       ${dir}/Test${Tag}_ViewAPI_a.cpp
       ${dir}/Test${Tag}_ViewAPI_b.cpp
       ${dir}/Test${Tag}_ViewAPI_c.cpp
@@ -126,6 +125,7 @@ IF(Kokkos_ENABLE_OPENMP)
     SOURCES 
     ${OpenMP_SOURCES}
     openmp/TestOpenMP_Task.cpp
+    openmp/TestOpenMP_UniqueToken.cpp
   )
   KOKKOS_ADD_EXECUTABLE_AND_TEST(
     UnitTest_OpenMPInterOp
@@ -185,6 +185,7 @@ IF(Kokkos_ENABLE_HPX)
       hpx/TestHPX_TeamReductionScan.cpp
       hpx/TestHPX_TeamScratch.cpp
       hpx/TestHPX_TeamVectorRange.cpp
+      hpx/TestHPX_UniqueToken.cpp
       hpx/TestHPX_View_64bit.cpp
       hpx/TestHPX_ViewAPI_a.cpp
       hpx/TestHPX_ViewAPI_b.cpp
@@ -273,6 +274,7 @@ IF(Kokkos_ENABLE_CUDA)
       cuda/TestCudaUVM_ViewMapping_b.cpp
       cuda/TestCudaUVM_ViewMapping_subview.cpp
       cuda/TestCuda_Spaces.cpp
+      cuda/TestCuda_UniqueToken.cpp
   )
   KOKKOS_ADD_EXECUTABLE_AND_TEST(
     UnitTest_CudaInterOpInit
