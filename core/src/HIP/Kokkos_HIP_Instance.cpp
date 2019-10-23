@@ -172,8 +172,11 @@ void HIPInternal::initialize(int hip_device_id) {
   if (is_initialized()) return;
 
   enum { WordSize = sizeof(size_type) };
-
-  if (!HostSpace::execution_space::impl_is_initialized()) {
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE
+  if ( ! HostSpace::execution_space::is_initialized() ) {
+#else
+  if ( ! HostSpace::execution_space::impl_is_initialized() ) {
+#endif
     const std::string msg(
         "HIP::initialize ERROR : HostSpace::execution_space "
         "is not initialized");
