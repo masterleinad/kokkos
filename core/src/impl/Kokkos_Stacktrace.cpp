@@ -124,45 +124,49 @@ void for_each_token(const std::string& s, Callback c) {
 // While we're doing that, figure out the longest column,
 // so we can compute spacing correctly.
 
-std::tuple<bool, size_t, std::vector<size_t>> find_main_column(
+struct FindMainColumnResult {
+	  bool found_main = false;
+	  size_t main_col =0;
+	  std::vector<size_t> max_col_lens;
+};
+
+FindMainColumnResult find_main_column(
     const std::vector<std::string>& traceback) {
-  bool found_main = false;
-  size_t main_col = 0;
+  FindMainColumnResult result;	
   for (auto&& entry : traceback) {
     size_t col_count = 0;
     for_each_token(entry, [&](const std::string& s, bool) {
       const size_t pos = s.find("main");
       if (pos != std::string::npos) {
-        found_main = true;
-        main_col   = col_count;
+        result.found_main = true;
+        result.main_col   = col_count;
       }
       ++col_count;
     });
-    if (found_main) {
+    if (result.found_main) {
       break;
     }
   }
 
   // Make another pass to get the column lengths.
   // Only demangle the column of functions.
-  std::vector<size_t> max_col_lens;
   for (auto&& entry : traceback) {
     size_t col_count = 0;
     for_each_token(entry, [&](const std::string& s, bool) {
       const size_t cur_col_len =
-          (found_main && col_count == main_col) ? demangle(s).size() : s.size();
+          (result.found_main && col_count == result.main_col) ? demangle(s).size() : s.size();
       ++col_count;
-      if (max_col_lens.size() < col_count) {
-        max_col_lens.push_back(cur_col_len);
+      if (result.max_col_lens.size() < col_count) {
+        result.max_col_lens.push_back(cur_col_len);
       } else {
-        const size_t old_max_len = max_col_lens[col_count - 1];
+        const size_t old_max_len = result.max_col_lens[col_count - 1];
         if (old_max_len < cur_col_len) {
-          max_col_lens[col_count - 1] = cur_col_len;
+          result.max_col_lens[col_count - 1] = cur_col_len;
         }
       }
     });
   }
-  return std::make_tuple(found_main, main_col, max_col_lens);
+  return result;
 }
 
 void demangle_and_print_traceback_entry(
@@ -197,8 +201,8 @@ void demangle_and_print_traceback(std::ostream& out,
   const auto result = find_main_column(traceback);
   for (auto&& entry : traceback) {
     using std::get;
-    demangle_and_print_traceback_entry(out, entry, get<0>(result),
-                                       get<1>(result), get<2>(result));
+    demangle_and_print_traceback_entry(out, entry, result.found_main,
+                                       result.main_col, result.max_col_lens);
     out << std::endl;
   }
 }
