@@ -273,7 +273,7 @@ double ReduceTestLambda() {
 
   if (PWRTest == false) {
     Kokkos::parallel_reduce(
-        100,
+        Kokkos::RangePolicy<typename DeviceType::execution_space>(0, 100),
         KOKKOS_LAMBDA(const int& i, double& sum) {
           sum += a(i, 1) + a(i, 2);
           sum += a(i, 0) - a(i, 3);
