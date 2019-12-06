@@ -299,7 +299,7 @@ class
   /// explanation.  In practice, this means that you should not chain
   /// assignments with volatile lvalues.
   //
-  // Templated, so as not to be a copy assignment operator (Kokkos issue #1173)
+  // Templated, so as not to be a copy assignment operator (Kokkos issue #2577)
   // Intended to behave as
   //    void operator=(const complex&) volatile noexcept
   //
@@ -322,7 +322,7 @@ class
   //! Assignment operator, volatile LHS and volatile RHS
   // TODO Should this return void like the other volatile assignment operators?
   //
-  // Templated, so as not to be a copy assignment operator (Kokkos issue #1173)
+  // Templated, so as not to be a copy assignment operator (Kokkos issue #2577)
   // Intended to behave as
   //    volatile complex& operator=(const volatile complex&) volatile noexcept
   //
@@ -344,7 +344,7 @@ class
 
   //! Assignment operator, volatile RHS and non-volatile LHS
   //
-  // Templated, so as not to be a copy assignment operator (Kokkos issue #1173)
+  // Templated, so as not to be a copy assignment operator (Kokkos issue #2577)
   // Intended to behave as
   //    complex& operator=(const volatile complex&) noexcept
   //
