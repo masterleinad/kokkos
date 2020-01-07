@@ -73,14 +73,14 @@ class
   using value_type = RealType;
 
   //! Default constructor (initializes both real and imaginary parts to zero).
-  KOKKOS_INLINE_FUNCTION
+  KOKKOS_DEFAULTED_FUNCTION
   complex() noexcept = default;
 
   //! Copy constructor.
-  KOKKOS_INLINE_FUNCTION
+  KOKKOS_DEFAULTED_FUNCTION
   complex(const complex&) noexcept = default;
 
-  KOKKOS_INLINE_FUNCTION
+  KOKKOS_DEFAULTED_FUNCTION
   complex& operator=(const complex&) noexcept = default;
 
   /// \brief Conversion constructor from compatible RType
