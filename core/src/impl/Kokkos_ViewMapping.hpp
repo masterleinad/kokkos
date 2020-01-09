@@ -2795,12 +2795,7 @@ struct ViewValueFunctor<ExecSpace, ValueType, false /* is_scalar */> {
     } else {
       for (size_t i = 0; i < n; ++i) operator()(ConstructTag{}, i);
     }
-#endif
   }
-  else {
-    for (size_t i = 0; i < n; ++i) operator()(i);
-  }
-}
 
 void execute_destroy() {
   if (!space.in_parallel()) {
