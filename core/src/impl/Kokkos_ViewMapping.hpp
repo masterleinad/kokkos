@@ -2733,116 +2733,106 @@ namespace Impl {
  *  called from the shared memory tracking destruction.
  *  Secondarily to have two fewer partial specializations.
  */
-template< class ExecSpace
-        , class ValueType
-        , bool IsScalar = std::is_scalar< ValueType >::value
-        >
-struct ViewValueFunctor ;
+template <class ExecSpace, class ValueType,
+          bool IsScalar = std::is_scalar<ValueType>::value>
+struct ViewValueFunctor;
 
-template< class ExecSpace , class ValueType >
-struct ViewValueFunctor< ExecSpace , ValueType , false /* is_scalar */ >
-{
-  struct DestroyTag { };
-  struct ConstructTag { };
+template <class ExecSpace, class ValueType>
+struct ViewValueFunctor<ExecSpace, ValueType, false /* is_scalar */> {
+  struct DestroyTag {};
+  struct ConstructTag {};
   using construct_policy_t = Kokkos::RangePolicy<ExecSpace, ConstructTag>;
-  using destroy_policy_t = Kokkos::RangePolicy<ExecSpace, DestroyTag>;
+  using destroy_policy_t   = Kokkos::RangePolicy<ExecSpace, DestroyTag>;
   typedef typename ExecSpace::execution_space Exec;
 
-  Exec        space ;
-  ValueType * ptr ;
-  size_t      n ;
+  Exec space;
+  ValueType* ptr;
+  size_t n;
 
-
-  template <class _always_void=void>
+  template <class _always_void = void>
   KOKKOS_INLINE_FUNCTION
-  typename std::enable_if<std::is_void<_always_void>::value>::type
-  operator()(ConstructTag const&, const size_t i ) const
-    {
-      new (ptr+i) ValueType();
-    }
+      typename std::enable_if<std::is_void<_always_void>::value>::type
+      operator()(ConstructTag const&, const size_t i) const {
+    new (ptr + i) ValueType();
   }
+}
 
-  template <class _always_void=void>
-  KOKKOS_INLINE_FUNCTION
-  void
-  operator()(DestroyTag const&, const size_t i ) const
-  {
-    (ptr+i)->~ValueType(); //KOKKOS_IMPL_CUDA_CLANG_WORKAROUND this line causes ptax error __cxa_begin_catch in nested_view unit-test
-  }
+template <class _always_void = void>
+KOKKOS_INLINE_FUNCTION void operator()(DestroyTag const&,
+                                       const size_t i) const {
+  (ptr + i)
+      ->~ValueType();  // KOKKOS_IMPL_CUDA_CLANG_WORKAROUND this line causes
+                       // ptax error __cxa_begin_catch in nested_view unit-test
+}
 
-  ViewValueFunctor() = default ;
-  ViewValueFunctor( const ViewValueFunctor & ) = default ;
-  ViewValueFunctor & operator = ( const ViewValueFunctor & ) = default ;
+ViewValueFunctor()                        = default;
+ViewValueFunctor(const ViewValueFunctor&) = default;
+ViewValueFunctor& operator=(const ViewValueFunctor&) = default;
 
-  ViewValueFunctor( ExecSpace   const & arg_space
-                  , ValueType * const arg_ptr
-                  , size_t      const arg_n )
-    : space( arg_space )
-    , ptr( arg_ptr )
-    , n( arg_n )
-    {}
+ViewValueFunctor(ExecSpace const& arg_space, ValueType* const arg_ptr,
+                 size_t const arg_n)
+    : space(arg_space), ptr(arg_ptr), n(arg_n) {}
 
-  template <class _always_void=void>
-  typename std::enable_if<std::is_void<_always_void>::value>::type
-  execute_construct()
-    {
-      if ( ! space.in_parallel() ) {
+template <class _always_void = void>
+typename std::enable_if<std::is_void<_always_void>::value>::type
+execute_construct() {
+  if (!space.in_parallel()) {
 #if defined(KOKKOS_ENABLE_PROFILING)
-        uint64_t kpID = 0;
-        if(Kokkos::Profiling::profileLibraryLoaded()) {
-          Kokkos::Profiling::beginParallelFor("Kokkos::View::initialization", 0, &kpID);
-        }
-#endif
-        const Kokkos::Impl::ParallelFor< ViewValueFunctor , construct_policy_t>
-          closure( *this , construct_policy_t( 0 , n ) );
-        closure.execute();
-        space.fence();
-#if defined(KOKKOS_ENABLE_PROFILING)
-        if(Kokkos::Profiling::profileLibraryLoaded()) {
-          Kokkos::Profiling::endParallelFor(kpID);
-        }
-#endif
-      }
-      else {
-        for ( size_t i = 0 ; i < n ; ++i ) operator()(ConstructTag{}, i);
-      }
-#endif
-    } else {
-      for (size_t i = 0; i < n; ++i) operator()(i);
+    uint64_t kpID = 0;
+    if (Kokkos::Profiling::profileLibraryLoaded()) {
+      Kokkos::Profiling::beginParallelFor("Kokkos::View::initialization", 0,
+                                          &kpID);
     }
-  }
-
-  void execute_destroy()
-    {
-      if ( ! space.in_parallel() ) {
-#if defined(KOKKOS_ENABLE_PROFILING)
-        uint64_t kpID = 0;
-        if(Kokkos::Profiling::profileLibraryLoaded()) {
-          Kokkos::Profiling::beginParallelFor("Kokkos::View::destruction", 0, &kpID);
-        }
 #endif
-        const Kokkos::Impl::ParallelFor< ViewValueFunctor , destroy_policy_t>
-          closure( *this , destroy_policy_t( 0 , n ) );
-        closure.execute();
-        space.fence();
+    const Kokkos::Impl::ParallelFor<ViewValueFunctor, construct_policy_t>
+        closure(*this, construct_policy_t(0, n));
+    closure.execute();
+    space.fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
-        if(Kokkos::Profiling::profileLibraryLoaded()) {
-          Kokkos::Profiling::endParallelFor(kpID);
-        }
-#endif
-      }
-      else {
-        for ( size_t i = 0 ; i < n ; ++i ) operator()(DestroyTag{}, i);
-      }
+    if (Kokkos::Profiling::profileLibraryLoaded()) {
+      Kokkos::Profiling::endParallelFor(kpID);
     }
+#endif
+  } else {
+    for (size_t i = 0; i < n; ++i) operator()(ConstructTag{}, i);
+  }
+#endif
+}
+else {
+  for (size_t i = 0; i < n; ++i) operator()(i);
+}
+}
 
-  template <class _always_void=void>
-  typename std::enable_if<std::is_void<_always_void>::value>::type
-  construct_shared_allocation()
-    { execute_construct(); }
+void execute_destroy() {
+  if (!space.in_parallel()) {
+#if defined(KOKKOS_ENABLE_PROFILING)
+    uint64_t kpID = 0;
+    if (Kokkos::Profiling::profileLibraryLoaded()) {
+      Kokkos::Profiling::beginParallelFor("Kokkos::View::destruction", 0,
+                                          &kpID);
+    }
+#endif
+    const Kokkos::Impl::ParallelFor<ViewValueFunctor, destroy_policy_t> closure(
+        *this, destroy_policy_t(0, n));
+    closure.execute();
+    space.fence();
+#if defined(KOKKOS_ENABLE_PROFILING)
+    if (Kokkos::Profiling::profileLibraryLoaded()) {
+      Kokkos::Profiling::endParallelFor(kpID);
+    }
+#endif
+  } else {
+    for (size_t i = 0; i < n; ++i) operator()(DestroyTag{}, i);
+  }
+}
 
-  void destroy_shared_allocation()
-    { execute_destroy(); }
+template <class _always_void = void>
+typename std::enable_if<std::is_void<_always_void>::value>::type
+construct_shared_allocation() {
+  execute_construct();
+}
+
+void destroy_shared_allocation() { execute_destroy(); }
 };
 
 template <class ExecSpace, class ValueType>
@@ -3165,25 +3155,17 @@ class ViewMapping<
   //----------------------------------------
 
   template <class RecordType>
-  static inline
-  void _construct_impl(
-    RecordType* const record,
-    std::true_type
-  )
-  {
+  static inline void _construct_impl(RecordType* const record, std::true_type) {
     // Construct values
     record->m_destroy.construct_shared_allocation();
   }
 
-
   template <class RecordType>
-  static inline
-  void _construct_impl(
-    RecordType* const record,
-    std::false_type
-  )
-  { /* avoid instantiating the default initializer pathway when WithoutInitializing is given */ }
-
+  static inline void _construct_impl(
+      RecordType* const record,
+      std::false_type) { /* avoid instantiating the default initializer pathway
+                            when WithoutInitializing is given */
+  }
 
   //----------------------------------------
   /*  Allocate and construct mapped array.
@@ -3244,7 +3226,8 @@ class ViewMapping<
           (value_type*)m_impl_handle, m_impl_offset.span());
 
       // Construct values
-      _construct_impl(record, std::integral_constant<bool, (bool)alloc_prop::initialize>{});
+      _construct_impl(
+          record, std::integral_constant<bool, (bool)alloc_prop::initialize>{});
     }
 
     return record;

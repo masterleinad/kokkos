@@ -117,26 +117,22 @@ TEST(TEST_CATEGORY, view_nested_view) { view_nested_view<TEST_EXECSPACE>(); }
 
 //==============================================================================
 
-struct NotDefaultConstructible
-{
-  NotDefaultConstructible() = delete;
-  NotDefaultConstructible(NotDefaultConstructible const&) = default;
-  NotDefaultConstructible(NotDefaultConstructible&&) = default;
+struct NotDefaultConstructible {
+  NotDefaultConstructible()                                = delete;
+  NotDefaultConstructible(NotDefaultConstructible const &) = default;
+  NotDefaultConstructible(NotDefaultConstructible &&)      = default;
 };
 
-template< class Space >
+template <class Space>
 void view_not_default_constructible() {
-  auto my_view = Kokkos::View<NotDefaultConstructible*, Space>(
-    Kokkos::view_alloc("not_default_constructible", Kokkos::WithoutInitializing),
-    42
-  );
+  auto my_view = Kokkos::View<NotDefaultConstructible *, Space>(
+      Kokkos::view_alloc("not_default_constructible",
+                         Kokkos::WithoutInitializing),
+      42);
 }
 
-TEST_F( TEST_CATEGORY, view_not_default_constructible )
-{
-  view_not_default_constructible< TEST_EXECSPACE >();
+TEST_F(TEST_CATEGORY, view_not_default_constructible) {
+  view_not_default_constructible<TEST_EXECSPACE>();
 }
 
-
-
-} // namespace Test
+}  // namespace Test
