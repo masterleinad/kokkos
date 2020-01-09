@@ -2755,52 +2755,51 @@ struct ViewValueFunctor<ExecSpace, ValueType, false /* is_scalar */> {
       operator()(ConstructTag const&, const size_t i) const {
     new (ptr + i) ValueType();
   }
-}
 
-template <class _always_void = void>
-KOKKOS_INLINE_FUNCTION void operator()(DestroyTag const&,
-                                       const size_t i) const {
-  (ptr + i)
-      ->~ValueType();  // KOKKOS_IMPL_CUDA_CLANG_WORKAROUND this line causes
-                       // ptax error __cxa_begin_catch in nested_view unit-test
-}
-
-ViewValueFunctor()                        = default;
-ViewValueFunctor(const ViewValueFunctor&) = default;
-ViewValueFunctor& operator=(const ViewValueFunctor&) = default;
-
-ViewValueFunctor(ExecSpace const& arg_space, ValueType* const arg_ptr,
-                 size_t const arg_n)
-    : space(arg_space), ptr(arg_ptr), n(arg_n) {}
-
-template <class _always_void = void>
-typename std::enable_if<std::is_void<_always_void>::value>::type
-execute_construct() {
-  if (!space.in_parallel()) {
-#if defined(KOKKOS_ENABLE_PROFILING)
-    uint64_t kpID = 0;
-    if (Kokkos::Profiling::profileLibraryLoaded()) {
-      Kokkos::Profiling::beginParallelFor("Kokkos::View::initialization", 0,
-                                          &kpID);
-    }
-#endif
-    const Kokkos::Impl::ParallelFor<ViewValueFunctor, construct_policy_t>
-        closure(*this, construct_policy_t(0, n));
-    closure.execute();
-    space.fence();
-#if defined(KOKKOS_ENABLE_PROFILING)
-    if (Kokkos::Profiling::profileLibraryLoaded()) {
-      Kokkos::Profiling::endParallelFor(kpID);
-    }
-#endif
-  } else {
-    for (size_t i = 0; i < n; ++i) operator()(ConstructTag{}, i);
+  template <class _always_void = void>
+  KOKKOS_INLINE_FUNCTION void operator()(DestroyTag const&,
+                                         const size_t i) const {
+    (ptr + i)->~ValueType();  // KOKKOS_IMPL_CUDA_CLANG_WORKAROUND this line
+                              // causes ptax error __cxa_begin_catch in
+                              // nested_view unit-test
   }
+
+  ViewValueFunctor()                        = default;
+  ViewValueFunctor(const ViewValueFunctor&) = default;
+  ViewValueFunctor& operator=(const ViewValueFunctor&) = default;
+
+  ViewValueFunctor(ExecSpace const& arg_space, ValueType* const arg_ptr,
+                   size_t const arg_n)
+      : space(arg_space), ptr(arg_ptr), n(arg_n) {}
+
+  template <class _always_void = void>
+  typename std::enable_if<std::is_void<_always_void>::value>::type
+  execute_construct() {
+    if (!space.in_parallel()) {
+#if defined(KOKKOS_ENABLE_PROFILING)
+      uint64_t kpID = 0;
+      if (Kokkos::Profiling::profileLibraryLoaded()) {
+        Kokkos::Profiling::beginParallelFor("Kokkos::View::initialization", 0,
+                                            &kpID);
+      }
 #endif
-}
-else {
-  for (size_t i = 0; i < n; ++i) operator()(i);
-}
+      const Kokkos::Impl::ParallelFor<ViewValueFunctor, construct_policy_t>
+          closure(*this, construct_policy_t(0, n));
+      closure.execute();
+      space.fence();
+#if defined(KOKKOS_ENABLE_PROFILING)
+      if (Kokkos::Profiling::profileLibraryLoaded()) {
+        Kokkos::Profiling::endParallelFor(kpID);
+      }
+#endif
+    } else {
+      for (size_t i = 0; i < n; ++i) operator()(ConstructTag{}, i);
+    }
+#endif
+  }
+  else {
+    for (size_t i = 0; i < n; ++i) operator()(i);
+  }
 }
 
 void execute_destroy() {
