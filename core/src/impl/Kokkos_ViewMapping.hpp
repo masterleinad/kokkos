@@ -2797,36 +2797,36 @@ struct ViewValueFunctor<ExecSpace, ValueType, false /* is_scalar */> {
     }
   }
 
-void execute_destroy() {
-  if (!space.in_parallel()) {
+  void execute_destroy() {
+    if (!space.in_parallel()) {
 #if defined(KOKKOS_ENABLE_PROFILING)
-    uint64_t kpID = 0;
-    if (Kokkos::Profiling::profileLibraryLoaded()) {
-      Kokkos::Profiling::beginParallelFor("Kokkos::View::destruction", 0,
-                                          &kpID);
-    }
+      uint64_t kpID = 0;
+      if (Kokkos::Profiling::profileLibraryLoaded()) {
+        Kokkos::Profiling::beginParallelFor("Kokkos::View::destruction", 0,
+                                            &kpID);
+      }
 #endif
-    const Kokkos::Impl::ParallelFor<ViewValueFunctor, destroy_policy_t> closure(
-        *this, destroy_policy_t(0, n));
-    closure.execute();
-    space.fence();
+      const Kokkos::Impl::ParallelFor<ViewValueFunctor, destroy_policy_t>
+          closure(*this, destroy_policy_t(0, n));
+      closure.execute();
+      space.fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
-    if (Kokkos::Profiling::profileLibraryLoaded()) {
-      Kokkos::Profiling::endParallelFor(kpID);
-    }
+      if (Kokkos::Profiling::profileLibraryLoaded()) {
+        Kokkos::Profiling::endParallelFor(kpID);
+      }
 #endif
-  } else {
-    for (size_t i = 0; i < n; ++i) operator()(DestroyTag{}, i);
+    } else {
+      for (size_t i = 0; i < n; ++i) operator()(DestroyTag{}, i);
+    }
   }
-}
 
-template <class _always_void = void>
-typename std::enable_if<std::is_void<_always_void>::value>::type
-construct_shared_allocation() {
-  execute_construct();
-}
+  template <class _always_void = void>
+  typename std::enable_if<std::is_void<_always_void>::value>::type
+  construct_shared_allocation() {
+    execute_construct();
+  }
 
-void destroy_shared_allocation() { execute_destroy(); }
+  void destroy_shared_allocation() { execute_destroy(); }
 };
 
 template <class ExecSpace, class ValueType>
