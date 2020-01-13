@@ -239,6 +239,12 @@ do
       echo "Warning: ${key} is deprecated"
       echo "Call make with appropriate -j flag"
       ;;
+    --no-examples)
+      KOKKOS_DO_EXAMPLES=OFF
+      ;;
+    --enable-examples)
+      KOKKOS_DO_EXAMPLES=ON
+      ;;
     --compiler*)
       COMPILER="${key#*=}"
       CNUM=$(command -v ${COMPILER} 2>&1 >/dev/null | grep "no ${COMPILER}" | wc -l)
