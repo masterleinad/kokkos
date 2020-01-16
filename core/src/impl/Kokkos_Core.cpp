@@ -51,7 +51,9 @@
 #include <cstdlib>
 #include <stack>
 #include <cerrno>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -570,6 +572,14 @@ void warn_deprecated_command_line_argument(std::string deprecated,
       << std::endl;
 }
 
+unsigned get_process_id() {
+#ifdef _WIN32
+  return unsigned(GetCurrentProcessId());
+#else
+  return unsigned(getpid());
+#endif
+}
+
 void parse_command_line_arguments(int& narg, char* arg[],
                                   InitArguments& arguments) {
   auto& num_threads      = arguments.num_threads;
@@ -877,7 +887,7 @@ void parse_environment_variables(InitArguments& arguments) {
             "Error: cannot KOKKOS_SKIP_DEVICE the only KOKKOS_RAND_DEVICE. "
             "Raised by Kokkos::initialize(int narg, char* argc[]).");
 
-      std::srand(getpid());
+      std::srand(get_process_id());
       while (device < 0) {
         int test_device = std::rand() % rdevices;
         if (test_device != skip_device) device = test_device;
