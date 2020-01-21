@@ -252,8 +252,8 @@ class HostThreadTeamData {
   enum : int { shift_to_8 = 3 };     // size to 8 bytes
 
  public:
-  static constexpr int align_to_int64(int n) {
-    return ((n + mask_to_16) & ~mask_to_16) >> shift_to_8;
+  static constexpr int align_to_int64(std::size_t n) {
+    return static_cast<int>(((n + mask_to_16) & ~mask_to_16) >> shift_to_8);
   }
 
   constexpr int pool_reduce_bytes() const {
@@ -376,15 +376,18 @@ fflush(stdout);
     // Minimum chunk size to insure that
     //   m_work_end < std::numeric_limits<int>::max() * m_work_chunk
 
-    int const chunk_min = (length + std::numeric_limits<int>::max()) /
-                          std::numeric_limits<int>::max();
+    auto const chunk_min = (length + std::numeric_limits<int>::max()) /
+                           std::numeric_limits<int>::max();
+    KOKKOS_ASSERT(chunk_min <= std::numeric_limits<int>::max());
 
     m_work_end   = length;
-    m_work_chunk = std::max(chunk, chunk_min);
+    m_work_chunk = std::max(chunk, static_cast<int>(chunk_min));
 
     // Number of work chunks and partitioning of that number:
-    int const num  = (m_work_end + m_work_chunk - 1) / m_work_chunk;
-    int const part = (num + m_league_size - 1) / m_league_size;
+    auto const num = (m_work_end + m_work_chunk - 1) / m_work_chunk;
+    KOKKOS_ASSERT(num <= std::numeric_limits<int>::max());
+    int const part =
+        (static_cast<int>(num) + m_league_size - 1) / m_league_size;
 
     m_work_range.first  = part * m_league_rank;
     m_work_range.second = m_work_range.first + part;
