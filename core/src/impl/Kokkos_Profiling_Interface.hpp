@@ -54,6 +54,7 @@
 #include <cstdlib>
 
 #if defined(KOKKOS_ENABLE_PROFILING)
+// libdl is required.
 #include <dlfcn.h>
 
 #include <impl/Kokkos_Profiling_DeviceInfo.hpp>
