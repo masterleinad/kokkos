@@ -472,7 +472,7 @@ unsigned get_process_id() {
   return unsigned(getpid());
 #endif
 }
-}
+}  // namespace Impl
 
 void initialize(int& narg, char* arg[]) {
   int num_threads       = -1;

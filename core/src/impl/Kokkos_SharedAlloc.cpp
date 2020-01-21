@@ -46,7 +46,8 @@
 namespace Kokkos {
 namespace Impl {
 
-KOKKOS_THREAD_LOCAL int SharedAllocationRecord<void, void>::t_tracking_enabled = 1;
+KOKKOS_THREAD_LOCAL int SharedAllocationRecord<void, void>::t_tracking_enabled =
+    1;
 
 #ifdef KOKKOS_DEBUG
 bool SharedAllocationRecord<void, void>::is_sane(
