@@ -4,13 +4,14 @@ SET(KOKKOS_CXX_COMPILER ${CMAKE_CXX_COMPILER})
 SET(KOKKOS_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
 SET(KOKKOS_CXX_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION})
 
-# Check if the compiler is nvcc (which really means nvcc_wrapper).
-EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} --version
-                COMMAND grep nvcc
-                COMMAND wc -l
-                OUTPUT_VARIABLE INTERNAL_HAVE_COMPILER_NVCC
-                OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+IF(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  # Check if the compiler is nvcc (which really means nvcc_wrapper).
+  EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} --version
+                  COMMAND grep nvcc
+                  COMMAND wc -l
+                  OUTPUT_VARIABLE INTERNAL_HAVE_COMPILER_NVCC
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+ENDIF()
 
 STRING(REGEX REPLACE "^ +" ""
        INTERNAL_HAVE_COMPILER_NVCC "${INTERNAL_HAVE_COMPILER_NVCC}")
