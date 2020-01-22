@@ -75,6 +75,36 @@ __attribute__((aligned(16)))
 template <typename T>
 KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
     volatile T* const dest, const T& compare,
+    typename std::enable_if<sizeof(T) == sizeof(char), const T&>::type val) {
+  union U {
+    char i;
+    T t;
+    KOKKOS_INLINE_FUNCTION U(){};
+  } tmp;
+
+  tmp.i = _InterlockedCompareExchange8((char*)dest, *((char*)&val),
+                                       *((char*)&compare));
+  return tmp.t;
+}
+
+template <typename T>
+KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
+    volatile T* const dest, const T& compare,
+    typename std::enable_if<sizeof(T) == sizeof(short), const T&>::type val) {
+  union U {
+    short i;
+    T t;
+    KOKKOS_INLINE_FUNCTION U(){};
+  } tmp;
+
+  tmp.i = _InterlockedCompareExchange16((short*)dest, *((short*)&val),
+                                        *((short*)&compare));
+  return tmp.t;
+}
+
+template <typename T>
+KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
+    volatile T* const dest, const T& compare,
     typename std::enable_if<sizeof(T) == sizeof(LONG), const T&>::type val) {
   union U {
     LONG i;
