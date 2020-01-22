@@ -54,6 +54,10 @@
 #include <unistd.h>
 #endif
 
+#if defined(_WIN32) && !defined _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 //----------------------------------------------------------------------------
 
 namespace {
@@ -258,7 +262,7 @@ void initialize_internal(const InitArguments& args) {
 #if defined(KOKKOS_ENABLE_PROFILING)
   Kokkos::Profiling::initialize();
 #else
-  if (getenv("KOKKOS_PROFILE_LIBRARY") != nullptr) {
+  if (std::getenv("KOKKOS_PROFILE_LIBRARY") != nullptr) {
     std::cerr << "Kokkos::initialize() warning: Requested Kokkos Profiling, "
                  "but Kokkos was built without Profiling support"
               << std::endl;

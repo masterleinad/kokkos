@@ -50,6 +50,10 @@
 #include <impl/Kokkos_Profiling_Interface.hpp>
 #endif
 
+#if defined(_WIN32) && !defined _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 /*--------------------------------------------------------------------------*/
 
 #if defined(__INTEL_COMPILER) && !defined(KOKKOS_ENABLE_CUDA)
