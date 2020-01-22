@@ -90,24 +90,24 @@ KOKKOS_INLINE_FUNCTION void atomic_increment<short>(volatile short* a) {
 #endif
 }
 
-template <>
-KOKKOS_INLINE_FUNCTION void atomic_increment<int>(volatile int* a) {
-#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64) && \
-    !defined(_WIN32) && !defined(__CUDA_ARCH__)
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)a, _MM_HINT_ET0);
-#endif
-  __asm__ __volatile__("lock incl %0"
-                       : /* no output registers */
-                       : "m"(a[0])
-                       : "memory");
-#elif defined(KOKKOS_ENABLE_SERIAL_ATOMICS)
-  int* a_nv = const_cast<int*>(a);
-  ++(*a_nv);
-#else
-  Kokkos::atomic_fetch_add(a, int(1));
-#endif
-}
+// template <>
+// KOKKOS_INLINE_FUNCTION void atomic_increment<int>(volatile int* a) {
+//#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64) && \
+//    !defined(_WIN32) && !defined(__CUDA_ARCH__)
+//#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+//  _mm_prefetch((const char*)a, _MM_HINT_ET0);
+//#endif
+//  __asm__ __volatile__("lock incl %0"
+//                       : /* no output registers */
+//                       : "m"(a[0])
+//                       : "memory");
+//#elif defined(KOKKOS_ENABLE_SERIAL_ATOMICS)
+//  int* a_nv = const_cast<int*>(a);
+//  ++(*a_nv);
+//#else
+//  Kokkos::atomic_fetch_add(a, int(1));
+//#endif
+//}
 
 template <>
 KOKKOS_INLINE_FUNCTION void atomic_increment<long long int>(
