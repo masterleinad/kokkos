@@ -125,7 +125,7 @@ struct _parse_impl<T[N], Experimental::Extents<ExtentSpec...>, void>
 
 template <class DataType>
 struct ParseViewExtents {
-  using type = typename _parse_view_extents_impl ::_parse_impl<
+  using type = typename _parse_view_extents_impl::_parse_impl<
       DataType, Experimental::Extents<>>::type;
 };
 
