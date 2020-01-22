@@ -210,7 +210,7 @@ void initialize() {
 
   void* firstProfileLibrary;
 
-  char* envProfileLibrary = getenv("KOKKOS_PROFILE_LIBRARY");
+  char* envProfileLibrary = std::getenv("KOKKOS_PROFILE_LIBRARY");
 
   // If we do not find a profiling library in the environment then exit
   // early.

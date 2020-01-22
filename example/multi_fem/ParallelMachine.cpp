@@ -79,8 +79,8 @@ Machine::Machine( int * argc , char *** argv )
       // This rank is needed to set the Cuda device before 'mvapich'
       // is initialized.
 
-      const char * const mvapich_local_rank = getenv("MV2_COMM_WORLD_LOCAL_RANK");
-      const char * const slurm_local_rank   = getenv("SLURM_LOCALID");
+      const char * const mvapich_local_rank = std::getenv("MV2_COMM_WORLD_LOCAL_RANK");
+      const char * const slurm_local_rank   = std::getenv("SLURM_LOCALID");
 
       const int pre_mpi_local_rank =
         0 != mvapich_local_rank ? atoi( mvapich_local_rank ) : (

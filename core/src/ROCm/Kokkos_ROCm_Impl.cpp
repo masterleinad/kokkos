@@ -96,7 +96,7 @@ int rocm_kernel_arch()
 }
 bool rocm_launch_blocking()
 {
-  const char * env = getenv("ROCM_LAUNCH_BLOCKING");
+  const char * env = std::getenv("ROCM_LAUNCH_BLOCKING");
 
   if (env == 0) return false;
 
