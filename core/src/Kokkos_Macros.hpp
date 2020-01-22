@@ -343,6 +343,10 @@
 #define KOKKOS_ENABLE_ASM 1
 #endif
 
+#if !defined(_CRT_SECURE_NO_WARNINGS) && defined(_WIN32)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #if !defined(KOKKOS_FORCEINLINE_FUNCTION)
 #if !defined(_WIN32)
 #define KOKKOS_FORCEINLINE_FUNCTION inline __attribute__((always_inline))
