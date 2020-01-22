@@ -117,7 +117,8 @@ KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
   } newval;
   newval.t = val;
   _InterlockedCompareExchange128((LONGLONG*)dest, newval.i.upper,
-                                 newval.i.lower, ((LONGLONG*)&compare_and_result));
+                                 newval.i.lower,
+                                 ((LONGLONG*)&compare_and_result));
   return compare_and_result;
 }
 
