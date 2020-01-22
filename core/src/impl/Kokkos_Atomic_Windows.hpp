@@ -75,8 +75,7 @@ __attribute__((aligned(16)))
 template <typename T>
 KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
     volatile T* const dest, const T& compare,
-    typename Kokkos::Impl::enable_if<sizeof(T) == sizeof(LONG), const T&>::type
-        val) {
+    typename std::enable_if<sizeof(T) == sizeof(LONG), const T&>::type val) {
   union U {
     LONG i;
     T t;
@@ -91,8 +90,8 @@ KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
 template <typename T>
 KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
     volatile T* const dest, const T& compare,
-    typename Kokkos::Impl::enable_if<sizeof(T) == sizeof(LONGLONG),
-                                     const T&>::type val) {
+    typename std::enable_if<sizeof(T) == sizeof(LONGLONG), const T&>::type
+        val) {
   union U {
     LONGLONG i;
     T t;
@@ -107,8 +106,8 @@ KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
 template <typename T>
 KOKKOS_INLINE_FUNCTION T atomic_compare_exchange(
     volatile T* const dest, const T& compare,
-    typename Kokkos::Impl::enable_if<sizeof(T) == sizeof(Impl::cas128_t),
-                                     const T&>::type val) {
+    typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t), const T&>::type
+        val) {
   T compare_and_result(compare);
   union U {
     Impl::cas128_t i;
