@@ -1559,7 +1559,7 @@ inline void deep_copy(
 #endif
 
   if (src.data() == NULL) {
-	  HostSpace::execution_space().fence();
+    HostSpace::execution_space().fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
     if (Kokkos::Profiling::profileLibraryLoaded()) {
       Kokkos::Profiling::endDeepCopy();

@@ -61,8 +61,8 @@ class TeamPolicyInternal<Kokkos::OpenMP, Properties...>
 
   typedef PolicyTraits<Properties...> traits;
 
-   const typename traits::execution_space& space() const {
-         static typename traits::execution_space m_space;
+  const typename traits::execution_space& space() const {
+    static typename traits::execution_space m_space;
     return m_space;
   }
 

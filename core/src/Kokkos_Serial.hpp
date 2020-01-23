@@ -257,7 +257,7 @@ class TeamPolicyInternal<Kokkos::Serial, Properties...>
   typedef Kokkos::Serial execution_space;
 
   const typename traits::execution_space& space() const {
-         static typename traits::execution_space m_space;
+    static typename traits::execution_space m_space;
     return m_space;
   }
 

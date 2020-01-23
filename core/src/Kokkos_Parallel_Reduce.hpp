@@ -921,7 +921,9 @@ struct ReducerHasTestReferenceFunction {
 template <class ExecutionSpace, class T,
           bool is_reducer = ReducerHasTestReferenceFunction<T>::value>
 struct ParallelReduceFence {
-  static void fence(const ExecutionSpace& execution_space, const T&) { execution_space.fence(); }
+  static void fence(const ExecutionSpace& execution_space, const T&) {
+    execution_space.fence();
+  }
 };
 template <class ExecutionSpace, class... Args>
 struct ParallelReduceFence<ExecutionSpace, View<Args...>, false> {
@@ -1003,7 +1005,8 @@ inline void parallel_reduce(const size_t& policy, const FunctorType& functor,
       void, size_t, FunctorType>::policy_type policy_type;
   Impl::ParallelReduceAdaptor<policy_type, FunctorType, ReturnType>::execute(
       "", policy_type(0, policy), functor, return_value);
-  Impl::ParallelReduceFence<typename policy_type::execution_space, ReturnType>::fence(typename policy_type::execution_space(), return_value);
+  Impl::ParallelReduceFence<typename policy_type::execution_space, ReturnType>::
+      fence(typename policy_type::execution_space(), return_value);
 }
 
 template <class FunctorType, class ReturnType>
@@ -1014,8 +1017,8 @@ inline void parallel_reduce(const std::string& label, const size_t& policy,
       void, size_t, FunctorType>::policy_type policy_type;
   Impl::ParallelReduceAdaptor<policy_type, FunctorType, ReturnType>::execute(
       label, policy_type(0, policy), functor, return_value);
-  Impl::ParallelReduceFence<typename policy_type::execution_space,
-                            ReturnType>::fence(typename policy_type::execution_space(), return_value);
+  Impl::ParallelReduceFence<typename policy_type::execution_space, ReturnType>::
+      fence(typename policy_type::execution_space(), return_value);
 }
 
 // ReturnValue as View or Reducer: take by copy to allow for inline construction
@@ -1054,8 +1057,8 @@ inline void parallel_reduce(const size_t& policy, const FunctorType& functor,
   ReturnType return_value_impl = return_value;
   Impl::ParallelReduceAdaptor<policy_type, FunctorType, ReturnType>::execute(
       "", policy_type(0, policy), functor, return_value_impl);
-  Impl::ParallelReduceFence<typename policy_type::execution_space,
-                            ReturnType>::fence(typename policy_type::execution_space(), return_value);
+  Impl::ParallelReduceFence<typename policy_type::execution_space, ReturnType>::
+      fence(typename policy_type::execution_space(), return_value);
 }
 
 template <class FunctorType, class ReturnType>
@@ -1067,8 +1070,8 @@ inline void parallel_reduce(const std::string& label, const size_t& policy,
   ReturnType return_value_impl = return_value;
   Impl::ParallelReduceAdaptor<policy_type, FunctorType, ReturnType>::execute(
       label, policy_type(0, policy), functor, return_value_impl);
-  Impl::ParallelReduceFence<typename policy_type::execution_space,
-                            ReturnType>::fence(typename policy_type::execution_space(), return_value);
+  Impl::ParallelReduceFence<typename policy_type::execution_space, ReturnType>::
+      fence(typename policy_type::execution_space(), return_value);
 }
 
 // No Return Argument
