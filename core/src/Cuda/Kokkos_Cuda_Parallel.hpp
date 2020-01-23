@@ -303,7 +303,9 @@ class TeamPolicyInternal<Kokkos::Cuda, Properties...>
     return m_thread_scratch_size[level];
   }
 
-  inline typename traits::execution_space space() const { return m_space; }
+  inline const typename traits::execution_space& space() const {
+    return m_space;
+  }
 
   TeamPolicyInternal()
       : m_space(typename traits::execution_space()),
