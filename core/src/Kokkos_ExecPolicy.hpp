@@ -547,6 +547,10 @@ class TeamPolicy
 
   typedef TeamPolicy execution_policy;
 
+  KOKKOS_INLINE_FUNCTION const typename traits::execution_space& space() const {
+    return internal_policy::space();
+  }
+
   TeamPolicy& operator=(const TeamPolicy&) = default;
 
   /** \brief  Construct policy with the given instance of the execution space */
