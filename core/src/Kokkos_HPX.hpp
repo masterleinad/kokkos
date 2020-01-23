@@ -589,7 +589,12 @@ class TeamPolicyInternal<Kokkos::Experimental::HPX, Properties...>
   template <class ExecSpace, class... OtherProperties>
   friend class TeamPolicyInternal;
 
-  template <class... OtherProperties>
+  const typename traits::execution_space& space() const {
+         static typename traits::execution_space m_space;
+    return m_space;
+  }
+
+ template <class... OtherProperties>
   TeamPolicyInternal(const TeamPolicyInternal<Kokkos::Experimental::HPX,
                                               OtherProperties...> &p) {
     m_league_size            = p.m_league_size;
