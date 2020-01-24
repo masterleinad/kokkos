@@ -77,11 +77,11 @@ struct TestViewCopy {
 
       // host_mirror_space to ExecSpace
       Kokkos::deep_copy(dstView, srcView);
-      Kokkos::fence();
+  //    Kokkos::fence();
 
       // ExecSpace to host_mirror_space
       Kokkos::deep_copy(srcView, dstView);
-      Kokkos::fence();
+  //    Kokkos::fence();
     }
 
     // Test 2: deep_copy from Cuda to ExecSpace and ExecSpace back to Cuda
@@ -113,11 +113,11 @@ struct TestViewCopy {
 
       // Cuda to ExecSpace
       Kokkos::deep_copy(dstView, srcView);
-      Kokkos::fence();
+    //  Kokkos::fence();
 
       // ExecSpace to Cuda
       Kokkos::deep_copy(srcView, dstView);
-      Kokkos::fence();
+    //  Kokkos::fence();
     }
 
     // Test 3: deep_copy from host_space to ExecSpace and ExecSpace back to
@@ -137,11 +137,11 @@ struct TestViewCopy {
 
       // host_space to ExecSpace
       Kokkos::deep_copy(dstView, srcView);
-      Kokkos::fence();
+    //  Kokkos::fence();
 
       // ExecSpace to host_space
       Kokkos::deep_copy(srcView, dstView);
-      Kokkos::fence();
+    //  Kokkos::fence();
     }
 #endif
   }  // end test_view_copy

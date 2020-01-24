@@ -114,7 +114,10 @@ struct TestRangeRequire {
     }
 #endif
 
+    //Kokkos::Cuda().fence();
     Kokkos::deep_copy(host_flags, m_flags);
+    //Kokkos::Cuda().fence();
+    //Kokkos::fence();
 
     int error_count = 0;
     for (int i = 0; i < N; ++i) {
