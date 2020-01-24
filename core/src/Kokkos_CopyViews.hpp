@@ -1434,8 +1434,8 @@ inline void deep_copy(
   }
 #endif
 
+  Kokkos::DefaultHostExecutionSpace().fence();
   if (dst.data() == NULL) {
-    typename ViewType::execution_space().fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
     if (Kokkos::Profiling::profileLibraryLoaded()) {
       Kokkos::Profiling::endDeepCopy();
@@ -1444,7 +1444,6 @@ inline void deep_copy(
     return;
   }
 
-  typename ViewType::execution_space().fence();
   static_assert(std::is_same<typename ViewType::non_const_value_type,
                              typename ViewType::value_type>::value,
                 "deep_copy requires non-const type");
@@ -1559,7 +1558,7 @@ inline void deep_copy(
 #endif
 
   if (src.data() == NULL) {
-    HostSpace::execution_space().fence();
+    Kokkos::DefaultHostExecutionSpace().fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
     if (Kokkos::Profiling::profileLibraryLoaded()) {
       Kokkos::Profiling::endDeepCopy();
@@ -1609,7 +1608,6 @@ inline void deep_copy(
 #endif
 
   if (dst.data() == NULL && src.data() == NULL) {
-    typename dst_type::execution_space().fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
     if (Kokkos::Profiling::profileLibraryLoaded()) {
       Kokkos::Profiling::endDeepCopy();
@@ -1618,7 +1616,7 @@ inline void deep_copy(
     return;
   }
 
-  typename dst_type::execution_space().fence();
+  typename src_type::execution_space().fence();
   if (dst.data() != src.data()) {
     Kokkos::Impl::DeepCopy<dst_memory_space, src_memory_space>(
         dst.data(), src.data(), sizeof(value_type));
@@ -1701,7 +1699,8 @@ inline void deep_copy(
       Kokkos::Impl::throw_runtime_exception(message);
     }
 #endif
-    typename dst_type::execution_space().fence();
+    if (dst.data() == NULL) typename dst_type::execution_space().fence();
+    if (src.data() == NULL) typename src_type::execution_space().fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
     if (Kokkos::Profiling::profileLibraryLoaded()) {
       Kokkos::Profiling::endDeepCopy();
@@ -1730,7 +1729,8 @@ inline void deep_copy(
   if (((std::ptrdiff_t)dst_start == (std::ptrdiff_t)src_start) &&
       ((std::ptrdiff_t)dst_end == (std::ptrdiff_t)src_end) &&
       (dst.span_is_contiguous() && src.span_is_contiguous())) {
-    typename dst_type::execution_space().fence();
+    // the execution spaces for src and dst must be the same as well
+    typename src_type::execution_space().fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
     if (Kokkos::Profiling::profileLibraryLoaded()) {
       Kokkos::Profiling::endDeepCopy();
@@ -1764,7 +1764,7 @@ inline void deep_copy(
       (src.extent(4) != dst.extent(4)) || (src.extent(5) != dst.extent(5)) ||
       (src.extent(6) != dst.extent(6)) || (src.extent(7) != dst.extent(7))) {
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE
-    typename dst_type::execution_space().fence();
+    typename src_type::execution_space().fence();
     if (DstExecCanAccessSrc) {
       // Copying data between views in accessible memory spaces and either
       // non-contiguous or incompatible shape.
@@ -1778,7 +1778,7 @@ inline void deep_copy(
       Kokkos::Impl::throw_runtime_exception(
           "deep_copy given views that would require a temporary allocation");
     }
-    typename dst_type::execution_space().fence();
+    src_execution_space().fence();
 #if defined(KOKKOS_ENABLE_PROFILING)
     if (Kokkos::Profiling::profileLibraryLoaded()) {
       Kokkos::Profiling::endDeepCopy();
@@ -1827,14 +1827,14 @@ inline void deep_copy(
       ((dst_type::rank < 7) || (dst.stride_6() == src.stride_6())) &&
       ((dst_type::rank < 8) || (dst.stride_7() == src.stride_7()))) {
     const size_t nbytes = sizeof(typename dst_type::value_type) * dst.span();
-    typename dst_type::execution_space().fence();
+    typename src_type::execution_space().fence();
     if ((void*)dst.data() != (void*)src.data()) {
       Kokkos::Impl::DeepCopy<dst_memory_space, src_memory_space>(
           dst.data(), src.data(), nbytes);
     }
     typename dst_type::execution_space().fence();
   } else {
-    typename dst_type::execution_space().fence();
+    typename src_type::execution_space().fence();
     Impl::view_copy(dst, src);
     typename dst_type::execution_space().fence();
   }
