@@ -41,7 +41,7 @@
 //@HEADER
 */
 
-#include <system.h>
+#include "system.hpp"
 #include <cstdio>
 #include <Kokkos_Core.hpp>
 
@@ -60,7 +60,7 @@ struct BinningFunctor {
 
   int atoms_per_bin;
 
-  BinningFunctor(System _s) : s(_s) { atoms_per_bin = s.bins.dimension_1(); }
+  BinningFunctor(System _s) : s(_s) { atoms_per_bin = s.bins.extent(1); }
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int &i) const {
@@ -112,7 +112,7 @@ struct BuildFunctor {
   System s;
 
   int maxneighs;
-  BuildFunctor(System _s) : s(_s) { maxneighs = s.neighbors.dimension_1(); }
+  BuildFunctor(System _s) : s(_s) { maxneighs = s.neighbors.extent(1); }
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int &i) const {
@@ -373,7 +373,7 @@ void neigh_build(System &s) {
     Kokkos::deep_copy(s.d_resize, s.h_resize);
 
     MemsetZeroFunctor f_zero;
-    f_zero.ptr = (void *)s.bincount.ptr_on_device();
+    f_zero.ptr = (void *)s.bincount.data();
     Kokkos::parallel_for(s.mbins, f_zero);
     execution_space().fence();
 

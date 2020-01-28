@@ -63,7 +63,7 @@ template <class ExecSpace>
 struct SortView {
   template <typename ValueType>
   SortView(const Kokkos::View<ValueType*, ExecSpace> v, int begin, int end) {
-    std::sort(v.ptr_on_device() + begin, v.ptr_on_device() + end);
+    std::sort(v.data() + begin, v.data() + end);
   }
 };
 
@@ -109,8 +109,8 @@ struct GrowArrayFunctor {
 
     const int j = index >> SHIFT;       // which integer flag
     const int k = 1 << (index & MASK);  // which bit in that integer
-    const int s = (j < int(m_search_flags.dimension_0())) &&
-                  (0 != (m_search_flags(j) & k));
+    const int s =
+        (j < int(m_search_flags.extent(0))) && (0 != (m_search_flags(j) & k));
 
     return s;
   }
@@ -161,7 +161,8 @@ struct GrowArrayFunctor {
         // Team's exclusive scan of threads' contributions, with global offset.
         // This thread writes its buffer into [ team_offset .. team_offset +
         // local_count )
-        const int team_offset = member.team_scan(local_count, &*m_search_count);
+        const int team_offset =
+            member.team_scan(local_count, &m_search_count());
 
         // Copy locally buffered entries into global array:
         for (int i = 0; i < local_count; ++i) {
@@ -198,10 +199,16 @@ void grow_array(int array_length, int search_length, int print = 1) {
   Kokkos::deep_copy(functor.m_search_flags, flags);
 
   // Each team works on 'functor.m_search_team_chunk' span of the search_length
+  const int team_size_max =
+      Kokkos::TeamPolicy<ExecSpace>(
+          (search_length + functor.m_search_team_chunk - 1) /
+              functor.m_search_team_chunk,
+          1)
+          .team_size_max(functor, Kokkos::ParallelForTag());
   Kokkos::TeamPolicy<ExecSpace> work(
       /* #teams */ (search_length + functor.m_search_team_chunk - 1) /
           functor.m_search_team_chunk,
-      /* threads/team */ Kokkos::TeamPolicy<ExecSpace>::team_size_max(functor));
+      team_size_max);
 
   // Fill array:
   Kokkos::parallel_for(work, functor);
@@ -210,7 +217,7 @@ void grow_array(int array_length, int search_length, int print = 1) {
   Kokkos::deep_copy(count, functor.m_search_count);
 
   // Sort array:
-  SortView<ExecSpace>(functor.m_search_array, 0, *count);
+  SortView<ExecSpace>(functor.m_search_array, 0, count());
 
   // Mirror the results:
   typename Kokkos::View<int*, ExecSpace>::HostMirror results =
@@ -220,7 +227,7 @@ void grow_array(int array_length, int search_length, int print = 1) {
   // Verify results:
   int result_error_count = 0;
   int flags_error_count  = 0;
-  for (int i = 0; i < *count; ++i) {
+  for (int i = 0; i < count(); ++i) {
     const int index = results(i);
     const int entry = index >> FunctorType::SHIFT;
     const int bit   = 1 << (index & FunctorType::MASK);
@@ -232,7 +239,7 @@ void grow_array(int array_length, int search_length, int print = 1) {
     flags(entry) &= ~bit;  // Clear that verified bit
   }
 
-  for (int i = 0; i < int(flags.dimension_0()); ++i) {
+  for (int i = 0; i < int(flags.extent(0)); ++i) {
     // If any uncleared bits then an error
     if (flags(i)) {
       if (print) std::cerr << "flags( " << i << " : " << flags(i) << " )";

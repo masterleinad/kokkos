@@ -65,44 +65,38 @@ int main(int argc, char** argv) {
         use_numa * use_core * Kokkos::hwloc::get_available_threads_per_core();
   }
 
+  Kokkos::initialize(argc, argv);
 #if defined(KOKKOS_ENABLE_SERIAL)
   {
     std::cout << "Kokkos::Serial" << std::endl;
     // The Serial device accepts these arguments, though it may ignore them.
-    Kokkos::Serial::initialize(num_threads, use_numa, use_core);
     Example::grow_array<Kokkos::Serial>(length_array, span_values);
-    Kokkos::Serial::finalize();
   }
 #endif  // defined( KOKKOS_ENABLE_SERIAL )
 
 #if defined(KOKKOS_ENABLE_THREADS)
   {
     std::cout << "Kokkos::Threads" << std::endl;
-    Kokkos::Threads::initialize(num_threads, use_numa, use_core);
     Example::grow_array<Kokkos::Threads>(length_array, span_values);
-    Kokkos::Threads::finalize();
   }
 #endif
 
 #if defined(KOKKOS_ENABLE_OPENMP)
   {
     std::cout << "Kokkos::OpenMP" << std::endl;
-    Kokkos::OpenMP::initialize();
     Example::grow_array<Kokkos::OpenMP>(length_array, span_values);
-    Kokkos::OpenMP::finalize();
   }
 #endif
 
 #if defined(KOKKOS_ENABLE_CUDA)
   {
     std::cout << "Kokkos::Cuda" << std::endl;
-    Kokkos::HostSpace::execution_space::initialize(1);
-    Kokkos::Cuda::initialize();
     Example::grow_array<Kokkos::Cuda>(length_array, span_values);
-    Kokkos::Cuda::finalize();
     Kokkos::HostSpace::execution_space::finalize();
   }
 #endif
+
+  Kokkos::finalize();
 
   return 0;
 }

@@ -44,7 +44,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include "system.h"
+#include "system.hpp"
 
 int create_system(System &system, int nx, int ny, int nz, double rho);
 int neigh_setup(System &system);
@@ -201,5 +201,5 @@ int main(int argc, char **argv) {
   printf("Time: %e s for %i iterations with %i atoms\n", time, iter,
          system.nlocal);
 
-  execution_space::finalize();
+  Kokkos::finalize();
 }

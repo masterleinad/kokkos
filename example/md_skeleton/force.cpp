@@ -41,7 +41,7 @@
 //@HEADER
 */
 
-#include <system.h>
+#include "system.hpp"
 #include <cstdio>
 
 /* Simple Lennard Jones Force Kernel using neighborlists

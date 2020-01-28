@@ -41,7 +41,7 @@
 //@HEADER
 */
 
-#include <system.h>
+#include "system.hpp"
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>

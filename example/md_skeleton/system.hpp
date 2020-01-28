@@ -44,7 +44,7 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
-#include <types.h>
+#include <types.hpp>
 
 struct Box {
   double xprd, yprd, zprd;
