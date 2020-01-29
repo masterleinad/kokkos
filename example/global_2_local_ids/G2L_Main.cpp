@@ -115,18 +115,14 @@ int main(int argc, char *argv[]) {
 
   num_errors += G2L::run_serial(num_ids, num_find_iterations);
 
+  Kokkos::initialize(argc, argv);
 #ifdef KOKKOS_ENABLE_CUDA
-  Kokkos::HostSpace::execution_space::initialize(threads_count);
   Kokkos::Cuda::initialize(Kokkos::Cuda::SelectDevice(0));
   num_errors += G2L::run_cuda(num_ids, num_find_iterations);
-  Kokkos::Cuda::finalize();
-  Kokkos::HostSpace::execution_space::finalize();
 #endif
 
 #ifdef KOKKOS_ENABLE_THREADS
-  Kokkos::Threads::initialize(threads_count);
   num_errors += G2L::run_threads(num_ids, num_find_iterations);
-  Kokkos::Threads::finalize();
 #endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
@@ -139,10 +135,9 @@ int main(int argc, char *argv[]) {
   if (num_threads > 3) {
     num_threads = std::max(4, num_threads / 4);
   }
-  Kokkos::OpenMP::initialize(num_threads);
   num_errors += G2L::run_openmp(num_ids, num_find_iterations);
-  Kokkos::OpenMP::finalize();
 #endif
+  Kokkos::finalize();
 
   return num_errors;
 }

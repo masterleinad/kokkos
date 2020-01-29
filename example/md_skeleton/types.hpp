@@ -48,7 +48,7 @@
 
 #include <Kokkos_Core.hpp>
 
-typedef Kokkos::DefaultExecutionSpace execution_space;
+typedef Kokkos::DefaultExecutionSpace exec_space;
 
 #if !defined(KOKKOS_ENABLE_CUDA)
 struct double2 {
@@ -84,41 +84,38 @@ struct double2 {
 /* Define types used throughout the code */
 
 // Position arrays
-typedef Kokkos::View<double * [3], Kokkos::LayoutRight, execution_space>
-    t_x_array;
+typedef Kokkos::View<double * [3], Kokkos::LayoutRight, exec_space> t_x_array;
 typedef t_x_array::HostMirror t_x_array_host;
-typedef Kokkos::View<const double * [3], Kokkos::LayoutRight, execution_space>
+typedef Kokkos::View<const double * [3], Kokkos::LayoutRight, exec_space>
     t_x_array_const;
-typedef Kokkos::View<const double * [3], Kokkos::LayoutRight, execution_space,
+typedef Kokkos::View<const double * [3], Kokkos::LayoutRight, exec_space,
                      Kokkos::MemoryRandomAccess>
     t_x_array_randomread;
 
 // Force array
-typedef Kokkos::View<double * [3], execution_space> t_f_array;
+typedef Kokkos::View<double * [3], exec_space> t_f_array;
 
 // Neighborlist
-typedef Kokkos::View<int**, execution_space> t_neighbors;
-typedef Kokkos::View<const int**, execution_space> t_neighbors_const;
-typedef Kokkos::View<int*, execution_space, Kokkos::MemoryUnmanaged>
-    t_neighbors_sub;
-typedef Kokkos::View<const int*, execution_space, Kokkos::MemoryUnmanaged>
+typedef Kokkos::View<int**, exec_space> t_neighbors;
+typedef Kokkos::View<const int**, exec_space> t_neighbors_const;
+typedef Kokkos::View<int*, exec_space, Kokkos::MemoryUnmanaged> t_neighbors_sub;
+typedef Kokkos::View<const int*, exec_space, Kokkos::MemoryUnmanaged>
     t_neighbors_const_sub;
 
 // 1d int array
-typedef Kokkos::View<int*, execution_space> t_int_1d;
+typedef Kokkos::View<int*, exec_space> t_int_1d;
 typedef t_int_1d::HostMirror t_int_1d_host;
-typedef Kokkos::View<const int*, execution_space> t_int_1d_const;
-typedef Kokkos::View<int*, execution_space, Kokkos::MemoryUnmanaged>
-    t_int_1d_um;
-typedef Kokkos::View<const int*, execution_space, Kokkos::MemoryUnmanaged>
+typedef Kokkos::View<const int*, exec_space> t_int_1d_const;
+typedef Kokkos::View<int*, exec_space, Kokkos::MemoryUnmanaged> t_int_1d_um;
+typedef Kokkos::View<const int*, exec_space, Kokkos::MemoryUnmanaged>
     t_int_1d_const_um;
 
 // 2d int array
-typedef Kokkos::View<int**, Kokkos::LayoutRight, execution_space> t_int_2d;
+typedef Kokkos::View<int**, Kokkos::LayoutRight, exec_space> t_int_2d;
 typedef t_int_2d::HostMirror t_int_2d_host;
 
 // Scalar ints
-typedef Kokkos::View<int[1], Kokkos::LayoutLeft, execution_space> t_int_scalar;
+typedef Kokkos::View<int[1], Kokkos::LayoutLeft, exec_space> t_int_scalar;
 typedef t_int_scalar::HostMirror t_int_scalar_host;
 
 #endif /* TYPES_H_ */

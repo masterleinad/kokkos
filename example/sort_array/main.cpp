@@ -66,24 +66,14 @@ int main(int argc, char** argv) {
   int length_total_array = length_array * 100;
 
 #if defined(KOKKOS_ENABLE_CUDA)
-  if (Kokkos::Cuda::is_initialized()) {
-    std::cout << "Kokkos::Cuda" << std::endl;
-    Example::sort_array<Kokkos::Cuda>(length_array, length_total_array);
-  }
-#endif
-
-#if defined(KOKKOS_ENABLE_THREADS)
-  if (Kokkos::Threads::is_initialized()) {
-    std::cout << "Kokkos::Threads" << std::endl;
-    Example::sort_array<Kokkos::Threads>(length_array, length_total_array);
-  }
-#endif
-
-#if defined(KOKKOS_ENABLE_OPENMP)
-  if (Kokkos::OpenMP::is_initialized()) {
-    std::cout << "Kokkos::OpenMP" << std::endl;
-    Example::sort_array<Kokkos::OpenMP>(length_array, length_total_array);
-  }
+  std::cout << "Kokkos::Cuda" << std::endl;
+  Example::sort_array<Kokkos::Cuda>(length_array, length_total_array);
+#elif defined(KOKKOS_ENABLE_THREADS)
+  std::cout << "Kokkos::Threads" << std::endl;
+  Example::sort_array<Kokkos::Threads>(length_array, length_total_array);
+#elif defined(KOKKOS_ENABLE_OPENMP)
+  std::cout << "Kokkos::OpenMP" << std::endl;
+  Example::sort_array<Kokkos::OpenMP>(length_array, length_total_array);
 #endif
 
   Kokkos::finalize();

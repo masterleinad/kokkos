@@ -122,17 +122,17 @@ struct ForceFunctor {
 
       // if(i==0) printf("%i %i %lf %lf\n",i,j,rsq,cutforcesq);
       if (rsq < cutforcesq) {
-        const double sr2   = 1.0 / rsq;
-        const double sr6   = sr2 * sr2 * sr2 * sigma6;
-        const double force = 48.0 * sr6 * (sr6 - 0.5) * sr2 * epsilon;
-        fix += delx * force;
-        fiy += dely * force;
-        fiz += delz * force;
+        const double sr2    = 1.0 / rsq;
+        const double sr6    = sr2 * sr2 * sr2 * sigma6;
+        const double force_ = 48.0 * sr6 * (sr6 - 0.5) * sr2 * epsilon;
+        fix += delx * force_;
+        fiy += dely * force_;
+        fiz += delz * force_;
 
         if (EVFLAG) {
           energy += sr6 * (sr6 - 1.0) * epsilon;
-          virial +=
-              delx * delx * force + dely * dely * force + delz * delz * force;
+          virial += delx * delx * force_ + dely * dely * force_ +
+                    delz * delz * force_;
         }
       }
     }
@@ -173,6 +173,6 @@ double2 force(System &s, int evflag) {
   else
     Kokkos::parallel_reduce(s.nlocal, f, ev);
 
-  execution_space().fence();
+  exec_space().fence();
   return ev;
 }

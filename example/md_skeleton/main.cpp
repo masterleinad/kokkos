@@ -154,15 +154,7 @@ int main(int argc, char **argv) {
 
   printf("-> Init Device\n");
 
-#if defined(KOKKOS_ENABLE_CUDA)
-  Kokkos::HostSpace::execution_space::initialize(teams * num_threads);
-  Kokkos::Cuda::SelectDevice select_device(device);
-  Kokkos::Cuda::initialize(select_device);
-#elif defined(KOKKOS_ENABLE_OPENMP)
-  Kokkos::OpenMP::initialize(teams * num_threads);
-#elif defined(KOKKOS_ENABLE_THREADS)
-  Kokkos::Threads::initialize(teams * num_threads);
-#endif
+  Kokkos::initialize(argc, argv);
 
   System system;
   system.neigh_cut   = 2.8;
