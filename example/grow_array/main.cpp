@@ -55,7 +55,19 @@ int main(int argc, char** argv) {
   int length_array = 1000000;
   int span_values  = 100000000;
 
-  Kokkos::initialize(argc, argv);
+  Kokkos::InitArguments init_arguments;
+  init_arguments.num_numa    = 1;
+  init_arguments.num_threads = 4;
+
+  if (Kokkos::hwloc::available()) {
+    init_arguments.num_numa = Kokkos::hwloc::get_available_numa_count();
+    int use_core            = Kokkos::hwloc::get_available_cores_per_numa() - 1;
+    init_arguments.num_threads =
+        init_arguments.num_numa * use_core *
+        Kokkos::hwloc::get_available_threads_per_core();
+  }
+
+  Kokkos::initialize(init_arguments);
 #if defined(KOKKOS_ENABLE_SERIAL)
   {
     std::cout << "Kokkos::Serial" << std::endl;
@@ -82,7 +94,6 @@ int main(int argc, char** argv) {
   {
     std::cout << "Kokkos::Cuda" << std::endl;
     Example::grow_array<Kokkos::Cuda>(length_array, span_values);
-    Kokkos::HostSpace::execution_space::finalize();
   }
 #endif
 

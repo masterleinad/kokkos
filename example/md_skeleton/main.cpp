@@ -154,44 +154,48 @@ int main(int argc, char **argv) {
 
   printf("-> Init Device\n");
 
-  Kokkos::initialize(argc, argv);
+  Kokkos::InitArguments init_arguments;
+  init_arguments.num_threads = teams * num_threads;
+  init_arguments.device_id   = device;
 
-  System system;
-  system.neigh_cut   = 2.8;
-  system.force_cut   = 2.5;
-  system.force_cutsq = system.force_cut * system.force_cut;
-  system.delta       = delta;
+  Kokkos::initialize(init_arguments);
+  {
+    System system;
+    system.neigh_cut   = 2.8;
+    system.force_cut   = 2.5;
+    system.force_cutsq = system.force_cut * system.force_cut;
+    system.delta       = delta;
 
-  printf("-> Build system\n");
-  create_system(system, nx, ny, nz, rho);
+    printf("-> Build system\n");
+    create_system(system, nx, ny, nz, rho);
 
-  printf("-> Created %i atoms and %i ghost atoms\n", system.nlocal,
-         system.nghost);
+    printf("-> Created %i atoms and %i ghost atoms\n", system.nlocal,
+           system.nghost);
 
-  system.nbinx = system.box.xprd / neighbor_size + 1;
-  system.nbiny = system.box.yprd / neighbor_size + 1;
-  system.nbinz = system.box.zprd / neighbor_size + 1;
+    system.nbinx = system.box.xprd / neighbor_size + 1;
+    system.nbiny = system.box.yprd / neighbor_size + 1;
+    system.nbinz = system.box.zprd / neighbor_size + 1;
 
-  printf("-> Building Neighborlist\n");
+    printf("-> Building Neighborlist\n");
 
-  neigh_setup(system);
-  neigh_build(system);
+    neigh_setup(system);
+    neigh_build(system);
 
-  double2 ev = force(system, 1);
+    double2 ev = force(system, 1);
 
-  printf("-> Calculate Energy: %f Virial: %f\n", ev.x, ev.y);
+    printf("-> Calculate Energy: %f Virial: %f\n", ev.x, ev.y);
 
-  printf("-> Running %i force calculations\n", iter);
+    printf("-> Running %i force calculations\n", iter);
 
-  Kokkos::Timer timer;
+    Kokkos::Timer timer;
 
-  for (int i = 0; i < iter; i++) {
-    force(system, 0);
+    for (int i = 0; i < iter; i++) {
+      force(system, 0);
+    }
+
+    double time = timer.seconds();
+    printf("Time: %e s for %i iterations with %i atoms\n", time, iter,
+           system.nlocal);
   }
-
-  double time = timer.seconds();
-  printf("Time: %e s for %i iterations with %i atoms\n", time, iter,
-         system.nlocal);
-
   Kokkos::finalize();
 }

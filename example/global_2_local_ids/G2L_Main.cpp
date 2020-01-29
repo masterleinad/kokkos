@@ -98,33 +98,18 @@ int main(int argc, char *argv[]) {
   }
 
   // query the topology of the host
-  unsigned threads_count = 4;
-
-  if (Kokkos::hwloc::available()) {
-    threads_count = Kokkos::hwloc::get_available_numa_count() *
-                    Kokkos::hwloc::get_available_cores_per_numa() *
-                    Kokkos::hwloc::get_available_threads_per_core();
-  }
-
-  std::cout << "Threads: " << threads_count << std::endl;
-  std::cout << "Number of ids: " << num_ids << std::endl;
-  std::cout << "Number of find iterations: " << num_find_iterations
-            << std::endl;
-
-  size_t num_errors = 0;
-
-  num_errors += G2L::run_serial(num_ids, num_find_iterations);
-
-  Kokkos::initialize(argc, argv);
-#ifdef KOKKOS_ENABLE_CUDA
-  num_errors += G2L::run_cuda(num_ids, num_find_iterations);
-#endif
+  Kokkos::InitArguments init_arguments;
+  init_arguments.num_threads = 4;
+  init_arguments.device_id   = 0;
 
 #ifdef KOKKOS_ENABLE_THREADS
-  num_errors += G2L::run_threads(num_ids, num_find_iterations);
-#endif
-
-#ifdef KOKKOS_ENABLE_OPENMP
+  if (Kokkos::hwloc::available()) {
+    init_arguments.num_threads =
+        Kokkos::hwloc::get_available_numa_count() *
+        Kokkos::hwloc::get_available_cores_per_numa() *
+        Kokkos::hwloc::get_available_threads_per_core();
+  }
+#elif KOKKOSE_ENABLE_OPENMP
   int num_threads = 0;
 #pragma omp parallel
   {
@@ -134,6 +119,28 @@ int main(int argc, char *argv[]) {
   if (num_threads > 3) {
     num_threads = std::max(4, num_threads / 4);
   }
+  init_arguments.num_threads = num_threads;
+#endif
+
+  std::cout << "Threads: " << init_arguments.num_threads << std::endl;
+  std::cout << "Number of ids: " << num_ids << std::endl;
+  std::cout << "Number of find iterations: " << num_find_iterations
+            << std::endl;
+
+  size_t num_errors = 0;
+
+  num_errors += G2L::run_serial(num_ids, num_find_iterations);
+
+  Kokkos::initialize(init_arguments);
+#ifdef KOKKOS_ENABLE_CUDA
+  num_errors += G2L::run_cuda(num_ids, num_find_iterations);
+#endif
+
+#ifdef KOKKOS_ENABLE_THREADS
+  num_errors += G2L::run_threads(num_ids, num_find_iterations);
+#endif
+
+#ifdef KOKKOS_ENABLE_OPENMP
   num_errors += G2L::run_openmp(num_ids, num_find_iterations);
 #endif
   Kokkos::finalize();
