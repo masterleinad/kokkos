@@ -140,7 +140,7 @@ class VectorImport {
     Pack(const CommIdentType& arg_index, const VectorType& arg_source,
          const VectorType& arg_buffer)
         : index(arg_index), source(arg_source), buffer(arg_buffer) {
-      Kokkos::parallel_for(index.extent(0)(), *this);
+      Kokkos::parallel_for(index.extent(0), *this);
       execution_space().fence();
     }
   };
@@ -163,7 +163,7 @@ class VectorImport {
     }
 
     unsigned send_count = 0;
-    for (unsigned i = 0; i < send_msg.extent(0)(); ++i) {
+    for (unsigned i = 0; i < send_msg.extent(0); ++i) {
       send_count += send_msg(i, 1);
     }
     send_buffer      = VectorType("send_buffer", send_count);
@@ -181,14 +181,14 @@ class VectorImport {
                                                    count_owned + count_receive);
     const VectorType recv_vector = Kokkos::subview(v, recv_range);
 
-    std::vector<MPI_Request> recv_request(recv_msg.extent(0)(),
+    std::vector<MPI_Request> recv_request(recv_msg.extent(0),
                                           MPI_REQUEST_NULL);
 
     {  // Post receives
       scalar_type* ptr =
           ReceiveInPlace ? recv_vector.data() : host_recv_buffer.data();
 
-      for (size_t i = 0; i < recv_msg.extent(0)(); ++i) {
+      for (size_t i = 0; i < recv_msg.extent(0); ++i) {
         const int proc  = recv_msg(i, 0);
         const int count = recv_msg(i, 1) * chunk;
 
@@ -208,7 +208,7 @@ class VectorImport {
 
       scalar_type* ptr = host_send_buffer.data();
 
-      for (size_t i = 0; i < send_msg.extent(0)(); ++i) {
+      for (size_t i = 0; i < send_msg.extent(0); ++i) {
         const int proc  = send_msg(i, 0);
         const int count = send_msg(i, 1) * chunk;
 
@@ -228,12 +228,12 @@ class VectorImport {
 
     // Wait for receives and verify:
 
-    for (size_t i = 0; i < recv_msg.extent(0)(); ++i) {
+    for (size_t i = 0; i < recv_msg.extent(0); ++i) {
       MPI_Status recv_status;
       int recv_which = 0;
       int recv_size  = 0;
 
-      MPI_Waitany(recv_msg.extent(0)(), &recv_request[0], &recv_which,
+      MPI_Waitany(recv_msg.extent(0), &recv_request[0], &recv_which,
                   &recv_status);
 
       const int recv_proc = recv_status.MPI_SOURCE;
