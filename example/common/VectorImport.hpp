@@ -181,8 +181,7 @@ class VectorImport {
                                                    count_owned + count_receive);
     const VectorType recv_vector = Kokkos::subview(v, recv_range);
 
-    std::vector<MPI_Request> recv_request(recv_msg.extent(0),
-                                          MPI_REQUEST_NULL);
+    std::vector<MPI_Request> recv_request(recv_msg.extent(0), MPI_REQUEST_NULL);
 
     {  // Post receives
       scalar_type* ptr =

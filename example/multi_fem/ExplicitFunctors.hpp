@@ -496,35 +496,35 @@ struct grad {
   KOKKOS_INLINE_FUNCTION
   void v_grad(int ielem, Scalar* vx, Scalar* vy, Scalar* vz, Scalar* grad_x,
               Scalar* grad_y, Scalar* grad_z, Scalar inv_vol) const {
-    const int K_F_XX = Fields::K_F_XX;
-    const int K_F_YY = Fields::K_F_YY;
-    const int K_F_ZZ = Fields::K_F_ZZ;
-    const int K_F_XY = Fields::K_F_XY;
-    const int K_F_YZ = Fields::K_F_YZ;
-    const int K_F_ZX = Fields::K_F_ZX;
-    const int K_F_YX = Fields::K_F_YX;
-    const int K_F_ZY = Fields::K_F_ZY;
-    const int K_F_XZ = Fields::K_F_XZ;
+    const int K_F_XX_ = Fields::K_F_XX;
+    const int K_F_YY_ = Fields::K_F_YY;
+    const int K_F_ZZ_ = Fields::K_F_ZZ;
+    const int K_F_XY_ = Fields::K_F_XY;
+    const int K_F_YZ_ = Fields::K_F_YZ;
+    const int K_F_ZX_ = Fields::K_F_ZX;
+    const int K_F_YX_ = Fields::K_F_YX;
+    const int K_F_ZY_ = Fields::K_F_ZY;
+    const int K_F_XZ_ = Fields::K_F_XZ;
 
-    vel_grad(ielem, K_F_XX) =
+    vel_grad(ielem, K_F_XX_) =
         inv_vol * dot8<Scalar, execution_space>(vx, grad_x);
-    vel_grad(ielem, K_F_YX) =
+    vel_grad(ielem, K_F_YX_) =
         inv_vol * dot8<Scalar, execution_space>(vy, grad_x);
-    vel_grad(ielem, K_F_ZX) =
+    vel_grad(ielem, K_F_ZX_) =
         inv_vol * dot8<Scalar, execution_space>(vz, grad_x);
 
-    vel_grad(ielem, K_F_XY) =
+    vel_grad(ielem, K_F_XY_) =
         inv_vol * dot8<Scalar, execution_space>(vx, grad_y);
-    vel_grad(ielem, K_F_YY) =
+    vel_grad(ielem, K_F_YY_) =
         inv_vol * dot8<Scalar, execution_space>(vy, grad_y);
-    vel_grad(ielem, K_F_ZY) =
+    vel_grad(ielem, K_F_ZY_) =
         inv_vol * dot8<Scalar, execution_space>(vz, grad_y);
 
-    vel_grad(ielem, K_F_XZ) =
+    vel_grad(ielem, K_F_XZ_) =
         inv_vol * dot8<Scalar, execution_space>(vx, grad_z);
-    vel_grad(ielem, K_F_YZ) =
+    vel_grad(ielem, K_F_YZ_) =
         inv_vol * dot8<Scalar, execution_space>(vy, grad_z);
-    vel_grad(ielem, K_F_ZZ) =
+    vel_grad(ielem, K_F_ZZ_) =
         inv_vol * dot8<Scalar, execution_space>(vz, grad_z);
   }
 
