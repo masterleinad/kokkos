@@ -52,18 +52,8 @@
 //----------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  int num_threads  = 4;
-  int use_numa     = 1;
-  int use_core     = 1;
   int length_array = 1000000;
   int span_values  = 100000000;
-
-  if (Kokkos::hwloc::available()) {
-    use_numa = Kokkos::hwloc::get_available_numa_count();
-    use_core = Kokkos::hwloc::get_available_cores_per_numa() - 1;
-    num_threads =
-        use_numa * use_core * Kokkos::hwloc::get_available_threads_per_core();
-  }
 
   Kokkos::initialize(argc, argv);
 #if defined(KOKKOS_ENABLE_SERIAL)
