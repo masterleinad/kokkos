@@ -998,7 +998,9 @@ struct internal_force {
                     const int arg_current_state) {
     internal_force op_force(mesh_fields, arg_user_dt, arg_current_state);
 
-    Kokkos::parallel_reduce(mesh_fields.num_elements, op_force);
+    Kokkos::parallel_reduce(
+        "internal_force",
+        Kokkos::RangePolicy<DeviceType>(0, mesh_fields.num_elements), op_force);
   }
 
   //--------------------------------------------------------------------------
