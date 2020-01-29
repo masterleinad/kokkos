@@ -153,7 +153,8 @@ struct ElementComputation<FEMesh<double, 27, Kokkos::Cuda>, double> {
     Kokkos::Impl::CudaParallelLaunch<
         ElementComputation, Kokkos::LaunchBounds<>,
         Kokkos::Impl::Experimental::CudaLaunchMechanism::ConstantMemory>(
-        *this, grid, block, shmem);
+        *this, grid, block, shmem,
+        Kokkos::Cuda().impl_internal_space_instance(), false);
   }
 
  public:
