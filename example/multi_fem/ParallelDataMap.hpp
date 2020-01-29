@@ -290,8 +290,8 @@ class AsyncExchange<ValueType, Device, Kokkos::ParallelDataMap> {
         dev_send_buffer(),
         dev_recv_buffer(),
         recv_request() {
-    const size_t send_msg_count = arg_data_map.host_send.dimension_0();
-    const size_t recv_msg_count = arg_data_map.host_recv.dimension_0();
+    const size_t send_msg_count = arg_data_map.host_send.extent(0)();
+    const size_t recv_msg_count = arg_data_map.host_recv.extent(0)();
 
     const size_t send_msg_length = arg_chunk * arg_data_map.count_send;
     const size_t recv_msg_length = arg_chunk * arg_data_map.count_receive;
@@ -335,9 +335,9 @@ class AsyncExchange<ValueType, Device, Kokkos::ParallelDataMap> {
 
   void setup() {
     {  // Post receives:
-      const size_t recv_msg_count = data_map.host_recv.dimension_0();
+      const size_t recv_msg_count = data_map.host_recv.extent(0)();
 
-      ValueType* ptr = host_recv_buffer.ptr_on_device();
+      ValueType* ptr = host_recv_buffer.data();
 
       for (size_t i = 0; i < recv_msg_count; ++i) {
         const int proc  = data_map.host_recv(i, 0);
@@ -362,8 +362,8 @@ class AsyncExchange<ValueType, Device, Kokkos::ParallelDataMap> {
   // No communication progress until main thread calls 'send_receive'
 
   void send_receive() {
-    const size_t recv_msg_count = data_map.host_recv.dimension_0();
-    const size_t send_msg_count = data_map.host_send.dimension_0();
+    const size_t recv_msg_count = data_map.host_recv.extent(0)();
+    const size_t send_msg_count = data_map.host_send.extent(0)();
 
     // Pack and send:
 
@@ -387,9 +387,8 @@ class AsyncExchange<ValueType, Device, Kokkos::ParallelDataMap> {
       // It is suggested that MPI_Ssend will have the best performance:
       // http://www.mcs.anl.gov/research/projects/mpi/sendmode.html .
 
-      MPI_Ssend(send_msg_buffer.ptr_on_device(),
-                count * chunk_size * sizeof(ValueType), MPI_BYTE, proc, mpi_tag,
-                data_map.machine.mpi_comm);
+      MPI_Ssend(send_msg_buffer.data(), count * chunk_size * sizeof(ValueType),
+                MPI_BYTE, proc, mpi_tag, data_map.machine.mpi_comm);
     }
 
     // Wait for receives and verify:

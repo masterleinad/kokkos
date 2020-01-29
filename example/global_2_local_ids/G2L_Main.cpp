@@ -117,7 +117,6 @@ int main(int argc, char *argv[]) {
 
   Kokkos::initialize(argc, argv);
 #ifdef KOKKOS_ENABLE_CUDA
-  Kokkos::Cuda::initialize(Kokkos::Cuda::SelectDevice(0));
   num_errors += G2L::run_cuda(num_ids, num_find_iterations);
 #endif
 

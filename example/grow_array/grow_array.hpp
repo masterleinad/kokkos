@@ -72,8 +72,8 @@ template <>
 struct SortView<Kokkos::Cuda> {
   template <typename ValueType>
   SortView(const Kokkos::View<ValueType*, Kokkos::Cuda> v, int begin, int end) {
-    thrust::sort(thrust::device_ptr<ValueType>(v.ptr_on_device() + begin),
-                 thrust::device_ptr<ValueType>(v.ptr_on_device() + end));
+    thrust::sort(thrust::device_ptr<ValueType>(v.data() + begin),
+                 thrust::device_ptr<ValueType>(v.data() + end));
   }
 };
 #endif

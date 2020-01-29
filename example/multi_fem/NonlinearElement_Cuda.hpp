@@ -128,7 +128,7 @@ struct ElementComputation<FEMesh<double, 27, Kokkos::Cuda>, double> {
         element_matrices(arg_element_matrices),
         element_vectors(arg_element_vectors),
         coeff_K(arg_coeff_K),
-        elem_count(arg_mesh.elem_node_ids.dimension_0()) {
+        elem_count(arg_mesh.elem_node_ids.extent(0)()) {
     const unsigned jInvJ[9][4] = {
         {j22, j33, j23, j32}, {j13, j32, j12, j33}, {j12, j23, j13, j22},
 

@@ -86,12 +86,11 @@ struct Multiply<CrsMatrix<double, Cuda>, View<double*, Cuda>,
     CudaSparseSingleton& s  = CudaSparseSingleton::singleton();
     const scalar_type alpha = 1, beta = 0;
 
-    cusparseStatus_t status = cusparseDcsrmv(
-        s.handle, CUSPARSE_OPERATION_NON_TRANSPOSE, nrow, ncol,
-        A.coefficients.dimension_0(), &alpha, s.descra,
-        A.coefficients.ptr_on_device(), A.graph.row_map.ptr_on_device(),
-        A.graph.entries.ptr_on_device(), x.ptr_on_device(), &beta,
-        y.ptr_on_device());
+    cusparseStatus_t status =
+        cusparseDcsrmv(s.handle, CUSPARSE_OPERATION_NON_TRANSPOSE, nrow, ncol,
+                       A.coefficients.extent(0)(), &alpha, s.descra,
+                       A.coefficients.data(), A.graph.row_map.data(),
+                       A.graph.entries.data(), x.data(), &beta, y.data());
 
     if (CUSPARSE_STATUS_SUCCESS != status) {
       throw std::runtime_error(std::string("ERROR - cusparseDcsrmv "));
@@ -114,12 +113,11 @@ struct Multiply<CrsMatrix<float, Cuda>, View<float*, Cuda>,
     CudaSparseSingleton& s  = CudaSparseSingleton::singleton();
     const scalar_type alpha = 1, beta = 0;
 
-    cusparseStatus_t status = cusparseScsrmv(
-        s.handle, CUSPARSE_OPERATION_NON_TRANSPOSE, nrow, ncol,
-        A.coefficients.dimension_0(), &alpha, s.descra,
-        A.coefficients.ptr_on_device(), A.graph.row_map.ptr_on_device(),
-        A.graph.entries.ptr_on_device(), x.ptr_on_device(), &beta,
-        y.ptr_on_device());
+    cusparseStatus_t status =
+        cusparseScsrmv(s.handle, CUSPARSE_OPERATION_NON_TRANSPOSE, nrow, ncol,
+                       A.coefficients.extent(0)(), &alpha, s.descra,
+                       A.coefficients.data(), A.graph.row_map.data(),
+                       A.graph.entries.data(), x.data(), &beta, y.data());
 
     if (CUSPARSE_STATUS_SUCCESS != status) {
       throw std::runtime_error(std::string("ERROR - cusparseDcsrmv "));
