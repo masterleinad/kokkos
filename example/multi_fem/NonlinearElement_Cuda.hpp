@@ -150,7 +150,8 @@ struct ElementComputation<FEMesh<double, 27, Kokkos::Cuda>, double> {
     const dim3 block(BlockDimX, BlockDimY, 1);
     const dim3 grid(grid_count, 1, 1);
 
-    Kokkos::Impl::CudaParallelLaunch<ElementComputation>(*this, grid, block,
+    Kokkos::Impl::CudaParallelLaunch<ElementComputation, Kokkos::LaunchBounds<>,  Kokkos::Impl::Experimental::CudaLaunchMechanism::ConstantMemory
+	    >(*this, grid, block,
                                                          shmem);
   }
 

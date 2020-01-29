@@ -154,7 +154,12 @@ int main(int argc, char **argv) {
 
   printf("-> Init Device\n");
 
-  Kokkos::initialize(argc, argv);
+  Kokkos::InitArguments init_arguments;
+  init_arguments.num_threads = teams*num_threads;
+  init_arguments.device_id = device;
+  
+  Kokkos::initialize(init_arguments);
+  {
 
   System system;
   system.neigh_cut   = 2.8;
@@ -193,5 +198,6 @@ int main(int argc, char **argv) {
   printf("Time: %e s for %i iterations with %i atoms\n", time, iter,
          system.nlocal);
 
+  }
   Kokkos::finalize();
 }
