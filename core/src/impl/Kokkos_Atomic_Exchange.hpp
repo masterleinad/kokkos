@@ -228,7 +228,7 @@ inline T atomic_exchange(
   union U {
     Impl::cas128_t i;
     T t;
-    inline U(){};
+    inline U() {}
   } assume, oldval, newval;
 
   oldval.t = *dest;
@@ -319,7 +319,7 @@ inline void atomic_assign(
   union U {
     Impl::cas128_t i;
     T t;
-    inline U(){};
+    inline U() {}
   } assume, oldval, newval;
 
   oldval.t = *dest;
