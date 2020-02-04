@@ -241,7 +241,7 @@ inline T atomic_fetch_add(
   union U {
     int i;
     T t;
-    inline U() = default;
+    inline U() {}
   } assume, oldval, newval;
 
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
@@ -267,7 +267,7 @@ inline T atomic_fetch_add(volatile T* const dest,
   union U {
     long i;
     T t;
-    inline U() = default;
+    inline U() {}
   } assume, oldval, newval;
 
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)

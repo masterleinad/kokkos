@@ -96,7 +96,7 @@ __inline__ __device__ T atomic_fetch_sub(
   union U {
     int i;
     T t;
-    KOKKOS_DEFAULTED_FUNCTION U() = default;
+    KOKKOS_INLINE_FUNCTION U() {}
   } oldval, assume, newval;
 
   oldval.t = *dest;
@@ -119,7 +119,7 @@ __inline__ __device__ T atomic_fetch_sub(
   union U {
     unsigned long long int i;
     T t;
-    KOKKOS_DEFAULTED_FUNCTION U() = default;
+    KOKKOS_INLINE_FUNCTION U() {}
   } oldval, assume, newval;
 
   oldval.t = *dest;
@@ -216,7 +216,7 @@ inline T atomic_fetch_sub(
   union U {
     int i;
     T t;
-    KOKKOS_DEFAULTED_FUNCTION U() = default;
+    KOKKOS_INLINE_FUNCTION U() {}
   } oldval, assume, newval;
 
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
@@ -246,7 +246,7 @@ inline T atomic_fetch_sub(volatile T* const dest,
   union U {
     long i;
     T t;
-    KOKKOS_DEFAULTED_FUNCTION U() = default;
+    KOKKOS_INLINE_FUNCTION U() {}
   } oldval, assume, newval;
 
   oldval.t = *dest;

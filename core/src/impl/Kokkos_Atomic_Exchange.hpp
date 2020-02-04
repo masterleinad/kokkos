@@ -201,7 +201,7 @@ inline T atomic_exchange(volatile T* const dest,
   union U {
     T val_T;
     type val_type;
-    inline U() = default;
+    inline U() {}
   } old;
 
   old.val_T = *dest;
@@ -294,7 +294,7 @@ inline void atomic_assign(volatile T* const dest,
   union U {
     T val_T;
     type val_type;
-    inline U() = default;
+    inline U() {}
   } old;
 
   old.val_T = *dest;
