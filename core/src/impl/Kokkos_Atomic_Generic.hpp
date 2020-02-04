@@ -160,7 +160,7 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_oper(
   union U {
     unsigned long long int i;
     T t;
-    KOKKOS_INLINE_FUNCTION U() {}
+    KOKKOS_DEFAULTED_FUNCTION U() = default;
   } oldval, assume, newval;
 
   oldval.t = *dest;
@@ -184,7 +184,7 @@ KOKKOS_INLINE_FUNCTION T atomic_oper_fetch(
   union U {
     unsigned long long int i;
     T t;
-    KOKKOS_INLINE_FUNCTION U() {}
+    KOKKOS_DEFAULTED_FUNCTION U() = default;
   } oldval, assume, newval;
 
   oldval.t = *dest;
@@ -206,7 +206,7 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_oper(
   union U {
     int i;
     T t;
-    KOKKOS_INLINE_FUNCTION U() {}
+    KOKKOS_DEFAULTED_FUNCTION U() = default;
   } oldval, assume, newval;
 
   oldval.t = *dest;
@@ -227,7 +227,7 @@ KOKKOS_INLINE_FUNCTION T atomic_oper_fetch(
   union U {
     int i;
     T t;
-    KOKKOS_INLINE_FUNCTION U() {}
+    KOKKOS_DEFAULTED_FUNCTION U() = default;
   } oldval, assume, newval;
 
   oldval.t = *dest;

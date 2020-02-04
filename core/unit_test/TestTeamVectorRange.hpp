@@ -70,36 +70,17 @@ struct my_complex {
   }
 
   KOKKOS_INLINE_FUNCTION
-  my_complex& operator=(const my_complex& src) {
-    re    = src.re;
-    im    = src.im;
-    dummy = src.dummy;
-    return *this;
-  }
+  my_complex& operator=(const my_complex& src) = default;
 
   KOKKOS_INLINE_FUNCTION
-  my_complex& operator=(const volatile my_complex& src) {
-    re    = src.re;
-    im    = src.im;
-    dummy = src.dummy;
-    return *this;
-  }
+  my_complex& operator=(const volatile my_complex& src) = default;
 
   KOKKOS_INLINE_FUNCTION
-  volatile my_complex& operator=(const my_complex& src) volatile {
-    re    = src.re;
-    im    = src.im;
-    dummy = src.dummy;
-    return *this;
-  }
+  volatile my_complex& operator=(const my_complex& src) volatile = default;
 
   KOKKOS_INLINE_FUNCTION
-  volatile my_complex& operator=(const volatile my_complex& src) volatile {
-    re    = src.re;
-    im    = src.im;
-    dummy = src.dummy;
-    return *this;
-  }
+  volatile my_complex& operator=(const volatile my_complex& src) volatile =
+      default;
 
   KOKKOS_INLINE_FUNCTION
   my_complex(const volatile my_complex& src) {
