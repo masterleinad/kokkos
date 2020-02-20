@@ -185,14 +185,14 @@ void test_offsetview_construction(unsigned int size) {
 
     Kokkos::deep_copy(view3D, 1);
 
-    Kokkos::Array<int64_t, 3> begins = {{-10, -20, -30}};
-    Kokkos::Experimental::OffsetView<Scalar***, Device> offsetView3D(view3D,
-                                                                     begins);
-
     typedef Kokkos::MDRangePolicy<Device, Kokkos::Rank<3>,
                                   Kokkos::IndexType<int64_t> >
         range3_type;
     typedef typename range3_type::point_type point3_type;
+
+    point3_type begins = {{-10, -20, -30}};
+    Kokkos::Experimental::OffsetView<Scalar***, Device> offsetView3D(view3D,
+                                                                     begins);
 
     range3_type rangePolicy3DZero(point3_type{{0, 0, 0}},
                                   point3_type{{extent0, extent1, extent2}});
