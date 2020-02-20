@@ -97,29 +97,31 @@ struct _parse_impl {
 // backwards
 template <class T, ptrdiff_t... ExtentSpec>
 struct _parse_impl<
-    T*, Experimental::Extents<ExtentSpec...>,
+    T*, Kokkos::Experimental::Extents<ExtentSpec...>,
     typename std::enable_if<_all_remaining_extents_dynamic<T>::value>::type>
-    : _parse_impl<T, Experimental::Extents<Experimental::dynamic_extent,
-                                           ExtentSpec...>> {};
+    : _parse_impl<T, Kokkos::Experimental::Extents<Experimental::dynamic_extent,
+                                                   ExtentSpec...>> {};
 
 // int*(*[x])[y] should still work also (meaning int[][x][][y])
 template <class T, ptrdiff_t... ExtentSpec>
 struct _parse_impl<
-    T*, Experimental::Extents<ExtentSpec...>,
+    T*, Kokkos::Experimental::Extents<ExtentSpec...>,
     typename std::enable_if<!_all_remaining_extents_dynamic<T>::value>::type> {
   using _next = Kokkos::Experimental::AppendExtent<
-      typename _parse_impl<T, Experimental::Extents<ExtentSpec...>, void>::type,
+      typename _parse_impl<T, Kokkos::Experimental::Extents<ExtentSpec...>,
+                           void>::type,
       Experimental::dynamic_extent>;
   using type = typename _next::type;
 };
 
 template <class T, ptrdiff_t... ExtentSpec, unsigned N>
-struct _parse_impl<T[N], Experimental::Extents<ExtentSpec...>, void>
-    : _parse_impl<T, Experimental::Extents<ExtentSpec...,
+struct _parse_impl<T[N], Kokkos::Experimental::Extents<ExtentSpec...>, void>
+    : _parse_impl<
+          T, Kokkos::Experimental::Extents<ExtentSpec...,
                                            ptrdiff_t(N)>  // TODO @pedantic this
                                                           // could be a
                                                           // narrowing cast
-                  > {};
+          > {};
 
 }  // end namespace _parse_view_extents_impl
 
