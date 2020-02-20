@@ -73,17 +73,16 @@ __attribute__((aligned(16)))
 ;
 }  // namespace Impl
 
-KOKKOS_INLINE_FUNCTION char atomic_compare_exchange(
-    volatile char* const dest, const char& compare,
-    const char& val) {
+KOKKOS_INLINE_FUNCTION char atomic_compare_exchange(volatile char* const dest,
+                                                    const char& compare,
+                                                    const char& val) {
   char result = _InterlockedCompareExchange8(dest, val, compare);
   return result;
 }
 
-
 KOKKOS_INLINE_FUNCTION short atomic_compare_exchange(volatile short* const dest,
-                                                    const short& compare,
-                                                    const short& val) {
+                                                     const short& compare,
+                                                     const short& val) {
   short result = _InterlockedCompareExchange16(dest, val, compare);
   return result;
 }
