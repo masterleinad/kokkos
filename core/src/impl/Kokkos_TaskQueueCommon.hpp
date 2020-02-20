@@ -259,9 +259,9 @@ class TaskQueueCommonMixin {
       // we've lost exclusive access and should nt touch task again
 
       // If the predecessor is not done, then task is not ready
-      task_is_ready = not predecessor_not_ready;
+      task_is_ready = !predecessor_not_ready;
 
-      if (task_is_ready and predecessor.is_runnable()) {
+      if (task_is_ready && predecessor.is_runnable()) {
         // this is our last chance to update the scheduling info before
         // predecessor is potentially deleted
         _self().update_scheduling_info_from_completed_predecessor(
