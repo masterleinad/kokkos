@@ -99,8 +99,9 @@ template <class T, ptrdiff_t... ExtentSpec>
 struct _parse_impl<
     T*, Kokkos::Experimental::Extents<ExtentSpec...>,
     typename std::enable_if<_all_remaining_extents_dynamic<T>::value>::type>
-    : _parse_impl<T, Kokkos::Experimental::Extents<Experimental::dynamic_extent,
-                                                   ExtentSpec...>> {};
+    : _parse_impl<T, Kokkos::Experimental::Extents<
+                         Kokkos::Experimental::dynamic_extent, ExtentSpec...>> {
+};
 
 // int*(*[x])[y] should still work also (meaning int[][x][][y])
 template <class T, ptrdiff_t... ExtentSpec>
@@ -110,7 +111,7 @@ struct _parse_impl<
   using _next = Kokkos::Experimental::AppendExtent<
       typename _parse_impl<T, Kokkos::Experimental::Extents<ExtentSpec...>,
                            void>::type,
-      Experimental::dynamic_extent>;
+      Kokkos::Experimental::dynamic_extent>;
   using type = typename _next::type;
 };
 
@@ -137,7 +138,7 @@ struct ApplyExtent {
 };
 
 template <class ValueType>
-struct ApplyExtent<ValueType, Experimental::dynamic_extent> {
+struct ApplyExtent<ValueType, Kokkos::Experimental::dynamic_extent> {
   using type = ValueType*;
 };
 
@@ -152,15 +153,17 @@ struct ApplyExtent<ValueType*, Ext> {
 };
 
 template <class ValueType>
-struct ApplyExtent<ValueType*, Experimental::dynamic_extent> {
+struct ApplyExtent<ValueType*, Kokkos::Experimental::dynamic_extent> {
   using type =
-      typename ApplyExtent<ValueType, Experimental::dynamic_extent>::type*;
+      typename ApplyExtent<ValueType,
+                           Kokkos::Experimental::dynamic_extent>::type*;
 };
 
 template <class ValueType, unsigned N>
-struct ApplyExtent<ValueType[N], Experimental::dynamic_extent> {
+struct ApplyExtent<ValueType[N], Kokkos::Experimental::dynamic_extent> {
   using type =
-      typename ApplyExtent<ValueType, Experimental::dynamic_extent>::type[N];
+      typename ApplyExtent<ValueType,
+                           Kokkos::Experimental::dynamic_extent>::type[N];
 };
 
 }  // end namespace Impl
