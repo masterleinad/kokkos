@@ -190,7 +190,9 @@ void test_offsetview_construction(unsigned int size) {
         range3_type;
     typedef typename range3_type::point_type point3_type;
 
-    point3_type begins = {{-10, -20, -30}};
+    typename point3_type::value_type begins0 = -10, begins1 = -20,
+                                     begins2 = -30;
+    Kokkos::Array<int64_t, 3> begins         = {{begins0, begins1, begins2}};
     Kokkos::Experimental::OffsetView<Scalar***, Device> offsetView3D(view3D,
                                                                      begins);
 
@@ -207,9 +209,8 @@ void test_offsetview_construction(unsigned int size) {
         view3DSum);
 
     range3_type rangePolicy3D(
-        point3_type{{begins[0], begins[1], begins[2]}},
-        point3_type{
-            {begins[0] + extent0, begins[1] + extent1, begins[2] + extent2}});
+        point3_type{{begins0, begins1, begins2}},
+        point3_type{{begins0 + extent0, begins1 + extent1, begins2 + extent2}});
     int offsetView3DSum = 0;
 
     Kokkos::parallel_reduce(
