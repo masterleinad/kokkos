@@ -48,6 +48,8 @@
 // registration from Barthelemy Dagenais' (barthelemy@prologique.com)
 // easyUnit framework.
 
+#define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
+
 #ifdef __GNUC__
 #pragma GCC system_header
 #endif
