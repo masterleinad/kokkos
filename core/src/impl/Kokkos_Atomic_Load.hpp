@@ -168,6 +168,14 @@ inline T _atomic_load(T* ptr, MemoryOrder) {
   return *ptr;
 }
 
+#elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+
+template <class T, class MemoryOrder>
+inline T _atomic_load(T* ptr, MemoryOrder) {
+  Kokkos::memory_fence();
+  return *ptr;
+}
+
 #endif  // end of all atomic implementations
 
 template <class T>
