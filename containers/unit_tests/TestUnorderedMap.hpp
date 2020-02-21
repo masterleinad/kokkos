@@ -174,6 +174,8 @@ struct TestFind {
 
 }  // namespace Impl
 
+// MSVC reports a syntax error for this test.
+#ifndef _WIN32
 template <typename Device>
 void test_insert(uint32_t num_nodes, uint32_t num_inserts,
                  uint32_t num_duplicates, bool near) {
@@ -225,6 +227,7 @@ void test_insert(uint32_t num_nodes, uint32_t num_inserts,
     EXPECT_EQ(0u, map.size());
   }
 }
+#endif
 
 template <typename Device>
 void test_failed_insert(uint32_t num_nodes) {
