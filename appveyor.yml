@@ -7,4 +7,4 @@ build_script:
     cd build &&
     cmake c:\projects\source -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF &&
     cmake --build . --target install &&
-    ctest -C Debug
+    ctest -C Debug -V
