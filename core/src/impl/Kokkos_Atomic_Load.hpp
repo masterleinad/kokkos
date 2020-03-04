@@ -172,9 +172,8 @@ inline T _atomic_load(T* ptr, MemoryOrder) {
 
 template <class T, class MemoryOrder>
 inline T _atomic_load(T* ptr, MemoryOrder) {
-  Kokkos::memory_fence();
+  atomic_compare_exchange(ptr, 0, 0);
   return *ptr;
-  Kokkos::memory_fence();
 }
 
 #endif  // end of all atomic implementations
