@@ -168,9 +168,7 @@ inline void _atomic_store(T* ptr, T val, MemoryOrder) {
 
 template <class T, class MemoryOrder>
 inline void _atomic_store(T* ptr, T val, MemoryOrder) {
-  Kokkos::memory_fence();
-  *ptr = val;
-  Kokkos::memory_fence();
+  atomic_exchange(ptr, val);
 }
 
 #endif  // end of all atomic implementations
