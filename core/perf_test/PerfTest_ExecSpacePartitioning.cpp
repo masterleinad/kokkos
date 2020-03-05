@@ -127,6 +127,8 @@ struct FunctorTeamReduce {
   }
 };
 
+//WORKAROUND MSVC
+#ifndef _WIN32
 TEST(default_exec, overlap_range_policy) {
   int N = 2000;
   int M = 10000;
@@ -287,6 +289,7 @@ TEST(default_exec, overlap_range_policy) {
   SpaceInstance<TEST_EXECSPACE>::destroy(space1);
   SpaceInstance<TEST_EXECSPACE>::destroy(space2);
 }
+#endif
 
 TEST(default_exec, overlap_mdrange_policy) {
   int N = 200;

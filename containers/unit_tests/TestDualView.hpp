@@ -345,7 +345,6 @@ TEST(TEST_CATEGORY, dualview_deep_copy) {
   test_dualview_deep_copy<int, TEST_EXECSPACE>();
   test_dualview_deep_copy<double, TEST_EXECSPACE>();
 }
-#endif
 
 TEST(TEST_CATEGORY, dualview_realloc) {
   test_dualview_realloc<int, TEST_EXECSPACE>();
@@ -354,6 +353,7 @@ TEST(TEST_CATEGORY, dualview_realloc) {
 TEST(TEST_CATEGORY, dualview_resize) {
   test_dualview_resize<int, TEST_EXECSPACE>();
 }
+#endif
 
 }  // namespace Test
 
