@@ -335,9 +335,12 @@ void test_dualview_resize() {
   Impl::test_dualview_resize<Scalar, Device>();
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, dualview_combination) {
   test_dualview_combinations<int, TEST_EXECSPACE>(10);
 }
+#endif
 
 TEST(TEST_CATEGORY, dualview_deep_copy) {
   test_dualview_deep_copy<int, TEST_EXECSPACE>();

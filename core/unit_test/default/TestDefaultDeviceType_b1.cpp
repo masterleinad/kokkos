@@ -53,9 +53,12 @@
 
 namespace Test {
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(defaultdevicetype, reduce_instantiation_b1) {
   TestReduceCombinatoricalInstantiation<>::execute_b1();
 }
+#endif
 
 }  // namespace Test
 

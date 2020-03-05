@@ -284,6 +284,8 @@ void run_test_hexgrad(int exp_beg, int exp_end, int num_trials,
   }
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(default_exec, hexgrad) {
   int exp_beg    = 10;
   int exp_end    = 20;
@@ -296,5 +298,5 @@ TEST(default_exec, hexgrad) {
   EXPECT_NO_THROW(run_test_hexgrad<Kokkos::DefaultExecutionSpace>(
       exp_beg, exp_end, num_trials, Kokkos::DefaultExecutionSpace::name()));
 }
-
+#endif
 }  // namespace Test

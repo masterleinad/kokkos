@@ -62,12 +62,12 @@ namespace Test {
 TEST(serial, Random_XorShift64) {
   Impl::test_random<Kokkos::Random_XorShift64_Pool<Kokkos::Serial> >(10240000);
 }
-#endif
 
 TEST(serial, Random_XorShift1024) {
   Impl::test_random<Kokkos::Random_XorShift1024_Pool<Kokkos::Serial> >(
       10130144);
 }
+#endif
 
 TEST(serial, SortUnsigned) { Impl::test_sort<Kokkos::Serial, unsigned>(171); }
 

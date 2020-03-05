@@ -189,7 +189,6 @@ TEST(TEST_CATEGORY, IncrTest_08_deep_copy_2D) {
     test.mdRange2D();
   }
 }
-#endif
 
 // 3D MDRangePolicy
 TEST(TEST_CATEGORY, IncrTest_08_deep_copy_3D) {
@@ -206,5 +205,5 @@ TEST(TEST_CATEGORY, IncrTest_08_deep_copy_4D) {
     test.mdRange4D();
   }
 }
-
+#endif
 }  // namespace Test
