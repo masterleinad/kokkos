@@ -44,8 +44,9 @@
 
 #include <Kokkos_Core.hpp>
 
+// WORKAROUND MSVC
 #if !defined(KOKKOS_ENABLE_TASKDAG) || \
-    defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_THREADS)
+    defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_THREADS) || defined(_WIN32)
 
 int main() { return 0; }
 

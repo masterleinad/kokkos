@@ -617,6 +617,8 @@ TEST(TEST_CATEGORY, view_layoutstride_right_to_layoutright_assignment) {
   }
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY_DEATH, view_layoutstride_right_to_layoutleft_assignment) {
   typedef TEST_EXECSPACE exec_space;
 
@@ -767,6 +769,7 @@ TEST(TEST_CATEGORY_DEATH, view_layoutstride_right_to_layoutleft_assignment) {
                  "View assignment must have compatible layouts");
   }
 }
+#endif
 
 TEST(TEST_CATEGORY_DEATH, view_layoutstride_left_to_layoutright_assignment) {
   typedef TEST_EXECSPACE exec_space;

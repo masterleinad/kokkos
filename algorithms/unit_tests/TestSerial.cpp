@@ -57,11 +57,14 @@
 
 namespace Test {
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 #define SERIAL_RANDOM_XORSHIFT64(num_draws)                             \
   TEST(serial, Random_XorShift64) {                                     \
     Impl::test_random<Kokkos::Random_XorShift64_Pool<Kokkos::Serial> >( \
         num_draws);                                                     \
   }
+#endif
 
 #define SERIAL_RANDOM_XORSHIFT1024(num_draws)                             \
   TEST(serial, Random_XorShift1024) {                                     \

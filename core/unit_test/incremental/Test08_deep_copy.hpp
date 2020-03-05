@@ -181,12 +181,15 @@ struct TestMDRangePolicy {
 namespace Test {
 
 // 2D MDRangePolicy
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, IncrTest_08_deep_copy_2D) {
   {
     Test05::TestMDRangePolicy<TEST_EXECSPACE> test;
     test.mdRange2D();
   }
 }
+#endif
 
 // 3D MDRangePolicy
 TEST(TEST_CATEGORY, IncrTest_08_deep_copy_3D) {

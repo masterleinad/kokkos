@@ -89,9 +89,12 @@ TEST(TEST_CATEGORY, IncrTest_02_AtomicAdd) {
   test.testAdd();
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, IncrTest_02_AtomicSub) {
   TestIncrAtomic test;
   test.testSub();
 }
+#endif
 
 }  // namespace Test

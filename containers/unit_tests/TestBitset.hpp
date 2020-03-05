@@ -253,7 +253,10 @@ void test_bitset() {
   }
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, bitset) { test_bitset<TEST_EXECSPACE>(); }
+#endif
 
 }  // namespace Test
 

@@ -238,6 +238,8 @@ void run_test_gramschmidt(int exp_beg, int exp_end, int num_trials,
   }
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(default_exec, gramschmidt) {
   int exp_beg    = 10;
   int exp_end    = 20;
@@ -250,5 +252,6 @@ TEST(default_exec, gramschmidt) {
   EXPECT_NO_THROW(run_test_gramschmidt<Kokkos::DefaultExecutionSpace>(
       exp_beg, exp_end, num_trials, Kokkos::DefaultExecutionSpace::name()));
 }
+#endif
 
 }  // namespace Test
