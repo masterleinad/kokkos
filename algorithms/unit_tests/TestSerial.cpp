@@ -59,31 +59,17 @@ namespace Test {
 
 // WORKAROUND MSVC
 #ifndef _WIN32
-#define SERIAL_RANDOM_XORSHIFT64(num_draws)                             \
-  TEST(serial, Random_XorShift64) {                                     \
-    Impl::test_random<Kokkos::Random_XorShift64_Pool<Kokkos::Serial> >( \
-        num_draws);                                                     \
-  }
+TEST(serial, Random_XorShift64) {
+  Impl::test_random<Kokkos::Random_XorShift64_Pool<Kokkos::Serial> >(10240000);
+}
 #endif
 
-#define SERIAL_RANDOM_XORSHIFT1024(num_draws)                             \
-  TEST(serial, Random_XorShift1024) {                                     \
-    Impl::test_random<Kokkos::Random_XorShift1024_Pool<Kokkos::Serial> >( \
-        num_draws);                                                       \
-  }
+TEST(serial, Random_XorShift1024) {
+  Impl::test_random<Kokkos::Random_XorShift1024_Pool<Kokkos::Serial> >(
+      10130144);
+}
 
-#define SERIAL_SORT_UNSIGNED(size)                   \
-  TEST(serial, SortUnsigned) {                       \
-    Impl::test_sort<Kokkos::Serial, unsigned>(size); \
-  }
-
-SERIAL_RANDOM_XORSHIFT64(10240000)
-SERIAL_RANDOM_XORSHIFT1024(10130144)
-SERIAL_SORT_UNSIGNED(171)
-
-#undef SERIAL_RANDOM_XORSHIFT64
-#undef SERIAL_RANDOM_XORSHIFT1024
-#undef SERIAL_SORT_UNSIGNED
+TEST(serial, SortUnsigned) { Impl::test_sort<Kokkos::Serial, unsigned>(171); }
 
 }  // namespace Test
 #else
