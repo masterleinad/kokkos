@@ -222,6 +222,8 @@ struct TestDynamicView {
   }
 };
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, dynamic_view) {
   typedef TestDynamicView<double, TEST_EXECSPACE> TestDynView;
 
@@ -229,6 +231,7 @@ TEST(TEST_CATEGORY, dynamic_view) {
     TestDynView::run(100000 + 100 * i);
   }
 }
+#endif
 
 }  // namespace Test
 

@@ -291,6 +291,8 @@ TEST(default_exec, overlap_range_policy) {
 }
 #endif
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(default_exec, overlap_mdrange_policy) {
   int N = 200;
   int M = 10000;
@@ -469,6 +471,7 @@ TEST(default_exec, overlap_mdrange_policy) {
   SpaceInstance<TEST_EXECSPACE>::destroy(space2);
   SpaceInstance<TEST_EXECSPACE>::destroy(space1);
 }
+#endif
 
 TEST(default_exec, overlap_team_policy) {
   int N = 20;
