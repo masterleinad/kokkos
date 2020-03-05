@@ -85,11 +85,14 @@ struct HierarchicalBasics {
   }
 };
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, IncrTest_10_Hierarchical_Basics) {
   HierarchicalBasics<TEST_EXECSPACE> test;
   test.run(1, 4);
   test.run(8, 16);
   test.run(11, 13);
 }
+#endif
 
 }  // namespace Test

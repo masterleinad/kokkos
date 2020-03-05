@@ -340,12 +340,12 @@ void test_dualview_resize() {
 TEST(TEST_CATEGORY, dualview_combination) {
   test_dualview_combinations<int, TEST_EXECSPACE>(10);
 }
-#endif
 
 TEST(TEST_CATEGORY, dualview_deep_copy) {
   test_dualview_deep_copy<int, TEST_EXECSPACE>();
   test_dualview_deep_copy<double, TEST_EXECSPACE>();
 }
+#endif
 
 TEST(TEST_CATEGORY, dualview_realloc) {
   test_dualview_realloc<int, TEST_EXECSPACE>();

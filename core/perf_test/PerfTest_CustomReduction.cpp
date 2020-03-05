@@ -124,6 +124,8 @@ void custom_reduction_test(int N, int R, int num_trials) {
          max);
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(default_exec, custom_reduction) {
   int N          = 100000;
   int R          = 1000;
@@ -134,5 +136,6 @@ TEST(default_exec, custom_reduction) {
   if (command_line_num_args() > 3) num_trials = atoi(command_line_arg(3));
   custom_reduction_test<double>(N, R, num_trials);
 }
+#endif
 }  // namespace Test
 #endif
