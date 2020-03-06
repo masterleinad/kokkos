@@ -140,7 +140,10 @@ void TestViewAggregate() {
   }
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, view_aggregate) { TestViewAggregate<TEST_EXECSPACE>(); }
+#endif
 
 }  // namespace Test
 
