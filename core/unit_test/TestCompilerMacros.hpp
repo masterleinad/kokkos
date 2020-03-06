@@ -108,7 +108,10 @@ bool Test() {
 }  // namespace TestCompilerMacros
 
 namespace Test {
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, compiler_macros) {
   ASSERT_TRUE((TestCompilerMacros::Test<TEST_EXECSPACE>()));
 }
+#endif
 }  // namespace Test
