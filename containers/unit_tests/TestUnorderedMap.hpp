@@ -303,11 +303,11 @@ TEST(TEST_CATEGORY, UnorderedMap_insert) {
     test_insert<TEST_EXECSPACE>(100000, 90000, 100, false);
   }
 }
-#endif
 
 TEST(TEST_CATEGORY, UnorderedMap_failed_insert) {
   for (int i = 0; i < 1000; ++i) test_failed_insert<TEST_EXECSPACE>(10000);
 }
+#endif
 
 TEST(TEST_CATEGORY, UnorderedMap_deep_copy) {
   for (int i = 0; i < 2; ++i) test_deep_copy<TEST_EXECSPACE>(10000);

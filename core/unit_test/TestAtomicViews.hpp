@@ -1476,9 +1476,9 @@ TEST(TEST_CATEGORY, atomic_views_nonintegral) {
             length, 4)));
   }
 }
-#endif
 
 TEST(TEST_CATEGORY, atomic_view_api) {
   TestAtomicViews::TestAtomicViewAPI<int, TEST_EXECSPACE>();
 }
+#endif
 }  // namespace Test
