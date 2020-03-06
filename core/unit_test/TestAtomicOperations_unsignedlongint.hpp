@@ -45,6 +45,8 @@
 #include <TestAtomicOperations.hpp>
 
 namespace Test {
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, atomic_operations_unsignedlong) {
   const int start = 1;  // Avoid zero for division.
   const int end   = 11;
@@ -73,4 +75,5 @@ TEST(TEST_CATEGORY, atomic_operations_unsignedlong) {
                  unsigned long int, TEST_EXECSPACE>(start, end - i, 12)));
   }
 }
+#endif
 }  // namespace Test

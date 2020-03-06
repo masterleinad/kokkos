@@ -89,11 +89,14 @@ struct Hierarchical_ForLoop_B {
   }
 };
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, IncrTest_11b_Hierarchical_ForLoop) {
   Hierarchical_ForLoop_B<TEST_EXECSPACE> test;
   test.run(1, 6, 400);
   test.run(6, 7, 19);
   test.run(12, 277, 321);
 }
+#endif
 
 }  // namespace Test
