@@ -492,6 +492,8 @@ bool Loop(int loop, int test) {
 
 namespace Test {
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, atomics) {
   const int loop_count = 1e4;
 
@@ -565,5 +567,6 @@ TEST(TEST_CATEGORY, atomics) {
 #endif
 #endif
 }
+#endif
 
 }  // namespace Test

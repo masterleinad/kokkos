@@ -307,11 +307,11 @@ TEST(TEST_CATEGORY, UnorderedMap_insert) {
 TEST(TEST_CATEGORY, UnorderedMap_failed_insert) {
   for (int i = 0; i < 1000; ++i) test_failed_insert<TEST_EXECSPACE>(10000);
 }
-#endif
 
 TEST(TEST_CATEGORY, UnorderedMap_deep_copy) {
   for (int i = 0; i < 2; ++i) test_deep_copy<TEST_EXECSPACE>(10000);
 }
+#endif
 
 TEST(TEST_CATEGORY, UnorderedMap_valid_empty) {
   using Key   = int;
