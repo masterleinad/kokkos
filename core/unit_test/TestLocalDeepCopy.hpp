@@ -933,6 +933,8 @@ void impl_test_local_deepcopy_rangepolicy_rank_7(const int N) {
 }
 //-------------------------------------------------------------------------------------------------------------
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 #if defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA)
 TEST(TEST_CATEGORY, local_deepcopy_teampolicy_layoutleft) {
   typedef TEST_EXECSPACE ExecSpace;
@@ -960,6 +962,7 @@ TEST(TEST_CATEGORY, local_deepcopy_teampolicy_layoutleft) {
     impl_test_local_deepcopy_teampolicy_rank_7<ExecSpace, ViewType>(8);
   }
 }
+#endif
 //-------------------------------------------------------------------------------------------------------------
 TEST(TEST_CATEGORY, local_deepcopy_rangepolicy_layoutleft) {
   typedef TEST_EXECSPACE ExecSpace;
