@@ -1086,6 +1086,8 @@ struct DeepCopyScratchFunctor {
 };
 }  // namespace Impl
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, deep_copy_scratch) {
   using TestDeviceTeamPolicy = Kokkos::TeamPolicy<TEST_EXECSPACE>;
 
@@ -1114,4 +1116,5 @@ TEST(TEST_CATEGORY, deep_copy_scratch) {
     ASSERT_EQ(host_copy_2(i), 6.0);
   }
 }
+#endif
 }  // namespace Test
