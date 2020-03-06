@@ -126,10 +126,13 @@ struct TestComplexConstruction {
   }
 };
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, complex_construction) {
   TestComplexConstruction<TEST_EXECSPACE> test;
   test.testit();
 }
+#endif
 
 // Test Math FUnction
 
