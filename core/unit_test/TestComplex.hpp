@@ -360,10 +360,13 @@ void testComplexIO() {
   ASSERT_EQ(z, (Kokkos::complex<double>{3, 4}));
 }
 
-TEST(TEST_CATEGORY, complex_special_funtions) {
+// WORKAROUND MSVC
+#ifndef _WIN32
+TEST(TEST_CATEGORY, complex_special_functions) {
   TestComplexSpecialFunctions<TEST_EXECSPACE> test;
   test.testit();
 }
+#endif
 
 TEST(TEST_CATEGORY, complex_io) { testComplexIO(); }
 
