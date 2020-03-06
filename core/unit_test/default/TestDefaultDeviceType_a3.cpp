@@ -52,10 +52,12 @@
 #include <TestReduceCombinatorical.hpp>
 
 namespace Test {
-
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(defaultdevicetype, reduce_instantiation_a3) {
   TestReduceCombinatoricalInstantiation<>::execute_a3();
 }
+#endif
 
 }  // namespace Test
 

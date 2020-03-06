@@ -45,7 +45,10 @@
 #include <TestDynViewAPI.hpp>
 
 namespace Test {
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, dyn_rank_view_api_operator_rank12345) {
   TestDynViewAPI<double, TEST_EXECSPACE>::run_operator_test_rank12345();
 }
+#endif
 }  // namespace Test
