@@ -103,11 +103,14 @@ struct TeamScratch {
   }
 };
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, IncrTest_12b_TeamScratch) {
   TeamScratch<TEST_EXECSPACE> test;
   test.run(1, 4, 4);
   test.run(4, 7, 10);
   test.run(14, 277, 321);
 }
+#endif
 
 }  // namespace Test
