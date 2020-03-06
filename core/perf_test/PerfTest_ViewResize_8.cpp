@@ -45,12 +45,14 @@
 #include <PerfTest_ViewResize.hpp>
 
 namespace Test {
-
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(default_exec, ViewResize_Rank8) {
   printf("Resize View Performance for LayoutLeft:\n");
   run_resizeview_tests8<Kokkos::LayoutLeft>(10, 1);
   printf("Resize View Performance for LayoutRight:\n");
   run_resizeview_tests8<Kokkos::LayoutRight>(10, 1);
 }
+#endif
 
 }  // namespace Test
