@@ -45,7 +45,8 @@
 #include <TestMDRange.hpp>
 
 namespace Test {
-
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, mdrange_2d) {
 #if !defined(KOKKOS_ENABLE_ROCM)  // MDRange Reduce explicitly handled in its
                                   // own cpp file
@@ -53,7 +54,7 @@ TEST(TEST_CATEGORY, mdrange_2d) {
 #endif
   TestMDRange_2D<TEST_EXECSPACE>::test_for2(100, 100);
 }
-
+#endif
 TEST(TEST_CATEGORY, mdrange_array_reduce) {
   TestMDRange_ReduceArray_2D<TEST_EXECSPACE>::test_arrayreduce2(4, 5);
   TestMDRange_ReduceArray_3D<TEST_EXECSPACE>::test_arrayreduce3(4, 5, 10);

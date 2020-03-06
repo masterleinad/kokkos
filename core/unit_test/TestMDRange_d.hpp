@@ -45,7 +45,8 @@
 #include <TestMDRange.hpp>
 
 namespace Test {
-
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, mdrange_3d) {
   TestMDRange_3D<TEST_EXECSPACE>::test_for3(1, 10, 100);
   TestMDRange_3D<TEST_EXECSPACE>::test_for3(100, 10, 100);
@@ -55,6 +56,7 @@ TEST(TEST_CATEGORY, mdrange_3d) {
   TestMDRange_3D<TEST_EXECSPACE>::test_reduce3(100, 10, 100);
 #endif
 }
+#endif
 
 TEST(TEST_CATEGORY, mdrange_neg_idx) {
   TestMDRange_2D_NegIdx<TEST_EXECSPACE>::test_2D_negidx(128, 32);

@@ -46,6 +46,8 @@
 
 namespace Test {
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, mdrange_4d) {
 #if !defined(KOKKOS_ENABLE_ROCM)  // MDRange Reduce explicitly handled in its
                                   // own cpp file
@@ -53,5 +55,6 @@ TEST(TEST_CATEGORY, mdrange_4d) {
 #endif
   TestMDRange_4D<TEST_EXECSPACE>::test_for4(100, 10, 10, 10);
 }
+#endif
 
 }  // namespace Test
