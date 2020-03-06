@@ -1457,7 +1457,6 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
             length, 8)));
   }
 }
-#endif
 
 TEST(TEST_CATEGORY, atomic_views_nonintegral) {
   const long length = 1000000;
@@ -1477,6 +1476,7 @@ TEST(TEST_CATEGORY, atomic_views_nonintegral) {
             length, 4)));
   }
 }
+#endif
 
 TEST(TEST_CATEGORY, atomic_view_api) {
   TestAtomicViews::TestAtomicViewAPI<int, TEST_EXECSPACE>();
