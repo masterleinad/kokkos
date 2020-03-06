@@ -1425,6 +1425,8 @@ bool AtomicViewsTestNonIntegralType(const int length, int test) {
 
 namespace Test {
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, atomic_views_integral) {
   const long length = 1000000;
   {
@@ -1455,6 +1457,7 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
             length, 8)));
   }
 }
+#endif
 
 TEST(TEST_CATEGORY, atomic_views_nonintegral) {
   const long length = 1000000;

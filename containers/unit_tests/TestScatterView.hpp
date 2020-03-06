@@ -479,6 +479,8 @@ void test_scatter_view(int n) {
   TestDuplicatedScatterView<ExecSpace, ScatterType> duptest(n);
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, scatterview) {
 #ifndef KOKKOS_ENABLE_ROCM
   test_scatter_view<TEST_EXECSPACE, Kokkos::Experimental::ScatterSum>(10);
@@ -504,6 +506,7 @@ TEST(TEST_CATEGORY, scatterview) {
   test_scatter_view<TEST_EXECSPACE, Kokkos::Experimental::ScatterMax>(big_n);
 #endif
 }
+#endif
 
 }  // namespace Test
 

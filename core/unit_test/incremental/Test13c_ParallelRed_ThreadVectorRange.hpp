@@ -102,11 +102,14 @@ struct Hierarchical_Red_C {
   }
 };
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, IncrTest_13c_Hierarchical_Red) {
   Hierarchical_Red_C<TEST_EXECSPACE> test;
   test.run(1, 4, 8);
   test.run(2, 39, 12);
   test.run(39, 3, 235);
 }
+#endif
 
 }  // namespace Test
