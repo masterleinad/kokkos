@@ -231,10 +231,13 @@ void test_vector_combinations(unsigned int size) {
   ASSERT_EQ(test.reference, test.result);
 }
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, vector_combination) {
   test_vector_combinations<int, TEST_EXECSPACE>(10);
   test_vector_combinations<int, TEST_EXECSPACE>(3057);
 }
+#endif
 
 TEST(TEST_CATEGORY, vector_insert) {
   Impl::test_vector_insert<int, TEST_EXECSPACE>(3057);

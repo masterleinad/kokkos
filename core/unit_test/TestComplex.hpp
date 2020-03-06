@@ -283,10 +283,13 @@ struct TestComplexBasicMath {
   }
 };
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, complex_basic_math) {
   TestComplexBasicMath<TEST_EXECSPACE> test;
   test.testit();
 }
+#endif
 
 template <class ExecSpace>
 struct TestComplexSpecialFunctions {
