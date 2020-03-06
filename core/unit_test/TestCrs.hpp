@@ -201,6 +201,8 @@ void test_constructor(std::int32_t nrows) {
 
 }  // anonymous namespace
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, crs_count_fill) {
   test_count_fill<TEST_EXECSPACE>(0);
   test_count_fill<TEST_EXECSPACE>(1);
@@ -211,6 +213,7 @@ TEST(TEST_CATEGORY, crs_count_fill) {
   test_count_fill<TEST_EXECSPACE>(1000);
   test_count_fill<TEST_EXECSPACE>(10000);
 }
+#endif
 
 TEST(TEST_CATEGORY, crs_copy_constructor) {
   test_constructor<TEST_EXECSPACE>(0);
