@@ -237,9 +237,12 @@ TEST(TEST_CATEGORY, ErrorReporterViaLambda) {
 }
 #endif
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, ErrorReporter) {
   TestErrorReporter<ErrorReporterDriver<TEST_EXECSPACE>>();
 }
+#endif
 
 }  // namespace Test
 #endif  // #ifndef KOKKOS_TEST_ERROR_REPORTING_HPP

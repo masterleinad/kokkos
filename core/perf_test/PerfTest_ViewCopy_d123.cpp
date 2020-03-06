@@ -44,8 +44,11 @@
 
 #include <PerfTest_ViewCopy.hpp>
 namespace Test {
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(default_exec, ViewDeepCopy_RightLeft_Rank123) {
   printf("DeepCopy Performance for LayoutRight to LayoutLeft:\n");
   run_deepcopyview_tests123<Kokkos::LayoutRight, Kokkos::LayoutLeft>(10, 1);
 }
+#endif
 }  // namespace Test
