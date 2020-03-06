@@ -691,7 +691,6 @@ TEST(TEST_CATEGORY, offsetview_unmanaged_construction) {
 TEST(TEST_CATEGORY, offsetview_subview) {
   test_offsetview_subview<int, TEST_EXECSPACE>(10);
 }
-#endif
 
 #if defined(KOKKOS_ENABLE_CUDA_LAMBDA) || !defined(KOKKOS_ENABLE_CUDA)
 TEST(TEST_CATEGORY, offsetview_offsets_rank1) {
@@ -705,6 +704,7 @@ TEST(TEST_CATEGORY, offsetview_offsets_rank2) {
 TEST(TEST_CATEGORY, offsetview_offsets_rank3) {
   test_offsetview_offsets_rank3<TEST_EXECSPACE>();
 }
+#endif
 #endif
 
 }  // namespace Test
