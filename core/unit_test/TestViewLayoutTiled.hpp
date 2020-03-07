@@ -1752,6 +1752,8 @@ struct TestViewLayoutTiled {
 
 }  // namespace
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, view_layouttiled) {
   // These two examples are iterating by tile, then within a tile - not by
   // extents If N# is not a power of two, but want to iterate by tile then
@@ -1770,5 +1772,6 @@ TEST(TEST_CATEGORY, view_layouttiled_subtile) {
   TestViewLayoutTiled<TEST_EXECSPACE>::test_view_layout_tiled_subtile_4d(
       4, 12, 16, 12);
 }
+#endif
 #endif
 }  // namespace Test
