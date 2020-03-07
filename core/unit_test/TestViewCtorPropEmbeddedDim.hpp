@@ -153,8 +153,11 @@ struct TestViewCtorProp_EmbeddedDim {
 
 }  // namespace
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, viewctorprop_embedded_dim) {
   TestViewCtorProp_EmbeddedDim<TEST_EXECSPACE>::test_vcpt(2, 3);
 }
+#endif
 
 }  // namespace Test
