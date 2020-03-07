@@ -355,6 +355,8 @@ struct TestRange {
 
 }  // namespace
 
+// WORKAROUND MSVC
+#ifndef _WIN32
 TEST(TEST_CATEGORY, range_for) {
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> > f(0);
@@ -383,6 +385,7 @@ TEST(TEST_CATEGORY, range_for) {
     f.test_for();
   }
 }
+#endif
 
 TEST(TEST_CATEGORY, range_reduce) {
   {
