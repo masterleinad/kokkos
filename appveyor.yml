@@ -2,8 +2,8 @@ image:
   - Visual Studio 2019 Preview
 clone_folder: c:\projects\source
 build_script:
--> call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 - cmd: >-
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat" &&
     mkdir build &&
     cd build &&
     cmake c:\projects\source -T llvm -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF &&
