@@ -2,6 +2,7 @@ image:
   - Visual Studio 2019 Preview
 clone_folder: c:\projects\source
 build_script:
+-> call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 - cmd: >-
     mkdir build &&
     cd build &&
