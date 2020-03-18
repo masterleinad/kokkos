@@ -238,7 +238,11 @@ struct IncFunctor {
   T i0;
 
   KOKKOS_INLINE_FUNCTION
-  void operator()(int) const { Kokkos::atomic_increment(&data()); }
+  void operator()(int) const { 
+printf("Calling increment\n");
+Kokkos::atomic_increment(&data()); 
+printf("After calling increment\n");
+}
 
   IncFunctor(T _i0) : i0(_i0) {}
 };
@@ -256,7 +260,9 @@ T IncAtomic(T i0) {
   struct IncFunctor<T, execution_space> f(i0);
 
   f.data = data;
+printf("Before parallel for\n");
   Kokkos::parallel_for(1, f);
+printf("After parallel for\n");
   execution_space().fence();
 
   Kokkos::deep_copy(h_data, data);
@@ -280,8 +286,11 @@ T IncAtomicCheck(T i0) {
 
 template <class T, class DeviceType>
 bool IncAtomicTest(T i0) {
+  printf("Before check\n");
   T res       = IncAtomic<T, DeviceType>(i0);
+  printf("After InCAtomic\n");
   T resSerial = IncAtomicCheck<T>(i0);
+  printf("After IncAtomicCheck\n");
 
   bool passed = true;
 
@@ -952,7 +961,7 @@ bool AtomicOperationsTestIntegralType(int i0, int i1, int test) {
     case 8: return XorAtomicTest<T, DeviceType>((T)i0, (T)i1);
     case 9: return LShiftAtomicTest<T, DeviceType>((T)i0, (T)i1);
     case 10: return RShiftAtomicTest<T, DeviceType>((T)i0, (T)i1);
-//    case 11: return IncAtomicTest<T, DeviceType>((T)i0);
+    case 11: return IncAtomicTest<T, DeviceType>((T)i0);
     case 12: return DecAtomicTest<T, DeviceType>((T)i0);
   }
 

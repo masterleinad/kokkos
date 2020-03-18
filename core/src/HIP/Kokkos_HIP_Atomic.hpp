@@ -141,6 +141,7 @@ inline __device__ float atomic_exchange(float *dest, const float &val) {
 template <class T>
 inline __device__ T atomic_exchange(T * /*dest*/, const T &val) {
   // FIXME
+  printf("Not implemented atomic_exchange\n");
   return val;
 }
 
@@ -159,11 +160,11 @@ inline __device__ unsigned long long int atomic_compare_exchange(
     const unsigned long long int &val) {
   return atomicCAS(dest, compare, val);
 }
-
 template <typename T>
 inline __device__ T atomic_compare_exchange(T * /*dest*/, T /*compare*/,
                                             const T &val) {
   // FIXME
+  printf("Not implemented atomic_compare_exchange\n");
   return val;
 }
 
@@ -171,6 +172,7 @@ template <typename T>
 inline __device__ T atomic_compare_exchange(volatile T * /*dest*/,
                                             T /*compare*/, const T &val) {
   // FIXME
+  printf("Not implemented volatile atomic_compare_exchange\n");
   return val;
 }
 
@@ -263,11 +265,58 @@ inline __device__ unsigned long long atomic_fetch_add(
   return atomicAdd(const_cast<unsigned long long *>(dest), val);
 }
 
-template <typename T>
-inline __device__ T atomic_fetch_add(volatile T * /*dest*/, const T &val) {
+//template <typename T>
+//inline __device__ T atomic_fetch_add(volatile T * /*dest*/, const T &val) {
   // FIXME
-  return val;
+//  Kokkos::abort("Not implemented\n");
+//  return val;
+//}
+
+template <typename T>
+inline __device__ T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
+  union U {
+    int i;
+    T t;
+    KOKKOS_INLINE_FUNCTION U() {}
+  } assume, oldval, newval;
+
+  oldval.t = *dest;
+
+  do {
+    assume.i = oldval.i;
+    newval.t = assume.t + val;
+    oldval.i = atomicCAS((int*)dest, assume.i, newval.i);
+  } while (assume.i != oldval.i);
+
+  return oldval.t;
 }
+
+template <typename T>
+inline __device__ T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), const T>::type val) {
+printf("Using long long\n");
+  union U {
+    unsigned long long i;
+    T t;
+    KOKKOS_INLINE_FUNCTION U() {}
+  } assume, oldval, newval;
+
+  oldval.t = *dest;
+  printf("before Using long long\n");
+
+  do {
+    assume.i = oldval.i;
+    newval.t = assume.t + val;
+    oldval.i = atomic_compare_exchange((unsigned long long*)dest, assume.i, newval.i);
+  } while (assume.i != oldval.i);
+  
+printf("after Using long long\n");
+  return oldval.t;
+}
+
 
 // FIXME Not implemented in HIP
 

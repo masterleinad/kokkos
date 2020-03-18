@@ -69,8 +69,8 @@ TEST(TEST_CATEGORY, atomic_operations_long) {
                  long int, TEST_EXECSPACE>(start, end - i, 9)));
     ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
                  long int, TEST_EXECSPACE>(start, end - i, 11)));
-    ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
-                 long int, TEST_EXECSPACE>(start, end - i, 12)));
+    /*ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
+                 long int, TEST_EXECSPACE>(start, end - i, 12)));*/
   }
 }
 }  // namespace Test
