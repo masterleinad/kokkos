@@ -67,7 +67,6 @@ struct TestScan {
     }
 
     update += n - imbalance;
-    printf("Thread %d: update %d, n %d, imbalance %d\n", update, n, imbalance);
 
     if (final_pass) {
       const value_type answer =
@@ -135,8 +134,8 @@ struct TestScan {
 TEST(TEST_CATEGORY, scan) {
   TestScan<TEST_EXECSPACE>::test_range(1, 1000);
   TestScan<TEST_EXECSPACE>(0);
-//  TestScan<TEST_EXECSPACE>(100000);
-//  TestScan<TEST_EXECSPACE>(10000000);
+  TestScan<TEST_EXECSPACE>(100000);
+  TestScan<TEST_EXECSPACE>(10000000);
   TEST_EXECSPACE().fence();
 }
 
