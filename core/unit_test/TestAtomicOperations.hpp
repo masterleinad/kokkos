@@ -952,7 +952,7 @@ bool AtomicOperationsTestIntegralType(int i0, int i1, int test) {
     case 8: return XorAtomicTest<T, DeviceType>((T)i0, (T)i1);
     case 9: return LShiftAtomicTest<T, DeviceType>((T)i0, (T)i1);
     case 10: return RShiftAtomicTest<T, DeviceType>((T)i0, (T)i1);
-    case 11: return IncAtomicTest<T, DeviceType>((T)i0);
+//    case 11: return IncAtomicTest<T, DeviceType>((T)i0);
     case 12: return DecAtomicTest<T, DeviceType>((T)i0);
   }
 
