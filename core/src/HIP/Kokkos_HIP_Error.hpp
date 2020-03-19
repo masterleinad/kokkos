@@ -46,6 +46,9 @@
 #define KOKKOS_HIP_ERROR_HPP
 
 #include <hip/hip_runtime.h>
+
+#include <iostream>
+
 namespace Kokkos {
 namespace Impl {
 

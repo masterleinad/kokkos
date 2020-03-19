@@ -51,6 +51,10 @@
 #include <Cuda/Kokkos_Cuda_Version_9_8_Compatibility.hpp>
 #endif
 
+#if defined(KOKKOS_ENABLE_HIP)
+#include <HIP/Kokkos_HIP_Locks.hpp>
+#endif
+
 // Combination operands to be used in an Compare and Exchange based atomic
 // operation
 namespace Kokkos {
@@ -158,6 +162,7 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_oper(
     typename std::enable_if<sizeof(T) != sizeof(int) &&
                                 sizeof(T) == sizeof(unsigned long long int),
                             const T>::type val) {
+printf("oper long long\n");
   union U {
     unsigned long long int i;
     T t;
@@ -204,6 +209,7 @@ template <class Oper, typename T>
 KOKKOS_INLINE_FUNCTION T atomic_fetch_oper(
     const Oper& op, volatile T* const dest,
     typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
+printf("oper int\n");
   union U {
     int i;
     T t;
@@ -247,6 +253,7 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_oper(
     const Oper& op, volatile T* const dest,
     typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8), const T>::type
         val) {
+printf("oper large\n");
 #ifdef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_HOST
   while (!Impl::lock_address_host_space((void*)dest))
     ;
@@ -281,10 +288,25 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_oper(
 #endif
   }
   return return_val;
-#elif defined(__HIP_DEVICE_COMPILE__)  // FIXME_HIP
-  (void)op;
-  (void)dest;
-  return val;
+#elif defined(__HIP_DEVICE_COMPILE__)
+  T return_val = *dest;
+  int done                 = 0;
+  unsigned int active = __ballot(1);
+  unsigned int done_active = 0;
+  while (active != done_active) {
+    if (!done) {
+      // FIXME_HIP
+      //if (Impl::lock_address_hip_space((void*)dest)) 
+      {
+        return_val = *dest;
+        *dest      = op.apply(return_val, val);
+        //Impl::unlock_address_hip_space((void*)dest);
+        done = 1;
+      }
+    }
+    done_active = __ballot(done);
+  }
+  return return_val;
 #endif
 }
 
