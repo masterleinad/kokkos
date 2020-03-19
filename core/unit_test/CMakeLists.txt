@@ -267,10 +267,10 @@ if(Kokkos_ENABLE_HIP)
       #hip/TestHIP_AtomicOperations_longlongint.cpp
       #hip/TestHIP_AtomicOperations_double.cpp
       #hip/TestHIP_AtomicOperations_float.cpp
-      hip/TestHIP_AtomicOperations_complexdouble.cpp
-      hip/TestHIP_AtomicOperations_complexfloat.cpp
-#      hip/TestHIP_AtomicViews.cpp
-#      hip/TestHIP_Atomics.cpp
+      #hip/TestHIP_AtomicOperations_complexdouble.cpp
+      #hip/TestHIP_AtomicOperations_complexfloat.cpp
+      #hip/TestHIP_AtomicViews.cpp
+      hip/TestHIP_Atomics.cpp
 #      hip/TestHIP_Init.cpp
 #      hip/TestHIP_RangePolicy.cpp
 #      hip/TestHIP_RangePolicyRequire.cpp

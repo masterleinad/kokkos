@@ -399,13 +399,14 @@ struct PlusEqualAtomicViewFunctor {
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int64_t i) const {
-    if (i < length) {
+printf("PlusEqualAtomicViewFunctor\n");
+/*    if (i < length) {
       if (i % 2 == 0) {
         even_odd_result(0) += input(i);
       } else {
         even_odd_result(1) += input(i);
       }
-    }
+    }*/
   }
 };
 
@@ -422,11 +423,11 @@ T PlusEqualAtomicView(const int64_t input_length) {
   InitFunctor_Seq<T, execution_space> init_f(input, length);
   Kokkos::parallel_for(Kokkos::RangePolicy<execution_space>(0, length), init_f);
 
-  PlusEqualAtomicViewFunctor<T, execution_space> functor(input, result_view,
+/*  PlusEqualAtomicViewFunctor<T, execution_space> functor(input, result_view,
                                                          length);
   Kokkos::parallel_for(Kokkos::RangePolicy<execution_space>(0, length),
                        functor);
-  Kokkos::fence();
+  Kokkos::fence();*/
 
   host_view_type h_result_view = Kokkos::create_mirror_view(result_view);
   Kokkos::deep_copy(h_result_view, result_view);
@@ -1434,7 +1435,7 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
     ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
             length, 1)));
-    ASSERT_TRUE(
+    /*ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
             length, 2)));
     ASSERT_TRUE(
@@ -1454,7 +1455,7 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
             length, 7)));
     ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
-            length, 8)));
+            length, 8)));*/
   }
 }
 

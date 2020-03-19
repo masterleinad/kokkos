@@ -182,7 +182,10 @@ struct AddFunctor {
   type data;
 
   KOKKOS_INLINE_FUNCTION
-  void operator()(int) const { Kokkos::atomic_fetch_add(&data(), (T)1); }
+  void operator()(int) const { 
+//printf("atomic_fetch_add\n");
+Kokkos::atomic_fetch_add(&data(), (T)1);
+ }
 };
 
 template <class T, class DEVICE_TYPE>
@@ -496,36 +499,36 @@ TEST(TEST_CATEGORY, atomics) {
   const int loop_count = 1e4;
 
   ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 1)));
-  ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 2)));
-  ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 3)));
+  /*ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 2)));
+  ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 3)));*/
 
   ASSERT_TRUE((TestAtomic::Loop<unsigned int, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE((TestAtomic::Loop<unsigned int, TEST_EXECSPACE>(loop_count, 2)));
   ASSERT_TRUE((TestAtomic::Loop<unsigned int, TEST_EXECSPACE>(loop_count, 3)));
 
-  ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 1)));
+  /*ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 2)));
-  ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 3)));
+  ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 3)));*/
 
-  ASSERT_TRUE(
+  /*ASSERT_TRUE(
       (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE(
       (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 2)));
   ASSERT_TRUE(
-      (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 3)));
+      (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 3)));*/
 
-  ASSERT_TRUE((TestAtomic::Loop<long long int, TEST_EXECSPACE>(loop_count, 1)));
+/*  ASSERT_TRUE((TestAtomic::Loop<long long int, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE((TestAtomic::Loop<long long int, TEST_EXECSPACE>(loop_count, 2)));
-  ASSERT_TRUE((TestAtomic::Loop<long long int, TEST_EXECSPACE>(loop_count, 3)));
+  ASSERT_TRUE((TestAtomic::Loop<long long int, TEST_EXECSPACE>(loop_count, 3)));*/
 
-  ASSERT_TRUE((TestAtomic::Loop<double, TEST_EXECSPACE>(loop_count, 1)));
+  /*ASSERT_TRUE((TestAtomic::Loop<double, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE((TestAtomic::Loop<double, TEST_EXECSPACE>(loop_count, 2)));
-  ASSERT_TRUE((TestAtomic::Loop<double, TEST_EXECSPACE>(loop_count, 3)));
+  ASSERT_TRUE((TestAtomic::Loop<double, TEST_EXECSPACE>(loop_count, 3)));*/
 
   ASSERT_TRUE((TestAtomic::Loop<float, TEST_EXECSPACE>(100, 1)));
   ASSERT_TRUE((TestAtomic::Loop<float, TEST_EXECSPACE>(100, 2)));
   ASSERT_TRUE((TestAtomic::Loop<float, TEST_EXECSPACE>(100, 3)));
-
+/*
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
 #ifndef KOKKOS_ENABLE_ROCM  // ROCM doesn't yet support atomics for >64bit types
   ASSERT_TRUE(
@@ -563,7 +566,7 @@ TEST(TEST_CATEGORY, atomics) {
       (TestAtomic::Loop<TestAtomic::SuperScalar<4>, TEST_EXECSPACE>(100, 3)));
 #endif
 #endif
-#endif
+#endif*/
 }
 
 }  // namespace Test

@@ -46,6 +46,9 @@
 #define KOKKOS_HIP_ATOMIC_HPP
 
 #ifdef KOKKOS_ENABLE_HIP_ATOMICS
+
+#include <HIP/Kokkos_HIP_Locks.hpp>
+
 namespace Kokkos {
 // HIP can do:
 // Types int/unsigned int
@@ -138,12 +141,12 @@ inline __device__ float atomic_exchange(float *dest, const float &val) {
   return atomicExch(dest, val);
 }
 
-template <class T>
-inline __device__ T atomic_exchange(T * /*dest*/, const T &val) {
-  // FIXME
-  printf("Not implemented atomic_exchange\n");
-  return val;
-}
+//template <class T>
+//inline __device__ T atomic_exchange(T * /*dest*/, const T &val) {
+//  // FIXME
+//  printf("Not implemented atomic_exchange\n");
+//  return val;
+//}
 
 inline __device__ int atomic_compare_exchange(int *dest, int compare,
                                               const int &val) {
@@ -160,21 +163,54 @@ inline __device__ unsigned long long int atomic_compare_exchange(
     const unsigned long long int &val) {
   return atomicCAS(dest, compare, val);
 }
-template <typename T>
-inline __device__ T atomic_compare_exchange(T * /*dest*/, T /*compare*/,
-                                            const T &val) {
-  // FIXME
-  printf("Not implemented atomic_compare_exchange\n");
-  return val;
+
+template<class T>
+KOKKOS_INLINE_FUNCTION
+T atomic_compare_exchange(volatile T* dest, T compare, typename
+std::enable_if<sizeof(T) == sizeof(int), const T&>::type val) { 
+  union U {
+    int i ;
+    T f ;
+    KOKKOS_INLINE_FUNCTION U() {}
+    } idest,icompare,ival;
+  idest.f = *dest;
+  icompare.f = compare;
+  ival.f = val;
+  idest.i = atomicCAS((int*)(dest), icompare.i, ival.i); 
+  return idest.f;
 }
 
-template <typename T>
-inline __device__ T atomic_compare_exchange(volatile T * /*dest*/,
-                                            T /*compare*/, const T &val) {
-  // FIXME
-  printf("Not implemented volatile atomic_compare_exchange\n");
-  return val;
+template<class T>
+KOKKOS_INLINE_FUNCTION
+T atomic_compare_exchange(volatile T* dest, T compare, typename
+std::enable_if<sizeof(T) == sizeof(unsigned long long int), const T&>::type val) {
+  union U {
+    unsigned long long int i ;
+    T f ;
+    KOKKOS_INLINE_FUNCTION U() {}
+  } idest,icompare,ival;
+  idest.f = *dest;
+  icompare.f = compare;
+  ival.f = val;
+  idest.i = atomicCAS((unsigned long long int*)(dest), icompare.i, ival.i); 
+  return idest.f;
 }
+
+//template <typename T>
+//inline __device__ T atomic_compare_exchange(T * /*dest*/, T /*compare*/,
+//                                            const T &val) {
+  // FIXME
+//  printf("Not implemented atomic_compare_exchange\n");
+//  return val;
+//}
+
+//template <typename T>
+//inline __device__ T atomic_compare_exchange(volatile T * /*dest*/,
+//                                            T /*compare*/, const T &val) {
+//  // FIXME
+//  printf("Not implemented volatile atomic_compare_exchange\n");
+//  return val;
+//}
 
 /*
   KOKKOS_INLINE_FUNCTION
@@ -297,7 +333,7 @@ template <typename T>
 inline __device__ T atomic_fetch_add(
     volatile T* const dest,
     typename std::enable_if<sizeof(T) == sizeof(unsigned long long), const T>::type val) {
-printf("Using long long\n");
+printf("Using long long add\n");
   union U {
     unsigned long long i;
     T t;
@@ -305,7 +341,7 @@ printf("Using long long\n");
   } assume, oldval, newval;
 
   oldval.t = *dest;
-  printf("before Using long long\n");
+  printf("before Using long long add\n");
 
   do {
     assume.i = oldval.i;
@@ -313,7 +349,7 @@ printf("Using long long\n");
     oldval.i = atomic_compare_exchange((unsigned long long*)dest, assume.i, newval.i);
   } while (assume.i != oldval.i);
   
-printf("after Using long long\n");
+printf("after Using long long add\n");
   return oldval.t;
 }
 
@@ -404,7 +440,7 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_add(
   } while (assume.i != oldval.i);
 
   return oldval.t;
-}
+}*/
 
 // WORKAROUND
 template <class T>
@@ -416,26 +452,25 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_add(
   T return_val;
   // Do we need to (like in CUDA) handle potential wavefront branching?
   int done = 0;
-  // unsigned int active = KOKKOS_IMPL_CUDA_BALLOT(1);
-  // unsigned int done_active = 0;
-  // while (active!=done_active) {
+  unsigned int active = __ballot(1);
+  unsigned int done_active = 0;
+  while (active!=done_active) {
   if (!done)
   {
-    bool locked = ::Kokkos::Impl::lock_address_hip_space((void *)dest);
-    if (locked)
+//    if(Kokkos::Impl::lock_address_hip_space((void *)dest))
     {
       return_val = *dest;
       *dest = return_val + val;
-      ::Kokkos::Impl::unlock_address_hip_space((void *)dest);
+  //    Kokkos::Impl::unlock_address_hip_space((void *)dest);
       done = 1;
     }
   }
-  // done_active = KOKKOS_IMPL_CUDA_BALLOT(done);
-  //}
+  done_active = __ballot(done);
+  }
   return return_val;
 }
 
-*/
+
 
 KOKKOS_INLINE_FUNCTION
 int atomic_fetch_sub(volatile int *dest, int const &val) {
@@ -544,7 +579,7 @@ template <typename T>
 inline __device__ T atomic_fetch_sub(
     volatile T* const dest,
     typename std::enable_if<sizeof(T) == sizeof(unsigned long long), const T>::type val) {
-printf("Using long long\n");
+printf("Using long long sub\n");
   union U {
     unsigned long long i;
     T t;
