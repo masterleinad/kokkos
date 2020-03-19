@@ -45,9 +45,13 @@
 #ifndef KOKKOS_HIP_ERROR_HPP
 #define KOKKOS_HIP_ERROR_HPP
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_HIP
+#include <impl/Kokkos_Error.hpp> 
+
 #include <hip/hip_runtime.h>
 
-#include <iostream>
+#include <ostream>
 
 namespace Kokkos {
 namespace Impl {
@@ -104,4 +108,5 @@ class HIPRawMemoryAllocationFailure : public RawMemoryAllocationFailure {
 }  // namespace Experimental
 }  // namespace Kokkos
 
+#endif
 #endif
