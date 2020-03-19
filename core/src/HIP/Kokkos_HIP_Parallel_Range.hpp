@@ -77,18 +77,14 @@ class ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
   inline __device__
       typename std::enable_if<std::is_same<TagType, void>::value>::type
       exec_range(const Member i) const {
-printf("Before execute\n");
     m_functor(i);
-printf("After execute\n");
   }
 
   template <class TagType>
   inline __device__
       typename std::enable_if<!std::is_same<TagType, void>::value>::type
       exec_range(const Member i) const {
-printf("Before execute\n");
     m_functor(TagType(), i);
-printf("Aftrer execute\n");
   }
 
  public:

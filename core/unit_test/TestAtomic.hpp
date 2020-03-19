@@ -506,16 +506,16 @@ TEST(TEST_CATEGORY, atomics) {
   ASSERT_TRUE((TestAtomic::Loop<unsigned int, TEST_EXECSPACE>(loop_count, 2)));
   ASSERT_TRUE((TestAtomic::Loop<unsigned int, TEST_EXECSPACE>(loop_count, 3)));
 
-  /*ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 1)));
+  ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 2)));
-  ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 3)));*/
+  ASSERT_TRUE((TestAtomic::Loop<long int, TEST_EXECSPACE>(loop_count, 3)));
 
-  /*ASSERT_TRUE(
+  ASSERT_TRUE(
       (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE(
       (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 2)));
   ASSERT_TRUE(
-      (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 3)));*/
+      (TestAtomic::Loop<unsigned long int, TEST_EXECSPACE>(loop_count, 3)));
 
   ASSERT_TRUE((TestAtomic::Loop<long long int, TEST_EXECSPACE>(loop_count, 1)));
   ASSERT_TRUE((TestAtomic::Loop<long long int, TEST_EXECSPACE>(loop_count, 2)));
