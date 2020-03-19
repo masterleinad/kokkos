@@ -260,14 +260,14 @@ endif()
 if(Kokkos_ENABLE_HIP)
   set(HIP_SOURCES
       UnitTestMainInit.cpp
-      #hip/TestHIP_AtomicOperations_int.cpp
-#      hip/TestHIP_AtomicOperations_unsignedint.cpp
+      hip/TestHIP_AtomicOperations_int.cpp
+      hip/TestHIP_AtomicOperations_unsignedint.cpp
       hip/TestHIP_AtomicOperations_longint.cpp
-#      hip/TestHIP_AtomicOperations_unsignedlongint.cpp
-#      hip/TestHIP_AtomicOperations_longlongint.cpp
-#      hip/TestHIP_AtomicOperations_double.cpp
-#      hip/TestHIP_AtomicOperations_float.cpp
-#      hip/TestHIP_AtomicOperations_complexdouble.cpp
+      hip/TestHIP_AtomicOperations_unsignedlongint.cpp
+      hip/TestHIP_AtomicOperations_longlongint.cpp
+      hip/TestHIP_AtomicOperations_double.cpp
+      hip/TestHIP_AtomicOperations_float.cpp
+      hip/TestHIP_AtomicOperations_complexdouble.cpp
 #      hip/TestHIP_AtomicOperations_complexfloat.cpp
 #      hip/TestHIP_AtomicViews.cpp
 #      hip/TestHIP_Atomics.cpp
