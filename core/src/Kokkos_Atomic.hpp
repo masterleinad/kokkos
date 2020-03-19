@@ -245,7 +245,9 @@ extern KOKKOS_INLINE_FUNCTION void unlock_address_rocm_space(void* ptr);
 // T atomic_decrement(volatile T* const dest)
 // { dest--; }
 
+#if !defined(KOKKOS_ENABLE_HIP)
 #include "impl/Kokkos_Atomic_Decrement.hpp"
+#endif
 
 //----------------------------------------------------------------------------
 // Atomic fetch and sub

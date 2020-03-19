@@ -515,27 +515,56 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_sub(
   return oldval.t;
 }
 
-template <class T>
-KOKKOS_INLINE_FUNCTION T atomic_fetch_sub(
-    volatile T *dest, typename std::enable_if<sizeof(T) != sizeof(int) &&
-                                                  sizeof(T) == sizeof(int64_t),
-                                              const T &>::type val) {
+//template <class T>
+//KOKKOS_INLINE_FUNCTION T atomic_fetch_sub(
+//    volatile T *dest, typename std::enable_if<sizeof(T) != sizeof(int) &&
+//                                                  sizeof(T) == sizeof(int64_t),
+//                                              const T &>::type val) {
+///*
+//  union U {
+//    int64_t i;
+//    T t;
+//    KOKKOS_INLINE_FUNCTION U() {}
+//  } assume, oldval, newval;
+//
+//  oldval.t = *dest;
+//
+//  do {
+//    assume.i = oldval.i;
+//    newval.t = assume.t - val;
+//    oldval.i = atomic_compare_exchange((int64_t *)dest, assume.i, newval.i);
+//  } while (assume.i != oldval.i);
+//
+//  return oldval.t;*/
+//  printf("Here 1\n");
+//  return {};
+//}
+
+template <typename T>
+inline __device__ T atomic_fetch_sub(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), const T>::type val) {
+printf("Using long long\n");
   union U {
-    int64_t i;
+    unsigned long long i;
     T t;
     KOKKOS_INLINE_FUNCTION U() {}
   } assume, oldval, newval;
 
   oldval.t = *dest;
+  printf("before Using long long\n");
 
   do {
     assume.i = oldval.i;
     newval.t = assume.t - val;
-    oldval.i = atomic_compare_exchange((int64_t *)dest, assume.i, newval.i);
+    oldval.i = atomic_compare_exchange((unsigned long long*)dest, assume.i, newval.i);
   } while (assume.i != oldval.i);
 
+printf("after Using long long\n");
   return oldval.t;
 }
+
+
 template <class T>
 KOKKOS_INLINE_FUNCTION T atomic_fetch_sub(
     volatile T *dest,
@@ -567,6 +596,14 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_sub(
 
   return (T)oldval & 0xffff;
 }
+
+template <typename T>
+KOKKOS_INLINE_FUNCTION void atomic_decrement(volatile T* a) {
+printf("Calling atomic_fetch_sub\n");
+  Kokkos::atomic_fetch_sub(a, T(1));
+printf("End call to atomic_fetch_sub\n");
+}
+
 
 // KOKKOS_INLINE_FUNCTION
 // int atomic_fetch_or(volatile int *const dest, int const val) {

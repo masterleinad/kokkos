@@ -49,7 +49,7 @@ TEST(TEST_CATEGORY, atomic_operations_long) {
   const int start = 1;  // Avoid zero for division.
   const int end   = 11;
   for (int i = start; i < end; ++i) {
-    ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
+    /*ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
                  long int, TEST_EXECSPACE>(start, end - i, 1)));
     ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
                  long int, TEST_EXECSPACE>(start, end - i, 2)));
@@ -68,9 +68,9 @@ TEST(TEST_CATEGORY, atomic_operations_long) {
     ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
                  long int, TEST_EXECSPACE>(start, end - i, 9)));
     ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
-                 long int, TEST_EXECSPACE>(start, end - i, 11)));
-    /*ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
-                 long int, TEST_EXECSPACE>(start, end - i, 12)));*/
+                 long int, TEST_EXECSPACE>(start, end - i, 11)));*/
+    ASSERT_TRUE((TestAtomicOperations::AtomicOperationsTestIntegralType<
+                 long int, TEST_EXECSPACE>(start, end - i, 12)));
   }
 }
 }  // namespace Test

@@ -74,6 +74,7 @@ namespace Impl {
 
 template <typename DriverType>
 __global__ static void hip_parallel_launch_constant_memory() {
+  //printf("hip_parallel_launch_constant_memory\n");
   __device__ __constant__ unsigned long kokkos_impl_hip_constant_memory_buffer
       [Kokkos::Experimental::Impl::HIPTraits::ConstantMemoryUsage /
        sizeof(unsigned long)];
@@ -82,12 +83,15 @@ __global__ static void hip_parallel_launch_constant_memory() {
       kokkos_impl_hip_constant_memory_buffer));
 
   driver();
+  //printf("hip_parallel_launch_constant_memory end\n");
 }
 
 template <class DriverType>
 __global__ static void hip_parallel_launch_local_memory(
     const DriverType driver) {
+  //printf("hip_parallel_launch_local_memory\n");
   driver();
+  //printf("hip_parallel_launch_local_memory end\n");
 }
 
 template <class DriverType, unsigned int maxTperB, unsigned int minBperSM>
@@ -95,7 +99,9 @@ __global__ __launch_bounds__(
     maxTperB,
     minBperSM) static void hip_parallel_launch_local_memory(const DriverType
                                                                 driver) {
+  //printf("launch_bounds\n");
   driver();
+  //printf("launch_bounds end\n");
 }
 
 enum class HIPLaunchMechanism : unsigned {
@@ -208,13 +214,15 @@ struct HIPParallelLaunch<DriverType, Kokkos::LaunchBounds<0, 0>,
             KOKKOS_ENSURE_CUDA_LOCK_ARRAYS_ON_DEVICE();
       */
       // Invoke the driver function on the device
+      //printf("Before kernel launch\n");
       hipLaunchKernelGGL(hip_parallel_launch_local_memory<DriverType>, grid,
                          block, shmem, hip_instance->m_stream, driver);
+      //printf("After kernel launch\n");
 
-      Kokkos::Experimental::HIP().fence();
+//      Kokkos::Experimental::HIP().fence();
 #if defined(KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK)
-      HIP_SAFE_CALL(hipGetLastError());
-      Kokkos::Experimental::HIP().fence();
+//      HIP_SAFE_CALL(hipGetLastError());
+//      Kokkos::Experimental::HIP().fence();
 #endif
     }
   }

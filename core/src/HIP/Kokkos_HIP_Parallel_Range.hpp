@@ -104,8 +104,8 @@ printf("Aftrer execute\n");
          iwork = iwork < work_end - work_stride ? iwork + work_stride
                                                 : work_end) {
       this->template exec_range<WorkTag>(iwork);
+      printf("after calling operator() %d %d\n", hipThreadIdx_y, hipBlockIdx_x);
     }
-    printf("after calling operator()\n");
   }
 
   inline void execute() const {

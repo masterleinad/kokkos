@@ -76,7 +76,11 @@ struct InitFunctor {
   T init_value;
 
   KOKKOS_INLINE_FUNCTION
-  void operator()(int) const { data() = init_value; }
+  void operator()(int) const { 
+printf("Before assignment\n");
+data() = init_value;
+printf("After assignment\n");
+ }
 
   InitFunctor(T _init_value) : init_value(_init_value) {}
 };
@@ -317,28 +321,41 @@ struct DecFunctor {
   T i0;
 
   KOKKOS_INLINE_FUNCTION
-  void operator()(int) const { Kokkos::atomic_decrement(&data()); }
+  void operator()(int) const { 
+printf("Calling decrement\n");
+//Kokkos::atomic_fetch_sub(&data(), T(1));
+Kokkos::atomic_decrement(&data()); 
+printf("Afetr calling increment\n");
+}
 
   DecFunctor(T _i0) : i0(_i0) {}
 };
 
 template <class T, class execution_space>
 T DecAtomic(T i0) {
+  printf("check1\n");
   struct InitFunctor<T, execution_space> f_init(i0);
+  printf("check2\n");
   typename InitFunctor<T, execution_space>::type data("Data");
+  printf("check3\n");
   typename InitFunctor<T, execution_space>::h_type h_data("HData");
+  printf("check4\n");
 
-  f_init.data = data;
+  /*f_init.data = data;
+  printf("Before parallel_for decrement 1\n");
   Kokkos::parallel_for(1, f_init);
-  execution_space().fence();
+  printf("After parallel_for decrement 1\n");
+  execution_space().fence();*/
 
   struct DecFunctor<T, execution_space> f(i0);
 
   f.data = data;
+  printf("Before parallel_for decrement\n");
   Kokkos::parallel_for(1, f);
-  execution_space().fence();
+  printf("After parallel_for decrement\n");
+  /*execution_space().fence();
 
-  Kokkos::deep_copy(h_data, data);
+  Kokkos::deep_copy(h_data, data);*/
   T val = h_data();
 
   return val;
@@ -359,8 +376,11 @@ T DecAtomicCheck(T i0) {
 
 template <class T, class DeviceType>
 bool DecAtomicTest(T i0) {
+  printf("Before dec check\n");
   T res       = DecAtomic<T, DeviceType>(i0);
+  printf("After DecAtomic\n");
   T resSerial = DecAtomicCheck<T>(i0);
+  printf("After DecAtomicCheck\n");
 
   bool passed = true;
 
