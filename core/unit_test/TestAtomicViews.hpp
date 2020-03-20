@@ -395,18 +395,20 @@ struct PlusEqualAtomicViewFunctor {
   // Wrap the result view in an atomic view, use this for operator
   PlusEqualAtomicViewFunctor(const view_type& input_,
                              view_type& even_odd_result_, const int64_t length_)
-      : input(input_), even_odd_result(even_odd_result_), length(length_) {}
+      : input(input_), even_odd_result(even_odd_result_), length(length_) {
+printf("bla\n");
+}
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int64_t i) const {
-printf("PlusEqualAtomicViewFunctor\n");
-/*    if (i < length) {
+//printf("PlusEqualAtomicViewFunctor\n");
+    if (i < length) {
       if (i % 2 == 0) {
         even_odd_result(0) += input(i);
       } else {
         even_odd_result(1) += input(i);
       }
-    }*/
+    }
   }
 };
 
@@ -423,11 +425,11 @@ T PlusEqualAtomicView(const int64_t input_length) {
   InitFunctor_Seq<T, execution_space> init_f(input, length);
   Kokkos::parallel_for(Kokkos::RangePolicy<execution_space>(0, length), init_f);
 
-/*  PlusEqualAtomicViewFunctor<T, execution_space> functor(input, result_view,
+  PlusEqualAtomicViewFunctor<T, execution_space> functor(input, result_view,
                                                          length);
   Kokkos::parallel_for(Kokkos::RangePolicy<execution_space>(0, length),
                        functor);
-  Kokkos::fence();*/
+  Kokkos::fence();
 
   host_view_type h_result_view = Kokkos::create_mirror_view(result_view);
   Kokkos::deep_copy(h_result_view, result_view);
@@ -460,6 +462,7 @@ T PlusEqualAtomicViewCheck(const int64_t input_length) {
 template <class T, class DeviceType>
 bool PlusEqualAtomicViewTest(int64_t input_length) {
   T res       = PlusEqualAtomicView<T, DeviceType>(input_length);
+//  return true;
   T resSerial = PlusEqualAtomicViewCheck<T>(input_length);
 
   bool passed = true;
@@ -1432,12 +1435,12 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
   const int64_t length = 1000000;
   {
     // Integral Types.
-    ASSERT_TRUE(
-        (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
-            length, 1)));
     /*ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
-            length, 2)));
+            length, 1)));*/
+    /*ASSERT_TRUE(
+        (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
+            length, 2)));*/
     ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
             length, 3)));
@@ -1455,7 +1458,7 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
             length, 7)));
     ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
-            length, 8)));*/
+            length, 8)));
   }
 }
 
@@ -1463,12 +1466,12 @@ TEST(TEST_CATEGORY, atomic_views_nonintegral) {
   const int64_t length = 1000000;
   {
     // Non-Integral Types.
-    ASSERT_TRUE((
-        TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
-            length, 1)));
-    ASSERT_TRUE((
-        TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
-            length, 2)));
+    //ASSERT_TRUE((
+    //    TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
+    //        length, 1)));
+    //ASSERT_TRUE((
+    //    TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
+    //        length, 2)));
     ASSERT_TRUE((
         TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
             length, 3)));
