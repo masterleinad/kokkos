@@ -288,16 +288,19 @@ std::enable_if<sizeof(T) == sizeof(unsigned long long int), const T&>::type val)
   }
 */
 inline __device__ int atomic_fetch_add(volatile int *dest, const int &val) {
+printf("atomic_fetch add int\n");
   return atomicAdd(const_cast<int *>(dest), val);
 }
 
 inline __device__ unsigned int atomic_fetch_add(volatile unsigned int *dest,
                                                 const unsigned int &val) {
+printf("atomic_fetch add unsigned int\n");
   return atomicAdd(const_cast<unsigned int *>(dest), val);
 }
 
 inline __device__ unsigned long long atomic_fetch_add(
     volatile unsigned long long *dest, const unsigned long long &val) {
+printf("atomic_fetch add unsigned long long\n");
   return atomicAdd(const_cast<unsigned long long *>(dest), val);
 }
 
@@ -312,6 +315,7 @@ template <typename T>
 inline __device__ T atomic_fetch_add(
     volatile T* const dest,
     typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
+printf("atomic_fetch add size int\n");
   union U {
     int i;
     T t;
@@ -333,7 +337,7 @@ template <typename T>
 inline __device__ T atomic_fetch_add(
     volatile T* const dest,
     typename std::enable_if<sizeof(T) == sizeof(unsigned long long), const T>::type val) {
-printf("Using long long add\n");
+printf("atomic_fetch add size long long add\n");
   union U {
     unsigned long long i;
     T t;
@@ -362,6 +366,8 @@ printf("after Using long long add\n");
 // }
 KOKKOS_INLINE_FUNCTION
 char atomic_fetch_add(volatile char *dest, const char &val) {
+printf("atomic_fetch add char\n");
+
   unsigned int oldval, newval, assume;
   oldval = *(int *)dest;
 
@@ -376,6 +382,8 @@ char atomic_fetch_add(volatile char *dest, const char &val) {
 
 KOKKOS_INLINE_FUNCTION
 short atomic_fetch_add(volatile short *dest, const short &val) {
+printf("atomic_fetch add short\n");
+
   unsigned int oldval, newval, assume;
   oldval = *(int *)dest;
 
@@ -390,6 +398,7 @@ short atomic_fetch_add(volatile short *dest, const short &val) {
 
 KOKKOS_INLINE_FUNCTION
 long long atomic_fetch_add(volatile long long *dest, const long long &val) {
+printf("atomic_fetch add long long\n");
   return atomicAdd((unsigned long long *)(dest), val);
 }
 
@@ -443,13 +452,15 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_add(
 }*/
 
 // WORKAROUND
-template <class T>
+/*template <class T>
 KOKKOS_INLINE_FUNCTION T atomic_fetch_add(
     volatile T *dest, typename std::enable_if<sizeof(T) != sizeof(int) &&
                                                   sizeof(T) != sizeof(int64_t),
                                               const T &>::type val)
 {
-  T return_val;
+printf("atomic_fetch add other\n");
+  ::abort();
+  T return_val{};
   // Do we need to (like in CUDA) handle potential wavefront branching?
   int done = 0;
   unsigned int active = __ballot(1);
@@ -468,7 +479,7 @@ KOKKOS_INLINE_FUNCTION T atomic_fetch_add(
   done_active = __ballot(done);
   }
   return return_val;
-}
+}*/
 
 
 

@@ -401,7 +401,8 @@ printf("bla\n");
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int64_t i) const {
-//printf("PlusEqualAtomicViewFunctor\n");
+printf("PlusEqualAtomicViewFunctor\n");
+::abort();
     if (i < length) {
       if (i % 2 == 0) {
         even_odd_result(0) += input(i);
@@ -1437,10 +1438,10 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
     // Integral Types.
     /*ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
-            length, 1)));*/
-    /*ASSERT_TRUE(
+            length, 1)));
+    ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
-            length, 2)));*/
+            length, 2)));
     ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
             length, 3)));
@@ -1458,7 +1459,7 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
             length, 7)));
     ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
-            length, 8)));
+            length, 8)));*/
   }
 }
 
@@ -1466,22 +1467,22 @@ TEST(TEST_CATEGORY, atomic_views_nonintegral) {
   const int64_t length = 1000000;
   {
     // Non-Integral Types.
-    //ASSERT_TRUE((
-    //    TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
-    //        length, 1)));
-    //ASSERT_TRUE((
-    //    TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
-    //        length, 2)));
+    ASSERT_TRUE((
+        TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
+            length, 1)));
+    /*ASSERT_TRUE((
+        TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
+            length, 2)));
     ASSERT_TRUE((
         TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
             length, 3)));
     ASSERT_TRUE((
         TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
-            length, 4)));
+            length, 4)));*/
   }
 }
 
 TEST(TEST_CATEGORY, atomic_view_api) {
-  TestAtomicViews::TestAtomicViewAPI<int, TEST_EXECSPACE>();
+//  TestAtomicViews::TestAtomicViewAPI<int, TEST_EXECSPACE>();
 }
 }  // namespace Test
