@@ -398,7 +398,8 @@ printf("atomic_fetch add short\n");
 
 KOKKOS_INLINE_FUNCTION
 long long atomic_fetch_add(volatile long long *dest, const long long &val) {
-printf("atomic_fetch add long long\n");
+/*return *dest;
+printf("atomic_fetch add long long\n");*/
   return atomicAdd((unsigned long long *)(dest), val);
 }
 

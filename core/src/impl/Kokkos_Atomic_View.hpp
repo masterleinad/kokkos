@@ -108,7 +108,9 @@ class AtomicDataElement {
 
   KOKKOS_INLINE_FUNCTION
   const_value_type operator+=(const_value_type& val) const {
-    const_value_type tmp = Kokkos::atomic_fetch_add(ptr, val);
+   //printf("first in operator+=\n");
+   const_value_type tmp = Kokkos::atomic_fetch_add(ptr, val);
+   //printf("second in operator+=\n");
     return tmp + val;
   }
   KOKKOS_INLINE_FUNCTION

@@ -401,10 +401,12 @@ printf("bla\n");
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int64_t i) const {
-printf("PlusEqualAtomicViewFunctor\n");
-::abort();
-    if (i < length) {
-      if (i % 2 == 0) {
+//if (hipThreadIdx_y==0)
+//printf("PlusEqualAtomicViewFunctor\n");
+//::abort();
+     //even_odd_result(0)+=i;//(void) input(i);
+  if (i < length) {
+       if (i % 2 == 0) {
         even_odd_result(0) += input(i);
       } else {
         even_odd_result(1) += input(i);
@@ -430,7 +432,7 @@ T PlusEqualAtomicView(const int64_t input_length) {
                                                          length);
   Kokkos::parallel_for(Kokkos::RangePolicy<execution_space>(0, length),
                        functor);
-  Kokkos::fence();
+  //Kokkos::fence();
 
   host_view_type h_result_view = Kokkos::create_mirror_view(result_view);
   Kokkos::deep_copy(h_result_view, result_view);
@@ -1436,10 +1438,10 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
   const int64_t length = 1000000;
   {
     // Integral Types.
-    /*ASSERT_TRUE(
+    ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
             length, 1)));
-    ASSERT_TRUE(
+   /* ASSERT_TRUE(
         (TestAtomicViews::AtomicViewsTestIntegralType<int64_t, TEST_EXECSPACE>(
             length, 2)));
     ASSERT_TRUE(
@@ -1467,9 +1469,9 @@ TEST(TEST_CATEGORY, atomic_views_nonintegral) {
   const int64_t length = 1000000;
   {
     // Non-Integral Types.
-    ASSERT_TRUE((
+    /*ASSERT_TRUE((
         TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
-            length, 1)));
+            length, 1)));*/
     /*ASSERT_TRUE((
         TestAtomicViews::AtomicViewsTestNonIntegralType<double, TEST_EXECSPACE>(
             length, 2)));
