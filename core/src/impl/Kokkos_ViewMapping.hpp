@@ -641,10 +641,10 @@ struct SubviewExtents {
     error(buf + n, buf_len - n, domain_rank + 1, range_rank + 1, dim, args...);
   }
 
-  template <size_t... DimArgs, class... Args>
+#if defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_HOST)
+ template <size_t... DimArgs, class... Args>
   KOKKOS_FORCEINLINE_FUNCTION void error(const ViewDimension<DimArgs...>& dim,
                                          Args... args) const {
-#if defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_HOST)
     enum { LEN = 1024 };
     char buffer[LEN];
 
@@ -652,10 +652,14 @@ struct SubviewExtents {
     error(buffer + n, LEN - n, 0, 0, dim, args...);
 
     Kokkos::Impl::throw_runtime_exception(std::string(buffer));
+   }
 #else
+ template <size_t... DimArgs, class... Args>
+  KOKKOS_FORCEINLINE_FUNCTION void error(const ViewDimension<DimArgs...>&,
+                                         Args...) const {
     Kokkos::abort("Kokkos::subview bounds error");
+}
 #endif
-  }
 
 #else
 
