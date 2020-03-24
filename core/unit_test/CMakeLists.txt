@@ -267,6 +267,7 @@ if(Kokkos_ENABLE_HIP)
       hip/TestHIP_AtomicOperations_longlongint.cpp
       hip/TestHIP_AtomicOperations_double.cpp
       hip/TestHIP_AtomicOperations_float.cpp
+      #FIXME_HIP
       #hip/TestHIP_AtomicOperations_complexdouble.cpp
       hip/TestHIP_AtomicOperations_complexfloat.cpp
       hip/TestHIP_AtomicViews.cpp

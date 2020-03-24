@@ -104,6 +104,7 @@ atomic_exchange(volatile T *const dest,
                 typename std::enable_if<sizeof(T) != sizeof(int) &&
                                             sizeof(T) != sizeof(long long),
                                         const T>::type &val) {
+  // FIXME_HIP
   Kokkos::abort("atomic_exchange not implemented for large types.\n");
   T return_val;
   int done                 = 0;
@@ -212,6 +213,7 @@ __inline__ __device__ T atomic_compare_exchange(
     typename std::enable_if<sizeof(T) != sizeof(int) &&
                                 sizeof(T) != sizeof(long long),
                             const T>::type &val) {
+  // FIXME_HIP
   Kokkos::abort("atomic_compare_exchange not implemented for large types.\n");
   T return_val;
   int done                 = 0;
@@ -336,6 +338,7 @@ atomic_fetch_add(volatile T *dest,
                  typename std::enable_if<sizeof(T) != sizeof(int) &&
                                              sizeof(T) != sizeof(long long),
                                          const T &>::type val) {
+  // FIXME_HIP
   Kokkos::abort("atomic_fetch_add not implemented for large types.\n");
   T return_val;
   int done                 = 0;
@@ -494,6 +497,7 @@ atomic_fetch_sub(volatile T *const dest,
                  typename std::enable_if<sizeof(T) != sizeof(int) &&
                                              sizeof(T) != sizeof(long long),
                                          const T>::type &val) {
+  // FIXME_HIP
   Kokkos::abort("atomic_fetch_sub not implemented for large types.\n");
   T return_val;
   int done                 = 0;
