@@ -39,6 +39,12 @@ IF(Kokkos_ENABLE_CUDA)
   )
 ENDIF()
 
+IF(Kokkos_ENABLE_HIP)
+  LIST( APPEND SOURCES
+    TestHIP.cpp
+  )
+ENDIF()
+
 IF(Kokkos_ENABLE_OPENMP)
   LIST( APPEND SOURCES
     TestOpenMP.cpp

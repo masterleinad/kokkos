@@ -137,15 +137,18 @@ struct test_random_functor {
       : rand_pool(rand_pool_),
         mean(0.5 * Kokkos::rand<rnd_type, Scalar>::max()),
         density_1d(d1d),
-        density_3d(d3d) {}
+        density_3d(d3d) {
+   printf("Constructor\n");
+}
 
   KOKKOS_INLINE_FUNCTION
-  void operator()(int /*i*/, RandomProperties& prop) const {
+  void operator()(int /*i*/, RandomProperties& /*prop*/) const {
+    printf("operator\n");
     using Kokkos::atomic_fetch_add;
 
-    rnd_type rand_gen = rand_pool.get_state();
+    //rnd_type rand_gen = rand_pool.get_state();
     for (int k = 0; k < 1024; ++k) {
-      const Scalar tmp = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
+      /*const Scalar tmp = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
       prop.count++;
       prop.mean += tmp;
       prop.variance += (tmp - mean) * (tmp - mean);
@@ -192,9 +195,10 @@ struct test_random_functor {
       atomic_fetch_add(&density_1d(ind1_1d), 1);
       atomic_fetch_add(&density_1d(ind2_1d), 1);
       atomic_fetch_add(&density_1d(ind3_1d), 1);
-      atomic_fetch_add(&density_3d(ind1_3d, ind2_3d, ind3_3d), 1);
+      atomic_fetch_add(&density_3d(ind1_3d, ind2_3d, ind3_3d), 1);*/
     }
-    rand_pool.free_state(rand_gen);
+    printf("before free\n");
+    //rand_pool.free_state(rand_gen);
   }
 };
 
@@ -295,8 +299,10 @@ struct test_random_scalar {
 
       RandomProperties result;
       typedef test_random_functor<RandomGenerator, Scalar> functor_type;
+      cout << "before reduce" << std::endl;
       parallel_reduce(num_draws / 1024,
                       functor_type(pool, density_1d, density_3d), result);
+      cout << "after reduce" << std::endl;
 
       // printf("Result: %lf %lf
       // %lf\n",result.mean/num_draws/3,result.variance/num_draws/3,result.covariance/num_draws/2);
