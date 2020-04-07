@@ -54,7 +54,7 @@ using value_type = double;
 const int N      = 10;
 const int M      = 10;
 
-// A structure for complex number
+// A structure for complex number.
 struct MyComplex {
   value_type _re, _im;
 
@@ -81,15 +81,10 @@ struct MyComplex {
 template <class ExecSpace>
 struct TestMDRangeReduce {
   // 1D  View of double
-  using View_1D        = typename Kokkos::View<value_type*, ExecSpace>;
-  using Host_mirror_1D = typename View_1D::HostMirror;
-
-  // HostSpace 1D view
-  using HostSpace_view_1D = Kokkos::View<value_type*, Kokkos::HostSpace>;
+  using View_1D = typename Kokkos::View<value_type*, ExecSpace>;
 
   // 2D  View of double
-  using View_2D      = typename Kokkos::View<value_type**, ExecSpace>;
-  using Host_view_2D = typename View_2D::HostMirror;
+  using View_2D = typename Kokkos::View<value_type**, ExecSpace>;
 
   // Index Type for the iterator
   using int_index = Kokkos::IndexType<int>;
@@ -105,7 +100,6 @@ struct TestMDRangeReduce {
   // scalar/1-element view
   void reduce_MDRange() {
     View_2D d_data("d_data", N, M);
-    Host_view_2D h_data = create_mirror_view(d_data);
 
     MDPolicyType_2D mdPolicy_2D({0, 0}, {N, M});
 
@@ -115,15 +109,16 @@ struct TestMDRangeReduce {
 
     // Fill host data with intial values
     for (int i = 0; i < N; ++i)
-      for (int j = 0; j < M; ++j) {
-        h_data(i, j) = i * j * 0.5;
-        h_result += i * j;
-      }
+      for (int j = 0; j < M; ++j) h_result += i * j;
     h_result *= 0.5;
 
-    // Copy data from host to device
-    Kokkos::deep_copy(d_data, h_data);
+    // Fill data.
+    Kokkos::parallel_for(
+        mdPolicy_2D, KOKKOS_LAMBDA(const int i, const int j) {
+          d_data(i, j) = i * j * 0.5;
+        });
 
+    // Parallel reduce on a scalar.
     Kokkos::parallel_reduce(
         mdPolicy_2D,
         KOKKOS_LAMBDA(const int i, const int j, value_type& update_value) {
@@ -131,6 +126,7 @@ struct TestMDRangeReduce {
         },
         d_result);
 
+    // Parallel reduce on a view.
     Kokkos::parallel_reduce(
         mdPolicy_2D,
         KOKKOS_LAMBDA(const int i, const int j, value_type& update_value) {
@@ -138,9 +134,10 @@ struct TestMDRangeReduce {
         },
         d_resultView);
 
-    // Check correctness
+    // Check correctness.
     ASSERT_EQ(h_result, d_result);
 
+    // Copy view back to host.
     Kokkos::deep_copy(view_results, d_resultView);
     ASSERT_EQ(h_result, view_results);
   }
@@ -157,7 +154,7 @@ struct TestMDRangeReduce {
           d_data(i) = MyComplex(i * 0.5, -i * 0.5);
         });
 
-    // Reduction for complex number
+    // Reduction for complex number.
     Kokkos::parallel_reduce(
         N,
         KOKKOS_LAMBDA(const int i, MyComplex& update_value) {
@@ -174,7 +171,7 @@ struct TestMDRangeReduce {
 };
 
 // Reductions tests for MDRange policy and customized reduction.
-TEST(TEST_CATEGORY, incr_18_MDrangeReduce) {
+TEST(TEST_CATEGORY, incr_14_MDrangeReduce) {
   TestMDRangeReduce<TEST_EXECSPACE> test;
   test.reduce_MDRange();
   test.reduce_custom();
