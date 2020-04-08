@@ -150,17 +150,17 @@ struct test_random_functor {
     for (int k = 0; k < 1024; ++k) {
       const Scalar theMax = Kokkos::rand<rnd_type, Scalar>::max();
 
-      const Scalar tmp = k/(2*theMax);//Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
+      const Scalar tmp = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
 //      printf("drawing %d\n", tmp);
       prop.count++;
       prop.mean += tmp;
       prop.variance += (tmp - mean) * (tmp - mean);
-      const Scalar tmp2 = k/(2*theMax);//Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
+      const Scalar tmp2 = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
       prop.count++;
       prop.mean += tmp2;
       prop.variance += (tmp2 - mean) * (tmp2 - mean);
       prop.covariance += (tmp - mean) * (tmp2 - mean);
-      const Scalar tmp3 = k/(2*theMax);//Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
+      const Scalar tmp3 = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
       prop.count++;
       prop.mean += tmp3;
       prop.variance += (tmp3 - mean) * (tmp3 - mean);
@@ -199,13 +199,13 @@ struct test_random_functor {
       ++density_1d(ind1_1d);
       ++density_1d(ind2_1d);
       ++density_1d(ind3_1d);
-      ++density_3d(ind1_3d, ind2_3d, ind3_3d);
-      //atomic_fetch_add(&density_1d(ind1_1d), 1);
-      //atomic_fetch_add(&density_1d(ind2_1d), 1);
-      //atomic_fetch_add(&density_1d(ind3_1d), 1);
-      //atomic_fetch_add(&density_3d(ind1_3d, ind2_3d, ind3_3d), 1);*/
+      ++density_3d(ind1_3d, ind2_3d, ind3_3d);*/
+      atomic_fetch_add(&density_1d(ind1_1d), 1);
+      atomic_fetch_add(&density_1d(ind2_1d), 1);
+      atomic_fetch_add(&density_1d(ind3_1d), 1);
+      atomic_fetch_add(&density_3d(ind1_3d, ind2_3d, ind3_3d), 1);
     }
-    //printf("before free\n");*/
+    //printf("before free\n");
     rand_pool.free_state(rand_gen);
   }
 };

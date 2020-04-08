@@ -657,11 +657,14 @@ struct Random_UniqueIndex<Kokkos::Experimental::HIP> {
                  hipBlockDim_x * hipBlockDim_y * hipBlockDim_z +
              i_offset) %
             locks_.extent(0);
-    while (Kokkos::atomic_compare_exchange(&locks_(i), 0, 1)) {
+    int counter =0;
+    while (Kokkos::atomic_compare_exchange(&locks_(i), 0, 1) && counter<100) {
+      printf("i_new: %d %d %d\n", i, hipThreadIdx_x, hipThreadIdx_y);
       i += hipBlockDim_x * hipBlockDim_y * hipBlockDim_z;
       if (i >= static_cast<int>(locks_.extent(0))) {
         i = i_offset;
       }
+      ++counter;
     }
     return i;
 #else
@@ -886,8 +889,10 @@ class Random_XorShift64_Pool {
 
   KOKKOS_INLINE_FUNCTION
   Random_XorShift64<DeviceType> get_state() const {
-    const int i =
-        Impl::Random_UniqueIndex<execution_space>::get_state_idx(locks_);
+    //const int i = 0;
+    const int i = Impl::Random_UniqueIndex<execution_space>::get_state_idx(locks_);
+    if (hipThreadIdx_x == 0)
+      printf("i: %d\n", i);
     return Random_XorShift64<DeviceType>(state_(i), i);
   }
 
