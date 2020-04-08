@@ -94,7 +94,7 @@ struct TestMDRangeReduce {
       ExecSpace, Kokkos::Experimental::Rank<2>, int_index>;
 
   //  1D - complex View
-  using complex_View_1D = typename Kokkos::View<MyComplex*, ExecSpace>;
+  using Complex_View_1D = typename Kokkos::View<MyComplex*, ExecSpace>;
 
   // Reduction when ExecPolicy = MDRangePolicy and ReducerArgument =
   // scalar/1-element view
@@ -104,10 +104,10 @@ struct TestMDRangeReduce {
     MDPolicyType_2D mdPolicy_2D({0, 0}, {N, M});
 
     // Store the reduced value.
-    value_type d_result = 0.0, h_result = 0.0, view_results = 0.0;
+    value_type d_result = 0.0, h_result = 0.0;
     Kokkos::View<value_type, ExecSpace> d_resultView("result View");
 
-    // Fill host data with intial values
+    // Compute reference solution on the host.
     for (int i = 0; i < N; ++i)
       for (int j = 0; j < M; ++j) h_result += i * j;
     h_result *= 0.5;
@@ -138,13 +138,14 @@ struct TestMDRangeReduce {
     ASSERT_EQ(h_result, d_result);
 
     // Copy view back to host.
-    Kokkos::deep_copy(view_results, d_resultView);
-    ASSERT_EQ(h_result, view_results);
+    value_type view_result = 0.0;
+    Kokkos::deep_copy(view_result, d_resultView);
+    ASSERT_EQ(h_result, view_result);
   }
 
   // Custom Reduction
   void reduce_custom() {
-    complex_View_1D d_data("complex array", N);
+    Complex_View_1D d_data("complex array", N);
     MyComplex result(0.0, 0.0);
     int sum = 0;
 

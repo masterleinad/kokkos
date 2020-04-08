@@ -43,6 +43,7 @@
 */
 
 #include <Kokkos_Core.hpp>
+#include <random>
 #include <gtest/gtest.h>
 
 /// @Kokkos_Feature_Level_Required:17
@@ -61,26 +62,26 @@ const int N      = 50;
 template <class ExecSpace>
 struct TestAtomicView {
   // 1D  View of int
-  using View      = typename Kokkos::View<value_type *, ExecSpace>;
-  using Host_view = typename View::HostMirror;
+  using View = typename Kokkos::View<value_type *, ExecSpace>;
 
   // 1D atomic view
   using atomic_view =
       typename Kokkos::View<value_type *, ExecSpace,
                             Kokkos::MemoryTraits<Kokkos::Atomic> >;
-  using host_atomic_view = typename atomic_view::HostMirror;
 
   void atomicView() {
-    auto t = time(nullptr);
-    srand(t);  // Use current time as seed for random generator
+    // Use default_random_engine object to introduce randomness.
+    std::default_random_engine generator;
+    // Initialize uniform_int_distribution class.
+    std::uniform_int_distribution<int> distribution(0, N);
 
     // Device and Host views of N number of integers
     View d_data("deviceData_1D", N);
-    Host_view h_data = create_mirror_view(d_data);
+    auto h_data = create_mirror_view(d_data);
 
     // Atomic Device and Host views of histogram
     atomic_view d_hist("histogram", num_buckets);
-    host_atomic_view h_hist = create_mirror_view(d_hist);
+    auto h_hist = create_mirror_view(d_hist);
 
     // An array to store correct results for verification
     int *correct_results = new int[num_buckets];
@@ -91,8 +92,8 @@ struct TestAtomicView {
       correct_results[i] = 0;
     }
 
-    // Initialize integer input data with random integers
-    for (int i = 0; i < N; ++i) h_data(i) = rand() % 10 * i;
+    // Fill host data with integers from the distribution object.
+    for (int i = 0; i < N; ++i) h_data(i) = distribution(generator);
 
     // Copy data from host to device
     Kokkos::deep_copy(d_data, h_data);
