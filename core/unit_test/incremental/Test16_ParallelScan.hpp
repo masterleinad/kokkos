@@ -68,8 +68,8 @@ struct TestScan {
 
     // Exclusive parallel_scan call.
     Kokkos::parallel_scan(
-        N, KOKKOS_LAMBDA(const int i, value_type &update_value,
-                         const bool &final) {
+        N,
+        KOKKOS_LAMBDA(const int i, value_type &update_value, const bool final) {
           const value_type val_i = d_data(i);
           if (final) d_data(i) = update_value;
 
