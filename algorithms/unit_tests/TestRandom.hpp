@@ -424,90 +424,90 @@ void test_random(unsigned int num_draws) {
   cout << "Test Scalar=int" << endl;
   test_random_scalar<RandomGenerator, int> test_int(density_1d, density_3d,
                                                     pool, num_draws);
-  EXPECT_EQ(test_int.pass_mean, 1);
-  EXPECT_EQ(test_int.pass_var, 1);
-  EXPECT_EQ(test_int.pass_covar, 1);
-  EXPECT_EQ(test_int.pass_hist1d_mean, 1);
-  EXPECT_EQ(test_int.pass_hist1d_var, 1);
-  EXPECT_EQ(test_int.pass_hist1d_covar, 1);
-  EXPECT_EQ(test_int.pass_hist3d_mean, 1);
-  EXPECT_EQ(test_int.pass_hist3d_var, 1);
-  EXPECT_EQ(test_int.pass_hist3d_covar, 1);
+  ASSERT_EQ(test_int.pass_mean, 1);
+  ASSERT_EQ(test_int.pass_var, 1);
+  ASSERT_EQ(test_int.pass_covar, 1);
+  ASSERT_EQ(test_int.pass_hist1d_mean, 1);
+  ASSERT_EQ(test_int.pass_hist1d_var, 1);
+  ASSERT_EQ(test_int.pass_hist1d_covar, 1);
+  ASSERT_EQ(test_int.pass_hist3d_mean, 1);
+  ASSERT_EQ(test_int.pass_hist3d_var, 1);
+  ASSERT_EQ(test_int.pass_hist3d_covar, 1);
   deep_copy(density_1d, 0);
   deep_copy(density_3d, 0);
 
   cout << "Test Scalar=unsigned int" << endl;
   test_random_scalar<RandomGenerator, unsigned int> test_uint(
       density_1d, density_3d, pool, num_draws);
-  EXPECT_EQ(test_uint.pass_mean, 1);
-  EXPECT_EQ(test_uint.pass_var, 1);
-  EXPECT_EQ(test_uint.pass_covar, 1);
-  EXPECT_EQ(test_uint.pass_hist1d_mean, 1);
-  EXPECT_EQ(test_uint.pass_hist1d_var, 1);
-  EXPECT_EQ(test_uint.pass_hist1d_covar, 1);
-  EXPECT_EQ(test_uint.pass_hist3d_mean, 1);
-  EXPECT_EQ(test_uint.pass_hist3d_var, 1);
-  EXPECT_EQ(test_uint.pass_hist3d_covar, 1);
+  ASSERT_EQ(test_uint.pass_mean, 1);
+  ASSERT_EQ(test_uint.pass_var, 1);
+  ASSERT_EQ(test_uint.pass_covar, 1);
+  ASSERT_EQ(test_uint.pass_hist1d_mean, 1);
+  ASSERT_EQ(test_uint.pass_hist1d_var, 1);
+  ASSERT_EQ(test_uint.pass_hist1d_covar, 1);
+  ASSERT_EQ(test_uint.pass_hist3d_mean, 1);
+  ASSERT_EQ(test_uint.pass_hist3d_var, 1);
+  ASSERT_EQ(test_uint.pass_hist3d_covar, 1);
   deep_copy(density_1d, 0);
   deep_copy(density_3d, 0);
 
   cout << "Test Scalar=int64_t" << endl;
   test_random_scalar<RandomGenerator, int64_t> test_int64(
       density_1d, density_3d, pool, num_draws);
-  EXPECT_EQ(test_int64.pass_mean, 1);
-  EXPECT_EQ(test_int64.pass_var, 1);
-  EXPECT_EQ(test_int64.pass_covar, 1);
-  EXPECT_EQ(test_int64.pass_hist1d_mean, 1);
-  EXPECT_EQ(test_int64.pass_hist1d_var, 1);
-  EXPECT_EQ(test_int64.pass_hist1d_covar, 1);
-  EXPECT_EQ(test_int64.pass_hist3d_mean, 1);
-  EXPECT_EQ(test_int64.pass_hist3d_var, 1);
-  EXPECT_EQ(test_int64.pass_hist3d_covar, 1);
+  ASSERT_EQ(test_int64.pass_mean, 1);
+  ASSERT_EQ(test_int64.pass_var, 1);
+  ASSERT_EQ(test_int64.pass_covar, 1);
+  ASSERT_EQ(test_int64.pass_hist1d_mean, 1);
+  ASSERT_EQ(test_int64.pass_hist1d_var, 1);
+  ASSERT_EQ(test_int64.pass_hist1d_covar, 1);
+  ASSERT_EQ(test_int64.pass_hist3d_mean, 1);
+  ASSERT_EQ(test_int64.pass_hist3d_var, 1);
+  ASSERT_EQ(test_int64.pass_hist3d_covar, 1);
   deep_copy(density_1d, 0);
   deep_copy(density_3d, 0);
 
   cout << "Test Scalar=uint64_t" << endl;
   test_random_scalar<RandomGenerator, uint64_t> test_uint64(
       density_1d, density_3d, pool, num_draws);
-  EXPECT_EQ(test_uint64.pass_mean, 1);
-  EXPECT_EQ(test_uint64.pass_var, 1);
-  EXPECT_EQ(test_uint64.pass_covar, 1);
-  EXPECT_EQ(test_uint64.pass_hist1d_mean, 1);
-  EXPECT_EQ(test_uint64.pass_hist1d_var, 1);
-  EXPECT_EQ(test_uint64.pass_hist1d_covar, 1);
-  EXPECT_EQ(test_uint64.pass_hist3d_mean, 1);
-  EXPECT_EQ(test_uint64.pass_hist3d_var, 1);
-  EXPECT_EQ(test_uint64.pass_hist3d_covar, 1);
+  ASSERT_EQ(test_uint64.pass_mean, 1);
+  ASSERT_EQ(test_uint64.pass_var, 1);
+  ASSERT_EQ(test_uint64.pass_covar, 1);
+  ASSERT_EQ(test_uint64.pass_hist1d_mean, 1);
+  ASSERT_EQ(test_uint64.pass_hist1d_var, 1);
+  ASSERT_EQ(test_uint64.pass_hist1d_covar, 1);
+  ASSERT_EQ(test_uint64.pass_hist3d_mean, 1);
+  ASSERT_EQ(test_uint64.pass_hist3d_var, 1);
+  ASSERT_EQ(test_uint64.pass_hist3d_covar, 1);
   deep_copy(density_1d, 0);
   deep_copy(density_3d, 0);
 
   cout << "Test Scalar=float" << endl;
   test_random_scalar<RandomGenerator, float> test_float(density_1d, density_3d,
                                                         pool, num_draws);
-  EXPECT_EQ(test_float.pass_mean, 1);
-  EXPECT_EQ(test_float.pass_var, 1);
-  EXPECT_EQ(test_float.pass_covar, 1);
-  EXPECT_EQ(test_float.pass_hist1d_mean, 1);
-  EXPECT_EQ(test_float.pass_hist1d_var, 1);
-  EXPECT_EQ(test_float.pass_hist1d_covar, 1);
-  EXPECT_EQ(test_float.pass_hist3d_mean, 1);
-  EXPECT_EQ(test_float.pass_hist3d_var, 1);
-  EXPECT_EQ(test_float.pass_hist3d_covar, 1);
+  ASSERT_EQ(test_float.pass_mean, 1);
+  ASSERT_EQ(test_float.pass_var, 1);
+  ASSERT_EQ(test_float.pass_covar, 1);
+  ASSERT_EQ(test_float.pass_hist1d_mean, 1);
+  ASSERT_EQ(test_float.pass_hist1d_var, 1);
+  ASSERT_EQ(test_float.pass_hist1d_covar, 1);
+  ASSERT_EQ(test_float.pass_hist3d_mean, 1);
+  ASSERT_EQ(test_float.pass_hist3d_var, 1);
+  ASSERT_EQ(test_float.pass_hist3d_covar, 1);
   deep_copy(density_1d, 0);
   deep_copy(density_3d, 0);
 
   cout << "Test Scalar=double" << endl;
   test_random_scalar<RandomGenerator, double> test_double(
       density_1d, density_3d, pool, num_draws);
-  EXPECT_EQ(test_double.pass_mean, 1);
-  EXPECT_EQ(test_double.pass_var, 1);
-  EXPECT_EQ(test_double.pass_covar, 1);
-  EXPECT_EQ(test_double.pass_hist1d_mean, 1);
-  EXPECT_EQ(test_double.pass_hist1d_var, 1);
-  EXPECT_EQ(test_double.pass_hist1d_covar, 1);
-  EXPECT_EQ(test_double.pass_hist3d_mean, 1);
-  EXPECT_EQ(test_double.pass_hist3d_var, 1);
-  EXPECT_EQ(test_double.pass_hist3d_covar, 1);
+  ASSERT_EQ(test_double.pass_mean, 1);
+  ASSERT_EQ(test_double.pass_var, 1);
+  ASSERT_EQ(test_double.pass_covar, 1);
+  ASSERT_EQ(test_double.pass_hist1d_mean, 1);
+  ASSERT_EQ(test_double.pass_hist1d_var, 1);
+  ASSERT_EQ(test_double.pass_hist1d_covar, 1);
+  ASSERT_EQ(test_double.pass_hist3d_mean, 1);
+  ASSERT_EQ(test_double.pass_hist3d_var, 1);
+  ASSERT_EQ(test_double.pass_hist3d_covar, 1);
 }
 }  // namespace Impl
 

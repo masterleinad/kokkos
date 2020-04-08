@@ -70,28 +70,9 @@ void hip_test_random_xorshift1024(size_t num_draws) {
       Kokkos::Device<Kokkos::Experimental::HIP, Kokkos::Experimental::HIPSpace>>>(num_draws);
 }
 
-TEST(hip, Random_XorShift64)      {   hip_test_random_xorshift64(45678912); }
-//TEST(hip, Random_XorShift1024_0)  { hip_test_random_xorshift1024(34567891); }
-/*TEST(hip, Random_XorShift1024_1)  { hip_test_random_xorshift1024(28000000); }
-TEST(hip, Random_XorShift1024_2)  { hip_test_random_xorshift1024(28100000); }
-TEST(hip, Random_XorShift1024_3)  { hip_test_random_xorshift1024(28200000); }
-TEST(hip, Random_XorShift1024_4)  { hip_test_random_xorshift1024(28300000); }
-TEST(hip, Random_XorShift1024_5)  { hip_test_random_xorshift1024(28400000); }
-TEST(hip, Random_XorShift1024_6)  { hip_test_random_xorshift1024(28500000); }
-TEST(hip, Random_XorShift1024_7)  { hip_test_random_xorshift1024(28600000); }
-TEST(hip, Random_XorShift1024_8)  { hip_test_random_xorshift1024(28700000); }
-TEST(hip, Random_XorShift1024_9)  { hip_test_random_xorshift1024(28800000); }
-TEST(hip, Random_XorShift1024_10) { hip_test_random_xorshift1024(28900000); }
-TEST(hip, Random_XorShift1024_11) { hip_test_random_xorshift1024(29000000); }*/
-
-#define HIP_SORT_UNSIGNED(size) \
-  TEST(hip, SortUnsigned) { Impl::test_sort<Kokkos::Experimental::HIP, unsigned>(size); }
-
-//HIP_SORT_UNSIGNED(171)
-
-#undef HIP_RANDOM_XORSHIFT64
-#undef HIP_RANDOM_XORSHIFT1024
-#undef HIP_SORT_UNSIGNED
+TEST(hip, Random_XorShift64)      {   hip_test_random_xorshift64(132141141); }
+TEST(hip, Random_XorShift1024_0)  { hip_test_random_xorshift1024(52428813); }
+TEST(hip, SortUnsigned) { Impl::test_sort<Kokkos::Experimental::HIP, unsigned>(171); }
 }  // namespace Test
 #else
 void KOKKOS_ALGORITHMS_UNITTESTS_TESTHIP_PREVENT_LINK_ERROR() {}
