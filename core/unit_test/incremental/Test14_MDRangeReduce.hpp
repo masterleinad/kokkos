@@ -151,13 +151,13 @@ struct TestMDRangeReduce {
 
     // Fill data
     Kokkos::parallel_for(
-        N, KOKKOS_LAMBDA(const int i) {
+        Kokkos::RangePolicy<ExecSpace>(0, N), KOKKOS_LAMBDA(const int i) {
           d_data(i) = MyComplex(i * 0.5, -i * 0.5);
         });
 
     // Reduction for complex number.
     Kokkos::parallel_reduce(
-        N,
+        Kokkos::RangePolicy<ExecSpace>(0, N),
         KOKKOS_LAMBDA(const int i, MyComplex& update_value) {
           update_value += d_data(i);
         },
