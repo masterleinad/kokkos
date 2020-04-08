@@ -3750,6 +3750,7 @@ struct OperatorBoundsErrorOnDevice<MapType, true> {
     for (char const* p2 = label; (*p2 != '\0') && (p < end); ++p, ++p2) {
       *p = *p2;
     }
+    *(p++) = '\n';
     *p = '\0';
     Kokkos::abort(msg);
   }

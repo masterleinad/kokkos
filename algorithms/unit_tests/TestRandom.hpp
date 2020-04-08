@@ -148,17 +148,19 @@ struct test_random_functor {
 
     rnd_type rand_gen = rand_pool.get_state();
     for (int k = 0; k < 1024; ++k) {
-      const Scalar tmp = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
+      const Scalar theMax = Kokkos::rand<rnd_type, Scalar>::max();
+
+      const Scalar tmp = k/(2*theMax);//Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
 //      printf("drawing %d\n", tmp);
       prop.count++;
       prop.mean += tmp;
       prop.variance += (tmp - mean) * (tmp - mean);
-      const Scalar tmp2 = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
+      const Scalar tmp2 = k/(2*theMax);//Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
       prop.count++;
       prop.mean += tmp2;
       prop.variance += (tmp2 - mean) * (tmp2 - mean);
       prop.covariance += (tmp - mean) * (tmp2 - mean);
-      const Scalar tmp3 = Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
+      const Scalar tmp3 = k/(2*theMax);//Kokkos::rand<rnd_type, Scalar>::draw(rand_gen);
       prop.count++;
       prop.mean += tmp3;
       prop.variance += (tmp3 - mean) * (tmp3 - mean);
@@ -177,7 +179,7 @@ struct test_random_functor {
       // returns values of max(), the histograms will still catch this
       // indirectly, since none of the other values will be filled in.
 
-      const Scalar theMax = Kokkos::rand<rnd_type, Scalar>::max();
+      //const Scalar theMax = Kokkos::rand<rnd_type, Scalar>::max();
 
       const uint64_t ind1_1d =
           static_cast<uint64_t>(1.0 * HIST_DIM1D * tmp / theMax);
@@ -193,10 +195,15 @@ struct test_random_functor {
       const uint64_t ind3_3d =
           static_cast<uint64_t>(1.0 * HIST_DIM3D * tmp3 / theMax);
 
-      atomic_fetch_add(&density_1d(ind1_1d), 1);
-      atomic_fetch_add(&density_1d(ind2_1d), 1);
-      atomic_fetch_add(&density_1d(ind3_1d), 1);
-      atomic_fetch_add(&density_3d(ind1_3d, ind2_3d, ind3_3d), 1);
+/*      printf("size: %lu %lu %lu %lu\n", density_1d.extent(0), ind1_1d, ind2_1d, ind3_1d);
+      ++density_1d(ind1_1d);
+      ++density_1d(ind2_1d);
+      ++density_1d(ind3_1d);
+      ++density_3d(ind1_3d, ind2_3d, ind3_3d);
+      //atomic_fetch_add(&density_1d(ind1_1d), 1);
+      //atomic_fetch_add(&density_1d(ind2_1d), 1);
+      //atomic_fetch_add(&density_1d(ind3_1d), 1);
+      //atomic_fetch_add(&density_3d(ind1_3d, ind2_3d, ind3_3d), 1);*/
     }
     //printf("before free\n");*/
     rand_pool.free_state(rand_gen);
@@ -429,7 +436,7 @@ void test_random(unsigned int num_draws) {
   deep_copy(density_1d, 0);
   deep_copy(density_3d, 0);
 
-  /*cout << "Test Scalar=unsigned int" << endl;
+  cout << "Test Scalar=unsigned int" << endl;
   test_random_scalar<RandomGenerator, unsigned int> test_uint(
       density_1d, density_3d, pool, num_draws);
   EXPECT_EQ(test_uint.pass_mean, 1);
@@ -500,7 +507,7 @@ void test_random(unsigned int num_draws) {
   EXPECT_EQ(test_double.pass_hist1d_covar, 1);
   EXPECT_EQ(test_double.pass_hist3d_mean, 1);
   EXPECT_EQ(test_double.pass_hist3d_var, 1);
-  EXPECT_EQ(test_double.pass_hist3d_covar, 1);*/
+  EXPECT_EQ(test_double.pass_hist3d_covar, 1);
 }
 }  // namespace Impl
 

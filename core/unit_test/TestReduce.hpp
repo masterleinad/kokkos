@@ -433,26 +433,36 @@ class TestReduceDynamicView {
 TEST(TEST_CATEGORY, int64_t_reduce) {
   TestReduce<int64_t, TEST_EXECSPACE>(0);
   TestReduce<int64_t, TEST_EXECSPACE>(1000000);
+  TestReduce<int64_t, TEST_EXECSPACE>(10000000);
+  TestReduce<int64_t, TEST_EXECSPACE>(100000000);
 }
 
 TEST(TEST_CATEGORY, double_reduce) {
   TestReduce<double, TEST_EXECSPACE>(0);
   TestReduce<double, TEST_EXECSPACE>(1000000);
+  TestReduce<double, TEST_EXECSPACE>(10000000);
+  TestReduce<double, TEST_EXECSPACE>(100000000);
 }
 
 TEST(TEST_CATEGORY, int64_t_reduce_dynamic) {
   TestReduceDynamic<int64_t, TEST_EXECSPACE>(0);
   TestReduceDynamic<int64_t, TEST_EXECSPACE>(1000000);
+  TestReduceDynamic<int64_t, TEST_EXECSPACE>(10000000);
+  TestReduceDynamic<int64_t, TEST_EXECSPACE>(100000000);
 }
 
 TEST(TEST_CATEGORY, double_reduce_dynamic) {
   TestReduceDynamic<double, TEST_EXECSPACE>(0);
   TestReduceDynamic<double, TEST_EXECSPACE>(1000000);
+  TestReduceDynamic<double, TEST_EXECSPACE>(10000000);
+  TestReduceDynamic<double, TEST_EXECSPACE>(100000000);
 }
 
 TEST(TEST_CATEGORY, int64_t_reduce_dynamic_view) {
   TestReduceDynamicView<int64_t, TEST_EXECSPACE>(0);
   TestReduceDynamicView<int64_t, TEST_EXECSPACE>(1000000);
+  TestReduceDynamicView<int64_t, TEST_EXECSPACE>(10000000);
+  TestReduceDynamicView<int64_t, TEST_EXECSPACE>(100000000);
 }
 
 }  // namespace Test

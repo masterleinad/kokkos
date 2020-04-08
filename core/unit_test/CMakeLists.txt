@@ -81,7 +81,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP)
       ${dir}/Test${Tag}_DeepCopyAlignment.cpp
       ${dir}/Test${Tag}_FunctorAnalysis.cpp
       ${dir}/Test${Tag}_Init.cpp
-      ${dir}/Test${Tag}_LocalDeepCopy.cpp
+#      ${dir}/Test${Tag}_LocalDeepCopy.cpp
       ${dir}/Test${Tag}_MDRange_a.cpp
       ${dir}/Test${Tag}_MDRange_b.cpp
       ${dir}/Test${Tag}_MDRange_c.cpp
@@ -160,12 +160,12 @@ if(Kokkos_ENABLE_HIP)
 endif()
 
 if(Kokkos_ENABLE_SERIAL)
-  KOKKOS_ADD_EXECUTABLE_AND_TEST(
-    UnitTest_Serial
-    SOURCES
-    ${Serial_SOURCES}
-    serial/TestSerial_Task.cpp
-  )
+#  KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#    UnitTest_Serial
+#    SOURCES
+#    ${Serial_SOURCES}
+#    serial/TestSerial_Task.cpp
+#  )
 endif()
 
 if(Kokkos_ENABLE_PTHREAD)
@@ -257,7 +257,7 @@ if(Kokkos_ENABLE_CUDA)
   )
 endif()
 
-if(Kokkos_ENABLE_HIP)
+if(Kokkos_ENABLE_HIP_no)
   # FIXME_HIP
   LIST(REMOVE_ITEM HIP_SOURCES
     hip/TestHIP_AtomicOperations_complexdouble.cpp
@@ -305,72 +305,72 @@ SET(DEFAULT_DEVICE_SOURCES
   default/TestDefaultDeviceTypeResize.cpp
 )
 
-KOKKOS_ADD_EXECUTABLE_AND_TEST(
-  UnitTest_Default
-  SOURCES ${DEFAULT_DEVICE_SOURCES}
-)
+#KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#  UnitTest_Default
+#  SOURCES ${DEFAULT_DEVICE_SOURCES}
+#)
 
-KOKKOS_ADD_EXECUTABLE_AND_TEST(
-  UnitTest_PushFinalizeHook
-  SOURCES
-    UnitTest_PushFinalizeHook.cpp
-)
+#KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#  UnitTest_PushFinalizeHook
+#  SOURCES
+#    UnitTest_PushFinalizeHook.cpp
+#)
 
 # This test is special, because it passes exactly when it prints the
 # message "PASSED: I am the custom std::terminate handler.", AND calls
 # std::terminate.  This means that we can't use
 # KOKKOS_ADD_EXECUTABLE_AND_TEST.  See GitHub issue #2147.
 
-KOKKOS_ADD_TEST_EXECUTABLE( push_finalize_hook_terminate
-  SOURCES UnitTest_PushFinalizeHook_terminate.cpp
-)
-
-KOKKOS_ADD_ADVANCED_TEST( UnitTest_PushFinalizeHook_terminate
-  TEST_0
-    EXEC push_finalize_hook_terminate
-    NUM_MPI_PROCS 1
-    PASS_REGULAR_EXPRESSION
-      "PASSED: I am the custom std::terminate handler."
-    ALWAYS_FAIL_ON_ZERO_RETURN
-)
-
-KOKKOS_ADD_TEST_EXECUTABLE(
-  StackTraceTestExec
-  SOURCES
-    TestStackTrace.cpp
-    TestStackTrace_f0.cpp
-    TestStackTrace_f1.cpp
-    TestStackTrace_f2.cpp
-    TestStackTrace_f3.cpp
-    TestStackTrace_f4.cpp
-)
+#KOKKOS_ADD_TEST_EXECUTABLE( push_finalize_hook_terminate
+#  SOURCES UnitTest_PushFinalizeHook_terminate.cpp
+#)
+#
+#KOKKOS_ADD_ADVANCED_TEST( UnitTest_PushFinalizeHook_terminate
+#  TEST_0
+#    EXEC push_finalize_hook_terminate
+#    NUM_MPI_PROCS 1
+#    PASS_REGULAR_EXPRESSION
+#      "PASSED: I am the custom std::terminate handler."
+#    ALWAYS_FAIL_ON_ZERO_RETURN
+#)
+#
+#KOKKOS_ADD_TEST_EXECUTABLE(
+#  StackTraceTestExec
+#  SOURCES
+#    TestStackTrace.cpp
+#    TestStackTrace_f0.cpp
+#    TestStackTrace_f1.cpp
+#    TestStackTrace_f2.cpp
+#    TestStackTrace_f3.cpp
+#    TestStackTrace_f4.cpp
+#)
 # We need -rdynamic on GNU platforms for the stacktrace functionality
 # to work correctly with shared libraries
-KOKKOS_SET_EXE_PROPERTY(StackTraceTestExec ENABLE_EXPORTS ON)
+#KOKKOS_SET_EXE_PROPERTY(StackTraceTestExec ENABLE_EXPORTS ON)
+#
+#KOKKOS_ADD_TEST( NAME UnitTest_StackTraceTest
+#                 EXE  StackTraceTestExec
+#                 FAIL_REGULAR_EXPRESSION "FAILED"
+#               )
 
-KOKKOS_ADD_TEST( NAME UnitTest_StackTraceTest
-                 EXE  StackTraceTestExec
-                 FAIL_REGULAR_EXPRESSION "FAILED"
-               )
+#foreach(INITTESTS_NUM RANGE 1 16)
+#KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#  UnitTest_DefaultInit_${INITTESTS_NUM}
+#  SOURCES UnitTestMain.cpp default/TestDefaultDeviceTypeInit_${INITTESTS_NUM}.cpp
+#)
+#endforeach(INITTESTS_NUM)
 
-foreach(INITTESTS_NUM RANGE 1 16)
-KOKKOS_ADD_EXECUTABLE_AND_TEST(
-  UnitTest_DefaultInit_${INITTESTS_NUM}
-  SOURCES UnitTestMain.cpp default/TestDefaultDeviceTypeInit_${INITTESTS_NUM}.cpp
-)
-endforeach(INITTESTS_NUM)
+#if (KOKKOS_ENABLE_HWLOC)
+#KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#  UnitTest_HWLOC
+#  SOURCES UnitTestMain.cpp  TestHWLOC.cpp
+#)
+#endif()
 
-if (KOKKOS_ENABLE_HWLOC)
-KOKKOS_ADD_EXECUTABLE_AND_TEST(
-  UnitTest_HWLOC
-  SOURCES UnitTestMain.cpp  TestHWLOC.cpp
-)
-endif()
-
-KOKKOS_ADD_EXECUTABLE_AND_TEST(
-  UnitTest_HostBarrier
-  SOURCES UnitTestMain.cpp  TestHostBarrier.cpp
-)
+#KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#  UnitTest_HostBarrier
+#  SOURCES UnitTestMain.cpp  TestHostBarrier.cpp
+#)
 
 FUNCTION (KOKKOS_ADD_INCREMENTAL_TEST DEVICE)
   KOKKOS_OPTION( ${DEVICE}_EXCLUDE_TESTS "" STRING "Incremental test exclude list" )
@@ -404,20 +404,20 @@ FUNCTION (KOKKOS_ADD_INCREMENTAL_TEST DEVICE)
     ENABLE_${UC_DEVICE} ON BOOL "ENABLE ${UC_DEVICE}"
   )
 
-  KOKKOS_ADD_EXECUTABLE_AND_TEST(
-    IncrementalTest_${DEVICE}
-    SOURCES ${${DEVICE}_SOURCES}
-  )
+#  KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#    IncrementalTest_${DEVICE}
+#    SOURCES ${${DEVICE}_SOURCES}
+#  )
 
   TARGET_INCLUDE_DIRECTORIES( ${PACKAGE_NAME}_IncrementalTest_${DEVICE} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/incremental )
 
 ENDFUNCTION()
 
-FOREACH (DEVICE ${KOKKOS_ENABLED_DEVICES})
-  KOKKOS_ADD_INCREMENTAL_TEST(${DEVICE})
-ENDFOREACH()
+#FOREACH (DEVICE ${KOKKOS_ENABLED_DEVICES})
+#  KOKKOS_ADD_INCREMENTAL_TEST(${DEVICE})
+#ENDFOREACH()
 
-KOKKOS_ADD_EXECUTABLE_AND_TEST(
-  UnitTest_CTestDevice
-  SOURCES UnitTestMain.cpp  TestCTestDevice.cpp
-)
+#KOKKOS_ADD_EXECUTABLE_AND_TEST(
+#  UnitTest_CTestDevice
+#  SOURCES UnitTestMain.cpp  TestCTestDevice.cpp
+#)
