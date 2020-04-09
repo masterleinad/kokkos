@@ -114,7 +114,7 @@ struct TestAtomicView {
       ASSERT_EQ(correct_results[i], h_hist(i));
 
     // Free memory allocated for correct results.
-    delete correct_results;
+    delete[] correct_results;
   }
 };
 
