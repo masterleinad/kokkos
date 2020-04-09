@@ -575,7 +575,7 @@ namespace Experimental {
 
 int HIP::concurrency() {
   // FIXME_HIP
-  return 32 * 8 * 40;  // 81920 fiji and hawaii
+  return 16*4*1024;//10 * 32 * 8 * 40;  // 81920 fiji and hawaii
 }
 int HIP::impl_is_initialized() {
   return Impl::HIPInternal::singleton().is_initialized();

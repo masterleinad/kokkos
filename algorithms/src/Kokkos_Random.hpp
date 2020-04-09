@@ -658,7 +658,7 @@ struct Random_UniqueIndex<Kokkos::Experimental::HIP> {
              i_offset) %
             locks_.extent(0);
     int counter =0;
-    while (Kokkos::atomic_compare_exchange(&locks_(i), 0, 1) && counter<100) {
+    while (Kokkos::atomic_compare_exchange(&locks_(i), 0, 1) /*&& counter<100*/) {
 //      printf("i_new: %d %d %d\n", i, hipThreadIdx_x, hipThreadIdx_y);
       i += hipBlockDim_x * hipBlockDim_y * hipBlockDim_z;
       if (i >= static_cast<int>(locks_.extent(0))) {
