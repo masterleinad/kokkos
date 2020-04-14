@@ -60,6 +60,7 @@ struct MyComplex {
 
   MyComplex() = default;
 
+  KOKKOS_INLINE_FUNCTION
   MyComplex(value_type re, value_type im) : _re(re), _im(im) {}
 
   KOKKOS_INLINE_FUNCTION
