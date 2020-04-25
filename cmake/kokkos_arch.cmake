@@ -389,7 +389,54 @@ IF (KOKKOS_ENABLE_OPENMPTARGET)
 ENDIF()
 
 IF(KOKKOS_ENABLE_CUDA AND NOT CUDA_ARCH_ALREADY_SPECIFIED)
-  MESSAGE(SEND_ERROR "CUDA enabled but no NVIDIA GPU architecture currently enabled.  Please give one -DKokkos_ARCH_{..}=ON' to enable an NVIDIA GPU architecture.")
+      # Try to autodetect the CUDA Compute Capability by asking the device
+      SET(_binary_test_dir ${CMAKE_CURRENT_BINARY_DIR}/cmake/compile_tests/CUDAComputeCapabilityWorkdir)
+      FILE(REMOVE_RECURSE ${_binary_test_dir})
+      FILE(MAKE_DIRECTORY ${_binary_test_dir})
+
+      EXECUTE_PROCESS(
+          COMMAND ${CMAKE_CXX_COMPILER}
+          ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compile_tests/cuda_compute_capability.cu
+          -o cuda_compute_capability
+        WORKING_DIRECTORY ${_binary_test_dir}
+        OUTPUT_QUIET
+        ERROR_QUIET
+        )
+      EXECUTE_PROCESS(COMMAND ${_binary_test_dir}/cuda_compute_capability
+                      RESULT_VARIABLE _result
+                      OUTPUT_VARIABLE CUDA_COMPUTE_CAPABILITY)
+      IF(${_result} EQUAL 0)
+         IF (${CUDA_COMPUTE_CAPABILITY} EQUAL 30)
+           CHECK_CUDA_ARCH(KEPLER30  sm_30)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 32)
+           CHECK_CUDA_ARCH(KEPLER32  sm_32)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 32)
+           CHECK_CUDA_ARCH(KEPLER35  sm_35)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 32)
+           CHECK_CUDA_ARCH(KEPLER37  sm_37)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 50)
+           CHECK_CUDA_ARCH(MAXWELL50 sm_50)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 52)
+           CHECK_CUDA_ARCH(MAXWELL52 sm_52)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 53)
+           CHECK_CUDA_ARCH(MAXWELL53 sm_53)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 60)
+           CHECK_CUDA_ARCH(PASCAL60  sm_60)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 61)
+           CHECK_CUDA_ARCH(PASCAL61  sm_61)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 70)
+           CHECK_CUDA_ARCH(VOLTA70   sm_70)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 72)
+           CHECK_CUDA_ARCH(VOLTA72   sm_72)
+         ELSEIF(${CUDA_COMPUTE_CAPABILITY} EQUAL 75)
+           CHECK_CUDA_ARCH(TURING75  sm_75)
+         ELSE()
+	   MESSAGE(SEND_ERROR "Unsupported compute capability $CUDA_COMPUTE_CAPABILITY}.")
+         ENDIF()
+         MESSAGE(STATUS "Detected CUDA Compute Capability ${CUDA_COMPUTE_CAPABILITY}")
+      ELSE()
+        MESSAGE(SEND_ERROR "CUDA enabled but no NVIDIA GPU architecture currently enabled and auto-detection failed. Please give one -DKokkos_ARCH_{..}=ON' to enable an NVIDIA GPU architecture.")
+      ENDIF()
 ENDIF()
 
 #CMake verbose is kind of pointless
