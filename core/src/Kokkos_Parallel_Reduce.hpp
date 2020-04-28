@@ -45,7 +45,12 @@
 #ifndef KOKKOS_PARALLEL_REDUCE_HPP
 #define KOKKOS_PARALLEL_REDUCE_HPP
 
+#include <Kokkos_Macros.hpp>
+#include <Kokkos_View.hpp>
+#include <impl/Kokkos_FunctorAnalysis.hpp>
+#include <impl/Kokkos_FunctorAdapter.hpp>
 #include <Kokkos_NumericTraits.hpp>
+#include <type_traits>
 
 namespace Kokkos {
 
