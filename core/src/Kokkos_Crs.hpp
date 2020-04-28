@@ -45,10 +45,8 @@
 #ifndef KOKKOS_CRS_HPP
 #define KOKKOS_CRS_HPP
 
-#include <Kokkos_Macros.hpp>
 #include <Kokkos_View.hpp>
 #include <Kokkos_CopyViews.hpp>
-//#include <Kokkos_Parallel.hpp>
 
 namespace Kokkos {
 
