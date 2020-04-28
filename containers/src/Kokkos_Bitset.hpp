@@ -161,7 +161,11 @@ class Bitset {
       unsigned* block_ptr = &m_blocks[i >> block_shift];
       const unsigned mask = 1u << static_cast<int>(i & block_mask);
 
-      return !(atomic_fetch_or(block_ptr, mask) & mask);
+      const bool return_value = !(atomic_fetch_or(block_ptr, mask) & mask);
+#ifdef __HIP_DEVICE_COMPILE__
+      printf("%d %d Before atomic_fetch_or i:%d m_size:%d block_mask:%d mask:%d block_shift:%d return:%d\n", hipThreadIdx_x, hipThreadIdx_y, i, m_size, block_mask, mask, block_shift, return_value);
+#endif
+      return return_value;
     }
     return false;
   }
@@ -213,6 +217,7 @@ class Bitset {
                 ? block
                 : block & m_last_block_mask;
 
+    printf("calling find_any_helper\n");
     return find_any_helper(block_idx, offset, block, scan_direction);
   }
 

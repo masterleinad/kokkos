@@ -591,8 +591,11 @@ namespace Experimental {
 
 int HIP::concurrency() {
   auto const& prop = hip_device_prop();
+  /*const auto max_concurrency = prop.maxThreadsPerMultiProcessor * prop.multiProcessorCount;
+  std::cout << "max_concurrency: " << max_concurrency << std::endl;*/
   return prop.maxThreadsPerMultiProcessor * prop.multiProcessorCount;
 }
+
 int HIP::impl_is_initialized() {
   return Impl::HIPInternal::singleton().is_initialized();
 }

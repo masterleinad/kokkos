@@ -139,7 +139,9 @@ struct TestBitsetAny {
     execution_space().fence();
 
     unsigned count = 0;
+    std::cout << "before parallel_reduce" << std::endl;
     Kokkos::parallel_reduce(m_bitset.size(), *this, count);
+    std::cout << "after parallel_reduce" << std::endl;
     return count;
   }
 
@@ -156,25 +158,29 @@ struct TestBitsetAny {
     bool result       = false;
     unsigned attempts = 0;
     uint32_t hint     = (i >> 4) << 4;
+    printf("max_hint: %d\n", m_bitset.max_hint());
     while (attempts < m_bitset.max_hint()) {
       if (Set) {
         Kokkos::tie(result, hint) = m_bitset.find_any_unset_near(hint, i);
+        printf("result: %d, hint: %d\n", result, hint);
         if (result && m_bitset.set(hint)) {
           ++v;
           break;
-        } else if (!result) {
+        } else {
           ++attempts;
         }
+        printf("set return: %d\n", m_bitset.set(hint));
       } else {
         Kokkos::tie(result, hint) = m_bitset.find_any_set_near(hint, i);
         if (result && m_bitset.reset(hint)) {
           ++v;
           break;
-        } else if (!result) {
+        } else {
           ++attempts;
         }
       }
     }
+    printf("actual attempts: %d\n", attempts);
   }
 };
 }  // namespace Impl
@@ -184,15 +190,21 @@ void test_bitset() {
   typedef Kokkos::Bitset<Device> bitset_type;
   typedef Kokkos::ConstBitset<Device> const_bitset_type;
 
+  std::cout << "check1" << std::endl;
+
   // unsigned test_sizes[] = { 0u, 1000u, 1u<<14, 1u<<16, 10000001 };
-  unsigned test_sizes[] = {1000u, 1u << 14, 1u << 16, 10000001};
+  unsigned test_sizes[] = {1u};//, 1u << 14, 1u << 16, 10000001};
 
   for (int i = 0, end = sizeof(test_sizes) / sizeof(unsigned); i < end; ++i) {
     // std::cout << "Bitset " << test_sizes[i] << std::endl;
 
+    std::cout << "check2" << std::endl;
+
     bitset_type bitset(test_sizes[i]);
 
-    // std::cout << "  Check initial count " << std::endl;
+    std::cout << "check3" << std::endl;
+
+    std::cout << "  Check initial count " << std::endl;
     // nothing should be set
     {
       Impl::TestBitsetTest<bitset_type> f(bitset);
@@ -201,7 +213,7 @@ void test_bitset() {
       EXPECT_EQ(count, bitset.count());
     }
 
-    // std::cout << "  Check set() " << std::endl;
+    std::cout << "  Check set() " << std::endl;
     bitset.set();
     // everything should be set
     {
@@ -211,11 +223,11 @@ void test_bitset() {
       EXPECT_EQ(count, bitset.count());
     }
 
-    // std::cout << "  Check reset() " << std::endl;
+    std::cout << "  Check reset() " << std::endl;
     bitset.reset();
     EXPECT_EQ(0u, bitset.count());
 
-    // std::cout << "  Check set(i) " << std::endl;
+    std::cout << "  Check set(i) " << std::endl;
     // test setting bits
     {
       Impl::TestBitset<bitset_type, true> f(bitset);
@@ -224,7 +236,7 @@ void test_bitset() {
       EXPECT_EQ(bitset.size(), count);
     }
 
-    // std::cout << "  Check reset(i) " << std::endl;
+    std::cout << "  Check reset(i) " << std::endl;
     // test resetting bits
     {
       Impl::TestBitset<bitset_type, false> f(bitset);
@@ -233,16 +245,18 @@ void test_bitset() {
       EXPECT_EQ(0u, bitset.count());
     }
 
-    // std::cout << "  Check find_any_set(i) " << std::endl;
+    std::cout << "  Check find_any_set(i) " << std::endl;
     // test setting any bits
     {
       Impl::TestBitsetAny<bitset_type, true> f(bitset);
+      std::cout << "  Check dummy " << std::endl;
       uint32_t count = f.testit();
+      std::cout << "  Check dummy 2" << std::endl;
       EXPECT_EQ(bitset.size(), bitset.count());
       EXPECT_EQ(bitset.size(), count);
     }
 
-    // std::cout << "  Check find_any_unset(i) " << std::endl;
+    std::cout << "  Check find_any_unset(i) " << std::endl;
     // test resetting any bits
     {
       Impl::TestBitsetAny<bitset_type, false> f(bitset);
@@ -254,9 +268,7 @@ void test_bitset() {
 }
 
 // FIXME_HIP deadlock
-#ifndef KOKKOS_ENABLE_HIP
 TEST(TEST_CATEGORY, bitset) { test_bitset<TEST_EXECSPACE>(); }
-#endif
 }  // namespace Test
 
 #endif  // KOKKOS_TEST_BITSET_HPP

@@ -544,6 +544,7 @@ __inline__ __device__ int atomic_fetch_or(volatile int *const dest,
 
 __inline__ __device__ unsigned int atomic_fetch_or(
     volatile unsigned int *const dest, unsigned int const val) {
+  printf("calling atomicOr\n");
   return atomicOr(const_cast<unsigned int *>(dest), val);
 }
 
