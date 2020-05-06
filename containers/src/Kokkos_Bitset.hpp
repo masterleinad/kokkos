@@ -239,6 +239,7 @@ class Bitset {
                 ? ~block
                 : ~block & m_last_block_mask;
 
+printf("calling any_helper with %d %d %d %d\n", block_idx, offset, block, scan_direction); 
     return find_any_helper(block_idx, offset, block, scan_direction);
   }
 
@@ -250,8 +251,12 @@ class Bitset {
     Kokkos::pair<bool, unsigned> result(block > 0u, 0);
 
     if (!result.first) {
+      printf("calling update_hint with %d %d %d\n", block_idx, offset, scan_direction);
+
       result.second = update_hint(block_idx, offset, scan_direction);
     } else {
+      printf("calling scan_block with %d %d %d\n", block_idx << block_shift, offset, block, scan_direction);
+
       result.second =
           scan_block((block_idx << block_shift), offset, block, scan_direction);
     }
