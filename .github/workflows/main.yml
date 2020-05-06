@@ -7,7 +7,6 @@ jobs:
     # Serial build on Windows
     name: Windows Serial
     runs-on: [windows-latest]
-    compiler: clang-cl 
 
     steps:
     - uses: actions/checkout@v2
@@ -21,7 +20,7 @@ jobs:
         mkdir build
         mkdir c:/project
         cd build
-        cmake c:\projects\source -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF ..
+        cmake c:\projects\source -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF -T llvm
     - name: build library
       shell: bash
       run: |
