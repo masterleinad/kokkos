@@ -194,10 +194,16 @@ void initialize_backends(const InitArguments& args) {
 #if defined(KOKKOS_ENABLE_THREADS) || defined(KOKKOS_ENABLE_OPENMPTARGET)
   const int use_numa = args.num_numa;
 #endif
-#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_ROCM) || \
-    defined(KOKKOS_ENABLE_HIP)
-  int use_gpu           = args.device_id;
-  const int ndevices    = args.ndevices>0?args.ndevices:Cuda::detect_device_count();
+#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)
+  int use_gpu        = args.device_id;
+  const int ndevices = args.ndevices > 0 ? args.ndevices :
+#if defined(KOKKOS_ENABLE_CUDA)
+                                         Cuda::detect_device_count();
+#elif defined(KOKKOS_ENABLE_HIP)
+                                         Experimental::HIP::
+                                             detect_device_count();
+#endif
+
   const int skip_device = args.skip_device;
 
   // if the exact device is not set, but ndevices was given, assign round-robin
