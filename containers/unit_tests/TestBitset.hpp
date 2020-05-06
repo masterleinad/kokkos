@@ -163,10 +163,21 @@ struct TestBitsetAny {
       if (Set) {
         Kokkos::tie(result, hint) = m_bitset.find_any_unset_near(hint, i);
         printf("result: %d, hint: %d\n", result, hint);
-        if (result && m_bitset.set(hint)) {
-          ++v;
-          break;
-        } else {
+        if (result)
+        {
+          if (m_bitset.set(hint)) 
+          {
+            ++v;
+            break;
+          }
+          else
+          {
+            printf("result true, but set failed\n");
+            ++attempts;
+          }
+        } 
+        else 
+        {
           ++attempts;
         }
         printf("set return: %d\n", m_bitset.set(hint));
@@ -203,7 +214,7 @@ void test_bitset() {
     bitset_type bitset(test_sizes[i]);
 
     std::cout << "check3" << std::endl;
-
+/*
     std::cout << "  Check initial count " << std::endl;
     // nothing should be set
     {
@@ -243,7 +254,7 @@ void test_bitset() {
       uint32_t count = f.testit(10u);
       EXPECT_EQ(bitset.size(), count);
       EXPECT_EQ(0u, bitset.count());
-    }
+    }*/
 
     std::cout << "  Check find_any_set(i) " << std::endl;
     // test setting any bits
@@ -252,8 +263,8 @@ void test_bitset() {
       std::cout << "  Check dummy " << std::endl;
       uint32_t count = f.testit();
       std::cout << "  Check dummy 2" << std::endl;
-      EXPECT_EQ(bitset.size(), bitset.count());
-      EXPECT_EQ(bitset.size(), count);
+      ASSERT_EQ(bitset.count(), count);
+      ASSERT_EQ(bitset.size(), bitset.count());
     }
 
     std::cout << "  Check find_any_unset(i) " << std::endl;

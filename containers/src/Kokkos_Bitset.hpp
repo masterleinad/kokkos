@@ -167,6 +167,9 @@ class Bitset {
 #endif
       return return_value;
     }
+#ifdef __HIP_DEVICE_COMPILE__
+    printf("Trying to set index %d but size is %d!\n", i, m_size);
+#endif
     return false;
   }
 

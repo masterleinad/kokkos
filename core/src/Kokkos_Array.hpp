@@ -159,7 +159,7 @@ struct Array {
     return &m_internal_implementation_private_member_data[0];
   }
 
-/*#ifdef KOKKOS_IMPL_HIP_CLANG_WORKAROUND
+#ifdef KOKKOS_IMPL_HIP_CLANG_WORKAROUND
   // Do not default unless move and move-assignment are also defined
   KOKKOS_DEFAULTED_FUNCTION ~Array()            = default;
   KOKKOS_DEFAULTED_FUNCTION Array()             = default;
@@ -177,7 +177,7 @@ struct Array {
       m_internal_implementation_private_member_data[i] = vals.begin()[i];
     }
   }
-#endif*/
+#endif
 };
 
 template <class T, class Proxy>
