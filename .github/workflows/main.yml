@@ -16,11 +16,13 @@ jobs:
         wmic logicaldisk get size, freespace, caption
     - name: configure
       shell: bash
+      env:
+        CXX: clang-cl
       run: |
         mkdir build
         mkdir c:/project
         cd build
-        cmake -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF -T llvm ..
+        cmake -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF ..
     - name: build library
       shell: bash
       run: |
