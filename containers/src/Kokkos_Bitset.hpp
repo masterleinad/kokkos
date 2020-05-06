@@ -270,6 +270,8 @@ printf("calling any_helper with %d %d %d %d\n", block_idx, offset, block, scan_d
                  ? offset
                  : (offset + block_mask) & block_mask;
     block = Impl::rotate_right(block, offset);
+    printf("scan_block uses %d %d %d %d %d %d %d\n", scan_direction, BIT_SCAN_REVERSE, Impl::bit_scan_forward(block), ::Kokkos::log2(block), offset, block_mask, block_start);
+
     return (((!(scan_direction & BIT_SCAN_REVERSE)
                   ? Impl::bit_scan_forward(block)
                   : ::Kokkos::log2(block)) +
