@@ -372,3 +372,11 @@ void hip_internal_error_throw(hipError_t e, const char *name, const char *file,
 }
 }  // namespace Impl
 }  // namespace Kokkos
+
+//----------------------------------------------------------------------------
+
+namespace Kokkos {
+namespace Experimental {
+HIP::size_type HIP::detect_device_count()
+{ return HIPInternalDevices::singleton().m_hipDevCount ; }
+}}
