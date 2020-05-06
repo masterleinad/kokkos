@@ -200,8 +200,8 @@ void initialize_backends(const InitArguments& args) {
 #if defined(KOKKOS_ENABLE_CUDA)
                                          Cuda::detect_device_count();
 #elif defined(KOKKOS_ENABLE_HIP)
-                                         Experimental::HIP::
-                                             detect_device_count();
+// FIXME_HIP
+                                         1;
 #endif
 
   const int skip_device = args.skip_device;
