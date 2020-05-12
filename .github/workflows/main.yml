@@ -30,7 +30,7 @@ jobs:
         mkdir build
         mkdir c:/project
         cd build
-        cmake -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF -DCMAKE_CXX_COMPILER=clang-cl ..
+        cmake -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF -DCMAKE_CXX_COMPILER=clang-cl -G Ninja ..
     - name: build library
       shell: bash
       run: |
