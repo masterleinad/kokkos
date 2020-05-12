@@ -14,15 +14,23 @@ jobs:
       run: |
         cmake --version
         wmic logicaldisk get size, freespace, caption
+    - name: install
+      shell: powershell
+      run: |
+        Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+        scoop install ninja --global
+        scoop install llvm --global
+        echo "::set-env name=CC::clang"
+        echo "::set-env name=CXX::clang++"
+        # Scoop modifies the PATH so we make the modified PATH global.
+        echo "::set-env name=PATH::$env:PATH"
     - name: configure
       shell: bash
-      env:
-        CXX: clang-cl
       run: |
         mkdir build
         mkdir c:/project
         cd build
-        cmake -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF ..
+        cmake -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_PROFILING=OFF -T llvm ..
     - name: build library
       shell: bash
       run: |
