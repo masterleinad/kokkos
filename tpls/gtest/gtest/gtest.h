@@ -53,7 +53,7 @@
 #endif
 
 #ifdef _MSC_VER
-#define GTEST_LANG_CXX11
+#define GTEST_LANG_CXX11 1
 #endif
 
 #ifndef GTEST_INCLUDE_GTEST_GTEST_H_
