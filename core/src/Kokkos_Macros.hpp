@@ -648,6 +648,7 @@
 
 #if defined(KOKKOS_COMPILER_MSVC)
 #define KOKKOS_THREAD_LOCAL __declspec(thread)
+#define _CRT_SECURE_NO_WARNINGS
 #else
 #define KOKKOS_THREAD_LOCAL __thread
 #endif
