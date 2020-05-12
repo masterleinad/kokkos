@@ -54,6 +54,7 @@
 
 #ifdef _MSC_VER
 #define GTEST_LANG_CXX11 1
+#define GTEST_USE_OWN_TR1_TUPLE 0
 #endif
 
 #ifndef GTEST_INCLUDE_GTEST_GTEST_H_
