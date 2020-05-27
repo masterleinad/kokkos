@@ -1067,7 +1067,7 @@ struct DeepCopyScratchFunctor {
     Kokkos::parallel_for(
         Kokkos::TeamThreadRange(team, N_), KOKKOS_LAMBDA(const size_t& index) {
           auto thread_shview = Kokkos::subview(shview, index, Kokkos::ALL());
-          Kokkos::Experimental::local_deep_copy(thread_shview, index);
+          Kokkos::Experimental::local_deep_copy(thread_shview, static_cast<double>(index));
         });
     Kokkos::Experimental::local_deep_copy(
         team, check_view_1_, Kokkos::subview(shview, Kokkos::ALL(), 0));

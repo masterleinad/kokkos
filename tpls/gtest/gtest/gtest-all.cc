@@ -6616,7 +6616,7 @@ namespace internal {
 
 // Valid only for fast death tests. Indicates the code is running in the
 // child process of a fast style death test.
-static bool g_in_fast_death_test_child = false;
+//static bool g_in_fast_death_test_child = false;
 
 // Returns a Boolean value indicating whether the caller is currently
 // executing in the context of the death test child process.  Tools such as
@@ -7907,7 +7907,7 @@ namespace internal {
 const char kPathSeparator = '\\';
 const char kAlternatePathSeparator = '/';
 //const char kPathSeparatorString[] = "\\";
-const char kAlternatePathSeparatorString[] = "/";
+//const char kAlternatePathSeparatorString[] = "/";
 # if GTEST_OS_WINDOWS_MOBILE
 // Windows CE doesn't have a current directory. You should not use
 // the current directory in tests on Windows CE, but this at least

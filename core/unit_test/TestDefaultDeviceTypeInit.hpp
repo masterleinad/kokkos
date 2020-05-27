@@ -190,8 +190,8 @@ void check_correct_initialization(const Kokkos::InitArguments& argstruct) {
   ASSERT_EQ(Kokkos::DefaultExecutionSpace::is_initialized(), 1);
   ASSERT_EQ(Kokkos::HostSpace::execution_space::is_initialized(), 1);
 #else
-  ASSERT_EQ(Kokkos::DefaultExecutionSpace::impl_is_initialized(), 1);
-  ASSERT_EQ(Kokkos::HostSpace::execution_space::impl_is_initialized(), 1);
+  ASSERT_EQ(Kokkos::DefaultExecutionSpace::impl_is_initialized(), true);
+  ASSERT_EQ(Kokkos::HostSpace::execution_space::impl_is_initialized(), true);
 #endif
 
   // Figure out the number of threads the HostSpace ExecutionSpace should have

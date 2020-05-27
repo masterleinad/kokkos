@@ -1266,7 +1266,7 @@ class TestDynViewAPI {
         for (size_t i1 = 0; i1 < hx.extent(1); ++i1) {
           for (size_t i2 = 0; i2 < hx.extent(2); ++i2) {
             for (size_t i3 = 0; i3 < hx.extent(3); ++i3) {
-              hx(ip, i1, i2, i3) = ++count;
+              hx(ip, i1, i2, i3) = static_cast<T>(++count);
             }
           }
         }
