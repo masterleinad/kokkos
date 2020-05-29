@@ -63,8 +63,8 @@ before_script:
       export HOMEBREW_NO_AUTO_UPDATE=1;
       brew ls --versions ccache   > /dev/null || brew install ccache;
       export PATH=/usr/local/opt/ccache/libexec:$PATH;
+      export CXXFLAGS="${CXXFLAGS} -Wno-unused-command-line-argument";
       if [[ ${BACKEND} == "OPENMP" ]]; then brew install libomp; fi
-      export CXXFLAGS="${CXXFLAGS} -Wno-unused-command-line-argument"
     fi
   - ccache -z
   - if [[ ${COVERAGE} ]]; then export CXX="${CXX} --coverage"; fi
