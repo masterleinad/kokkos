@@ -64,6 +64,7 @@ before_script:
       brew ls --versions ccache   > /dev/null || brew install ccache;
       export PATH=/usr/local/opt/ccache/libexec:$PATH;
       if [[ ${BACKEND} == "OPENMP" ]]; then brew install libomp; fi
+      export CXXFLAGS="${CXXFLAGS} -Wno-unused-command-line-argument"
     fi
   - ccache -z
   - if [[ ${COVERAGE} ]]; then export CXX="${CXX} --coverage"; fi
@@ -84,7 +85,7 @@ script:
     pushd build &&
     cmake ..
           ${BACKEND:+-DKokkos_ENABLE_${BACKEND}=On}
-          -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Werror -Wno-unused-command-line-argument"
+          -DCMAKE_CXX_FLAGS="${CXXFLAGS} -Werror"
           -DKokkos_ENABLE_COMPILER_WARNINGS=ON
           -DKokkos_ENABLE_TESTS=On
           ${CMAKE_BUILD_TYPE:+-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}} &&
