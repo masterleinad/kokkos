@@ -83,9 +83,9 @@ script:
   - mkdir build &&
     pushd build &&
     cmake ..
-          ${BACKEND:+-DKokkos_ENABLE_${BACKEND}=On}
-          -DKokkos_ENABLE_COMPILER_WARNINGS=On
-          -DKokkos_ENABLE_TESTS=On
+          ${BACKEND:+-DKokkos_ENABLE_${BACKEND}=ON}
+          -DKokkos_ENABLE_COMPILER_WARNINGS=ON
+          -DKokkos_ENABLE_TESTS=ON
           ${CMAKE_BUILD_TYPE:+-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}} &&
     make VERBOSE=1 -j2 &&
     travis_wait 60 make test CTEST_OUTPUT_ON_FAILURE=1 &&
