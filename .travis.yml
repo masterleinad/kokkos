@@ -84,6 +84,7 @@ script:
     pushd build &&
     cmake ..
           ${BACKEND:+-DKokkos_ENABLE_${BACKEND}=On}
+          -DKokkos_ENABLE_COMPILER_WARNINGS=On
           -DKokkos_ENABLE_TESTS=On
           ${CMAKE_BUILD_TYPE:+-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}} &&
     make VERBOSE=1 -j2 &&
