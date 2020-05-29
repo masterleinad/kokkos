@@ -3,11 +3,9 @@ sudo: false
 language: cpp
 
 os:
-  - linux
   - osx
 
 compiler:
-  - gcc
   - clang
 
 cache:
@@ -94,8 +92,8 @@ script:
     popd
 
 after_failure:
-  - cat build/CMakeFiles/CMakeError.log
-  - cat build/CMakeFiles/CMakeOutput.log
+  - cat /Users/travis/build/masterleinad/kokkos/build/CMakeFiles/CMakeError.log
+  - cat /Users/travis/build/masterleinad/kokkos/build/CMakeFiles/CMakeOutput.log
 
 after_success:
   - ccache -s
