@@ -82,7 +82,7 @@ script:
     pushd build &&
     cmake ..
           ${BACKEND:+-DKokkos_ENABLE_${BACKEND}=ON}
-          -DCMAKE_CXX_FLAGS=-Werror
+          -DCMAKE_CXX_FLAGS="-Werror -Wno-unused-command-line-argument"
           -DKokkos_ENABLE_COMPILER_WARNINGS=ON
           -DKokkos_ENABLE_TESTS=ON
           ${CMAKE_BUILD_TYPE:+-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}} &&
