@@ -30,8 +30,6 @@ pipeline {
                                 -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
                                 -DKokkos_ENABLE_TESTS=ON \
                                 -DKokkos_ENABLE_HIP=ON \
-                                -DKokkos_ENABLE_LIBDL=OFF \
-                                -DKokkos_ENABLE_PROFILING=OFF \
                               .. && \
                               make -j8 && ctest --output-on-failure'''
                     }
