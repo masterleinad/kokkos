@@ -699,18 +699,20 @@ KOKKOS_INLINE_FUNCTION RealType abs(const complex<RealType>& x) {
 template <class RealType>
 KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> pow(const complex<RealType>& x,
                                                      const RealType& e) {
-  RealType r = abs(x);
+  RealType r   = abs(x);
   RealType phi = std::atan(x.imag() / x.real());
-  return std::pow(r, e) * Kokkos::complex<RealType>(std::cos(phi * e), std::sin(phi * e));
+  return std::pow(r, e) *
+         Kokkos::complex<RealType>(std::cos(phi * e), std::sin(phi * e));
 }
 
 //! Square root of a complex number.
 template <class RealType>
 KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> sqrt(
     const complex<RealType>& x) {
-  RealType r = abs(x);
+  RealType r   = abs(x);
   RealType phi = std::atan(x.imag() / x.real());
-  return std::sqrt(r) * Kokkos::complex<RealType>(std::cos(phi * 0.5), std::sin(phi * 0.5));
+  return std::sqrt(r) *
+         Kokkos::complex<RealType>(std::cos(phi * 0.5), std::sin(phi * 0.5));
 }
 
 //! Conjugate of a complex number.
@@ -723,7 +725,8 @@ KOKKOS_INLINE_FUNCTION complex<RealType> conj(
 //! Exponential of a complex number.
 template <class RealType>
 KOKKOS_INLINE_FUNCTION complex<RealType> exp(const complex<RealType>& x) {
-  return std::exp(x.real()) * complex<RealType>(std::cos(x.imag()), std::sin(x.imag()));
+  return std::exp(x.real()) *
+         complex<RealType>(std::cos(x.imag()), std::sin(x.imag()));
 }
 
 /// This function cannot be called in a CUDA device function,
