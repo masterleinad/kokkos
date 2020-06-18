@@ -136,12 +136,12 @@ pipeline {
                         }
                     }
                 }
-                stage('CUDA-10.1-NVCC-RDC') {
+                stage('CUDA-11.0-NVCC-C++17-RDC') {
                     agent {
                         dockerfile {
-                            filename 'Dockerfile.nvcc'
+                            filename 'Dockerfile.nvcc11'
                             dir 'scripts/docker'
-                            additionalBuildArgs '--pull --build-arg BASE=nvidia/cuda:10.1-devel'
+                            additionalBuildArgs '--pull --build-arg BASE=nvidia/cuda:11.0-devel-rc'
                             label 'nvidia-docker && volta'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache'
                         }
@@ -150,6 +150,7 @@ pipeline {
                         OMP_NUM_THREADS = 8
                         OMP_PLACES = 'threads'
                         OMP_PROC_BIND = 'spread'
+                        NVCC_WRAPPER_DEFAULT_COMPILER = 'g++-8'
                     }
                     steps {
                         sh 'ccache --zero-stats'
@@ -160,6 +161,7 @@ pipeline {
                                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
                                 -DCMAKE_CXX_FLAGS=-Werror \
+                                -DCMAKE_CXX_STANDARD=17 \
                                 -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
                                 -DKokkos_ENABLE_OPENMP=ON \
                                 -DKokkos_ENABLE_CUDA=ON \
