@@ -192,9 +192,12 @@ struct ErrorReporterDriverUseLambda
 
   ErrorReporterDriverUseLambda(int reporter_capacity, int test_size)
       : driver_base(reporter_capacity, test_size) {
+	      execute(reporter_capacity, test_size);}
+
+void execute(int reporter_capacity, int test_size) {
     Kokkos::parallel_for(
         Kokkos::RangePolicy<execution_space>(0, test_size),
-        KOKKOS_CLASS_LAMBDA(const int work_idx) {
+        KOKKOS_CLASS_LAMBDA (const int work_idx) {
           if (driver_base::error_condition(work_idx)) {
             double val = M_PI * static_cast<double>(work_idx);
             typename driver_base::report_type report = {work_idx, -2 * work_idx,
