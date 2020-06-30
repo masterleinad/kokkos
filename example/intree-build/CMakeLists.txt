@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(IntreeKokkos CXX) 
+project(IntreeKokkos CXX)
 
 IF(CMAKE_VERSION VERSION_GREATER_EQUAL "3.12.0")
   CMAKE_POLICY(SET CMP0074 NEW)
