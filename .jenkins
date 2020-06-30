@@ -209,7 +209,10 @@ pipeline {
                                 -DKokkos_ENABLE_CUDA_LAMBDA=ON \
                                 -DKokkos_ENABLE_PROFILING=OFF \
                               .. && \
-                              make -j8 && ctest --output-on-failure'''
+                              make -j8 && ctest --output-on-failure && \
+                              cd ../example/build_cmake_in_tree && \
+                              rm -rf build && mkdir -p build && cd build && \
+                              cmake .. && make -j8 && ./example 10'''
                     }
                     post {
                         always {
