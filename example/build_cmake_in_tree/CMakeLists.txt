@@ -32,7 +32,7 @@
 #   4. make
 
 cmake_minimum_required(VERSION 3.1)
-project(Example CXX C Fortran)
+project(Example CXX)
 
 list(APPEND CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -O3)
 
@@ -40,5 +40,5 @@ add_subdirectory(${Example_SOURCE_DIR}/../.. ${Example_BINARY_DIR}/kokkos)
 
 include_directories(${Kokkos_INCLUDE_DIRS_RET})
 
-add_executable(example cmake_example.cpp foo.f)
+add_executable(example cmake_example.cpp)
 target_link_libraries(example kokkos)
