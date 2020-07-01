@@ -120,13 +120,6 @@ class OpenMPTargetSpace;
 }  // namespace Experimental
 #endif
 
-#if defined(KOKKOS_ENABLE_ROCM)
-namespace Experimental {
-class ROCmSpace;  ///< Memory space on ROCm GPU
-class ROCm;       ///< Execution space for ROCm GPU
-}  // namespace Experimental
-#endif
-
 #if defined(KOKKOS_ENABLE_HIP)
 namespace Experimental {
 class HIPSpace;  ///< Memory space on HIP GPU
@@ -157,8 +150,6 @@ typedef Cuda DefaultExecutionSpace;
 typedef Experimental::OpenMPTarget DefaultExecutionSpace;
 #elif defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HIP)
 typedef Experimental::HIP DefaultExecutionSpace;
-#elif defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_ROCM)
-typedef Experimental::ROCm DefaultExecutionSpace;
 #elif defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_OPENMP)
 typedef OpenMP DefaultExecutionSpace;
 #elif defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_THREADS)
@@ -207,8 +198,6 @@ namespace Impl {
 #if defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA) && \
     defined(KOKKOS_ENABLE_CUDA)
 typedef Kokkos::CudaSpace ActiveExecutionMemorySpace;
-#elif defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_ROCM_GPU)
-typedef Kokkos::HostSpace ActiveExecutionMemorySpace;
 #elif defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_HIP_GPU)
 typedef Kokkos::Experimental::HIPSpace ActiveExecutionMemorySpace;
 #elif defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_HOST)
