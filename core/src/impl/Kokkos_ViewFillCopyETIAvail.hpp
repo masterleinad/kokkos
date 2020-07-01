@@ -118,8 +118,8 @@ struct ViewFillETIAvail {
 #ifdef KOKKOS_ENABLE_CUDA
 #include <Cuda/Kokkos_Cuda_ViewCopyETIAvail.hpp>
 #endif
-#ifdef KOKKOS_ENABLE_ROCM
-#include <ROCm/Kokkos_ROCm_ViewCopyETIAvail.hpp>
+#ifdef KOKKOS_ENABLE_HIP
+#include <HIP/Kokkos_HIP_ViewCopyETIAvail.hpp>
 #endif
 #endif
 

@@ -133,8 +133,8 @@ namespace Impl {
 #ifdef KOKKOS_ENABLE_CUDA
 #include <Cuda/Kokkos_Cuda_ViewCopyETIDecl.hpp>
 #endif
-#ifdef KOKKOS_ENABLE_ROCM
-#include <ROCm/Kokkos_ROCm_ViewCopyETIDecl.hpp>
+#ifdef KOKKOS_ENABLE_HIP
+#include <HIP/Kokkos_HIP_ViewCopyETIDecl.hpp>
 #endif
 #endif
 #endif

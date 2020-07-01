@@ -11,7 +11,6 @@ vpath %.cpp ${KOKKOS_PATH}/core/unit_test/openmptarget
 vpath %.cpp ${KOKKOS_PATH}/core/unit_test/hip
 vpath %.cpp ${KOKKOS_PATH}/core/unit_test/hpx
 vpath %.cpp ${KOKKOS_PATH}/core/unit_test/cuda
-vpath %.cpp ${KOKKOS_PATH}/core/unit_test/rocm
 
 
 TEST_HEADERS = $(wildcard $(KOKKOS_PATH)/core/unit_test/*.hpp)
@@ -421,9 +420,6 @@ test-cuda: KokkosCore_UnitTest_Cuda
 	./KokkosCore_UnitTest_Cuda
 	./KokkosCore_UnitTest_CudaInterOpInit
 	./KokkosCore_UnitTest_CudaInterOpStreams
-
-test-rocm: KokkosCore_UnitTest_ROCm
-	./KokkosCore_UnitTest_ROCm
 
 test-threads: KokkosCore_UnitTest_Threads
 	./KokkosCore_UnitTest_Threads
