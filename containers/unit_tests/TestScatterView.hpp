@@ -501,15 +501,6 @@ struct TestDuplicatedScatterView<
 };
 #endif
 
-#ifdef KOKKOS_ENABLE_ROCM
-// disable duplicated instantiation with ROCm until
-// UniqueToken can support it
-template <int ScatterType>
-struct TestDuplicatedScatterView<Kokkos::Experimental::ROCm, ScatterType> {
-  TestDuplicatedScatterView(int) {}
-};
-#endif
-
 template <typename DeviceType, int ScatterType, typename NumberType = double>
 void test_scatter_view(int n) {
   using execution_space = typename DeviceType::execution_space;
@@ -616,8 +607,32 @@ TEST(TEST_CATEGORY, scatterview_devicetype) {
         10);
   }
 #endif
+#ifdef KOKKOS_ENABLE_HIP
+  if (std::is_same<TEST_EXECSPACE, Kokkos::Experimenat::HIP>::value) {
+    using hip_device_type = Kokkos::Device<Kokkos::Experimenatl::HIPSpace>;
+    test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterSum,
+                      double>(10);
+    test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterSum,
+                      unsigned int>(10);
+    test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterProd>(10);
+    test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterMin>(10);
+    test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterMax>(10);
+    using hip_pinned_device_type =
+        Kokkos::Device<Kokkos::Cuda, Kokkos::HIPPinnedSpace>;
+    test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterSum,
+                      double>(10);
+    test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterSum,
+                      unsigned int>(10);
+    test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterProd>(
+        10);
+    test_scatter_view<hip_pinned__device_type, Kokkos::Experimental::ScatterMin>(
+        10);
+    test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterMax>(
+        10);
+  }
+#endif
 }
 
 }  // namespace Test
 
-#endif  // KOKKOS_TEST_UNORDERED_MAP_HPP
+#endif  // KOKKOS_TEST_SCATTER_VIEW_HPP
