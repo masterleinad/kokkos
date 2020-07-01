@@ -31,6 +31,12 @@ ifeq ($(KOKKOS_INTERNAL_USE_CUDA), 1)
 	TEST_TARGETS += test-cuda
 endif
 
+ifeq ($(KOKKOS_INTERNAL_USE_HIP), 1)
+	OBJ_HIP = TestHIP.o UnitTestMain.o gtest-all.o
+	TARGETS += KokkosAlgorithms_UnitTest_HIP
+	TEST_TARGETS += test-hip
+endif
+
 ifeq ($(KOKKOS_INTERNAL_USE_PTHREADS), 1)
 	OBJ_THREADS = TestThreads.o UnitTestMain.o gtest-all.o
 	TARGETS += KokkosAlgorithms_UnitTest_Threads
@@ -58,6 +64,9 @@ endif
 KokkosAlgorithms_UnitTest_Cuda: $(OBJ_CUDA) $(KOKKOS_LINK_DEPENDS)
 	$(LINK) $(EXTRA_PATH) $(OBJ_CUDA) $(KOKKOS_LIBS) $(LIB) $(KOKKOS_LDFLAGS) $(LDFLAGS) -o KokkosAlgorithms_UnitTest_Cuda
 
+KokkosAlgorithms_UnitTest_HIP: $(OBJ_HIP) $(KOKKOS_LINK_DEPENDS)
+	$(LINK) $(EXTRA_PATH) $(OBJ_HIP) $(KOKKOS_LIBS) $(LIB) $(KOKKOS_LDFLAGS) $(LDFLAGS) -o KokkosAlgorithms_UnitTest_HIP
+
 KokkosAlgorithms_UnitTest_Threads: $(OBJ_THREADS) $(KOKKOS_LINK_DEPENDS)
 	$(LINK) $(EXTRA_PATH) $(OBJ_THREADS) $(KOKKOS_LIBS) $(LIB) $(KOKKOS_LDFLAGS) $(LDFLAGS) -o KokkosAlgorithms_UnitTest_Threads
 
@@ -72,6 +81,9 @@ KokkosAlgorithms_UnitTest_Serial: $(OBJ_SERIAL) $(KOKKOS_LINK_DEPENDS)
 
 test-cuda: KokkosAlgorithms_UnitTest_Cuda
 	./KokkosAlgorithms_UnitTest_Cuda
+
+test-hip: KokkosAlgorithms_UnitTest_HIP
+	./KokkosAlgorithms_UnitTest_HIP
 
 test-threads: KokkosAlgorithms_UnitTest_Threads
 	./KokkosAlgorithms_UnitTest_Threads
