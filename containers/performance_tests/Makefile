@@ -32,9 +32,9 @@ ifeq ($(KOKKOS_INTERNAL_USE_CUDA), 1)
 endif
 
 ifeq ($(KOKKOS_INTERNAL_USE_HIP), 1)
-        OBJ_HIP = TestHIP.o TestMain.o gtest-all.o
-        TARGETS += KokkosContainers_PerformanceTest_HIP
-        TEST_TARGETS += test-hip
+	OBJ_HIP = TestHIP.o TestMain.o gtest-all.o
+	TARGETS += KokkosContainers_PerformanceTest_HIP
+	TEST_TARGETS += test-hip
 endif
 
 ifeq ($(KOKKOS_INTERNAL_USE_PTHREADS), 1)
