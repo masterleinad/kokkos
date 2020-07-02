@@ -608,8 +608,8 @@ TEST(TEST_CATEGORY, scatterview_devicetype) {
   }
 #endif
 #ifdef KOKKOS_ENABLE_HIP
-  if (std::is_same<TEST_EXECSPACE, Kokkos::Experimenat::HIP>::value) {
-    using hip_device_type = Kokkos::Device<Kokkos::Experimenatl::HIPSpace>;
+  if (std::is_same<TEST_EXECSPACE, Kokkos::Experimental::HIP>::value) {
+    using hip_device_type = Kokkos::Device<Kokkos::Experimental::HIP, Kokkos::Experimental::HIPSpace>;
     test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterSum,
                       double>(10);
     test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterSum,
@@ -618,14 +618,14 @@ TEST(TEST_CATEGORY, scatterview_devicetype) {
     test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterMin>(10);
     test_scatter_view<hip_device_type, Kokkos::Experimental::ScatterMax>(10);
     using hip_pinned_device_type =
-        Kokkos::Device<Kokkos::Cuda, Kokkos::HIPPinnedSpace>;
+        Kokkos::Device<Kokkos::Experimental::HIP, Kokkos::Experimental::HIPHostPinnedSpace>;
     test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterSum,
                       double>(10);
     test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterSum,
                       unsigned int>(10);
     test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterProd>(
         10);
-    test_scatter_view<hip_pinned__device_type, Kokkos::Experimental::ScatterMin>(
+    test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterMin>(
         10);
     test_scatter_view<hip_pinned_device_type, Kokkos::Experimental::ScatterMax>(
         10);
