@@ -45,6 +45,12 @@
 #include <Kokkos_Core.hpp>
 #include <cstdio>
 
+struct CountFunctor {
+  KOKKOS_FUNCTION void operator()(const long i, long& lcount) const {
+    lcount += (i % 2) == 0;
+  }
+};
+
 int main(int argc, char* argv[]) {
   Kokkos::initialize(argc, argv);
   Kokkos::DefaultExecutionSpace::print_configuration(std::cout);
@@ -64,9 +70,8 @@ int main(int argc, char* argv[]) {
 
   // Compute the number of even integers from 0 to n-1, in parallel.
   long count = 0;
-  Kokkos::parallel_reduce(
-      n, KOKKOS_LAMBDA(const long i, long& lcount) { lcount += (i % 2) == 0; },
-      count);
+  CountFunctor functor;
+  Kokkos::parallel_reduce(n, functor, count);
 
   double count_time = timer.seconds();
   printf("  Parallel: %ld    %10.6f\n", count, count_time);
