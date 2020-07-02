@@ -178,7 +178,12 @@ pipeline {
                               make -j8 && ctest --output-on-failure && \
                               cd ../example/build_cmake_installed && \
                               rm -rf build && mkdir -p build && cd build && \
-                              cmake .. && make -j8 && ctest --output-on-failure'''
+                              cmake \
+                                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+                                -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
+                                -DCMAKE_CXX_FLAGS=-Werror \
+                              .. && \
+                              make -j8 && ctest --output-on-failure'''
                     }
                     post {
                         always {
