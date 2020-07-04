@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Declare your project - must have C++ support
-project(Example CXX)
+project(Example CXX Fortran)
 
 # Look for an installed Kokkos
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.12.0")
@@ -12,7 +12,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.12.0")
 endif()
 find_package(Kokkos REQUIRED)
 
-add_executable(example cmake_example.cpp)
+add_executable(example cmake_example.cpp foo.f)
 target_link_libraries(example Kokkos::kokkos)
 
 enable_testing()
