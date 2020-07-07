@@ -60,6 +60,7 @@ namespace Impl {
   // impact
   printf("Aborting with message `%s'.\n", msg);
 #endif
+  (void) msg;
   abort();
   // This loop is never executed. It's intended to suppress warnings that the
   // function returns, even though it does not. This is necessary because

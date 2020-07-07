@@ -513,6 +513,12 @@ void* SharedAllocationRecord<Kokkos::Experimental::HIPHostPinnedSpace, void>::
 SharedAllocationRecord<Kokkos::Experimental::HIPSpace, void>*
 SharedAllocationRecord<Kokkos::Experimental::HIPSpace, void>::get_record(
     void* alloc_ptr) {
+  if (!alloc_ptr) {
+    Kokkos::Impl::throw_runtime_exception(std::string(
+        "Kokkos::Impl::SharedAllocationRecord< Kokkos::Experimental::HIPSpace "
+        ", void >::get_record ERROR"));
+  }
+
   using Header = SharedAllocationHeader;
   using RecordHIP =
       SharedAllocationRecord<Kokkos::Experimental::HIPSpace, void>;
@@ -520,18 +526,13 @@ SharedAllocationRecord<Kokkos::Experimental::HIPSpace, void>::get_record(
   // Copy the header from the allocation
   Header head;
 
-  Header const* const head_hip =
-      alloc_ptr ? Header::get_header(alloc_ptr) : (Header*)0;
-
-  if (alloc_ptr) {
+  Header const* const head_hip = Header::get_header(alloc_ptr);
     Kokkos::Impl::DeepCopy<HostSpace, Kokkos::Experimental::HIPSpace>(
         &head, head_hip, sizeof(SharedAllocationHeader));
-  }
 
-  RecordHIP* const record =
-      alloc_ptr ? static_cast<RecordHIP*>(head.m_record) : (RecordHIP*)0;
+  RecordHIP* const record = static_cast<RecordHIP*>(head.m_record);
 
-  if (!alloc_ptr || record->m_alloc_ptr != head_hip) {
+  if (record->m_alloc_ptr != head_hip) {
     Kokkos::Impl::throw_runtime_exception(std::string(
         "Kokkos::Impl::SharedAllocationRecord< Kokkos::Experimental::HIPSpace "
         ", void >::get_record ERROR"));

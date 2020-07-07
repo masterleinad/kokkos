@@ -48,15 +48,16 @@
 namespace Test {
 
 TEST(TEST_CATEGORY, team_scan) {
-  TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(0);
-  TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(0);
-  TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(10);
-  TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(10);
+  //TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(0);
+  //TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(0);
+  //TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(10);
+  //TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(10);
   // FIXME_HIP
-  //  TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(10000);
+  TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(10000);
   //  TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(10000);
 }
 
+/*
 TEST(TEST_CATEGORY, team_long_reduce) {
   TestReduceTeam<long, TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(0);
   TestReduceTeam<long, TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(0);
@@ -77,6 +78,6 @@ TEST(TEST_CATEGORY, team_double_reduce) {
       100000);
   TestReduceTeam<double, TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(
       100000);
-}
+}*/
 
 }  // namespace Test
