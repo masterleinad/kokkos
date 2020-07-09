@@ -808,7 +808,7 @@ KOKKOS_FUNCTION Cuda::Cuda(const Cuda& other) : m_space_instance(other.m_space_i
 {
 #ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
 	  if (m_counter)
-    ++(*m_counter);
+    Kokkos::atomic_add(m_counter, 1);
 #endif
 }
 
@@ -829,7 +829,7 @@ KOKKOS_FUNCTION Cuda& Cuda::operator=(const Cuda& other)
      m_use_stream = other.m_use_stream;
 #ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
      if (m_counter)
-       ++(*m_counter);
+       Kokkos::atomic_add(m_counter, 1);
 #endif
      return *this;
 }
@@ -839,7 +839,8 @@ KOKKOS_FUNCTION Cuda::~Cuda() noexcept
 	                  #ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
     if (m_counter==nullptr)
 	   return;
-    if (--(*m_counter) <= 0)
+    Kokkos::atomic_sub(m_counter, 1);
+    if (*m_counter <= 0)
           {
             delete m_counter;
 	    m_counter = nullptr;
