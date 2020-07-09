@@ -198,13 +198,13 @@ class Cuda {
 
   Cuda();
 
-  Cuda(Cuda&& other) noexcept = default;
+  Cuda(Cuda&& other) noexcept;// = default;
 
-  Cuda(const Cuda& other);
+  Cuda(const Cuda& other);// = default;
 
-  Cuda& operator=(Cuda&& other) noexcept = default;
+  Cuda& operator=(Cuda&& other) noexcept;// = default;
 
-  Cuda& operator=(const Cuda& other);
+  Cuda& operator=(const Cuda& other);// = default;
   
   KOKKOS_FUNCTION ~Cuda() noexcept;
 
@@ -259,8 +259,8 @@ class Cuda {
 
  private:
    Impl::CudaInternal* m_space_instance;
-   //int* m_counter;
-   //bool m_use_stream;
+   int* m_counter;
+   bool m_use_stream;
 };
 
 namespace Tools {

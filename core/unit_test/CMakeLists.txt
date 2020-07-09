@@ -27,7 +27,7 @@ ENDIF()
 # Define Device name mappings (i.e. what comes after Kokkos:: for the ExecSpace)
 #
 
-SET(KOKKOS_CUDA_FEATURE_LEVEL 999)
+SET(KOKKOS_CUDA_FEATURE_LEVEL 0)
 SET(KOKKOS_CUDA_NAME Cuda)
 SET(KOKKOS_HIP_FEATURE_LEVEL 12)
 SET(KOKKOS_HIP_NAME Experimental::HIP)
@@ -37,7 +37,7 @@ SET(KOKKOS_OPENMP_FEATURE_LEVEL 999)
 SET(KOKKOS_OPENMP_NAME OpenMP)
 SET(KOKKOS_OPENMPTARGET_FEATURE_LEVEL 10)
 SET(KOKKOS_OPENMPTARGET_NAME Experimental::OpenMPTarget)
-SET(KOKKOS_SERIAL_FEATURE_LEVEL 999)
+SET(KOKKOS_SERIAL_FEATURE_LEVEL 0)
 SET(KOKKOS_SERIAL_NAME Serial)
 SET(KOKKOS_THREADS_FEATURE_LEVEL 999)
 SET(KOKKOS_THREADS_NAME Threads)
@@ -64,77 +64,9 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP)
   # command line in an intermediate compilation step even if CMake generated a response
   # file. That then exceeded the shell comand line max length.
   SET(${Tag}_SOURCES1
-      ${dir}/Test${Tag}_AtomicOperations_int.cpp
-      ${dir}/Test${Tag}_AtomicOperations_unsignedint.cpp
-      ${dir}/Test${Tag}_AtomicOperations_longint.cpp
-      ${dir}/Test${Tag}_AtomicOperations_unsignedlongint.cpp
-      ${dir}/Test${Tag}_AtomicOperations_longlongint.cpp
-      ${dir}/Test${Tag}_AtomicOperations_double.cpp
-      ${dir}/Test${Tag}_AtomicOperations_float.cpp
-      ${dir}/Test${Tag}_AtomicOperations_complexdouble.cpp
-      ${dir}/Test${Tag}_AtomicOperations_complexfloat.cpp
-      ${dir}/Test${Tag}_AtomicViews.cpp
-      ${dir}/Test${Tag}_Atomics.cpp
-      ${dir}/Test${Tag}_Concepts.cpp
-      ${dir}/Test${Tag}_Complex.cpp
-      ${dir}/Test${Tag}_Crs.cpp
-      ${dir}/Test${Tag}_DeepCopyAlignment.cpp
-      ${dir}/Test${Tag}_FunctorAnalysis.cpp
-      ${dir}/Test${Tag}_Init.cpp
-      ${dir}/Test${Tag}_LocalDeepCopy.cpp
-      ${dir}/Test${Tag}_MDRange_a.cpp
-      ${dir}/Test${Tag}_MDRange_b.cpp
-      ${dir}/Test${Tag}_MDRange_c.cpp
-      ${dir}/Test${Tag}_MDRange_d.cpp
-      ${dir}/Test${Tag}_MDRange_e.cpp
-      ${dir}/Test${Tag}_Other.cpp
-      ${dir}/Test${Tag}_RangePolicy.cpp
-      ${dir}/Test${Tag}_RangePolicyRequire.cpp
-      ${dir}/Test${Tag}_Reductions.cpp
-      ${dir}/Test${Tag}_Reducers_a.cpp
-      ${dir}/Test${Tag}_Reducers_b.cpp
-      ${dir}/Test${Tag}_Reducers_c.cpp
-      ${dir}/Test${Tag}_Reducers_d.cpp
-      ${dir}/Test${Tag}_Reductions_DeviceView.cpp
-      ${dir}/Test${Tag}_Scan.cpp
-      ${dir}/Test${Tag}_SharedAlloc.cpp
   )
 
   SET(${Tag}_SOURCES2
-      ${dir}/Test${Tag}_SubView_a.cpp
-      ${dir}/Test${Tag}_SubView_b.cpp
-      ${dir}/Test${Tag}_SubView_c01.cpp
-      ${dir}/Test${Tag}_SubView_c02.cpp
-      ${dir}/Test${Tag}_SubView_c03.cpp
-      ${dir}/Test${Tag}_SubView_c04.cpp
-      ${dir}/Test${Tag}_SubView_c05.cpp
-      ${dir}/Test${Tag}_SubView_c06.cpp
-      ${dir}/Test${Tag}_SubView_c07.cpp
-      ${dir}/Test${Tag}_SubView_c08.cpp
-      ${dir}/Test${Tag}_SubView_c09.cpp
-      ${dir}/Test${Tag}_SubView_c10.cpp
-      ${dir}/Test${Tag}_SubView_c11.cpp
-      ${dir}/Test${Tag}_SubView_c12.cpp
-      ${dir}/Test${Tag}_SubView_c13.cpp
-      ${dir}/Test${Tag}_Team.cpp
-      ${dir}/Test${Tag}_TeamReductionScan.cpp
-      ${dir}/Test${Tag}_TeamScratch.cpp
-      ${dir}/Test${Tag}_TeamTeamSize.cpp
-      ${dir}/Test${Tag}_TeamVectorRange.cpp
-      ${dir}/Test${Tag}_UniqueToken.cpp
-      ${dir}/Test${Tag}_ViewAPI_a.cpp
-      ${dir}/Test${Tag}_ViewAPI_b.cpp
-      ${dir}/Test${Tag}_ViewAPI_c.cpp
-      ${dir}/Test${Tag}_ViewAPI_d.cpp
-      ${dir}/Test${Tag}_ViewAPI_e.cpp
-      ${dir}/Test${Tag}_ViewLayoutStrideAssignment.cpp
-      ${dir}/Test${Tag}_ViewMapping_a.cpp
-      ${dir}/Test${Tag}_ViewMapping_b.cpp
-      ${dir}/Test${Tag}_ViewMapping_subview.cpp
-      ${dir}/Test${Tag}_ViewOfClass.cpp
-      ${dir}/Test${Tag}_WorkGraph.cpp
-      ${dir}/Test${Tag}_View_64bit.cpp
-      ${dir}/Test${Tag}_ViewResize.cpp
   )
   SET(${Tag}_SOURCES ${${Tag}_SOURCES1} ${${Tag}_SOURCES2})
 
@@ -444,10 +376,10 @@ KOKKOS_ADD_TEST( NAME UnitTest_StackTraceTest
 endif()
 
 foreach(INITTESTS_NUM RANGE 1 16)
-KOKKOS_ADD_EXECUTABLE_AND_TEST(
-  UnitTest_DefaultInit_${INITTESTS_NUM}
-  SOURCES UnitTestMain.cpp default/TestDefaultDeviceTypeInit_${INITTESTS_NUM}.cpp
-)
+	#KOKKOS_ADD_EXECUTABLE_AND_TEST(
+	#UnitTest_DefaultInit_${INITTESTS_NUM}
+	# SOURCES UnitTestMain.cpp default/TestDefaultDeviceTypeInit_${INITTESTS_NUM}.cpp
+	#)
 endforeach(INITTESTS_NUM)
 
 if (KOKKOS_ENABLE_HWLOC)
@@ -512,4 +444,4 @@ KOKKOS_ADD_EXECUTABLE_AND_TEST(
   SOURCES UnitTestMain.cpp  TestCTestDevice.cpp
 )
 
-add_subdirectory(headers_self_contained)
+#add_subdirectory(headers_self_contained)
