@@ -198,11 +198,11 @@ class Cuda {
 
   Cuda();
 
-  Cuda(Cuda&& other) noexcept = default;
+  KOKKOS_FUNCTION Cuda(Cuda&& other) noexcept;
 
-  Cuda(const Cuda& other) = default;
+  KOKKOS_FUNCTION Cuda(const Cuda& other);
 
-  Cuda& operator=(Cuda&& other) noexcept = default;
+  KOKKOS_FUNCTION Cuda& operator=(Cuda&& other) noexcept;
 
   KOKKOS_FUNCTION Cuda& operator=(const Cuda& other);
   
