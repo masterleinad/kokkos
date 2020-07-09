@@ -784,13 +784,13 @@ void Cuda::impl_finalize() {
 }
 
 Cuda::Cuda()
-    : m_space_instance(&Impl::CudaInternal::singleton())/*, m_counter(nullptr), m_use_stream(false)*/ {
+    : m_space_instance(&Impl::CudaInternal::singleton()), m_counter(nullptr), m_use_stream(false) {
   Impl::CudaInternal::singleton().verify_is_initialized(
       "Cuda instance constructor");
 }
 
 Cuda::Cuda(cudaStream_t stream)
-    : m_space_instance(new Impl::CudaInternal)/*, m_counter(new int(1)), m_use_stream(true)*/ {
+    : m_space_instance(new Impl::CudaInternal), m_counter(new int(1)), m_use_stream(true) {
   Impl::CudaInternal::singleton().verify_is_initialized(
       "Cuda instance constructor");
   m_space_instance->initialize(Impl::CudaInternal::singleton().m_cudaDev,
@@ -829,10 +829,10 @@ KOKKOS_FUNCTION Cuda& Cuda::operator=(const Cuda& other)
      m_space_instance = other.m_space_instance;
      m_counter = other.m_counter;
      m_use_stream = other.m_use_stream;
-/*#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
+#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
      if (m_counter)
        ++(*m_counter);
-#endif*/
+#endif
      return *this;
 }
 
