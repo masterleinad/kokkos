@@ -804,9 +804,12 @@ Cuda::Cuda(Cuda&& other) noexcept
    m_use_stream = other.m_use_stream;
   }
 
-Cuda::Cuda(const Cuda& other) : m_space_instance(other.m_space_instance), m_counter (other.m_counter), m_use_stream(other.m_use_stream)
+ Cuda::Cuda(const Cuda& other) : m_space_instance(other.m_space_instance), m_counter (other.m_counter), m_use_stream(other.m_use_stream)
   {
+#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
+	  if (m_counter)
     ++(*m_counter);
+#endif
   }
 
 Cuda& Cuda::operator=(Cuda&& other) noexcept
@@ -824,22 +827,28 @@ Cuda& Cuda::operator=(const Cuda& other)
      m_space_instance = other.m_space_instance;
      m_counter = other.m_counter;
      m_use_stream = other.m_use_stream;
+#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
      if (m_counter)
        ++(*m_counter);
+#endif
      return *this;
   }
 
 KOKKOS_FUNCTION Cuda::~Cuda() noexcept
   {
-    if (m_counter && *m_counter <= 1)
+#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
+    if (!m_counter)
+	   return;
+    if (--(*m_counter) <= 0)
           {
             delete m_counter;
             if (m_use_stream)
             {
-                    m_space_instance->finalize();
-                    delete m_space_instance;
+                    //m_space_instance->finalize();
+                    //delete m_space_instance;
             }
          }
+#endif
   }
 
 void Cuda::print_configuration(std::ostream &s, const bool) {
