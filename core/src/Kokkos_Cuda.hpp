@@ -196,14 +196,17 @@ class Cuda {
   //--------------------------------------------------
   //! \name  Cuda space instances
 
-  ~Cuda() = default;
-
   Cuda();
 
-  Cuda(Cuda&&)      = default;
-  Cuda(const Cuda&) = default;
-  Cuda& operator=(Cuda&&) = default;
-  Cuda& operator=(const Cuda&) = default;
+  Cuda(Cuda&& other) noexcept;
+
+  Cuda(const Cuda& other);
+
+  Cuda& operator=(Cuda&& other) noexcept;
+
+  Cuda& operator=(const Cuda& other);
+  
+  KOKKOS_FUNCTION ~Cuda() noexcept;
 
   Cuda(cudaStream_t stream);
 
@@ -250,12 +253,14 @@ class Cuda {
   static const char* name();
 
   inline Impl::CudaInternal* impl_internal_space_instance() const {
-    return m_space_instance.get();
+    return m_space_instance;
   }
   uint32_t impl_instance_id() const noexcept { return 0; }
 
  private:
-  std::shared_ptr<Impl::CudaInternal> m_space_instance;
+   Impl::CudaInternal* m_space_instance;
+   int* m_counter;
+   bool m_use_stream;
 };
 
 namespace Tools {
