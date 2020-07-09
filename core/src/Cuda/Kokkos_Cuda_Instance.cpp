@@ -806,13 +806,13 @@ Cuda::Cuda(cudaStream_t stream)
    m_use_stream = other.m_use_stream;
   }*/
 
-Cuda::Cuda(const Cuda& other) : m_space_instance(other.m_space_instance)//, m_counter (other.m_counter), m_use_stream(other.m_use_stream)
+/*Cuda::Cuda(const Cuda& other) : m_space_instance(other.m_space_instance)//, m_counter (other.m_counter), m_use_stream(other.m_use_stream)
 {
-/*#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
+#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
 	  if (m_counter)
     ++(*m_counter);
-#endif*/
-}
+#endif
+}*/
 
 /*Cuda& Cuda::operator=(Cuda&& other) noexcept
   {

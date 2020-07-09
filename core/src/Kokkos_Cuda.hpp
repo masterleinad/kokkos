@@ -200,7 +200,7 @@ class Cuda {
 
   Cuda(Cuda&& other) noexcept = default;
 
-  Cuda(const Cuda& other);// = default;
+  Cuda(const Cuda& other) = default;
 
   Cuda& operator=(Cuda&& other) noexcept = default;
 
