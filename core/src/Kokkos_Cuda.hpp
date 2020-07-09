@@ -198,11 +198,11 @@ class Cuda {
 
   Cuda();
 
-  Cuda(Cuda&& other) noexcept;// = default;
+  Cuda(Cuda&& other) noexcept = default;
 
   Cuda(const Cuda& other);// = default;
 
-  Cuda& operator=(Cuda&& other) noexcept;// = default;
+  Cuda& operator=(Cuda&& other) noexcept = default;
 
   Cuda& operator=(const Cuda& other);// = default;
   
