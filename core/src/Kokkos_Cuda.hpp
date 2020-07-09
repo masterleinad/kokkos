@@ -204,7 +204,7 @@ class Cuda {
 
   Cuda& operator=(Cuda&& other) noexcept = default;
 
-  Cuda& operator=(const Cuda& other) = default;
+  KOKKOS_FUNCTION Cuda& operator=(const Cuda& other);
   
   KOKKOS_FUNCTION ~Cuda() noexcept;
 

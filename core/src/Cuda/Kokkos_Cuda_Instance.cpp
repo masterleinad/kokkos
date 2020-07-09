@@ -824,7 +824,7 @@ Cuda::Cuda(cudaStream_t stream)
      return *this;
   }*/
 
-/*Cuda& Cuda::operator=(const Cuda& other)
+KOKKOS_FUNCTION Cuda& Cuda::operator=(const Cuda& other)
 {
      m_space_instance = other.m_space_instance;
      m_counter = other.m_counter;
@@ -832,9 +832,9 @@ Cuda::Cuda(cudaStream_t stream)
 /*#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
      if (m_counter)
        ++(*m_counter);
-#endif
+#endif*/
      return *this;
-}*/
+}
 
 KOKKOS_FUNCTION Cuda::~Cuda() noexcept
 {
