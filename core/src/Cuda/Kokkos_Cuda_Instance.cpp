@@ -649,6 +649,8 @@ void CudaInternal::finalize() {
   if (0 != m_scratchSpace || 0 != m_scratchFlags) {
     Impl::finalize_host_cuda_lock_arrays();
 
+    if (m_stream != 0) cudaStreamDestroy(m_stream);
+
     typedef Kokkos::Impl::SharedAllocationRecord<CudaSpace> RecordCuda;
     typedef Kokkos::Impl::SharedAllocationRecord<CudaHostPinnedSpace>
         RecordHost;
@@ -782,37 +784,37 @@ void Cuda::impl_finalize() {
 }
 
 Cuda::Cuda()
-    : m_space_instance(&Impl::CudaInternal::singleton()), m_counter(nullptr), m_use_stream(false) {
+    : m_space_instance(&Impl::CudaInternal::singleton())/*, m_counter(nullptr), m_use_stream(false)*/ {
   Impl::CudaInternal::singleton().verify_is_initialized(
       "Cuda instance constructor");
 }
 
 Cuda::Cuda(cudaStream_t stream)
-    : m_space_instance(new Impl::CudaInternal), m_counter(new int(1)), m_use_stream(true) {
+    : m_space_instance(new Impl::CudaInternal)/*, m_counter(new int(1)), m_use_stream(true)*/ {
   Impl::CudaInternal::singleton().verify_is_initialized(
       "Cuda instance constructor");
   m_space_instance->initialize(Impl::CudaInternal::singleton().m_cudaDev,
                                stream);
 }
 
-Cuda::Cuda(Cuda&& other) noexcept
+/*Cuda::Cuda(Cuda&& other) noexcept
   {
    m_space_instance = other.m_space_instance;
    other.m_space_instance = nullptr;
    m_counter = other.m_counter;
    other.m_counter = nullptr;
    m_use_stream = other.m_use_stream;
-  }
+  }*/
 
- Cuda::Cuda(const Cuda& other) : m_space_instance(other.m_space_instance), m_counter (other.m_counter), m_use_stream(other.m_use_stream)
+ Cuda::Cuda(const Cuda& other) : m_space_instance(other.m_space_instance)//, m_counter (other.m_counter), m_use_stream(other.m_use_stream)
   {
-#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
+/*#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
 	  if (m_counter)
     ++(*m_counter);
-#endif
+#endif*/
   }
 
-Cuda& Cuda::operator=(Cuda&& other) noexcept
+/*Cuda& Cuda::operator=(Cuda&& other) noexcept
   {
      m_space_instance = other.m_space_instance;
      other.m_space_instance = nullptr;
@@ -820,23 +822,23 @@ Cuda& Cuda::operator=(Cuda&& other) noexcept
      other.m_counter = nullptr;
      m_use_stream = other.m_use_stream;
      return *this;
-  }
+  }*/
 
 Cuda& Cuda::operator=(const Cuda& other)
   {
      m_space_instance = other.m_space_instance;
-     m_counter = other.m_counter;
+/*     m_counter = other.m_counter;
      m_use_stream = other.m_use_stream;
 #ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
      if (m_counter)
        ++(*m_counter);
-#endif
+#endif*/
      return *this;
   }
 
 KOKKOS_FUNCTION Cuda::~Cuda() noexcept
   {
-#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
+/*#ifndef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA
     if (!m_counter)
 	   return;
     if (--(*m_counter) <= 0)
@@ -848,7 +850,7 @@ KOKKOS_FUNCTION Cuda::~Cuda() noexcept
                     //delete m_space_instance;
             }
          }
-#endif
+#endif*/
   }
 
 void Cuda::print_configuration(std::ostream &s, const bool) {

@@ -198,11 +198,11 @@ class Cuda {
 
   Cuda();
 
-  Cuda(Cuda&& other) noexcept;
+  Cuda(Cuda&& other) noexcept = default;
 
   Cuda(const Cuda& other);
 
-  Cuda& operator=(Cuda&& other) noexcept;
+  Cuda& operator=(Cuda&& other) noexcept = default;
 
   Cuda& operator=(const Cuda& other);
   
@@ -259,8 +259,8 @@ class Cuda {
 
  private:
    Impl::CudaInternal* m_space_instance;
-   int* m_counter;
-   bool m_use_stream;
+   //int* m_counter;
+   //bool m_use_stream;
 };
 
 namespace Tools {
