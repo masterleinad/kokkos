@@ -1,9 +1,17 @@
 KOKKOS_CFG_DEPENDS(CXX_STD COMPILER_ID)
 
 FUNCTION(kokkos_set_cxx_standard_feature standard)
+  #PGI's -A flag causes trouble at least when using with CUDA so just strip it
+  MESSAGE(STATUS "Before: ${CMAKE_CXX${standard}_STANDARD_COMPILE_OPTION}")
+  IF(CMAKE_CXX_COMPILER_ID STREQUAL PGI)
+    LIST(REMOVE_ITEM CMAKE_CXX${standard}_STANDARD_COMPILE_OPTION "-A")
+  ENDIF()
+  MESSAGE(STATUS "After: ${CMAKE_CXX${standard}_STANDARD_COMPILE_OPTION}")
+
   SET(EXTENSION_NAME CMAKE_CXX${standard}_EXTENSION_COMPILE_OPTION)
   SET(STANDARD_NAME  CMAKE_CXX${standard}_STANDARD_COMPILE_OPTION)
   SET(FEATURE_NAME   cxx_std_${standard})
+
   #CMake's way of telling us that the standard (or extension)
   #flags are supported is the extension/standard variables
   IF (NOT DEFINED CMAKE_CXX_EXTENSIONS)
@@ -28,9 +36,11 @@ FUNCTION(kokkos_set_cxx_standard_feature standard)
     GLOBAL_SET(KOKKOS_CXX_STANDARD_FEATURE ${FEATURE_NAME})
   ELSEIF(NOT KOKKOS_USE_CXX_EXTENSIONS AND ${STANDARD_NAME})
     MESSAGE(STATUS "Using ${${STANDARD_NAME}} for C++${standard} standard as feature")
-    SET(SUPPORTED_NVCC_FLAGS "-std=c++11;-std=c++14;-std=c++17")
-    IF (${KOKKOS_CXX_COMPILER_ID} STREQUAL NVIDIA AND NOT ${${STANDARD_NAME}} IN_LIST SUPPORTED_NVCC_FLAGS)
-      MESSAGE(FATAL_ERROR "CMake wants to use ${${STANDARD_NAME}} which is not supported by NVCC. Using a more recent host compiler or a more recent CMake version might help.")
+    IF (KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA AND KOKKOS_CXX_HOST_COMPILER_ID STREQUAL GNU)
+      SET(SUPPORTED_NVCC_FLAGS "-std=c++11;-std=c++14;-std=c++17")
+      IF (NOT ${${STANDARD_NAME}} IN_LIST SUPPORTED_NVCC_FLAGS)
+        MESSAGE(FATAL_ERROR "CMake wants to use ${${STANDARD_NAME}} which is not supported by NVCC. Using a more recent host compiler or a more recent CMake version might help.")
+      ENDIF()
     ENDIF()
     GLOBAL_SET(KOKKOS_CXX_STANDARD_FEATURE ${FEATURE_NAME})
   ELSEIF (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")

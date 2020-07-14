@@ -95,6 +95,7 @@ ENDIF()
 
 IF (NOT CMAKE_SIZEOF_VOID_P)
   STRING(FIND ${CMAKE_CXX_COMPILER} nvcc_wrapper FIND_IDX)
+  MESSAGE(STATUS "Compiler ${CMAKE_CXX_COMPILER}")
   IF (NOT FIND_IDX STREQUAL -1)
     MESSAGE(FATAL_ERROR "Kokkos did not configure correctly and failed to validate compiler. The most likely cause is CUDA linkage using nvcc_wrapper. Please ensure your CUDA environment is correctly configured.")
   ELSE()
