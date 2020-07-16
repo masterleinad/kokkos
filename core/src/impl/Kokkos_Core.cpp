@@ -234,7 +234,7 @@ void initialize_backends(const InitArguments& args) {
     defined(KOKKOS_ENABLE_OPENMPTARGET) || defined(KOKKOS_ENABLE_HPX)
   const int num_threads = args.num_threads;
 #endif
-#if defined(KOKKOS_ENABLE_THREADS) || defined(KOKKOS_ENABLE_OPENMPTARGET)
+#if defined(KOKKOS_ENABLE_THREADS)
   const int use_numa = args.num_numa;
 #endif
 #if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_ROCM) || \

@@ -480,7 +480,6 @@ struct TestReduceCombinatoricalInstantiation {
     Kokkos::View<double> result_view("FunctorView");
     auto h_r = Kokkos::create_mirror_view(result_view);
     Test::ReduceCombinatorical::FunctorScalar<ISTEAM> functor(result_view);
-    double expected_result = 1000.0 * 999.0 / 2.0;
 
     AddReturnArgument(args..., functor);
     AddReturnArgument(
@@ -489,6 +488,8 @@ struct TestReduceCombinatoricalInstantiation {
 // WORKAROUND OPENMPTARGET: reductions with functor join/init/final not
 // implemented
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
+    double expected_result = 1000.0 * 999.0 / 2.0;
+
     AddReturnArgument(
         args...,
         Test::ReduceCombinatorical::FunctorScalarInit<ISTEAM>(result_view));
