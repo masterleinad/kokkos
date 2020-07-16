@@ -67,23 +67,14 @@ struct OpenMPTargetReducerWrapper {
 #pragma omp declare target
   KOKKOS_INLINE_FUNCTION
   static void join(value_type&, const value_type&) {
-    printf(
-        "Using a generic unknown Reducer for the OpenMPTarget backend is not "
-        "implemented.");
   }
 
   KOKKOS_INLINE_FUNCTION
   static void join(volatile value_type&, const volatile value_type&) {
-    printf(
-        "Using a generic unknown Reducer for the OpenMPTarget backend is not "
-        "implemented.");
   }
 
   KOKKOS_INLINE_FUNCTION
   static void init(value_type&) {
-    printf(
-        "Using a generic unknown Reducer for the OpenMPTarget backend is not "
-        "implemented.");
   }
 #pragma omp end declare target
 };
@@ -941,6 +932,9 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     const unsigned long league_size   = m_policy.league_size();
     const unsigned long team_size     = m_policy.team_size();
     const unsigned long vector_length = m_policy.vector_length();
+    const int nteams        = OpenMPTargetExec::MAX_ACTIVE_TEAMS < league_size
+                           ? OpenMPTargetExec::MAX_ACTIVE_TEAMS
+                           : league_size;
 
     OpenMPTargetExec::resize_scratch(0, Policy::member_type::TEAM_REDUCE_SIZE,
                                      0, 0);
@@ -967,9 +961,9 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
         "Kokkos::Experimental::OpenMPTarget parallel_for");
     OpenMPTargetExec::verify_initialized(
         "Kokkos::Experimental::OpenMPTarget parallel_for");
-    const int league_size   = m_policy.league_size();
-    const int team_size     = m_policy.team_size();
-    const int vector_length = m_policy.vector_length();
+    const unsigned long league_size   = m_policy.league_size();
+    const unsigned long team_size     = m_policy.team_size();
+    const unsigned long vector_length = m_policy.vector_length();
     const int nteams        = OpenMPTargetExec::MAX_ACTIVE_TEAMS < league_size
                            ? OpenMPTargetExec::MAX_ACTIVE_TEAMS
                            : league_size;
@@ -983,7 +977,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     num_threads(team_size* vector_length) schedule(static, 1)      \
         map(to                                                     \
             : a_functor, scratch_ptr)
-    for (int i = 0; i < league_size * team_size * vector_length; i++) {
+    for (unsigned long i = 0; i < league_size * team_size * vector_length; i++) {
       typename Policy::member_type team(i / (team_size * vector_length),
                                         league_size, team_size, vector_length,
                                         scratch_ptr, 0, 0);
