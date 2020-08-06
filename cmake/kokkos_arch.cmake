@@ -92,7 +92,12 @@ ENDIF()
 IF(KOKKOS_ENABLE_COMPILER_WARNINGS)
   SET(COMMON_WARNINGS
     "-Wall" "-Wunused-parameter" "-Wshadow" "-pedantic"
-    "-Wsign-compare" "-Wtype-limits" "-Wuninitialized")
+    "-Wtype-limits" "-Wuninitialized")
+
+  # OpenMPTarget compilers give erroneous warnings about sign comparison in loops
+  IF(NOT KOKKOS_ENABLE_OPENMPTARGET)
+    LIST(APPEND COMMON_WARNINGS "-Wsign-compare")
+  ENDIF()
 
   SET(GNU_WARNINGS "-Wempty-body" "-Wclobbered" "-Wignored-qualifiers"
     ${COMMON_WARNINGS})
