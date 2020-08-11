@@ -175,25 +175,27 @@ void test_dynrankview_op_perf(const int par_size) {
   const size_type dim_3 = 30;
 
   double elapsed_time_view       = 0;
-  double elapsed_time_compview   = 0;
-  double elapsed_time_strideview = 0;
-  double elapsed_time_view_rank7 = 0;
-  double elapsed_time_drview     = 0;
-  double elapsed_time_compdrview = 0;
-  Kokkos::Timer timer;
+  //double elapsed_time_compview   = 0;
+  //double elapsed_time_strideview = 0;
+  //double elapsed_time_view_rank7 = 0;
+  //double elapsed_time_drview     = 0;
+  //double elapsed_time_compdrview = 0;
+  //Kokkos::Timer timer;
   {
-    Kokkos::View<double ***, DeviceType> testview("testview", par_size, dim_2,
-                                                  dim_3);
-    using FunctorType = InitViewFunctor<DeviceType>;
+    Kokkos::View<double *, DeviceType> testview("testview", 1/*par_size*/);//, 1/*dim_2*/, 1/*dim_3*/);
+    (void) par_size;
+    (void) dim_2;
+    (void) dim_3;
+    //using FunctorType = InitViewFunctor<DeviceType>;
 
-    timer.reset();
-    Kokkos::RangePolicy<DeviceType> policy(0, par_size);
-    Kokkos::parallel_for(policy, FunctorType(testview));
-    DeviceType().fence();
-    elapsed_time_view = timer.seconds();
+    //timer.reset();
+    //Kokkos::RangePolicy<DeviceType> policy(0, par_size);
+    //Kokkos::parallel_for(policy, FunctorType(testview));
+    //DeviceType().fence();
+    //elapsed_time_view = timer.seconds();
     std::cout << " View time (init only): " << elapsed_time_view << std::endl;
 
-    timer.reset();
+    /*timer.reset();
     Kokkos::View<double *, DeviceType> sumview("sumview", par_size);
     Kokkos::parallel_for(
         policy, typename FunctorType::SumComputationTest(testview, sumview));
@@ -211,9 +213,9 @@ void test_dynrankview_op_perf(const int par_size) {
     DeviceType().fence();
     elapsed_time_strideview = timer.seconds();
     std::cout << " Strided View time (init only): " << elapsed_time_strideview
-              << std::endl;
+              << std::endl;*/
   }
-  {
+  /*{
     Kokkos::View<double *******, DeviceType> testview("testview", par_size,
                                                       dim_2, dim_3, 1, 1, 1, 1);
     using FunctorType = InitViewRank7Functor<DeviceType>;
@@ -265,7 +267,7 @@ void test_dynrankview_op_perf(const int par_size) {
             << elapsed_time_drview / elapsed_time_view_rank7
             << std::endl;  // expect ?
 
-  timer.reset();
+  timer.reset();*/
 
 }  // end test_dynrankview
 

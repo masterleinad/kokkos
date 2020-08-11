@@ -106,40 +106,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP)
   )
 
   SET(${Tag}_SOURCES2
-      ${dir}/Test${Tag}_SubView_a.cpp
-      ${dir}/Test${Tag}_SubView_b.cpp
-      ${dir}/Test${Tag}_SubView_c01.cpp
-      ${dir}/Test${Tag}_SubView_c02.cpp
-      ${dir}/Test${Tag}_SubView_c03.cpp
-      ${dir}/Test${Tag}_SubView_c04.cpp
-      ${dir}/Test${Tag}_SubView_c05.cpp
-      ${dir}/Test${Tag}_SubView_c06.cpp
-      ${dir}/Test${Tag}_SubView_c07.cpp
-      ${dir}/Test${Tag}_SubView_c08.cpp
-      ${dir}/Test${Tag}_SubView_c09.cpp
-      ${dir}/Test${Tag}_SubView_c10.cpp
-      ${dir}/Test${Tag}_SubView_c11.cpp
-      ${dir}/Test${Tag}_SubView_c12.cpp
-      ${dir}/Test${Tag}_SubView_c13.cpp
-      ${dir}/Test${Tag}_Team.cpp
-      ${dir}/Test${Tag}_TeamReductionScan.cpp
-      ${dir}/Test${Tag}_TeamScratch.cpp
-      ${dir}/Test${Tag}_TeamTeamSize.cpp
-      ${dir}/Test${Tag}_TeamVectorRange.cpp
-      ${dir}/Test${Tag}_UniqueToken.cpp
-      ${dir}/Test${Tag}_ViewAPI_a.cpp
-      ${dir}/Test${Tag}_ViewAPI_b.cpp
       ${dir}/Test${Tag}_ViewAPI_c.cpp
-      ${dir}/Test${Tag}_ViewAPI_d.cpp
-      ${dir}/Test${Tag}_ViewAPI_e.cpp
-      ${dir}/Test${Tag}_ViewLayoutStrideAssignment.cpp
-      ${dir}/Test${Tag}_ViewMapping_a.cpp
-      ${dir}/Test${Tag}_ViewMapping_b.cpp
-      ${dir}/Test${Tag}_ViewMapping_subview.cpp
-      ${dir}/Test${Tag}_ViewOfClass.cpp
-      ${dir}/Test${Tag}_WorkGraph.cpp
-      ${dir}/Test${Tag}_View_64bit.cpp
-      ${dir}/Test${Tag}_ViewResize.cpp
   )
   SET(${Tag}_SOURCES ${${Tag}_SOURCES1} ${${Tag}_SOURCES2})
 
