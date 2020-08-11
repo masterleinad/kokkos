@@ -82,7 +82,7 @@ TEST_F(hip, dynrankview_perf) {
   test_dynrankview_op_perf<Kokkos::Experimental::HIP>(40960);
 }
 
-/*TEST_F(hip, global_2_local) {
+TEST_F(hip, global_2_local) {
   std::cout << "HIP" << std::endl;
   std::cout << "size, create, generate, fill, find" << std::endl;
   for (unsigned i = Performance::begin_id_size; i <= Performance::end_id_size;
@@ -96,7 +96,7 @@ TEST_F(hip, unordered_map_performance_near) {
 
 TEST_F(hip, unordered_map_performance_far) {
   Perf::run_performance_tests<Kokkos::Experimental::HIP, false>("hip-far");
-}*/
+}
 
 }  // namespace Performance
 #else
