@@ -55,7 +55,9 @@ TEST(TEST_CATEGORY, mdrange_2d) {
 }
 
 TEST(TEST_CATEGORY, mdrange_array_reduce) {
+#if defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA)
   test_arrayreduce2_scalar<TEST_EXECSPACE>(10, 10);
+#endif
   TestMDRange_ReduceArray_2D<TEST_EXECSPACE>::test_arrayreduce2(4, 5);
   TestMDRange_ReduceArray_3D<TEST_EXECSPACE>::test_arrayreduce3(4, 5, 10);
 }
