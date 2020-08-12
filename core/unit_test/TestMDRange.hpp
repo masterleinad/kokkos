@@ -54,6 +54,47 @@ namespace {
 
 using namespace Kokkos;
 
+struct Scalar {
+  double v[4];
+  KOKKOS_INLINE_FUNCTION
+  Scalar() {
+    for (int i = 0; i < 4; i++) v[i] = 0;
+  }
+
+  KOKKOS_INLINE_FUNCTION
+  Scalar(const Scalar &src) {
+    for (int i = 0; i < 4; i++) v[i] = src.v[i];
+  }
+  KOKKOS_INLINE_FUNCTION
+  void operator=(const Scalar &src) {
+    for (int i = 0; i < 4; i++) v[i] = src.v[i];
+  }
+  KOKKOS_INLINE_FUNCTION
+  void operator+=(const Scalar &src) {
+    for (int i = 0; i < 4; i++) v[i] += src.v[i];
+  }
+  KOKKOS_INLINE_FUNCTION
+  void operator=(const volatile Scalar &src) volatile {
+    for (int i = 0; i < 4; i++) v[i] = src.v[i];
+  }
+  KOKKOS_INLINE_FUNCTION
+  void operator+=(const volatile Scalar &src) volatile {
+    for (int i = 0; i < 4; i++) v[i] += src.v[i];
+  }
+};
+
+template <typename ExecSpace>
+static void test_arrayreduce2_scalar(const int N0, const int N1) {
+  Scalar sum;
+  Kokkos::parallel_reduce(
+      Kokkos::MDRangePolicy<ExecSpace, Kokkos::Rank<2>>({0, 0}, {N0, N1}),
+      KOKKOS_LAMBDA(int, int, Scalar &lsum) {
+        for (int i = 0; i < 4; i++) lsum.v[i]++;
+      },
+      sum);
+  for (int i = 0; i < 4; i++) ASSERT_EQ(sum.v[i], N0 * N1);
+}
+
 template <typename ExecSpace>
 struct TestMDRange_ReduceArray_2D {
   using DataType       = int;
