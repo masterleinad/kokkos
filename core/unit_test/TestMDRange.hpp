@@ -54,9 +54,6 @@ namespace {
 
 using namespace Kokkos;
 
-#include <Kokkos_Core.hpp>
-#include <cmath>
-
 struct Scalar {
   double v[4];
   KOKKOS_INLINE_FUNCTION
