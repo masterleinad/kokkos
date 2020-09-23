@@ -47,7 +47,7 @@
 #include <TestTemplateMetaFunctions.hpp>
 #include <TestAggregate.hpp>
 #include <TestMemoryPool.hpp>
-#include <TestCXX11.hpp>
+//#include <TestCXX11.hpp>
 
 #include <TestViewCtorPropEmbeddedDim.hpp>
 #include <TestViewLayoutTiled.hpp>

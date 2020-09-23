@@ -74,9 +74,9 @@ struct ViewTracker {
   ViewTracker() : m_tracker() {}
 
 #ifndef __SYCL_DEVICE_ONLY
-/*  KOKKOS_INLINE_FUNCTION
+  KOKKOS_INLINE_FUNCTION
   ViewTracker(const ViewTracker& vt) noexcept
-      : m_tracker(vt.m_tracker, view_traits::is_managed) {}*/
+      : m_tracker(vt.m_tracker, view_traits::is_managed) {}
 #endif
 
   KOKKOS_INLINE_FUNCTION
