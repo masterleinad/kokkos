@@ -309,6 +309,7 @@ template <class ViewTypeA, class ViewTypeB, class Layout, class ExecSpace,
 struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 2, iType> {
   ViewTypeA a;
   ViewTypeB b;
+
   static const Kokkos::Iterate outer_iteration_pattern =
       Kokkos::layout_iterate_type_selector<Layout>::outer_iteration_pattern;
   static const Kokkos::Iterate inner_iteration_pattern =

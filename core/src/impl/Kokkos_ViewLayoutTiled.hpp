@@ -681,6 +681,7 @@ class ViewMapping<
     Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                       N6, N7, true>,
     iType0, iType1> {
+	    public:
   using src_layout =
       Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                         N6, N7, true>;
@@ -732,6 +733,7 @@ class ViewMapping<typename std::enable_if<(N3 == 0 && N4 == 0 && N5 == 0 &&
                   Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2,
                                                     N3, N4, N5, N6, N7, true>,
                   iType0, iType1, iType2> {
+			  public:
   using src_layout =
       Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                         N6, N7, true>;
@@ -789,6 +791,7 @@ class ViewMapping<typename std::enable_if<(N4 == 0 && N5 == 0 && N6 == 0 &&
                   Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2,
                                                     N3, N4, N5, N6, N7, true>,
                   iType0, iType1, iType2, iType3> {
+			  public:
   using src_layout =
       Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                         N6, N7, true>;
@@ -851,6 +854,7 @@ class ViewMapping<
     Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                       N6, N7, true>,
     iType0, iType1, iType2, iType3, iType4> {
+	    public:
   using src_layout =
       Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                         N6, N7, true>;
@@ -918,6 +922,7 @@ class ViewMapping<typename std::enable_if<(N6 == 0 && N7 == 0)>::type  // void
                   Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2,
                                                     N3, N4, N5, N6, N7, true>,
                   iType0, iType1, iType2, iType3, iType4, iType5> {
+			  public:
   using src_layout =
       Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                         N6, N7, true>;
@@ -991,6 +996,7 @@ class ViewMapping<typename std::enable_if<(N7 == 0)>::type  // void
                   Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2,
                                                     N3, N4, N5, N6, N7, true>,
                   iType0, iType1, iType2, iType3, iType4, iType5, iType6> {
+			  public:
   using src_layout =
       Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                         N6, N7, true>;
@@ -1073,6 +1079,7 @@ class ViewMapping<typename std::enable_if<(N0 != 0 && N1 != 0 && N2 != 0 &&
                                                     N3, N4, N5, N6, N7, true>,
                   iType0, iType1, iType2, iType3, iType4, iType5, iType6,
                   iType7> {
+			  public:
   using src_layout =
       Kokkos::Experimental::LayoutTiled<OuterP, InnerP, N0, N1, N2, N3, N4, N5,
                                         N6, N7, true>;
