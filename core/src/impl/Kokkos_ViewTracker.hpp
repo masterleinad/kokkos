@@ -73,9 +73,15 @@ struct ViewTracker {
   KOKKOS_INLINE_FUNCTION
   ViewTracker() : m_tracker() {}
 
-  KOKKOS_INLINE_FUNCTION
+#ifndef __SYCL_DEVICE_ONLY
+/*  KOKKOS_INLINE_FUNCTION
   ViewTracker(const ViewTracker& vt) noexcept
-      : m_tracker(vt.m_tracker, view_traits::is_managed) {}
+      : m_tracker(vt.m_tracker, view_traits::is_managed) {}*/
+#endif
+
+  KOKKOS_INLINE_FUNCTION
+  explicit ViewTracker(const track_type& tt) noexcept
+      : m_tracker(tt, view_traits::is_managed) {}
 
   KOKKOS_INLINE_FUNCTION
   explicit ViewTracker(const ParentView& vt) noexcept : m_tracker() {
@@ -103,7 +109,8 @@ struct ViewTracker {
 #endif
   }
 
-  KOKKOS_INLINE_FUNCTION
+#ifndef __SYCL_DEVICE_ONLY
+/*  KOKKOS_INLINE_FUNCTION
   ViewTracker& operator=(const ViewTracker& rhs) noexcept {
 #if defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_HOST)
     if (view_traits::is_managed &&
@@ -116,11 +123,8 @@ struct ViewTracker {
     m_tracker.assign_force_disable(rhs.m_tracker);
 #endif
     return *this;
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  explicit ViewTracker(const track_type& tt) noexcept
-      : m_tracker(tt, view_traits::is_managed) {}
+  }*/
+#endif
 };
 
 }  // namespace Impl
