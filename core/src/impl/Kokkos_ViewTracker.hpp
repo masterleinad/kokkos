@@ -80,10 +80,6 @@ struct ViewTracker {
 #endif
 
   KOKKOS_INLINE_FUNCTION
-  explicit ViewTracker(const track_type& tt) noexcept
-      : m_tracker(tt, view_traits::is_managed) {}
-
-  KOKKOS_INLINE_FUNCTION
   explicit ViewTracker(const ParentView& vt) noexcept : m_tracker() {
     assign(vt);
   }
@@ -125,6 +121,10 @@ struct ViewTracker {
     return *this;
   }
 #endif
+
+  KOKKOS_INLINE_FUNCTION
+  explicit ViewTracker(const track_type& tt) noexcept
+      : m_tracker(tt, view_traits::is_managed) {}
 };
 
 }  // namespace Impl

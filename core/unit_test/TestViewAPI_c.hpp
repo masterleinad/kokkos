@@ -47,6 +47,7 @@
 namespace Test {
 
 TEST(TEST_CATEGORY, view_api_c) {
+	// FIXME_SYCL
 #ifndef KOKKOS_ENABLE_SYCL
   TestViewAPI<double, TEST_EXECSPACE>::run_test_deep_copy_empty();
 #endif
