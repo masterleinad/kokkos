@@ -2833,7 +2833,6 @@ struct ViewValueFunctor<ExecSpace, ValueType, false /* is_scalar */> {
   ValueType* ptr;
   size_t n;
   bool destroy;
-  std::string name;
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const size_t i) const {
@@ -2852,21 +2851,16 @@ struct ViewValueFunctor<ExecSpace, ValueType, false /* is_scalar */> {
 
   ViewValueFunctor(ExecSpace const& arg_space, ValueType* const arg_ptr,
                    size_t const arg_n, std::string arg_name)
-      : space(arg_space),
-        ptr(arg_ptr),
-        n(arg_n),
-        destroy(false),
-        name(std::move(arg_name)) {}
+      : space(arg_space), ptr(arg_ptr), n(arg_n), destroy(false) {}
 
   void execute(bool arg) {
     destroy = arg;
     if (!space.in_parallel()) {
       uint64_t kpID = 0;
       if (Kokkos::Profiling::profileLibraryLoaded()) {
-        auto functor_name =
-            (destroy ? "Kokkos::View::destruction [" + name + "]"
-                     : "Kokkos::View::initialization [" + name + "]");
-        Kokkos::Profiling::beginParallelFor(functor_name.c_str(), 0, &kpID);
+        auto functor_name = (destroy ? "Kokkos::View::destruction"
+                                     : "Kokkos::View::initialization");
+        Kokkos::Profiling::beginParallelFor(functor_name, 0, &kpID);
       }
 #ifdef KOKKOS_ENABLE_CUDA
       if (std::is_same<ExecSpace, Kokkos::Cuda>::value) {
@@ -2898,7 +2892,7 @@ struct ViewValueFunctor<ExecSpace, ValueType, true /* is_scalar */> {
   ExecSpace space;
   ValueType* ptr;
   size_t n;
-  std::string name;
+  // std::string name;
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const size_t i) const { ptr[i] = ValueType(); }
@@ -2909,14 +2903,16 @@ struct ViewValueFunctor<ExecSpace, ValueType, true /* is_scalar */> {
 
   ViewValueFunctor(ExecSpace const& arg_space, ValueType* const arg_ptr,
                    size_t const arg_n, std::string arg_name)
-      : space(arg_space), ptr(arg_ptr), n(arg_n), name(std::move(arg_name)) {}
+      : space(arg_space),
+        ptr(arg_ptr),
+        n(arg_n) /*, name(std::move(arg_name))*/ {}
 
   void construct_shared_allocation() {
     if (!space.in_parallel()) {
       uint64_t kpID = 0;
       if (Kokkos::Profiling::profileLibraryLoaded()) {
-        Kokkos::Profiling::beginParallelFor(
-            "Kokkos::View::initialization [" + name + "]", 0, &kpID);
+        Kokkos::Profiling::beginParallelFor("Kokkos::View::initialization", 0,
+                                            &kpID);
       }
 #ifdef KOKKOS_ENABLE_CUDA
       if (std::is_same<ExecSpace, Kokkos::Cuda>::value) {
