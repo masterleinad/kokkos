@@ -110,7 +110,7 @@ struct ViewTracker {
   }
 
 #ifndef __SYCL_DEVICE_ONLY
-/*  KOKKOS_INLINE_FUNCTION
+  KOKKOS_INLINE_FUNCTION
   ViewTracker& operator=(const ViewTracker& rhs) noexcept {
 #if defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_HOST)
     if (view_traits::is_managed &&
@@ -123,7 +123,7 @@ struct ViewTracker {
     m_tracker.assign_force_disable(rhs.m_tracker);
 #endif
     return *this;
-  }*/
+  }
 #endif
 };
 
