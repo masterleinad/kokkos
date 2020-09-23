@@ -253,7 +253,8 @@ double ReduceTestFunctor() {
   return result;
 }
 
-#if defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA)
+// FIXME_SYCL
+#if defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA) && !defined(KOKKOS_ENABLE_SYCL)
 template <class DeviceType, bool PWRTest>
 double ReduceTestLambda() {
   using policy_type = Kokkos::TeamPolicy<DeviceType>;
