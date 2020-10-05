@@ -45,68 +45,70 @@
 #ifndef KOKKOS_SYCL_KERNELLAUNCH_HPP_
 #define KOKKOS_SYCL_KERNELLAUNCH_HPP_
 
+#include <Kokkos_SYCL.hpp>
 #include <SYCL/Kokkos_SYCL_Instance.hpp>
-
-/*--------------------------------------------------------------------------*/
-// Temp place for Trivially copyable check - velesko
-template <class Obj>
-constexpr void isTriviallyCopyable() {
-  static_assert(std::is_trivially_copyable<Obj>::value, "");
-
-  static_assert(std::is_copy_constructible<Obj>::value ||
-                    std::is_move_constructible<Obj>::value ||
-                    std::is_copy_assignable<Obj>::value ||
-                    std::is_move_assignable<Obj>::value,
-                "Obj copy/move constructors/assignments deleted");
-
-  static_assert(std::is_trivially_copy_constructible<Obj>::value ||
-                    !std::is_copy_constructible<Obj>::value,
-                "Obj not trivially copy constructible");
-
-  static_assert(std::is_trivially_move_constructible<Obj>::value ||
-                    !std::is_move_constructible<Obj>::value,
-                "Obj not trivially move constructible");
-
-  static_assert(std::is_trivially_copy_assignable<Obj>::value ||
-                    !std::is_copy_assignable<Obj>::value,
-                "Obj not trivially copy assignable");
-
-  static_assert(std::is_trivially_move_assignable<Obj>::value ||
-                    !std::is_move_assignable<Obj>::value,
-                "Obj not trivially move assignable");
-
-  static_assert(std::is_trivially_destructible<Obj>::value,
-                "Obj not trivially destructible");
-}
-
-template <class T>
-class kokkos_sycl_functor;
 
 namespace Kokkos {
 namespace Experimental {
 namespace Impl {
 
-template <class Driver>
-void sycl_launch_bind(Driver tmp, cl::sycl::handler& cgh) {
-  cgh.parallel_for(
-      cl::sycl::range<1>(tmp.m_policy.end() - tmp.m_policy.begin()), tmp);
+template <typename Policy, typename Functor>
+void sycl_direct_launch(const Policy& policy, const Functor& functor) {
+  // Convenience references
+  const Kokkos::Experimental::SYCL& space = policy.space();
+  Kokkos::Experimental::Impl::SYCLInternal& instance =
+      *space.impl_internal_space_instance();
+  cl::sycl::queue& q = *instance.m_queue;
+
+  q.wait();
+
+  auto end   = policy.end();
+  auto begin = policy.begin();
+  cl::sycl::range<1> range(end - begin);
+
+  q.submit([&](cl::sycl::handler& cgh) {
+    cgh.parallel_for(range, [=](cl::sycl::item<1> item) {
+      int id = item.get_linear_id();
+      functor(id);
+    });
+  });
+
+  q.wait();
+}
+
+// Indirectly launch a functor by explicitly creating it in USM shared memory
+template <typename Policy, typename Functor>
+void sycl_indirect_launch(const Policy& policy, const Functor& functor) {
+  // Convenience references
+  const Kokkos::Experimental::SYCL& space = policy.space();
+  Kokkos::Experimental::Impl::SYCLInternal& instance =
+      *space.impl_internal_space_instance();
+  Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& kernelMem =
+      *instance.m_indirectKernel;
+
+  // Allocate USM shared memory for the functor
+  kernelMem.resize(std::max(kernelMem.size(), sizeof(Functor)));
+
+  // Placement new a copy of functor into USM shared memory
+  //
+  // Store it in a unique_ptr to call its destructor on scope exit
+  std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
+      new (kernelMem.data()) Functor(functor));
+
+  // Use reference_wrapper (because it is both trivially copyable and invocable)
+  // and launch it
+  sycl_direct_launch(policy, std::reference_wrapper(*kernelFunctorPtr));
 }
 
 template <class Driver>
 void sycl_launch(const Driver driver) {
-  isTriviallyCopyable<Driver>();
-  isTriviallyCopyable<decltype(driver.m_functor)>();
-  driver.m_policy.space().impl_internal_space_instance()->m_queue->wait();
-  driver.m_policy.space().impl_internal_space_instance()->m_queue->submit(
-      [&](cl::sycl::handler& cgh) {
-        cgh.parallel_for(
-            cl::sycl::range<1>(driver.m_policy.end() - driver.m_policy.begin()),
-            [=](cl::sycl::item<1> item) {
-              int id = item.get_linear_id();
-              driver.m_functor(id);
-            });
-      });
-  driver.m_policy.space().impl_internal_space_instance()->m_queue->wait();
+  // if the functor is trivially copyable, we can launch it directly;
+  // otherwise, we will launch it indirectly via explicitly creating
+  // it in USM shared memory.
+  if constexpr (std::is_trivially_copyable_v<decltype(driver.m_functor)>)
+    sycl_direct_launch(driver.m_policy, driver.m_functor);
+  else
+    sycl_indirect_launch(driver.m_policy, driver.m_functor);
 }
 
 }  // namespace Impl

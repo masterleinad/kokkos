@@ -46,8 +46,6 @@
 #define KOKKOS_SYCL_PARALLEL_RANGE_HPP_
 
 #include <SYCL/Kokkos_SYCL_KernelLaunch.hpp>
-//#include <algorithm>
-//#include <functional>
 
 template <class FunctorType, class ExecPolicy>
 class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
