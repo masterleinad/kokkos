@@ -81,8 +81,6 @@ class SYCLDeviceUSMSpace {
 
 namespace Impl {
 
-void Default_USM_memcpy(void* dst, const void* src, size_t n);
-
 template <>
 struct DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
                 Kokkos::Experimental::SYCLDeviceUSMSpace,
@@ -118,7 +116,8 @@ struct DeepCopy<Kokkos::HostSpace, Kokkos::Experimental::SYCLDeviceUSMSpace,
 
   DeepCopy(const ExecutionSpace& exec, void* dst, const void* src, size_t n) {
     exec.fence();
-    Default_USM_memcpy(dst, src, n);
+    DeepCopy<Kokkos::HostSpace, SYCLDeviceUSMSpace, SYCL>(SYCL(), dest, src, n);
+    SYCL().fence();
   }
 };
 
@@ -132,7 +131,8 @@ struct DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace, Kokkos::HostSpace,
 
   DeepCopy(const ExecutionSpace& exec, void* dst, const void* src, size_t n) {
     exec.fence();
-    Default_USM_memcpy(dst, src, n);
+    DeepCopy<Kokkos::HostSpace, SYCLDeviceUSMSpace, SYCL>(SYCL(), dest, src, n);
+    SYCL().fence();
   }
 };
 

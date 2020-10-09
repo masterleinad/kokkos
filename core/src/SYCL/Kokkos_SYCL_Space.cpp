@@ -70,12 +70,6 @@ void USM_memcpy(void* dst, const void* src, size_t n) {
 }
 }  // namespace
 
-void Default_USM_memcpy(void* dst, const void* src, size_t n) {
-  USM_memcpy(*Kokkos::Experimental::Impl::SYCLInternal::singleton().m_queue,
-             dst, src, n)
-      .wait();
-}
-
 DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
          Kokkos::Experimental::SYCLDeviceUSMSpace, Kokkos::Experimental::SYCL>::
     DeepCopy(const Kokkos::Experimental::SYCL& instance, void* dst,
