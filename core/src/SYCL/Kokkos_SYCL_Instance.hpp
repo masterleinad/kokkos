@@ -54,7 +54,7 @@ namespace Impl {
 
 class SYCLInternal {
  public:
-  using size_type = unsigned int;
+  using size_type = int;
 
   SYCLInternal() = default;
   ~SYCLInternal();
