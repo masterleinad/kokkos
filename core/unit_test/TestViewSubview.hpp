@@ -165,6 +165,7 @@ struct fill_2D {
 
 template <class Layout, class Space>
 void test_auto_1d() {
+	// FIXME_SYCL requires MDRange policy
 #ifndef KOKKOS_ENABLE_SYCL
   using mv_type   = Kokkos::View<double**, Layout, Space>;
   using size_type = typename mv_type::size_type;
@@ -1997,6 +1998,7 @@ void test_1d_assign() {
 
 template <class Space, class MemTraits = void>
 void test_2d_subview_3d() {
+	        // FIXME_SYCL requires MDRange policy
 #ifndef KOKKOS_ENABLE_SYCL
   Impl::test_2d_subview_3d_impl_layout<Space, Kokkos::LayoutRight,
                                        Kokkos::LayoutRight, Kokkos::LayoutRight,
@@ -2018,6 +2020,7 @@ void test_2d_subview_3d() {
 
 template <class Space, class MemTraits = void>
 void test_3d_subview_5d_right() {
+	        // FIXME_SYCL requires MDRange policy
 #ifndef KOKKOS_ENABLE_SYCL
   Impl::test_3d_subview_5d_impl_layout<Space, Kokkos::LayoutStride,
                                        Kokkos::LayoutRight, Kokkos::LayoutRight,
@@ -2030,6 +2033,7 @@ void test_3d_subview_5d_right() {
 
 template <class Space, class MemTraits = void>
 void test_3d_subview_5d_left() {
+	        // FIXME_SYCL requires MDRange policy
 #ifndef KOKKOS_ENABLE_SYCL
   Impl::test_3d_subview_5d_impl_layout<Space, Kokkos::LayoutStride,
                                        Kokkos::LayoutLeft, Kokkos::LayoutLeft,
@@ -2044,6 +2048,7 @@ template <class Space, class MemTraits = void>
 void test_layoutleft_to_layoutleft() {
   Impl::test_subview_legal_args_left();
 
+          // FIXME_SYCL requires MDRange policy
 #ifndef KOKKOS_ENABLE_SYCL
   using view3D_t = Kokkos::View<int***, Kokkos::LayoutLeft, Space>;
   using view4D_t = Kokkos::View<int****, Kokkos::LayoutLeft, Space>;
@@ -2089,6 +2094,7 @@ template <class Space, class MemTraits = void>
 void test_layoutright_to_layoutright() {
   Impl::test_subview_legal_args_right();
 
+          // FIXME_SYCL requires MDRange policy
 #ifndef KOKKOS_ENABLE_SYCL
   using view3D_t = Kokkos::View<int***, Kokkos::LayoutRight, Space>;
   using view4D_t = Kokkos::View<int****, Kokkos::LayoutRight, Space>;
