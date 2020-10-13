@@ -46,6 +46,7 @@
 #define KOKKOS_SYCLSPACE_HPP
 
 #include <Kokkos_Core_fwd.hpp>
+#include <SYCL/Kokkos_SYCL_Instance.hpp>
 #include <impl/Kokkos_SharedAlloc.hpp>
 
 #ifdef KOKKOS_ENABLE_SYCL
@@ -58,7 +59,7 @@ class SYCLDeviceUSMSpace {
   using execution_space = SYCL;
   using memory_space    = SYCLDeviceUSMSpace;
   using device_type     = Kokkos::Device<execution_space, memory_space>;
-  using size_type       = unsigned int;
+  using size_type       = Impl::SYCLInternal::size_type;
 
   SYCLDeviceUSMSpace();
 
