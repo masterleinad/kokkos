@@ -67,13 +67,13 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
   ParallelFor& operator=(const ParallelFor&) = delete;
 
   template <class TagType>
-  typename std::enable_if<std::is_same<TagType, void>::value>::type exec_range(
+  std::enable_if_t<std::is_same<TagType, void>::value> exec_range(
       const Member i) const {
     m_functor(i);
   }
 
   template <class TagType>
-  typename std::enable_if<!std::is_same<TagType, void>::value>::type exec_range(
+  std::enable_if_t<!std::is_same<TagType, void>::value> exec_range(
       const Member i) const {
     m_functor(TagType(), i);
   }
