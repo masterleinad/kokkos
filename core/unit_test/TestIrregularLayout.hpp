@@ -257,8 +257,11 @@ struct TestLayout {
 };
 
 TEST(TEST_CATEGORY, view_irregular_layout) {
+	// FIXME_SYCL tagged functors required
+#ifndef KOKKOS_ENABLE_SYCL
   TestLayout<TEST_EXECSPACE> tl;
   tl.run_test();
+#endif
 }
 
 }  // namespace Test

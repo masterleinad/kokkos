@@ -95,6 +95,7 @@ TEST(TEST_CATEGORY, view_layoutstride_left_to_layoutleft_assignment) {
     ASSERT_EQ(dst.span(), src.span());
     ASSERT_EQ(test, true);
   }
+#ifndef KOKKOS_ENABLE_SYCL
   {  // Assignment of rank-2 LayoutLeft = LayoutStride
     int ndims   = 2;
     int dims[]  = {10, 9};
@@ -333,6 +334,7 @@ TEST(TEST_CATEGORY, view_layoutstride_left_to_layoutleft_assignment) {
     ASSERT_EQ(dst.span(), src.span());
     ASSERT_EQ(test, true);
   }
+#endif
 }
 
 TEST(TEST_CATEGORY, view_layoutstride_right_to_layoutright_assignment) {
@@ -377,6 +379,7 @@ TEST(TEST_CATEGORY, view_layoutstride_right_to_layoutright_assignment) {
     ASSERT_EQ(dst.span(), src.span());
     ASSERT_EQ(test, true);
   }
+#ifndef KOKKOS_ENABLE_SYCL
   {  // Assignment of rank-2 LayoutRight = LayoutStride
     int ndims   = 2;
     int dims[]  = {10, 9};
@@ -615,6 +618,7 @@ TEST(TEST_CATEGORY, view_layoutstride_right_to_layoutright_assignment) {
     ASSERT_EQ(dst.span(), src.span());
     ASSERT_EQ(test, true);
   }
+ #endif
 }
 
 TEST(TEST_CATEGORY_DEATH, view_layoutstride_right_to_layoutleft_assignment) {

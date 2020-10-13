@@ -414,14 +414,14 @@ if(Kokkos_ENABLE_SYCL)
        sycl/TestSYCL_TeamTeamSize.cpp
        sycl/TestSYCL_TeamVectorRange.cpp
        sycl/TestSYCL_UniqueToken.cpp
-       sycl/TestSYCL_ViewAPI_a.cpp
-       sycl/TestSYCL_ViewAPI_d.cpp
-       sycl/TestSYCL_ViewAPI_e.cpp
-       sycl/TestSYCL_ViewLayoutStrideAssignment.cpp
-       sycl/TestSYCL_ViewMapping_a.cpp
+       #sycl/TestSYCL_ViewAPI_a.cpp
+       #sycl/TestSYCL_ViewAPI_d.cpp
+       #sycl/TestSYCL_ViewAPI_e.cpp
+       #sycl/TestSYCL_ViewLayoutStrideAssignment.cpp
+       #sycl/TestSYCL_ViewMapping_a.cpp
        sycl/TestSYCL_WorkGraph.cpp
-       sycl/TestSYCL_ViewMapping_b.cpp
-       sycl/TestSYCL_ViewResize.cpp
+       #sycl/TestSYCL_ViewMapping_b.cpp
+       #sycl/TestSYCL_ViewResize.cpp
   )
 
   KOKKOS_ADD_EXECUTABLE_AND_TEST(

@@ -76,6 +76,8 @@ void impl_testResize() {
     const int* newPointer = view_1d.data();
     EXPECT_TRUE(oldPointer == newPointer);
   }
+  // FIXME_SYCL requires tagged functors
+#ifndef KOKKOS_ENABLE_SYCL
   {
     using view_type = Kokkos::View<int**, DeviceType>;
     view_type view_2d("view_2d", sizes[0], sizes[1]);
@@ -147,6 +149,7 @@ void impl_testResize() {
     const int* newPointer = view_8d.data();
     EXPECT_TRUE(oldPointer == newPointer);
   }
+#endif
   // Resize without initialization: check if data preserved
   {
     using view_type = Kokkos::View<int*, DeviceType>;
@@ -167,8 +170,10 @@ void impl_testResize() {
         break;
       }
     }
-    EXPECT_TRUE(test == true);
+    EXPECT_TRUE(test == true);  
   }
+  // FIXME_SYCL requires MDRangePolicy
+#ifndef KOKKOS_ENABLE_SYCL
   {
     using view_type = Kokkos::View<int**, DeviceType>;
     view_type view_2d("view_2d", sizes[0], sizes[1]);
@@ -384,6 +389,7 @@ void impl_testResize() {
     }
     EXPECT_TRUE(test == true);
   }
+#endif
 }
 
 template <class DeviceType>
