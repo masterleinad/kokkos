@@ -68,7 +68,7 @@ void sycl_direct_launch(const Policy& policy, const Functor& functor) {
 
   q.submit([&](cl::sycl::handler& cgh) {
     cgh.parallel_for(range, [=](cl::sycl::item<1> item) {
-      const auto id = item.get_linear_id();
+      const typename Policy::index_type id = item.get_linear_id();
       functor(id);
     });
   });
