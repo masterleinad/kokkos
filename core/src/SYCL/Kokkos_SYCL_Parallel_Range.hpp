@@ -51,12 +51,12 @@ template <class FunctorType, class ExecPolicy>
 class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
                                 Kokkos::Experimental::SYCL> {
  public:
-  typedef ExecPolicy Policy;
+  using Policy = ExecPolicy;
 
  private:
-  typedef typename Policy::member_type Member;
-  typedef typename Policy::work_tag WorkTag;
-  typedef typename Policy::launch_bounds LaunchBounds;
+  using Member       = typename Policy::member_type;
+  using WorkTag      = typename Policy::work_tag;
+  using LaunchBounds = typename Policy::launch_bounds;
 
  public:
   const FunctorType m_functor;
@@ -79,7 +79,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
   }
 
  public:
-  typedef FunctorType functor_type;
+  using functor_type = FunctorType;
 
   inline void operator()(cl::sycl::item<1> item) const {
     int id = item.get_linear_id();
