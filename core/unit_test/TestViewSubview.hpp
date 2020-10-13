@@ -165,6 +165,7 @@ struct fill_2D {
 
 template <class Layout, class Space>
 void test_auto_1d() {
+#ifndef KOKKOS_ENABLE_SYCL
   using mv_type   = Kokkos::View<double**, Layout, Space>;
   using size_type = typename mv_type::size_type;
 
@@ -230,6 +231,7 @@ void test_auto_1d() {
       }
     }
   }
+#endif
 }
 
 template <class LD, class LS, class Space>
@@ -1995,6 +1997,7 @@ void test_1d_assign() {
 
 template <class Space, class MemTraits = void>
 void test_2d_subview_3d() {
+#ifndef KOKKOS_ENABLE_SYCL
   Impl::test_2d_subview_3d_impl_layout<Space, Kokkos::LayoutRight,
                                        Kokkos::LayoutRight, Kokkos::LayoutRight,
                                        MemTraits>();
@@ -2010,32 +2013,38 @@ void test_2d_subview_3d() {
   Impl::test_2d_subview_3d_impl_layout<Space, Kokkos::LayoutStride,
                                        Kokkos::LayoutStride, Kokkos::LayoutLeft,
                                        MemTraits>();
+#endif
 }
 
 template <class Space, class MemTraits = void>
 void test_3d_subview_5d_right() {
+#ifndef KOKKOS_ENABLE_SYCL
   Impl::test_3d_subview_5d_impl_layout<Space, Kokkos::LayoutStride,
                                        Kokkos::LayoutRight, Kokkos::LayoutRight,
                                        MemTraits>();
   Impl::test_3d_subview_5d_impl_layout<Space, Kokkos::LayoutStride,
                                        Kokkos::LayoutStride,
                                        Kokkos::LayoutRight, MemTraits>();
+#endif
 }
 
 template <class Space, class MemTraits = void>
 void test_3d_subview_5d_left() {
+#ifndef KOKKOS_ENABLE_SYCL
   Impl::test_3d_subview_5d_impl_layout<Space, Kokkos::LayoutStride,
                                        Kokkos::LayoutLeft, Kokkos::LayoutLeft,
                                        MemTraits>();
   Impl::test_3d_subview_5d_impl_layout<Space, Kokkos::LayoutStride,
                                        Kokkos::LayoutStride, Kokkos::LayoutLeft,
                                        MemTraits>();
+#endif
 }
 
 template <class Space, class MemTraits = void>
 void test_layoutleft_to_layoutleft() {
   Impl::test_subview_legal_args_left();
 
+#ifndef KOKKOS_ENABLE_SYCL
   using view3D_t = Kokkos::View<int***, Kokkos::LayoutLeft, Space>;
   using view4D_t = Kokkos::View<int****, Kokkos::LayoutLeft, Space>;
   {
@@ -2073,12 +2082,14 @@ void test_layoutleft_to_layoutleft() {
                                                                   1);
     check.run();
   }
+#endif
 }
 
 template <class Space, class MemTraits = void>
 void test_layoutright_to_layoutright() {
   Impl::test_subview_legal_args_right();
 
+#ifndef KOKKOS_ENABLE_SYCL
   using view3D_t = Kokkos::View<int***, Kokkos::LayoutRight, Space>;
   using view4D_t = Kokkos::View<int****, Kokkos::LayoutRight, Space>;
   {
@@ -2102,6 +2113,7 @@ void test_layoutright_to_layoutright() {
                                                                   0);
     check.run();
   }
+#endif
 }
 //----------------------------------------------------------------------------
 

@@ -390,7 +390,6 @@ if(Kokkos_ENABLE_SYCL)
        sycl/TestSYCL_BlockSizeDeduction.cpp
        sycl/TestSYCL_Crs.cpp
        sycl/TestSYCL_DeepCopyAlignment.cpp
-       sycl/TestSYCL_Init.cpp
        sycl/TestSYCL_LocalDeepCopy.cpp
        sycl/TestSYCL_MDRange_a.cpp
        sycl/TestSYCL_MDRange_b.cpp
@@ -409,21 +408,6 @@ if(Kokkos_ENABLE_SYCL)
        sycl/TestSYCL_Reductions_DeviceView.cpp
        sycl/TestSYCL_Scan.cpp
        sycl/TestSYCL_SharedAlloc.cpp
-       sycl/TestSYCL_SubView_a.cpp
-       sycl/TestSYCL_SubView_b.cpp
-       sycl/TestSYCL_SubView_c01.cpp
-       sycl/TestSYCL_SubView_c02.cpp
-       sycl/TestSYCL_SubView_c03.cpp
-       sycl/TestSYCL_SubView_c04.cpp
-       sycl/TestSYCL_SubView_c05.cpp
-       sycl/TestSYCL_SubView_c06.cpp
-       sycl/TestSYCL_SubView_c07.cpp
-       sycl/TestSYCL_SubView_c08.cpp
-       sycl/TestSYCL_SubView_c10.cpp
-       sycl/TestSYCL_SubView_c09.cpp
-       sycl/TestSYCL_SubView_c11.cpp
-       sycl/TestSYCL_SubView_c12.cpp
-       sycl/TestSYCL_SubView_c13.cpp
        sycl/TestSYCL_Team.cpp
        sycl/TestSYCL_TeamReductionScan.cpp
        sycl/TestSYCL_TeamScratch.cpp
