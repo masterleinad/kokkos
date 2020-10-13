@@ -81,12 +81,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
  public:
   using functor_type = FunctorType;
 
-  inline void operator()(cl::sycl::item<1> item) const {
-    int id = item.get_linear_id();
-    m_functor(id);
-  }
-
-  inline void execute() const {
+  void execute() const {
     Kokkos::Experimental::Impl::sycl_launch(*this);
   }
 
