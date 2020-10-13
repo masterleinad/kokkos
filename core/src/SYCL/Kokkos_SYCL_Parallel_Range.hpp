@@ -81,9 +81,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
  public:
   using functor_type = FunctorType;
 
-  void execute() const {
-    Kokkos::Experimental::Impl::sycl_launch(*this);
-  }
+  void execute() const { Kokkos::Experimental::Impl::sycl_launch(*this); }
 
   ParallelFor(const FunctorType& arg_functor, const Policy& arg_policy)
       : m_functor(arg_functor), m_policy(arg_policy) {}
