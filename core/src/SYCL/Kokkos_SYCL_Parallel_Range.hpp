@@ -45,8 +45,6 @@
 #ifndef KOKKOS_SYCL_PARALLEL_RANGE_HPP_
 #define KOKKOS_SYCL_PARALLEL_RANGE_HPP_
 
-#include <SYCL/Kokkos_SYCL_KernelLaunch.hpp>
-
 template <class FunctorType, class ExecPolicy>
 class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
                                 Kokkos::Experimental::SYCL> {
@@ -58,7 +56,6 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
   using WorkTag      = typename Policy::work_tag;
   using LaunchBounds = typename Policy::launch_bounds;
 
- public:
   const FunctorType m_functor;
   const Policy m_policy;
 
@@ -66,22 +63,67 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
   ParallelFor()        = delete;
   ParallelFor& operator=(const ParallelFor&) = delete;
 
-  template <class TagType>
-  std::enable_if_t<std::is_same<TagType, void>::value> exec_range(
-      const Member i) const {
-    m_functor(i);
-  }
+template <typename Functor>
+void sycl_direct_launch(const Functor& functor) const{
+  // Convenience references
+  const Kokkos::Experimental::SYCL& space = m_policy.space();
+  Kokkos::Experimental::Impl::SYCLInternal& instance =
+      *space.impl_internal_space_instance();
+  cl::sycl::queue& q = *instance.m_queue;
 
-  template <class TagType>
-  std::enable_if_t<!std::is_same<TagType, void>::value> exec_range(
-      const Member i) const {
-    m_functor(TagType(), i);
-  }
+  q.wait();
+
+  q.submit([this](cl::sycl::handler& cgh) {
+  cl::sycl::range<1> range(m_policy.end() - m_policy.begin());
+
+    cgh.parallel_for(range, [=, *this](cl::sycl::item<1> item) {
+      const typename Policy::index_type id = item.get_linear_id();
+if constexpr(std::is_same<WorkTag, void>::value)
+      m_functor(id);
+else
+    m_functor(WorkTag(), id);
+    });
+  });
+
+  q.wait();
+}
+
+// Indirectly launch a functor by explicitly creating it in USM shared memory
+template <typename Functor>
+void sycl_indirect_launch(const Functor& functor) const {
+  // Convenience references
+  const Kokkos::Experimental::SYCL& space = m_policy.space();
+  Kokkos::Experimental::Impl::SYCLInternal& instance =
+      *space.impl_internal_space_instance();
+  Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& kernelMem =
+      *instance.m_indirectKernel;
+
+  // Allocate USM shared memory for the functor
+  kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
+
+  // Placement new a copy of functor into USM shared memory
+  //
+  // Store it in a unique_ptr to call its destructor on scope exit
+  std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
+      new (kernelMem.data()) Functor(functor));
+
+  // Use reference_wrapper (because it is both trivially copyable and invocable)
+  // and launch it
+  sycl_direct_launch(std::reference_wrapper(*kernelFunctorPtr));
+}
 
  public:
   using functor_type = FunctorType;
 
-  void execute() const { Kokkos::Experimental::Impl::sycl_launch(*this); }
+  void execute() const { 
+  // if the functor is trivially copyable, we can launch it directly;
+  // otherwise, we will launch it indirectly via explicitly creating
+  // it in USM shared memory.
+  if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
+    sycl_direct_launch(m_functor);
+  else
+    sycl_indirect_launch(m_functor);
+ }
 
   ParallelFor(const FunctorType& arg_functor, const Policy& arg_policy)
       : m_functor(arg_functor), m_policy(arg_policy) {}
