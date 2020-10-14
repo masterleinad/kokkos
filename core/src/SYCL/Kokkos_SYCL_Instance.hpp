@@ -45,9 +45,6 @@
 #ifndef KOKKOS_SYCL_INSTANCE_HPP_
 #define KOKKOS_SYCL_INSTANCE_HPP_
 
-#include <Kokkos_Macros.hpp>
-
-#if defined KOKKOS_ENABLE_SYCL
 #include <memory>
 #include <CL/sycl.hpp>
 
@@ -102,5 +99,4 @@ class SYCLInternal {
 }  // namespace Impl
 }  // namespace Experimental
 }  // namespace Kokkos
-#endif
 #endif

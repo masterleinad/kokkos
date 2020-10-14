@@ -46,10 +46,10 @@
 #define KOKKOS_SYCLSPACE_HPP
 
 #include <Kokkos_Core_fwd.hpp>
-#include <SYCL/Kokkos_SYCL_Instance.hpp>
-#include <impl/Kokkos_SharedAlloc.hpp>
 
 #ifdef KOKKOS_ENABLE_SYCL
+#include <SYCL/Kokkos_SYCL_Instance.hpp>
+#include <impl/Kokkos_SharedAlloc.hpp>
 
 namespace Kokkos {
 namespace Experimental {
