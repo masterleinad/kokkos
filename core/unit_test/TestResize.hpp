@@ -76,7 +76,7 @@ void impl_testResize() {
     const int* newPointer = view_1d.data();
     EXPECT_TRUE(oldPointer == newPointer);
   }
-  // FIXME_SYCL requires tagged functors
+  // FIXME_SYCL needs MDRangePolicy
 #ifndef KOKKOS_ENABLE_SYCL
   {
     using view_type = Kokkos::View<int**, DeviceType>;

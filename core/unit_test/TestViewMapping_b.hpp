@@ -127,11 +127,8 @@ struct TestViewMappingAtomic {
 };
 
 TEST(TEST_CATEGORY, view_mapping_atomic) {
-	// FIXME_SYCL requires tagged functors
-#ifndef KOKKOS_ENABLE_SYCL
   TestViewMappingAtomic<TEST_EXECSPACE> f;
   f.run();
-#endif
 }
 
 }  // namespace Test
