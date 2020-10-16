@@ -81,6 +81,11 @@ TEST(TEST_CATEGORY, team_reduce) {
 }
 
 TEST(TEST_CATEGORY, team_broadcast_long) {
+	  // FIXME_OPENMPTARGET
+#ifdef KOKKOS_ENABLE_OPENMPTARGET
+  if constexpr(!std::is_same<TEST_EXECSPACE, Kokkos::Experimental::OpenMPTarget>::value)
+#endif
+  {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                     long>::test_teambroadcast(0, 1);
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
@@ -100,9 +105,15 @@ TEST(TEST_CATEGORY, team_broadcast_long) {
                     long>::test_teambroadcast(1000, 1);
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
                     long>::test_teambroadcast(1000, 1);
+  }
 }
 
 TEST(TEST_CATEGORY, team_broadcast_char) {
+	          // FIXME_OPENMPTARGET
+#ifdef KOKKOS_ENABLE_OPENMPTARGET
+  if constexpr(!std::is_same<TEST_EXECSPACE, Kokkos::Experimental::OpenMPTarget>::value)
+#endif
+  {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                     unsigned char>::test_teambroadcast(0, 1);
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
@@ -122,9 +133,15 @@ TEST(TEST_CATEGORY, team_broadcast_char) {
                     long>::test_teambroadcast(1000, 1);
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
                     long>::test_teambroadcast(1000, 1);
+  }
 }
 
 TEST(TEST_CATEGORY, team_broadcast_float) {
+	          // FIXME_OPENMPTARGET
+#ifdef KOKKOS_ENABLE_OPENMPTARGET
+  if constexpr(!std::is_same<TEST_EXECSPACE, Kokkos::Experimental::OpenMPTarget>::value)
+#endif
+  {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                     float>::test_teambroadcast(0, 1.3);
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
@@ -154,9 +171,15 @@ TEST(TEST_CATEGORY, team_broadcast_float) {
       TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
                         float>::test_teambroadcast(1000, 1.3);
     }
+  }
 }
 
 TEST(TEST_CATEGORY, team_broadcast_double) {
+	          // FIXME_OPENMPTARGET
+#ifdef KOKKOS_ENABLE_OPENMPTARGET
+  if constexpr(!std::is_same<TEST_EXECSPACE, Kokkos::Experimental::OpenMPTarget>::value)
+#endif
+  {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                     double>::test_teambroadcast(0, 1.3);
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
@@ -187,9 +210,12 @@ TEST(TEST_CATEGORY, team_broadcast_double) {
 
                         double>::test_teambroadcast(1000, 1.3);
     }
+  }
 }
 
 }  // namespace Test
 
+#ifndef KOKKOS_ENABLE_OPENMPTARGET
 #include <TestTeamVector.hpp>
+#endif
 #endif
