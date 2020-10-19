@@ -72,12 +72,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   using ReducerConditional =
       Kokkos::Impl::if_c<std::is_same<InvalidType, ReducerType>::value,
                          FunctorType, ReducerType>;
-  using ReducerTypeFwd = typename ReducerConditional::type;
+//  using ReducerTypeFwd = typename ReducerConditional::type;
   using WorkTagFwd =
       std::conditional_t<std::is_same<InvalidType, ReducerType>::value, WorkTag,
                          void>;
   using ValueInit =
-      typename Kokkos::Impl::FunctorValueInit<ReducerTypeFwd, WorkTagFwd>;
+      typename Kokkos::Impl::FunctorValueInit<FunctorType/*ReducerTypeFwd*/, WorkTagFwd>;
 
  public:
   // V - View
@@ -125,14 +125,30 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         *space.impl_internal_space_instance();
     cl::sycl::queue& q = *instance.m_queue;
 
+/*    template <tye
+    struct Dummy{
+    const ReducerType& m_reducer;
+    auto operator()(const value_type &old_value, const value_type& new_value) const
+    {
+      return m_reducer.join(old_value, new_value);
+    }
+    };*/
+
     q.submit([this, functor, policy](cl::sycl::handler& cgh) {
       // FIXME_SYCL a local size larger than 1 doesn't work for all cases
       cl::sycl::nd_range<1> range(policy.end() - policy.begin(), 1);
 
-      value_type identity = 0;
+      constexpr value_type identity{};
       ValueInit::init(functor, m_result_ptr);
-      auto reduction =
-          cl::sycl::intel::reduction(m_result_ptr, identity, std::plus<>());
+      const auto reduction = [&](){
+        if constexpr(std::is_same<ReducerType, InvalidType>::value)
+          return cl::sycl::intel::reduction(m_result_ptr, identity, std::plus<>());
+        else
+          return cl::sycl::intel::reduction(m_result_ptr, identity, [&](value_type &old_value, const value_type& new_value){
+			        m_reducer.join(old_value, new_value);
+				return old_value;
+			  });
+      }();
 
       cgh.parallel_for(
           range, reduction, [=](cl::sycl::nd_item<1> item, auto& sum) {
@@ -164,8 +180,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     // Placement new a copy of functor into USM shared memory
     //
     // Store it in a unique_ptr to call its destructor on scope exit
-    std::unique_ptr<ReducerTypeFwd, Kokkos::Impl::destruct_delete>
-        kernelFunctorPtr(new (kernelMem.data()) ReducerTypeFwd(functor));
+    std::unique_ptr<Functor, Kokkos::Impl::destruct_delete>
+        kernelFunctorPtr(new (kernelMem.data()) Functor(functor));
 
     auto kernelFunctor = std::reference_wrapper(*kernelFunctorPtr);
     sycl_direct_launch(m_policy, kernelFunctor);
@@ -173,12 +189,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
  public:
   void execute() const {
-    ReducerTypeFwd functor = ReducerConditional::select(m_functor, m_reducer);
+//    ReducerTypeFwd functor = ReducerConditional::select(m_functor, m_reducer);
 
-    if constexpr (std::is_trivially_copyable_v<decltype(functor)>)
-      sycl_direct_launch(m_policy, functor);
+    if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
+      sycl_direct_launch(m_policy, m_functor);
     else
-      sycl_indirect_launch(functor);
+      sycl_indirect_launch(m_functor);
   }
 
  private:

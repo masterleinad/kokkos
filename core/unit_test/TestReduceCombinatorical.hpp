@@ -455,7 +455,7 @@ struct TestReduceCombinatoricalInstantiation {
 
     value = 99;
 // WORKAROUND OPENMPTARGET FIXME_SYCL Custom Reducers not implemented
-#if !(defined(KOKKOS_ENABLE_OPENMPTARGET) || defined(KOKKOS_ENABLE_SYCL))
+#if !(defined(KOKKOS_ENABLE_OPENMPTARGET))
     CallParallelReduce(args...,
                        Test::ReduceCombinatorical::AddPlus<double>(value));
     if ((Kokkos::DefaultExecutionSpace::concurrency() > 1) &&
