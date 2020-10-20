@@ -519,7 +519,7 @@ struct TestReduceCombinatoricalInstantiation {
         Test::ReduceCombinatorical::FunctorScalar<ISTEAM>(result_view));
 // WORKAROUND OPENMPTARGET, FIXME_SYCL: reductions with functor join/init/final
 // not implemented
-#if !(defined(KOKKOS_ENABLE_OPENMPTARGET))
+#if !(defined(KOKKOS_ENABLE_OPENMPTARGET) || defined(KOKKOS_ENABLE_SYCL))
     double expected_result = (1.0 * N) * (1.0 * N - 1.0) / 2.0;
 
     AddReturnArgument(
