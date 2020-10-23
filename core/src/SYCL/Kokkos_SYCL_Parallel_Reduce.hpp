@@ -138,11 +138,19 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       // FIXME_SYCL a local size larger than 1 doesn't work for all cases
       cl::sycl::nd_range<1> range(policy.end() - policy.begin(), 1);
 
-      constexpr value_type identity{};
+      const value_type identity {};
       ValueInit::init(functor, m_result_ptr);
       const auto reduction = [&](){
         if constexpr(std::is_same<ReducerType, InvalidType>::value)
-          return cl::sycl::intel::reduction(m_result_ptr, identity, std::plus<>());
+	{
+	  if constexpr(ReduceFunctorHasJoin<FunctorType>::value)
+            return cl::sycl::intel::reduction(m_result_ptr, identity, [&](value_type &old_value, const value_type& new_value){
+                                m_functor.join(old_value, new_value);
+                                return old_value;
+                          });
+	  else
+            return cl::sycl::intel::reduction(m_result_ptr, identity, std::plus<>());
+	}
         else
           return cl::sycl::intel::reduction(m_result_ptr, identity, [&](value_type &old_value, const value_type& new_value){
 			        m_reducer.join(old_value, new_value);

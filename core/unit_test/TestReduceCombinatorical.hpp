@@ -519,9 +519,7 @@ struct TestReduceCombinatoricalInstantiation {
         Test::ReduceCombinatorical::FunctorScalar<ISTEAM>(result_view));
 // WORKAROUND OPENMPTARGET, FIXME_SYCL: reductions with functor join/init/final
 // not implemented
-#if !(defined(KOKKOS_ENABLE_OPENMPTARGET) || defined(KOKKOS_ENABLE_SYCL))
-    double expected_result = (1.0 * N) * (1.0 * N - 1.0) / 2.0;
-
+#if !defined(KOKKOS_ENABLE_OPENMPTARGET)
     AddReturnArgument(
         N, args...,
         Test::ReduceCombinatorical::FunctorScalarInit<ISTEAM>(result_view));
@@ -531,6 +529,8 @@ struct TestReduceCombinatoricalInstantiation {
     AddReturnArgument(
         N, args...,
         Test::ReduceCombinatorical::FunctorScalarJoinInit<ISTEAM>(result_view));
+#ifndef KOKKOS_ENABLE_SYCL
+    double expected_result = (1.0 * N) * (1.0 * N - 1.0) / 2.0;
 
     h_r() = 0;
     Kokkos::deep_copy(result_view, h_r);
@@ -558,6 +558,7 @@ struct TestReduceCombinatoricalInstantiation {
     Kokkos::fence();
     Kokkos::deep_copy(h_r, result_view);
     ASSERT_EQ(expected_result, h_r());
+#endif
 #endif
   }
 
