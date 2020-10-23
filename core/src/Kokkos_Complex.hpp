@@ -762,8 +762,17 @@ KOKKOS_INLINE_FUNCTION complex<RealType> conj(
 //! Exponential of a complex number.
 template <class RealType>
 KOKKOS_INLINE_FUNCTION complex<RealType> exp(const complex<RealType>& x) {
-  return std::exp(x.real()) *
-         complex<RealType>(std::cos(x.imag()), std::sin(x.imag()));
+#ifdef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_SYCL
+  using cl::sycl::exp;
+  using cl::sycl::cos;
+  using cl::sycl::sin;
+#else
+  using std::exp;
+  using std::cos;
+  using std::sin;
+#endif
+  return exp(x.real()) *
+         complex<RealType>(cos(x.imag()), sin(x.imag()));
 }
 
 //! natural log of a complex number.
@@ -785,10 +794,17 @@ KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> log(
 template <class RealType>
 KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> sin(
     const complex<RealType>& x) {
+#ifdef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_SYCL
+  using cl::sycl::cos;
+  using cl::sycl::cosh;
+  using cl::sycl::sin;
+  using cl::sycl::sinh;
+#else
   using std::cos;
   using std::cosh;
   using std::sin;
   using std::sinh;
+#endif
   return Kokkos::complex<RealType>(sin(x.real()) * cosh(x.imag()),
                                    cos(x.real()) * sinh(x.imag()));
 }
@@ -797,10 +813,17 @@ KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> sin(
 template <class RealType>
 KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> cos(
     const complex<RealType>& x) {
+#ifdef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_SYCL
+  using cl::sycl::cos;
+  using cl::sycl::cosh;
+  using cl::sycl::sin;
+  using cl::sycl::sinh;
+#else
   using std::cos;
   using std::cosh;
   using std::sin;
   using std::sinh;
+#endif
   return Kokkos::complex<RealType>(cos(x.real()) * cosh(x.imag()),
                                    -sin(x.real()) * sinh(x.imag()));
 }
@@ -816,10 +839,17 @@ KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> tan(
 template <class RealType>
 KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> sinh(
     const complex<RealType>& x) {
+#ifdef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_SYCL
+  using cl::sycl::cos;
+  using cl::sycl::cosh;
+  using cl::sycl::sin;
+  using cl::sycl::sinh;
+#else
   using std::cos;
   using std::cosh;
   using std::sin;
   using std::sinh;
+#endif
   return Kokkos::complex<RealType>(sinh(x.real()) * cos(x.imag()),
                                    cosh(x.real()) * sin(x.imag()));
 }
@@ -828,10 +858,17 @@ KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> sinh(
 template <class RealType>
 KOKKOS_INLINE_FUNCTION Kokkos::complex<RealType> cosh(
     const complex<RealType>& x) {
+#ifdef KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_SYCL
+  using cl::sycl::cos;
+  using cl::sycl::cosh;
+  using cl::sycl::sin;
+  using cl::sycl::sinh;
+#else
   using std::cos;
   using std::cosh;
   using std::sin;
   using std::sinh;
+#endif
   return Kokkos::complex<RealType>(cosh(x.real()) * cos(x.imag()),
                                    sinh(x.real()) * sin(x.imag()));
 }
