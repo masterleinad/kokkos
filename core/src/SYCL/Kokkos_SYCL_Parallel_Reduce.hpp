@@ -145,32 +145,32 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     ValueInit::init(functor, &host_result);
     q.memcpy(result_ptr, &host_result, sizeof(host_result));
 
-    q.submit([&](cl::sycl::handler& cgh) {
-      // FIXME_SYCL a local size larger than 1 doesn't work for all cases
-      cl::sycl::nd_range<1> range(policy.end() - policy.begin(), 1);
+      q.submit([&](cl::sycl::handler& cgh) {
+        // FIXME_SYCL a local size larger than 1 doesn't work for all cases
+        cl::sycl::nd_range<1> range(policy.end() - policy.begin(), 1);
 
-      constexpr value_type identity{};
-      const auto reduction = [&]() {
-        if constexpr (!std::is_same<ReducerType, InvalidType>::value) {
-          return cl::sycl::ONEAPI::reduction(
-              result_ptr, identity,
-              [&](value_type& old_value, const value_type& new_value) {
-                m_reducer.join(old_value, new_value);
-                return old_value;
-              });
-        } else {
-          if constexpr (ReduceFunctorHasJoin<Functor>::value) {
+        constexpr value_type identity{};
+        const auto reduction = [&]() {
+          if constexpr (!std::is_same<ReducerType, InvalidType>::value) {
             return cl::sycl::ONEAPI::reduction(
                 result_ptr, identity,
-                [=](value_type& old_value, const value_type& new_value) {
-                  functor.join(old_value, new_value);
+                [&](value_type& old_value, const value_type& new_value) {
+                  m_reducer.join(old_value, new_value);
                   return old_value;
                 });
           } else {
-            return cl::sycl::ONEAPI::reduction(result_ptr, identity,
-                                               std::plus<>());
+            if constexpr (ReduceFunctorHasJoin<Functor>::value) {
+              return cl::sycl::ONEAPI::reduction(
+                  result_ptr, identity,
+                  [=](value_type& old_value, const value_type& new_value) {
+                    functor.join(old_value, new_value);
+                    return old_value;
+                  });
+            } else {
+              return cl::sycl::ONEAPI::reduction(result_ptr, identity,
+                                                 std::plus<>());
+            }
           }
-        }
       }();
 
       cgh.parallel_for(range, reduction,
