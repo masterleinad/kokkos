@@ -1,0 +1,183 @@
+/*
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 3.0
+//       Copyright (2020) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+// 1. Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the Corporation nor the names of the
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
+//
+// ************************************************************************
+//@HEADER
+*/
+
+#ifndef KOKKO_SYCL_PARALLEL_SCAN_HPP
+#define KOKKO_SYCL_PARALLEL_SCAN_HPP
+
+#include <Kokkos_Macros.hpp>
+#if defined(KOKKOS_ENABLE_SYCL)
+
+namespace Kokkos {
+namespace Impl {
+
+template <class FunctorType, class... Traits>
+class ParallelScanSYCLBase {
+ public:
+  using Policy = Kokkos::RangePolicy<Traits...>;
+
+ protected:
+  using Member       = typename Policy::member_type;
+  using WorkTag      = typename Policy::work_tag;
+  using WorkRange    = typename Policy::WorkRange;
+  using LaunchBounds = typename Policy::launch_bounds;
+
+  using ValueTraits = Kokkos::Impl::FunctorValueTraits<FunctorType, WorkTag>;
+  using ValueInit   = Kokkos::Impl::FunctorValueInit<FunctorType, WorkTag>;
+  using ValueOps    = Kokkos::Impl::FunctorValueOps<FunctorType, WorkTag>;
+
+ public:
+  using pointer_type   = typename ValueTraits::pointer_type;
+  using reference_type = typename ValueTraits::reference_type;
+  using functor_type   = FunctorType;
+  using size_type      = Kokkos::Experimental::SYCL::size_type;
+  using index_type     = typename Policy::index_type;
+
+ protected:
+  const FunctorType m_functor;
+  const Policy m_policy;
+  size_type* m_scratch_space = nullptr;
+  size_type* m_scratch_flags = nullptr;
+  size_type m_final          = false;
+  int m_grid_x               = 0;
+
+ public:
+  inline void impl_execute() {
+  // Convenience references
+    const Kokkos::Experimental::SYCL& space = m_policy.space();
+    Kokkos::Experimental::Impl::SYCLInternal& instance =
+        *space.impl_internal_space_instance();
+    cl::sycl::queue& q = *instance.m_queue;
+
+    size_t wgroup_size = 32;
+    
+    auto part_size = wgroup_size * 2;
+
+    // <<Reduction loop>>
+    auto len = m_policy.end()-m_policy.begin();
+    while (len != 1) {
+       // division rounding up
+       auto n_wgroups = (len + part_size - 1) / part_size;
+       q.submit([&] (sycl::handler& cgh) {
+          sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
+                         local_mem(sycl::range<1>(wgroup_size), cgh);
+
+          auto global_mem = m_scratch_space;
+          cgh.parallel_for<class reduction_kernel>(
+               sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+               [=] (sycl::nd_item<1> item) {
+             
+            size_t local_id = item.get_local_linear_id();
+            size_t global_id = item.get_global_linear_id();
+            local_mem[local_id] = 0;
+
+            if ((2 * global_id) < len) {
+               local_mem[local_id] = global_mem[2 * global_id] + global_mem[2 * global_id + 1];
+            }
+            item.barrier(sycl::access::fence_space::local_space);
+
+            for (size_t stride = 1; stride < wgroup_size; stride *= 2) {
+               auto idx = 2 * stride * local_id;
+               if (idx < wgroup_size) {
+                  local_mem[idx] = local_mem[idx] + local_mem[idx + stride];
+               }
+
+               item.barrier(sycl::access::fence_space::local_space);
+            }
+
+            if (local_id == 0) {
+               global_mem[item.get_group_linear_id()] = local_mem[0];
+            }
+          });
+       });
+    q.wait();
+  }
+  }
+
+  ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy)
+      : m_functor(arg_functor), m_policy(arg_policy) {}
+};
+
+template <class FunctorType, class... Traits>
+class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
+                   Kokkos::Experimental::SYCL>
+    : private ParallelScanSYCLBase<FunctorType, Traits...> {
+ public:
+  using Base = ParallelScanSYCLBase<FunctorType, Traits...>;
+
+  inline void execute() { Base::impl_execute(); }
+
+  ParallelScan(const FunctorType& arg_functor,
+               const typename Base::Policy& arg_policy)
+      : Base(arg_functor, arg_policy) {}
+};
+
+//----------------------------------------------------------------------------
+
+template <class FunctorType, class ReturnType, class... Traits>
+class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
+                            ReturnType, Kokkos::Experimental::SYCL>
+    : private ParallelScanSYCLBase<FunctorType, Traits...> {
+ public:
+  using Base = ParallelScanSYCLBase<FunctorType, Traits...>;
+
+  ReturnType& m_returnvalue;
+
+  inline void execute() {
+    Base::impl_execute();
+    // FIXME_SYCL
+    std::abort();
+  }
+
+  ParallelScanWithTotal(const FunctorType& arg_functor,
+                        const typename Base::Policy& arg_policy,
+                        ReturnType& arg_returnvalue)
+      : Base(arg_functor, arg_policy), m_returnvalue(arg_returnvalue) {}
+};
+
+}  // namespace Impl
+}  // namespace Kokkos
+
+#endif
+
+#endif
