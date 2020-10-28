@@ -208,7 +208,6 @@ if(Kokkos_ENABLE_OPENMPTARGET)
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_MDRange_f.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Other.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Reductions_DeviceView.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Scan.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_TeamBasic.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_TeamScratch.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_TeamReductionScan.cpp
@@ -459,7 +458,6 @@ if(Kokkos_ENABLE_SYCL)
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reducers_c.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reducers_d.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reductions_DeviceView.cpp
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Scan.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_SharedAlloc.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_SubView_c04.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_SubView_c05.cpp
