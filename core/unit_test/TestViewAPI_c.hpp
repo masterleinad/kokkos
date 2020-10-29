@@ -50,8 +50,8 @@ TEST(TEST_CATEGORY, view_api_c) {
   // FIXME_SYCL requires deep_copy on the default memory space
 #ifndef KOKKOS_ENABLE_SYCL
   TestViewAPI<double, TEST_EXECSPACE>::run_test_deep_copy_empty();
-#endif
   TestViewAPI<double, TEST_EXECSPACE>::run_test_view_operator_b();
+#endif
 }
 
 }  // namespace Test

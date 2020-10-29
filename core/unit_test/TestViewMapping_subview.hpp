@@ -205,8 +205,10 @@ struct TestViewMappingSubview {
 };
 
 TEST(TEST_CATEGORY, view_mapping_subview) {
+#ifndef KOKKOS_ENABLE_SYCL
   TestViewMappingSubview<TEST_EXECSPACE> f;
   f.run();
+#endif
 }
 
 }  // namespace Test

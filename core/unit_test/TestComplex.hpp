@@ -125,8 +125,10 @@ struct TestComplexConstruction {
 };
 
 TEST(TEST_CATEGORY, complex_construction) {
+#ifndef KOKKOS_ENABLE_SYCL
   TestComplexConstruction<TEST_EXECSPACE> test;
   test.testit();
+#endif
 }
 
 // Test Math FUnction
@@ -279,8 +281,10 @@ struct TestComplexBasicMath {
 };
 
 TEST(TEST_CATEGORY, complex_basic_math) {
+#ifndef KOKKOS_ENABLE_SYCL
   TestComplexBasicMath<TEST_EXECSPACE> test;
   test.testit();
+#endif
 }
 
 template <class ExecSpace>
@@ -407,8 +411,10 @@ void testComplexIO() {
 }
 
 TEST(TEST_CATEGORY, complex_special_funtions) {
+#ifndef KOKKOS_ENABLE_SYCL
   TestComplexSpecialFunctions<TEST_EXECSPACE> test;
   test.testit();
+#endif
 }
 
 TEST(TEST_CATEGORY, complex_io) { testComplexIO(); }

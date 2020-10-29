@@ -47,9 +47,11 @@
 namespace Test {
 
 TEST(TEST_CATEGORY, view_api_b) {
+#ifndef KOKKOS_ENABLE_SYCL
   TestViewAPI<double, TEST_EXECSPACE>::run_test_view_operator_a();
   TestViewAPI<double, TEST_EXECSPACE>::run_test_mirror();
   TestViewAPI<double, TEST_EXECSPACE>::run_test_scalar();
+#endif
 }
 
 }  // namespace Test
