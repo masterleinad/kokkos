@@ -704,7 +704,9 @@ void test_offsetview_offsets_rank3() {
 // FIXME_SYCL needs MDRangePolicy
 #ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, offsetview_construction) {
+#ifndef KOKKOS_ENABLE_SYCL
   test_offsetview_construction<int, TEST_EXECSPACE>();
+#endif
 }
 #endif
 

@@ -163,7 +163,7 @@ struct TestFind {
   KOKKOS_INLINE_FUNCTION
   void operator()(typename execution_space::size_type i,
                   value_type &errors) const {
-    const bool expect_to_find_i = (i < m_max_key);
+    const bool expect_to_find_i = (i < static_cast<typename execution_space::size_type>(m_max_key));
 
     const bool exists = m_map.exists(i);
 

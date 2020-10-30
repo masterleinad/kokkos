@@ -391,7 +391,8 @@ struct test_default_scatter_view {
                                           Contribution, Op,
                                           NumberType>::orig_view_type;
 
-  void run_test(int n) {
+  void run_test(int) {
+#ifndef KOKKOS_ENABLE_SYCL
     // Test creation via create_scatter_view overload 1
     {
       orig_view_def original_view("original_view", n);
@@ -421,6 +422,7 @@ struct test_default_scatter_view {
         Kokkos::fence();
       }
     }
+#endif
   }
 };
 
@@ -456,6 +458,8 @@ struct test_scatter_view_config {
       ASSERT_TRUE(sv3.is_allocated());
     }
 
+    // FIXME_SYCL requires MDRangePolicy
+#ifndef KOKKOS_ENABLE_SYCL
     // Test creation via create_scatter_view
     {
       orig_view_def original_view("original_view", n);
@@ -542,6 +546,7 @@ struct test_scatter_view_config {
         Kokkos::fence();
       }
     }
+#endif
   }
 };
 
