@@ -85,9 +85,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       const FunctorType& f, const Policy& p, const V& v,
       typename std::enable_if<Kokkos::is_view<V>::value, void*>::type = nullptr)
       : m_functor(f), m_policy(p), m_result_ptr(v.data()) {
-    // FIXME_SYCL custom reducer not yet implemented
-    if (m_result_ptr == nullptr)
-      Kokkos::abort("Custom reducer not yet implemented for SYCL backend");
   }
 
   ParallelReduce(const FunctorType& f, const Policy& p,
@@ -96,9 +93,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         m_policy(p),
         m_reducer(reducer),
         m_result_ptr(reducer.view().data()) {
-    // FIXME_SYCL custom reducer not yet implemented
-    if (m_result_ptr == nullptr)
-      Kokkos::abort("Custom reducer not yet implemented for SYCL backend");
   }
 
  private:
@@ -118,7 +112,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   }
 
   template <typename T>
-  struct PossiblyJoiningReferenceWrapper : std::reference_wrapper<T> {
+  struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
     using std::reference_wrapper<T>::reference_wrapper;
 
     template <typename Dummy = T>
@@ -126,6 +120,13 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                      ReduceFunctorHasJoin<Dummy>::value>
     join(value_type& old_value, const value_type& new_value) const {
       return this->get().join(old_value, new_value);
+    }
+
+    template <typename Dummy = T>
+    std::enable_if_t<std::is_same_v<Dummy, T> &&
+                     ReduceFunctorHasFinal<Dummy>::value>
+    final(value_type& old_value) const {
+      return this->get().final(old_value);
     }
   };
 
@@ -190,7 +191,14 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     q.wait();
 
-    *m_result_ptr = *result_ptr;
+    static_assert(ReduceFunctorHasFinal<FunctorType>::value == ReduceFunctorHasFinal<Functor>::value);
+    static_assert(ReduceFunctorHasJoin<FunctorType>::value == ReduceFunctorHasJoin<Functor>::value);
+
+    if constexpr (ReduceFunctorHasFinal<Functor>::value)
+      FunctorFinal<Functor, WorkTag, value_type>::final(functor, result_ptr);
+    else
+      *m_result_ptr = *result_ptr;
+
     sycl::free(result_ptr, q);
   }
 
@@ -213,7 +221,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         new (kernelMem.data()) Functor(functor));
 
     auto kernelFunctor =
-        PossiblyJoiningReferenceWrapper<Functor>(*kernelFunctorPtr);
+        ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
     sycl_direct_launch(m_policy, kernelFunctor);
   }
 

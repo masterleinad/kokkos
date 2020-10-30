@@ -57,7 +57,6 @@
 // Underlying OpenCL 2.x implementation supports this feature and to enable it,
 // build device program with -cl-std=CL2.0 -54 (CL_INVALID_WORK_GROUP_SIZE)"
 // thrown in the test body.
-#ifndef KOKKOS_ENABLE_SYCL
 namespace Test {
 
 TEST(defaultdevicetype, reduce_instantiation_a1) {
@@ -65,5 +64,4 @@ TEST(defaultdevicetype, reduce_instantiation_a1) {
 }
 
 }  // namespace Test
-#endif
 #endif

@@ -529,8 +529,6 @@ struct TestReduceCombinatoricalInstantiation {
     AddReturnArgument(
         N, args...,
         Test::ReduceCombinatorical::FunctorScalarJoinInit<ISTEAM>(result_view));
-// FIXME_SYCL Functors with final not supported
-#ifndef KOKKOS_ENABLE_SYCL
     double expected_result = (1.0 * N) * (1.0 * N - 1.0) / 2.0;
 
     h_r() = 0;
@@ -559,7 +557,6 @@ struct TestReduceCombinatoricalInstantiation {
     Kokkos::fence();
     Kokkos::deep_copy(h_r, result_view);
     ASSERT_EQ(expected_result, h_r());
-#endif
 #endif
   }
 
