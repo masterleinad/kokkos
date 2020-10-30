@@ -160,7 +160,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   return old_value;
                 });
           } else {
-            if constexpr (ReduceFunctorHasJoin<Functor>::value) {
+            if constexpr (ReduceFunctorHasJoin<FunctorType>::value) {
               return cl::sycl::ONEAPI::reduction(
                   result_ptr, identity,
                   [=](value_type& old_value, const value_type& new_value) {
@@ -191,11 +191,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     q.wait();
 
-    static_assert(ReduceFunctorHasFinal<FunctorType>::value == ReduceFunctorHasFinal<Functor>::value);
-    static_assert(ReduceFunctorHasJoin<FunctorType>::value == ReduceFunctorHasJoin<Functor>::value);
-
-    if constexpr (ReduceFunctorHasFinal<Functor>::value)
-      FunctorFinal<Functor, WorkTag, value_type>::final(functor, result_ptr);
+    if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+      functor.final(*result_ptr);	    
+      //FunctorFinal<Functor, WorkTag, value_type>::final(functor, result_ptr);
     else
       *m_result_ptr = *result_ptr;
 

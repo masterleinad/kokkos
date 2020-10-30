@@ -422,19 +422,19 @@ struct TestReduceCombinatoricalInstantiation {
 
     double value = 99;
     Kokkos::parallel_reduce(args..., value);
-    ASSERT_EQ(expected_result, value);
+    assert(expected_result==value);
 
     result_view() = 99;
     CallParallelReduce(args..., result_view);
     Kokkos::fence();
-    ASSERT_EQ(expected_result, result_view());
+    assert(expected_result==result_view());
 
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
     result_view() = 99;
     CallParallelReduce(args..., result_view_device);
     Kokkos::fence();
     Kokkos::deep_copy(result_view, result_view_device);
-    ASSERT_EQ(expected_result, result_view());
+    assert(expected_result==result_view());
 #endif
 
     value = 99;
@@ -443,7 +443,7 @@ struct TestReduceCombinatoricalInstantiation {
         Kokkos::View<double, Kokkos::HostSpace,
                      Kokkos::MemoryTraits<Kokkos::Unmanaged> >(&value));
     Kokkos::fence();
-    ASSERT_EQ(expected_result, value);
+    assert(expected_result==value);
 
     result_view() = 99;
     const Kokkos::View<double, Kokkos::HostSpace,
@@ -451,7 +451,7 @@ struct TestReduceCombinatoricalInstantiation {
         result_view_const_um = result_view;
     CallParallelReduce(args..., result_view_const_um);
     Kokkos::fence();
-    ASSERT_EQ(expected_result, result_view_const_um());
+    assert(expected_result==result_view_const_um());
 
     value = 99;
 // WORKAROUND OPENMPTARGET Custom Reducers not implemented
@@ -466,7 +466,7 @@ struct TestReduceCombinatoricalInstantiation {
                (expected_result > 0)) {
       ASSERT_TRUE(expected_result <= value);
     } else {
-      ASSERT_EQ(expected_result, value);
+      assert(expected_result==value);
     }
 
     value = 99;
@@ -480,7 +480,7 @@ struct TestReduceCombinatoricalInstantiation {
                (expected_result > 0)) {
       ASSERT_TRUE(expected_result <= value);
     } else {
-      ASSERT_EQ(expected_result, value);
+      assert(expected_result==value);
     }
 #endif
   }
@@ -538,7 +538,7 @@ struct TestReduceCombinatoricalInstantiation {
         Test::ReduceCombinatorical::FunctorScalarFinal<ISTEAM>(result_view));
     Kokkos::fence();
     Kokkos::deep_copy(h_r, result_view);
-    ASSERT_EQ(expected_result, h_r());
+    assert(expected_result==h_r());
 
     h_r() = 0;
     Kokkos::deep_copy(result_view, h_r);
@@ -547,7 +547,7 @@ struct TestReduceCombinatoricalInstantiation {
                      result_view));
     Kokkos::fence();
     Kokkos::deep_copy(h_r, result_view);
-    ASSERT_EQ(expected_result, h_r());
+    assert(expected_result== h_r());
 
     h_r() = 0;
     Kokkos::deep_copy(result_view, h_r);
@@ -556,7 +556,7 @@ struct TestReduceCombinatoricalInstantiation {
                      result_view));
     Kokkos::fence();
     Kokkos::deep_copy(h_r, result_view);
-    ASSERT_EQ(expected_result, h_r());
+    assert(expected_result== h_r());
 #endif
   }
 
