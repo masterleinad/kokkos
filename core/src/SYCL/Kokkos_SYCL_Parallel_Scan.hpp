@@ -93,7 +93,7 @@ class ParallelScanSYCLBase {
         *space.impl_internal_space_instance();
     cl::sycl::queue& q = *instance.m_queue;
 
-    size_t wgroup_size = 32;
+    size_t wgroup_size = 16;
     
     auto part_size = wgroup_size * 2;
 
@@ -124,6 +124,7 @@ class ParallelScanSYCLBase {
     while (len != 1) {
        // division rounding up
        auto n_wgroups = (len + part_size - 1) / part_size;
+       assert(n_wgroups==1);
        q.submit([&, *this] (sycl::handler& cgh) {
           sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
                          local_mem(sycl::range<1>(wgroup_size), cgh);
@@ -165,14 +166,34 @@ class ParallelScanSYCLBase {
 
             if (local_id == 0) {
                global_mem[item.get_group_linear_id()] = local_mem[wgroup_size-1];
-               out << "global_mem[" << item.get_group_linear_id() << "]=" << global_mem[item.get_group_linear_id()] << cl::sycl::endl;
+               //out << "global_mem[" << item.get_group_linear_id() << "]=" << global_mem[item.get_group_linear_id()] << cl::sycl::endl;
+               local_mem[wgroup_size-1] = 0;
+            }
+
+            for (size_t stride = wgroup_size; stride > 0; stride /=2)
+            {
+               auto idx = 2*stride* (local_id+1)-1;
+               if (idx < wgroup_size) {
+                 auto dummy = local_mem[idx-stride];
+                 local_mem[idx-stride] = local_mem[idx];
+                 local_mem[idx] = local_mem[idx] + dummy;
+                 //out << "local_mem[" << idx-stride << "]=" << local_mem[idx-stride] << cl::sycl::endl;
+                 //out << "local_mem[" << idx << "]=" << local_mem[idx] << cl::sycl::endl;
+               }
+	       item.barrier(sycl::access::fence_space::local_space);
+            }
+            if (global_id < len) {
+               typename FunctorType::value_type update = local_mem[global_id/2];
+               functor(global_id, update, true);
+               out << "global_mem[" << global_id << "]=" << update << cl::sycl::endl;
+               out << "before global_mem[" << global_id << "]=" << local_mem[global_id/2] << cl::sycl::endl;
             }
           });
        });
     q.wait();
     len = n_wgroups;
   }
-  std::abort();
+//  std::abort();
   }
 
  template <typename Functor>
@@ -237,8 +258,19 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
 
   inline void execute() {
     Base::impl_execute();
+
+    const auto nwork = Base::m_policy.end() - Base::m_policy.begin();
+    if (nwork>0) {
+      const int size = Base::ValueTraits::value_size(Base::m_functor);
+      DeepCopy<HostSpace, Kokkos::Experimental::SYCLDeviceUSMSpace>(
+          &m_returnvalue,
+          Base::m_scratch_space + nwork-1,
+          size);
+    }
+
+
     // FIXME_SYCL
-    std::abort();
+    //std::abort();
   }
 
   ParallelScanWithTotal(const FunctorType& arg_functor,
