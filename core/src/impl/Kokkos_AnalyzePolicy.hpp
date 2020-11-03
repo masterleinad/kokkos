@@ -52,212 +52,183 @@
 namespace Kokkos {
 namespace Impl {
 
-template <typename ExecutionSpace = void, typename Schedule = void,
-          typename WorkTag = void, typename IndexType = void,
-          typename IterationPattern = void, typename LaunchBounds = void,
-          typename MyWorkItemProperty =
-              Kokkos::Experimental::WorkItemProperty::None_t,
-          typename IsGraphKernel = std::false_type>
-struct PolicyTraitsBase {
-  using type = PolicyTraitsBase<ExecutionSpace, Schedule, WorkTag, IndexType,
-                                IterationPattern, LaunchBounds,
-                                MyWorkItemProperty, IsGraphKernel>;
-
-  using execution_space    = ExecutionSpace;
-  using schedule_type      = Schedule;
-  using work_tag           = WorkTag;
-  using index_type         = IndexType;
-  using iteration_pattern  = IterationPattern;
-  using launch_bounds      = LaunchBounds;
-  using work_item_property = MyWorkItemProperty;
-  using is_graph_kernel    = IsGraphKernel;
-};
-
-template <typename PolicyBase, typename Property>
-struct SetWorkItemProperty {
-  static_assert(
-      std::is_same<typename PolicyBase::work_item_property,
-                   Kokkos::Experimental::WorkItemProperty::None_t>::value,
-      "Kokkos Error: More than one work item property given");
-  using type = PolicyTraitsBase<
-      typename PolicyBase::execution_space, typename PolicyBase::schedule_type,
-      typename PolicyBase::work_tag, typename PolicyBase::index_type,
-      typename PolicyBase::iteration_pattern,
-      typename PolicyBase::launch_bounds, Property,
-      typename PolicyBase::is_graph_kernel>;
-};
-
-template <typename PolicyBase, typename ExecutionSpace>
-struct SetExecutionSpace {
-  static_assert(is_void<typename PolicyBase::execution_space>::value,
-                "Kokkos Error: More than one execution space given");
-  using type =
-      PolicyTraitsBase<ExecutionSpace, typename PolicyBase::schedule_type,
-                       typename PolicyBase::work_tag,
-                       typename PolicyBase::index_type,
-                       typename PolicyBase::iteration_pattern,
-                       typename PolicyBase::launch_bounds,
-                       typename PolicyBase::work_item_property,
-                       typename PolicyBase::is_graph_kernel>;
-};
-
-template <typename PolicyBase, typename Schedule>
-struct SetSchedule {
-  static_assert(is_void<typename PolicyBase::schedule_type>::value,
-                "Kokkos Error: More than one schedule type given");
-  using type = PolicyTraitsBase<typename PolicyBase::execution_space, Schedule,
-                                typename PolicyBase::work_tag,
-                                typename PolicyBase::index_type,
-                                typename PolicyBase::iteration_pattern,
-                                typename PolicyBase::launch_bounds,
-                                typename PolicyBase::work_item_property,
-                                typename PolicyBase::is_graph_kernel>;
-};
-
-template <typename PolicyBase, typename WorkTag>
-struct SetWorkTag {
-  static_assert(is_void<typename PolicyBase::work_tag>::value,
-                "Kokkos Error: More than one work tag given");
-  using type = PolicyTraitsBase<typename PolicyBase::execution_space,
-                                typename PolicyBase::schedule_type, WorkTag,
-                                typename PolicyBase::index_type,
-                                typename PolicyBase::iteration_pattern,
-                                typename PolicyBase::launch_bounds,
-                                typename PolicyBase::work_item_property,
-                                typename PolicyBase::is_graph_kernel>;
-};
-
-template <typename PolicyBase, typename IndexType>
-struct SetIndexType {
-  static_assert(is_void<typename PolicyBase::index_type>::value,
-                "Kokkos Error: More than one index type given");
-  using type = PolicyTraitsBase<typename PolicyBase::execution_space,
-                                typename PolicyBase::schedule_type,
-                                typename PolicyBase::work_tag, IndexType,
-                                typename PolicyBase::iteration_pattern,
-                                typename PolicyBase::launch_bounds,
-                                typename PolicyBase::work_item_property,
-                                typename PolicyBase::is_graph_kernel>;
-};
-
-template <typename PolicyBase, typename IterationPattern>
-struct SetIterationPattern {
-  static_assert(is_void<typename PolicyBase::iteration_pattern>::value,
-                "Kokkos Error: More than one iteration_pattern given");
-  using type = PolicyTraitsBase<
-      typename PolicyBase::execution_space, typename PolicyBase::schedule_type,
-      typename PolicyBase::work_tag, typename PolicyBase::index_type,
-      IterationPattern, typename PolicyBase::launch_bounds,
-      typename PolicyBase::work_item_property,
-      typename PolicyBase::is_graph_kernel>;
-};
-
-template <typename PolicyBase, typename LaunchBounds>
-struct SetLaunchBounds {
-  static_assert(is_void<typename PolicyBase::launch_bounds>::value,
-                "Kokkos Error: More than one launch_bounds given");
-  using type = PolicyTraitsBase<
-      typename PolicyBase::execution_space, typename PolicyBase::schedule_type,
-      typename PolicyBase::work_tag, typename PolicyBase::index_type,
-      typename PolicyBase::iteration_pattern, LaunchBounds,
-      typename PolicyBase::work_item_property,
-      typename PolicyBase::is_graph_kernel>;
-};
-
-template <typename PolicyBase>
-struct SetIsGraphKernel {
-  using type = PolicyTraitsBase<
-      typename PolicyBase::execution_space, typename PolicyBase::schedule_type,
-      typename PolicyBase::work_tag, typename PolicyBase::index_type,
-      typename PolicyBase::iteration_pattern,
-      typename PolicyBase::launch_bounds,
-      typename PolicyBase::work_item_property, std::true_type>;
-};
-
-template <typename Base, typename... Traits>
+//------------------------------------------------------------------------------
+template <class Enable, class... TraitsList>
 struct AnalyzePolicy;
 
-// TODO DSH rewrite this to be more extensible once we have metaprogramming from
-//      desul
-template <typename Base, typename T, typename... Traits>
-struct AnalyzePolicy<Base, T, Traits...>
-    : public AnalyzePolicy<
-          typename std::conditional_t<
-              is_execution_space<T>::value, SetExecutionSpace<Base, T>,
-              std::conditional_t<
-                  is_schedule_type<T>::value, SetSchedule<Base, T>,
-                  std::conditional_t<
-                      is_index_type<T>::value, SetIndexType<Base, T>,
-                      std::conditional_t<
-                          std::is_integral<T>::value,
-                          SetIndexType<Base, IndexType<T>>,
-                          std::conditional_t<
-                              is_iteration_pattern<T>::value,
-                              SetIterationPattern<Base, T>,
-                              std::conditional_t<
-                                  is_launch_bounds<T>::value,
-                                  SetLaunchBounds<Base, T>,
-                                  std::conditional_t<
-                                      Kokkos::Experimental::
-                                          is_work_item_property<T>::value,
-                                      SetWorkItemProperty<Base, T>,
-                                      std::conditional_t<
-                                          std::is_same<T,
-                                                       IsGraphKernelTag>::value,
-                                          SetIsGraphKernel<Base>,
-
-                                          std::conditional_t<
-                                              !std::is_void<T>::value,
-                                              SetWorkTag<Base, T>,
-                                              Base>>>>>>>>>::type,
-          Traits...> {};
-
-template <typename Base>
-struct AnalyzePolicy<Base> {
-  static constexpr auto execution_space_is_defaulted =
-      std::is_void<typename Base::execution_space>::value;
-  using execution_space =
-      typename std::conditional<execution_space_is_defaulted,
-                                DefaultExecutionSpace,
-                                typename Base::execution_space>::type;
-
-  using schedule_type =
-      typename std::conditional<is_void<typename Base::schedule_type>::value,
-                                Schedule<Static>,
-                                typename Base::schedule_type>::type;
-
-  using work_tag = typename Base::work_tag;
-
-  using index_type =
-      typename std::conditional<is_void<typename Base::index_type>::value,
-                                IndexType<typename execution_space::size_type>,
-                                typename Base::index_type>::type::type;
-  // nasty hack to make index_type into an integral_type
-  // instead of the wrapped IndexType<T> for backwards compatibility
-
-  using iteration_pattern = typename std::conditional<
-      is_void<typename Base::iteration_pattern>::value,
-      void  // TODO set default iteration pattern
-      ,
-      typename Base::iteration_pattern>::type;
-
-  using launch_bounds =
-      typename std::conditional<is_void<typename Base::launch_bounds>::value,
-                                LaunchBounds<>,
-                                typename Base::launch_bounds>::type;
-
-  using work_item_property = typename Base::work_item_property;
-
-  using is_graph_kernel = typename Base::is_graph_kernel;
-
-  using type = PolicyTraitsBase<execution_space, schedule_type, work_tag,
-                                index_type, iteration_pattern, launch_bounds,
-                                work_item_property, is_graph_kernel>;
+//------------------------------------------------------------------------------
+// ExecutionSpace case
+template <class ExecutionSpace, class... Traits>
+struct AnalyzePolicy<
+    std::enable_if_t<Impl::is_execution_space<ExecutionSpace>::value>,
+    ExecutionSpace, Traits...> : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(base_t::execution_space_is_defaulted,
+                "Kokkos Error: More than one execution space given");
+  static constexpr bool execution_space_is_defaulted = false;
+  using execution_space                              = ExecutionSpace;
 };
 
+//------------------------------------------------------------------------------
+// Schedule case
+template <class ScheduleType, class... Traits>
+struct AnalyzePolicy<void, Kokkos::Schedule<ScheduleType>, Traits...>
+    : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(base_t::schedule_type_is_defaulted,
+                "Kokkos Error: More than one schedule type given");
+  static constexpr bool schedule_type_is_defaulted = false;
+  using schedule_type = Kokkos::Schedule<ScheduleType>;
+};
+
+//------------------------------------------------------------------------------
+// IndexType case
+template <class IntegralIndexType, class... Traits>
+struct AnalyzePolicy<void, Kokkos::IndexType<IntegralIndexType>, Traits...>
+    : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(base_t::index_type_is_defaulted,
+                "Kokkos Error: More than one index type given");
+  static constexpr bool index_type_is_defaulted = false;
+  using index_type = Kokkos::IndexType<IntegralIndexType>;
+};
+
+// IndexType given as an integral type directly
+template <class IntegralIndexType, class... Traits>
+struct AnalyzePolicy<
+    std::enable_if_t<std::is_integral<IntegralIndexType>::value>,
+    IntegralIndexType, Traits...> : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(base_t::index_type_is_defaulted,
+                "Kokkos Error: More than one index type given");
+  static constexpr bool index_type_is_defaulted = false;
+  using index_type = Kokkos::IndexType<IntegralIndexType>;
+};
+
+//------------------------------------------------------------------------------
+// Iteration pattern case
+template <class IterationPattern, class... Traits>
+struct AnalyzePolicy<
+    std::enable_if_t<Impl::is_iteration_pattern<IterationPattern>::value>,
+    IterationPattern, Traits...> : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(std::is_void<typename base_t::iteration_pattern>::value,
+                "Kokkos Error: More than one iteration pattern given");
+  using iteration_pattern = IterationPattern;
+};
+
+//------------------------------------------------------------------------------
+// Launch bounds case
+template <unsigned int... Bounds, class... Traits>
+struct AnalyzePolicy<void, Kokkos::LaunchBounds<Bounds...>, Traits...>
+    : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(base_t::launch_bounds_is_defaulted,
+                "Kokkos Error: More than one launch_bounds given");
+  static constexpr bool launch_bounds_is_defaulted = false;
+  using launch_bounds = Kokkos::LaunchBounds<Bounds...>;
+};
+
+//------------------------------------------------------------------------------
+// Work item propoerty case
+template <class Property, class... Traits>
+struct AnalyzePolicy<
+    std::enable_if_t<
+        Kokkos::Experimental::is_work_item_property<Property>::value>,
+    Property, Traits...> : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(
+      std::is_same<typename base_t::work_item_property,
+                   Kokkos::Experimental::WorkItemProperty::None_t>::value,
+      "Kokkos Error: More than one work item property given");
+  using work_item_property = Property;
+};
+
+//------------------------------------------------------------------------------
+// GraphKernel Tag case
+template <class... Traits>
+struct AnalyzePolicy<void, Impl::IsGraphKernelTag, Traits...>
+    : AnalyzePolicy<void, Traits...> {
+  using is_graph_kernel = std::true_type;
+};
+
+//------------------------------------------------------------------------------
+// Ignore void for backwards compatibility purposes, though hopefully no one is
+// using this in application code
+template <class... Traits>
+struct AnalyzePolicy<void, void, Traits...> : AnalyzePolicy<void, Traits...> {};
+
+//------------------------------------------------------------------------------
+// Handle work tag: if nothing else matches, tread the trait as a work tag
+
+// Since we don't have subsumption in pre-C++20, we need to have the work tag
+// "trait" handling code be unspecialized, so we handle it instead in a class
+// with a different name.
+template <class... Traits>
+struct AnalyzePolicyHandleWorkTag : AnalyzePolicy<void, Traits...> {};
+
+template <class WorkTag, class... Traits>
+struct AnalyzePolicyHandleWorkTag<WorkTag, Traits...>
+    : AnalyzePolicy<void, Traits...> {
+  using base_t = AnalyzePolicy<void, Traits...>;
+  static_assert(std::is_void<typename base_t::work_tag>::value,
+                "Kokkos Error: More than one work tag given");
+  using work_tag = WorkTag;
+};
+
+// This only works if this is not a partial specialization, so we have to
+// do the partial specialization elsewhere
+template <class Enable, class... Traits>
+struct AnalyzePolicy : AnalyzePolicyHandleWorkTag<Traits...> {};
+
+//------------------------------------------------------------------------------
+// Defaults, for the traits that aren't yet handled
+
+// A tag class for dependent defaults that must be handled by the
+// PolicyTraitsWithDefaults wrapper, since their defaults depend on other traits
+struct dependent_policy_trait_default;
+
+template <>
+struct AnalyzePolicy<void> {
+  static constexpr auto execution_space_is_defaulted = true;
+  using execution_space = Kokkos::DefaultExecutionSpace;
+
+  static constexpr bool schedule_type_is_defaulted = true;
+  using schedule_type                              = Schedule<Static>;
+
+  static constexpr bool index_type_is_defaulted = true;
+  using index_type = dependent_policy_trait_default;
+
+  using iteration_pattern = void;  // TODO set default iteration pattern
+
+  static constexpr bool launch_bounds_is_defaulted = true;
+  using launch_bounds                              = LaunchBounds<>;
+
+  using work_item_property = Kokkos::Experimental::WorkItemProperty::None_t;
+  using is_graph_kernel    = std::false_type;
+
+  using work_tag = void;
+};
+
+//------------------------------------------------------------------------------
+// Used for defaults that depend on other analysis results
+template <class AnalysisResults>
+struct PolicyTraitsWithDefaults : AnalysisResults {
+  using base_t = AnalysisResults;
+  // The old code turned this into an integral type for backwards compatibility,
+  // so that's what we're doing here. The original comment was:
+  //   nasty hack to make index_type into an integral_type
+  //   instead of the wrapped IndexType<T> for backwards compatibility
+  using index_type = typename std::conditional_t<
+      base_t::index_type_is_defaulted,
+      Kokkos::IndexType<typename base_t::execution_space::size_type>,
+      typename base_t::index_type>::type;
+};
+
+//------------------------------------------------------------------------------
 template <typename... Traits>
-struct PolicyTraits
-    : public AnalyzePolicy<PolicyTraitsBase<>, Traits...>::type {};
+struct PolicyTraits : PolicyTraitsWithDefaults<AnalyzePolicy<void, Traits...>> {
+};
 
 }  // namespace Impl
 }  // namespace Kokkos
