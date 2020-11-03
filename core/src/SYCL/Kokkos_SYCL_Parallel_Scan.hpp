@@ -64,10 +64,12 @@ class ParallelScanSYCLBase {
 
   using ValueTraits = Kokkos::Impl::FunctorValueTraits<FunctorType, WorkTag>;
   using ValueInit   = Kokkos::Impl::FunctorValueInit<FunctorType, WorkTag>;
+  using ValueJoin   = Kokkos::Impl::FunctorValueJoin<FunctorType, WorkTag>;
   using ValueOps    = Kokkos::Impl::FunctorValueOps<FunctorType, WorkTag>;
 
  public:
   using pointer_type   = typename ValueTraits::pointer_type;
+  using value_type     = typename ValueTraits::value_type;
   using reference_type = typename ValueTraits::reference_type;
   using functor_type   = FunctorType;
   using size_type      = Kokkos::Experimental::SYCL::size_type;
@@ -76,13 +78,15 @@ class ParallelScanSYCLBase {
  protected:
   const FunctorType m_functor;
   const Policy m_policy;
-  size_type* m_scratch_space = nullptr;
+  pointer_type m_scratch_space = nullptr;
   size_type* m_scratch_flags = nullptr;
   size_type m_final          = false;
   int m_grid_x               = 0;
 
- public:
-  inline void impl_execute() {
+ private:
+  template <typename PolicyType, typename Functor>
+  void sycl_direct_launch(const PolicyType& policy,
+                          const Functor& functor) /*const*/ {
   // Convenience references
     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
@@ -95,14 +99,37 @@ class ParallelScanSYCLBase {
 
     // <<Reduction loop>>
     auto len = m_policy.end()-m_policy.begin();
+    std::cout << "length: " << len << std::endl;
+
+    m_scratch_space = static_cast<pointer_type>(
+        sycl::malloc(sizeof(value_type)*len, q, sycl::usm::alloc::shared));
+
+    q.submit([&, *this] (sycl::handler& cgh) {
+          auto global_mem = m_scratch_space;
+          sycl::stream out(1024, 256, cgh);
+          cgh.parallel_for<class reduction_kernel>(
+               sycl::range<1>(len),
+               [=] (sycl::item<1> item) {
+
+            size_t global_id = item.get_id();
+
+            typename FunctorType::value_type update = 0;
+            functor(global_id, update, false);
+            global_mem[global_id] = update;
+            out << "global_mem[" << global_id << "]=" << update << " " << global_mem[global_id] << cl::sycl::endl;
+	    });
+	  });
+    q.wait();
+
     while (len != 1) {
        // division rounding up
        auto n_wgroups = (len + part_size - 1) / part_size;
-       q.submit([&] (sycl::handler& cgh) {
+       q.submit([&, *this] (sycl::handler& cgh) {
           sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
                          local_mem(sycl::range<1>(wgroup_size), cgh);
 
           auto global_mem = m_scratch_space;
+          sycl::stream out(1024, 256, cgh);
           cgh.parallel_for<class reduction_kernel>(
                sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
                [=] (sycl::nd_item<1> item) {
@@ -112,7 +139,14 @@ class ParallelScanSYCLBase {
             local_mem[local_id] = 0;
 
             if ((2 * global_id) < len) {
-               local_mem[local_id] = global_mem[2 * global_id] + global_mem[2 * global_id + 1];
+               typename FunctorType::value_type update = global_mem[2*global_id];
+               //functor(2*global_id, update, false);
+               //local_mem[local_id] = update;
+               //local_mem[local_id] = global_mem[2 * global_id] + global_mem[2 * global_id + 1];
+               ValueJoin::join(functor, &update, &global_mem[2*global_id+1]);
+               local_mem[local_id] = update;
+
+               out << "local_mem[" << local_id << "]=" << local_mem[local_id] << " " << global_mem[2*global_id+1] << cl::sycl::endl;
             }
             item.barrier(sycl::access::fence_space::local_space);
 
@@ -120,6 +154,8 @@ class ParallelScanSYCLBase {
                auto idx = 2 * stride * local_id;
                if (idx < wgroup_size) {
                   local_mem[idx] = local_mem[idx] + local_mem[idx + stride];
+                  out << "local_mem[" << idx << "]=" << local_mem[idx] 
+                      << "(" << local_mem[idx+stride] << ")" << cl::sycl::endl;
                }
 
                item.barrier(sycl::access::fence_space::local_space);
@@ -127,12 +163,46 @@ class ParallelScanSYCLBase {
 
             if (local_id == 0) {
                global_mem[item.get_group_linear_id()] = local_mem[0];
+               out << "global_mem[" << item.get_group_linear_id() << "]=" << global_mem[item.get_group_linear_id()] << cl::sycl::endl;
             }
           });
        });
     q.wait();
+    len = n_wgroups;
   }
+  std::abort();
   }
+
+ template <typename Functor>
+  void sycl_indirect_launch(const Functor& functor) /*const*/ {
+    // Convenience references
+    const Kokkos::Experimental::SYCL& space = m_policy.space();
+    Kokkos::Experimental::Impl::SYCLInternal& instance =
+        *space.impl_internal_space_instance();
+    Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& kernelMem =
+        *instance.m_indirectKernel;
+
+    // Allocate USM shared memory for the functor
+    kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
+
+    // Placement new a copy of functor into USM shared memory
+    //
+    // Store it in a unique_ptr to call its destructor on scope exit
+    std::unique_ptr<Functor, Kokkos::Impl::destruct_delete>
+        kernelFunctorPtr(new (kernelMem.data()) Functor(functor));
+
+    auto kernelFunctor = std::reference_wrapper(*kernelFunctorPtr);
+    sycl_direct_launch(m_policy, kernelFunctor);
+  }
+
+public:
+
+  void impl_execute() {
+    if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
+      sycl_direct_launch(m_policy, m_functor);
+    else
+      sycl_indirect_launch(m_functor);
+}
 
   ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy)
       : m_functor(arg_functor), m_policy(arg_policy) {}
