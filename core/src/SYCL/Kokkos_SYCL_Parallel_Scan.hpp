@@ -106,7 +106,7 @@ class ParallelScanSYCLBase {
 
     q.submit([&, *this] (sycl::handler& cgh) {
           auto global_mem = m_scratch_space;
-          sycl::stream out(1024, 256, cgh);
+          sycl::stream out(4096, 1024, cgh);
           cgh.parallel_for<class reduction_kernel>(
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
@@ -116,7 +116,7 @@ class ParallelScanSYCLBase {
             typename FunctorType::value_type update = 0;
             functor(global_id, update, false);
             global_mem[global_id] = update;
-            out << "global_mem[" << global_id << "]=" << update << " " << global_mem[global_id] << cl::sycl::endl;
+            //out << "global_mem[" << global_id << "]=" << update << " " << global_mem[global_id] << cl::sycl::endl;
 	    });
 	  });
     q.wait();
@@ -146,23 +146,25 @@ class ParallelScanSYCLBase {
                ValueJoin::join(functor, &update, &global_mem[2*global_id+1]);
                local_mem[local_id] = update;
 
-               out << "local_mem[" << local_id << "]=" << local_mem[local_id] << " " << global_mem[2*global_id+1] << cl::sycl::endl;
+               //out << "local_mem[" << local_id << "]=" << local_mem[local_id] << " " << global_mem[2*global_id+1] << cl::sycl::endl;
             }
             item.barrier(sycl::access::fence_space::local_space);
 
-            for (size_t stride = 1; stride < wgroup_size; stride *= 2) {
-               auto idx = 2 * stride * local_id;
-               if (idx < wgroup_size) {
-                  local_mem[idx] = local_mem[idx] + local_mem[idx + stride];
-                  out << "local_mem[" << idx << "]=" << local_mem[idx] 
-                      << "(" << local_mem[idx+stride] << ")" << cl::sycl::endl;
-               }
+            for (size_t stride = 1; stride < 2*wgroup_size; stride *= 2) {
+               auto idx = 2 * stride * (local_id+1)-1;
+	        /*  out << "local_mem[" << idx << "]=" << local_mem[idx]
+                    << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;*/
+	       if (idx < wgroup_size) {
+               local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
+                out << "local_mem[" << idx << "]=" << local_mem[idx] 
+                    << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
+	       }
 
                item.barrier(sycl::access::fence_space::local_space);
             }
 
             if (local_id == 0) {
-               global_mem[item.get_group_linear_id()] = local_mem[0];
+               global_mem[item.get_group_linear_id()] = local_mem[wgroup_size-1];
                out << "global_mem[" << item.get_group_linear_id() << "]=" << global_mem[item.get_group_linear_id()] << cl::sycl::endl;
             }
           });
