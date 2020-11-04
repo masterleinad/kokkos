@@ -96,6 +96,10 @@ class ParallelScanSYCLBase {
     std::size_t len = m_policy.end()-m_policy.begin();
     std::cout << "length: " << len << std::endl;
 
+    // FIXME_SYCL
+    if (len==0)
+	    return;
+
     // FIXME_SYCL optimize
     size_t wgroup_size = [](std::size_t len){
 	    std::size_t result = 1;
