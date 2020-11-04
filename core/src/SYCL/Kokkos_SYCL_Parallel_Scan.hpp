@@ -104,6 +104,7 @@ class ParallelScanSYCLBase {
     m_scratch_space = static_cast<pointer_type>(
         sycl::malloc(sizeof(value_type)*len, q, sycl::usm::alloc::shared));
 
+    // Initialize global memory
     q.submit([&, *this] (sycl::handler& cgh) {
           auto global_mem = m_scratch_space;
           sycl::stream out(4096, 1024, cgh);
@@ -121,7 +122,6 @@ class ParallelScanSYCLBase {
 	  });
     q.wait();
 
-    while (len != 1) {
        // division rounding up
        auto n_wgroups = (len + part_size - 1) / part_size;
        assert(n_wgroups==1);
@@ -192,8 +192,6 @@ class ParallelScanSYCLBase {
           });
        });
     q.wait();
-    len = n_wgroups;
-  }
 //  std::abort();
   }
 
