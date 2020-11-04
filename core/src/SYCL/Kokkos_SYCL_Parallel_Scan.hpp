@@ -85,17 +85,17 @@ class ParallelScanSYCLBase {
 
  private:
 
-  void scan_internal(const cl::sycl::queue& q, pointer_type global_mem, std::size_t size)
+  void scan_internal(cl::sycl::queue& q, pointer_type global_mem, std::size_t size)
   {
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size = 32;
+    constexpr size_t wgroup_size = 16;
     auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
 
     pointer_type group_results; 
       group_results = static_cast<pointer_type>(
         sycl::malloc(sizeof(value_type)*n_wgroups, q, sycl::usm::alloc::shared));
 
-       q.submit([&, *this] (sycl::handler& cgh) {
+       q.submit([&, *this] (cl::sycl::handler& cgh) {
           sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
                          local_mem(sycl::range<1>(wgroup_size), cgh);
 
@@ -115,27 +115,31 @@ class ParallelScanSYCLBase {
             item.barrier(sycl::access::fence_space::local_space);
 
             // Perform workgroup reduction
-            for (size_t stride = 1; stride < (wgroup_size+1)/2; stride *= 2) {
+            for (size_t stride = 1; 2*stride < wgroup_size+1; stride *= 2) {
                auto idx = 2 * stride * (local_id+1)-1;
                if (idx < wgroup_size) {
                  local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
-                  out << "local_mem[" << idx << "]=" << local_mem[idx]
+                  out << "wgred[" << idx << "]=" << local_mem[idx]
                       << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
                }
                item.barrier(sycl::access::fence_space::local_space);
             }
 
 	    if (local_id == 0)
-              group_results[item.get_group_linear_id()] = local_mem[wgroup_size-1];
+              group_results[item.get_group_linear_id()] = n_wgroups>1?local_mem[wgroup_size-1]:0;
 
 	    // Store intermediate results in global memory
-            if (global_id < size)
-               global_mem[global_id] = local_mem[local_id];
+            /*if (global_id < size)
+               global_mem[global_id] = local_mem[local_id];*/
 	  });
        });
 
        if (n_wgroups>1)
-       scan_internal(q, group_results, n_wgroups);
+       {
+	  std::cout << "Group scan start" << std::endl;	
+          scan_internal(q, group_results, n_wgroups);
+          std::cout << "Group scan end" << std::endl;
+       }
 
        q.submit([&, *this] (sycl::handler& cgh) {
           sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
@@ -149,12 +153,25 @@ class ParallelScanSYCLBase {
             size_t local_id = item.get_local_linear_id();
             size_t global_id = item.get_global_linear_id();
 
-            // Load intermediate results from global memory
+	    // FIXME_SYCL
+	    // Should we rather save the results and reload?
+            // Initialize local memory
             if (global_id < size)
                local_mem[local_id] = global_mem[global_id];
             else
                local_mem[local_id] = value_type{};
             item.barrier(sycl::access::fence_space::local_space);
+
+            // Perform workgroup reduction
+            for (size_t stride = 1; 2*stride < wgroup_size+1; stride *= 2) {
+               auto idx = 2 * stride * (local_id+1)-1;
+               if (idx < wgroup_size) {
+                 local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
+            /*      out << "wgred[" << idx << "]=" << local_mem[idx]
+                      << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;*/
+               }
+               item.barrier(sycl::access::fence_space::local_space);
+            }
 
 	    if (local_id == 0)
               local_mem[wgroup_size-1] = group_results[item.get_group_linear_id()];
@@ -167,9 +184,16 @@ class ParallelScanSYCLBase {
                  auto dummy = local_mem[idx-stride];
                  local_mem[idx-stride] = local_mem[idx];
                  local_mem[idx] += dummy;
+		  out << "wgadd[" << idx-stride << "]=" << local_mem[idx-stride] << ", " << stride << " " << local_id << cl::sycl::endl 
+		      << "wgadd[" << idx << "]=" << local_mem[idx] << "(" << idx << ", " << idx - stride << "), " << stride << " " << local_id << cl::sycl::endl
+		      << "dummy " << dummy << ", " << stride << " " << local_id << cl::sycl::endl; 
                }
                item.barrier(sycl::access::fence_space::local_space);
             }
+
+	    // Write results to global memory
+	    if (global_id < size)
+              global_mem[global_id] = local_mem[local_id];
          });
        });
   }
@@ -206,6 +230,8 @@ class ParallelScanSYCLBase {
             typename FunctorType::value_type update = 0;
             functor(global_id, update, false);
             global_mem[global_id] = update;
+	      out << "global_mem[" << global_id << "]=" << update
+                   << " before global_mem[" << global_id << "]=" << global_mem[global_id] << cl::sycl::endl;
 	    });
 	  });
     q.wait();
