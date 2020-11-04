@@ -85,7 +85,7 @@ class ParallelScanSYCLBase {
 
  private:
   template <typename PolicyType, typename Functor>
-  void sycl_direct_launch(const PolicyType& policy,
+  void sycl_direct_launch(const PolicyType& /*policy*/,
                           const Functor& functor) /*const*/ {
   // Convenience references
     const Kokkos::Experimental::SYCL& space = m_policy.space();
@@ -98,7 +98,7 @@ class ParallelScanSYCLBase {
     auto part_size = wgroup_size * 2;
 
     // <<Reduction loop>>
-    auto len = m_policy.end()-m_policy.begin();
+    std::size_t len = m_policy.end()-m_policy.begin();
     std::cout << "length: " << len << std::endl;
 
     m_scratch_space = static_cast<pointer_type>(
@@ -111,7 +111,7 @@ class ParallelScanSYCLBase {
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
 
-            size_t global_id = item.get_id();
+            auto global_id = item.get_id();
 
             typename FunctorType::value_type update = 0;
             functor(global_id, update, false);
@@ -139,13 +139,13 @@ class ParallelScanSYCLBase {
             size_t global_id = item.get_global_linear_id();
             local_mem[local_id] = 0;
 
-            if ((2 * global_id) < len) {
-               typename FunctorType::value_type update = global_mem[2*global_id];
+            if (global_id < len) {
+               //typename FunctorType::value_type update = global_mem[global_id];
                //functor(2*global_id, update, false);
                //local_mem[local_id] = update;
                //local_mem[local_id] = global_mem[2 * global_id] + global_mem[2 * global_id + 1];
-               ValueJoin::join(functor, &update, &global_mem[2*global_id+1]);
-               local_mem[local_id] = update;
+               //ValueJoin::join(functor, &update, &global_mem[2*global_id+1]);
+               local_mem[local_id] = global_mem[global_id];
 
                //out << "local_mem[" << local_id << "]=" << local_mem[local_id] << " " << global_mem[2*global_id+1] << cl::sycl::endl;
             }
@@ -183,10 +183,11 @@ class ParallelScanSYCLBase {
 	       item.barrier(sycl::access::fence_space::local_space);
             }
             if (global_id < len) {
-               typename FunctorType::value_type update = local_mem[global_id/2];
+               typename FunctorType::value_type update = local_mem[global_id];
                functor(global_id, update, true);
-               out << "global_mem[" << global_id << "]=" << update << cl::sycl::endl;
-               out << "before global_mem[" << global_id << "]=" << local_mem[global_id/2] << cl::sycl::endl;
+	       global_mem[global_id] = update;
+               out << "global_mem[" << global_id << "]=" << update 
+		   << " before global_mem[" << global_id << "]=" << local_mem[global_id] << cl::sycl::endl;
             }
           });
        });
