@@ -174,12 +174,22 @@ struct TAssertEquality {
   static constexpr bool _cResult = std::is_same<A, B>::value;
 };
 
+template <typename A, typename B>
+struct TAssertInequality {
+  static_assert(!std::is_same<A, B>::value,
+                "Kokkos Error: More than one work tag given");
+  static constexpr bool _cResult = std::is_same<A, B>::value;
+};
+
 template <class WorkTag, class... Traits>
 struct AnalyzePolicyHandleWorkTag<WorkTag, Traits...>
     : AnalyzePolicy<void, Traits...> {
-  using base_t                    = AnalyzePolicy<void, Traits...>;
-  static constexpr bool _cIsEqual = TAssertEquality<
+  using base_t                     = AnalyzePolicy<void, Traits...>;
+  static constexpr bool _cIsEqual1 = TAssertEquality<
       void, typename std::remove_cv<typename base_t::work_tag>::type>::_cResult;
+  static constexpr bool _cIsEqual2 = TAssertInequality<
+      typename std::remove_cv<WorkTag>::type,
+      typename std::remove_cv<typename base_t::work_tag>::type>::_cResult;
   using work_tag = WorkTag;
 };
 
