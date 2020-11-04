@@ -142,10 +142,8 @@ struct TestScan {
 TEST(TEST_CATEGORY, scan) {
   TestScan<TEST_EXECSPACE>::test_range(1, 1000);
   TestScan<TEST_EXECSPACE>(0);
-#ifndef KOKKOS_ENABLE_SYCL
   TestScan<TEST_EXECSPACE>(100000);
   TestScan<TEST_EXECSPACE>(10000000);
-#endif
   TEST_EXECSPACE().fence();
 }
 
