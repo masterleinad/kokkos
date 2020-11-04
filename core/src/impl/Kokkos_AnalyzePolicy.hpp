@@ -167,12 +167,19 @@ struct AnalyzePolicy<void, void, Traits...> : AnalyzePolicy<void, Traits...> {};
 template <class... Traits>
 struct AnalyzePolicyHandleWorkTag : AnalyzePolicy<void, Traits...> {};
 
+template <typename A, typename B>
+struct TAssertEquality {
+  static_assert(std::is_same<A, B>::value,
+                "Kokkos Error: More than one work tag given");
+  static constexpr bool _cResult = std::is_same<A, B>::value;
+};
+
 template <class WorkTag, class... Traits>
 struct AnalyzePolicyHandleWorkTag<WorkTag, Traits...>
     : AnalyzePolicy<void, Traits...> {
-  using base_t = AnalyzePolicy<void, Traits...>;
-  static_assert(std::is_void<typename base_t::work_tag>::value,
-                "Kokkos Error: More than one work tag given");
+  using base_t                    = AnalyzePolicy<void, Traits...>;
+  static constexpr bool _cIsEqual = TAssertEquality<
+      void, typename std::remove_cv<typename base_t::work_tag>::type>::_cResult;
   using work_tag = WorkTag;
 };
 
