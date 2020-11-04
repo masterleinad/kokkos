@@ -66,35 +66,26 @@ struct TestScan {
       ++update;
     }
 
-#ifdef __SYCL_DEVICE_ONLY__
-  #define CONSTANT __attribute__((opencl_constant))
-#else
-  #define CONSTANT
-#endif
-    static const CONSTANT char FMT_before[] = "update_before(%d) is %d\n";
-    sycl::ONEAPI::experimental::printf(FMT_before, iwork, update);
     update += n - imbalance;
-    static const CONSTANT char FMT_after[] = "update_after(%d) is %d\n";
-    sycl::ONEAPI::experimental::printf(FMT_after, iwork, update);
-#undef CONSTANT
 
     (void) final_pass;
-    /*if (final_pass) {
+    if (final_pass) {
       const value_type answer =
           n & 1 ? (n * ((n + 1) / 2)) : ((n / 2) * (n + 1));
 
       if (answer != update) {
         int fail = errors()++;
-	(void) fail;
 
 #ifndef KOKKOS_ENABLE_SYCL
         if (fail < 20) {
           printf("TestScan(%d,%ld) != %ld\n", iwork, static_cast<long>(update),
                  static_cast<long>(answer));
         }
+#else
+	(void) fail;
 #endif
       }
-    }*/
+    }
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -149,11 +140,13 @@ struct TestScan {
 };
 
 TEST(TEST_CATEGORY, scan) {
-  TestScan<TEST_EXECSPACE>::test_range(10, 11);
-//  TestScan<TEST_EXECSPACE>(0);
-//  TestScan<TEST_EXECSPACE>(100000);
-//  TestScan<TEST_EXECSPACE>(10000000);
-//  TEST_EXECSPACE().fence();
+  TestScan<TEST_EXECSPACE>::test_range(1, 1000);
+  TestScan<TEST_EXECSPACE>(0);
+#ifndef KOKKOS_ENABLE_SYCL
+  TestScan<TEST_EXECSPACE>(100000);
+  TestScan<TEST_EXECSPACE>(10000000);
+#endif
+  TEST_EXECSPACE().fence();
 }
 
 /*TEST( TEST_CATEGORY, scan_small )
