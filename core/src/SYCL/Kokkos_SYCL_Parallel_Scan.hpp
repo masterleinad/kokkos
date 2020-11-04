@@ -93,13 +93,16 @@ class ParallelScanSYCLBase {
         *space.impl_internal_space_instance();
     cl::sycl::queue& q = *instance.m_queue;
 
-    size_t wgroup_size = 16;
-    
-    auto part_size = wgroup_size * 2;
-
-    // <<Reduction loop>>
     std::size_t len = m_policy.end()-m_policy.begin();
     std::cout << "length: " << len << std::endl;
+
+    // FIXME_SYCL optimize
+    size_t wgroup_size = [](std::size_t len){
+	    std::size_t result = 1;
+	    while (result <= len)
+	      result *=2;
+	    return result;
+    }(len);
 
     m_scratch_space = static_cast<pointer_type>(
         sycl::malloc(sizeof(value_type)*len, q, sycl::usm::alloc::shared));
@@ -117,13 +120,12 @@ class ParallelScanSYCLBase {
             typename FunctorType::value_type update = 0;
             functor(global_id, update, false);
             global_mem[global_id] = update;
-            //out << "global_mem[" << global_id << "]=" << update << " " << global_mem[global_id] << cl::sycl::endl;
 	    });
 	  });
     q.wait();
 
        // division rounding up
-       auto n_wgroups = (len + part_size - 1) / part_size;
+       auto n_wgroups = (len + wgroup_size - 1) / wgroup_size;
        assert(n_wgroups==1);
        q.submit([&, *this] (sycl::handler& cgh) {
           sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
@@ -137,51 +139,44 @@ class ParallelScanSYCLBase {
              
             size_t local_id = item.get_local_linear_id();
             size_t global_id = item.get_global_linear_id();
+
+	    // Initialize local memory
             local_mem[local_id] = 0;
-
-            if (global_id < len) {
-               //typename FunctorType::value_type update = global_mem[global_id];
-               //functor(2*global_id, update, false);
-               //local_mem[local_id] = update;
-               //local_mem[local_id] = global_mem[2 * global_id] + global_mem[2 * global_id + 1];
-               //ValueJoin::join(functor, &update, &global_mem[2*global_id+1]);
+            if (global_id < len)
                local_mem[local_id] = global_mem[global_id];
-
-               //out << "local_mem[" << local_id << "]=" << local_mem[local_id] << " " << global_mem[2*global_id+1] << cl::sycl::endl;
-            }
+            else
+	       local_mem[local_id] = value_type{};
             item.barrier(sycl::access::fence_space::local_space);
 
-            for (size_t stride = 1; stride < 2*wgroup_size; stride *= 2) {
+	    // Perform workgroup reduction
+            for (size_t stride = 1; stride < (wgroup_size+1)/2; stride *= 2) {
                auto idx = 2 * stride * (local_id+1)-1;
-	        /*  out << "local_mem[" << idx << "]=" << local_mem[idx]
-                    << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;*/
 	       if (idx < wgroup_size) {
-               local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
-                out << "local_mem[" << idx << "]=" << local_mem[idx] 
-                    << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
-	       }
-
+                 local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
+                  out << "local_mem[" << idx << "]=" << local_mem[idx] 
+                      << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
+	       } 
                item.barrier(sycl::access::fence_space::local_space);
             }
 
+	    // FIXME_SYCL write workgroup reduction result into global memory, scan and initialize last local element accordingly
             if (local_id == 0) {
-               global_mem[item.get_group_linear_id()] = local_mem[wgroup_size-1];
-               //out << "global_mem[" << item.get_group_linear_id() << "]=" << global_mem[item.get_group_linear_id()] << cl::sycl::endl;
-               local_mem[wgroup_size-1] = 0;
+               local_mem[wgroup_size-1] = value_type{};
             }
 
-            for (size_t stride = wgroup_size; stride > 0; stride /=2)
+	    // Add results to all items
+            for (size_t stride = wgroup_size/2; stride > 0; stride /=2)
             {
                auto idx = 2*stride* (local_id+1)-1;
                if (idx < wgroup_size) {
                  auto dummy = local_mem[idx-stride];
                  local_mem[idx-stride] = local_mem[idx];
-                 local_mem[idx] = local_mem[idx] + dummy;
-                 //out << "local_mem[" << idx-stride << "]=" << local_mem[idx-stride] << cl::sycl::endl;
-                 //out << "local_mem[" << idx << "]=" << local_mem[idx] << cl::sycl::endl;
+                 local_mem[idx] += dummy;
                }
 	       item.barrier(sycl::access::fence_space::local_space);
             }
+
+	    // Write results to global memory
             if (global_id < len) {
                typename FunctorType::value_type update = local_mem[global_id];
                functor(global_id, update, true);
