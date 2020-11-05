@@ -248,23 +248,34 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           *space.impl_internal_space_instance();
       cl::sycl::queue& q = *instance.m_queue;
 
+      pointer_type result_ptr = ReduceFunctorHasFinal<FunctorType>::value?      
+      static_cast<pointer_type>(
+        sycl::malloc(sizeof(*m_result_ptr), q, sycl::usm::alloc::shared)):m_result_ptr;
+
       sycl::usm::alloc result_ptr_type =
-          sycl::get_pointer_type(m_result_ptr, q.get_context());
+          sycl::get_pointer_type(result_ptr, q.get_context());
 
       switch (result_ptr_type) {
         case sycl::usm::alloc::host:
         case sycl::usm::alloc::shared:
-          ValueInit::init(m_functor, m_result_ptr);
+          ValueInit::init(m_functor, result_ptr);
           break;
         case sycl::usm::alloc::device:
           // non-USM-allocated memory
         case sycl::usm::alloc::unknown:
           value_type host_result;
           ValueInit::init(m_functor, &host_result);
-          q.memcpy(m_result_ptr, &host_result, sizeof(host_result)).wait();
+          q.memcpy(result_ptr, &host_result, sizeof(host_result)).wait();
           break;
         default: break;
       }
+
+     if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+      {
+        FunctorFinal<FunctorType, WorkTag>::final(m_functor, result_ptr);
+        sycl::free(result_ptr, q);
+      }
+
       return;
     }
 
