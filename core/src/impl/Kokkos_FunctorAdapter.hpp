@@ -74,11 +74,6 @@ struct ReduceFunctorHasInit<
     FunctorType, impl_void_t_workaround<decltype(&FunctorType::init)>> {
   enum : bool { value = true };
 };
-template <class FunctorType>
-struct ReduceFunctorHasInit<FunctorType, impl_void_t_workaround<decltype(
-                                             &FunctorType::template init<>)>> {
-  enum : bool { value = true };
-};
 #else
 template <class FunctorType>
 struct ReduceFunctorHasInit<
@@ -86,12 +81,15 @@ struct ReduceFunctorHasInit<
     typename std::enable_if<0 < sizeof(&FunctorType::init)>::type> {
   enum : bool { value = true };
 };
+// FIXME_SYCL not all compiler recognize this as separate specialization
+#ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasInit<
     FunctorType,
     typename std::enable_if<0 < sizeof(&FunctorType::template init<>)>::type> {
   enum : bool { value = true };
 };
+#endif
 #endif
 
 template <class FunctorType, class Enable = void>
@@ -105,11 +103,6 @@ struct ReduceFunctorHasJoin<
     FunctorType, impl_void_t_workaround<decltype(&FunctorType::join)>> {
   enum : bool { value = true };
 };
-template <class FunctorType>
-struct ReduceFunctorHasJoin<FunctorType, impl_void_t_workaround<decltype(
-                                             &FunctorType::template join<>)>> {
-  enum : bool { value = true };
-};
 #else
 template <class FunctorType>
 struct ReduceFunctorHasJoin<
@@ -117,12 +110,15 @@ struct ReduceFunctorHasJoin<
     typename std::enable_if<0 < sizeof(&FunctorType::join)>::type> {
   enum : bool { value = true };
 };
+// FIXME_SYCL not all compiler recognize this as separate specialization
+#ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasJoin<
     FunctorType,
     typename std::enable_if<0 < sizeof(&FunctorType::template join<>)>::type> {
   enum : bool { value = true };
 };
+#endif
 #endif
 
 template <class FunctorType, class Enable = void>
@@ -136,13 +132,9 @@ struct ReduceFunctorHasFinal<
     FunctorType, impl_void_t_workaround<decltype(&FunctorType::final)>> {
   enum : bool { value = true };
 };
-template <class FunctorType>
-struct ReduceFunctorHasFinal<
-    FunctorType,
-    impl_void_t_workaround<decltype(&FunctorType::template final<>)>> {
-  enum : bool { value = true };
-};
 #else
+// FIXME_SYCL not all compiler recognize this as separate specialization
+#ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasFinal<
     FunctorType,
@@ -155,6 +147,7 @@ struct ReduceFunctorHasFinal<
     typename std::enable_if<0 < sizeof(&FunctorType::template final<>)>::type> {
   enum : bool { value = true };
 };
+#endif
 #endif
 
 template <class FunctorType, class Enable = void>
@@ -172,13 +165,9 @@ struct ReduceFunctorHasShmemSize<
     impl_void_t_workaround<decltype(&FunctorType::team_shmem_size)>> {
   enum : bool { value = true };
 };
-template <class FunctorType>
-struct ReduceFunctorHasShmemSize<
-    FunctorType, impl_void_t_workaround<decltype(
-                     &FunctorType::template team_shmem_size<>)>> {
-  enum : bool { value = true };
-};
 #else
+// FIXME_SYCL not all compiler recognize this as separate specialization
+#ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasShmemSize<
     FunctorType,
@@ -192,6 +181,7 @@ struct ReduceFunctorHasShmemSize<
         0 < sizeof(&FunctorType::template team_shmem_size<>)>::type> {
   enum : bool { value = true };
 };
+#endif
 #endif
 
 template <class FunctorType, class ArgTag, class Enable = void>
