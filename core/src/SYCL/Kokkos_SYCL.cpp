@@ -83,7 +83,7 @@ SYCL::SYCL() : m_space_instance(&Impl::SYCLInternal::singleton()) {
 
 int SYCL::concurrency() {
   // FIXME_SYCL
-  return 1;
+  return 2;
 }
 
 bool SYCL::impl_is_initialized() {
