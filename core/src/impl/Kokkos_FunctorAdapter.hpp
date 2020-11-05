@@ -69,12 +69,14 @@ struct ReduceFunctorHasInit {
 template <class>
 using impl_void_t_workaround = void;
 
-template <class F>
-using init_archetype = decltype(&F::init);
-
 template <class FunctorType>
 struct ReduceFunctorHasInit<
-    FunctorType, impl_void_t_workaround<init_archetype<FunctorType>>> {
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::init)>> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasInit<
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::template init<>)>> {
   enum : bool { value = true };
 };
 #else
@@ -82,6 +84,12 @@ template <class FunctorType>
 struct ReduceFunctorHasInit<
     FunctorType,
     typename std::enable_if<0 < sizeof(&FunctorType::init)>::type> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasInit<
+    FunctorType,
+    typename std::enable_if<0 < sizeof(&FunctorType::template init<>)>::type> {
   enum : bool { value = true };
 };
 #endif
@@ -92,12 +100,14 @@ struct ReduceFunctorHasJoin {
 };
 
 #if defined(KOKKOS_COMPILER_MSVC) || defined(KOKKOS_IMPL_WINDOWS_CUDA)
-template <class F>
-using join_archetype = decltype(&F::join);
-
 template <class FunctorType>
 struct ReduceFunctorHasJoin<
-    FunctorType, impl_void_t_workaround<join_archetype<FunctorType>>> {
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::join)>> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasJoin<
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::template join<>)>> {
   enum : bool { value = true };
 };
 #else
@@ -105,6 +115,12 @@ template <class FunctorType>
 struct ReduceFunctorHasJoin<
     FunctorType,
     typename std::enable_if<0 < sizeof(&FunctorType::join)>::type> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasJoin<
+    FunctorType,
+    typename std::enable_if<0 < sizeof(&FunctorType::template join<>)>::type> {
   enum : bool { value = true };
 };
 #endif
@@ -115,12 +131,14 @@ struct ReduceFunctorHasFinal {
 };
 
 #if defined(KOKKOS_COMPILER_MSVC) || defined(KOKKOS_IMPL_WINDOWS_CUDA)
-template <class F>
-using final_archetype = decltype(&F::final);
-
 template <class FunctorType>
 struct ReduceFunctorHasFinal<
-    FunctorType, impl_void_t_workaround<final_archetype<FunctorType>>> {
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::final)>> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasFinal<
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::template final<>)>> {
   enum : bool { value = true };
 };
 #else
@@ -128,6 +146,12 @@ template <class FunctorType>
 struct ReduceFunctorHasFinal<
     FunctorType,
     typename std::enable_if<0 < sizeof(&FunctorType::final)>::type> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasFinal<
+    FunctorType,
+    typename std::enable_if<0 < sizeof(&FunctorType::template final<>)>::type> {
   enum : bool { value = true };
 };
 #endif
@@ -143,7 +167,12 @@ using shmemsize_archetype = decltype(&F::team_shmem_size);
 
 template <class FunctorType>
 struct ReduceFunctorHasShmemSize<
-    FunctorType, impl_void_t_workaround<shmemsize_archetype<FunctorType>>> {
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::team_shmem_size)>> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasShmemSize<
+    FunctorType, impl_void_t_workaround<decltype(&FunctorType::template team_shmem_size<>)>> {
   enum : bool { value = true };
 };
 #else
@@ -151,6 +180,12 @@ template <class FunctorType>
 struct ReduceFunctorHasShmemSize<
     FunctorType,
     typename std::enable_if<0 < sizeof(&FunctorType::team_shmem_size)>::type> {
+  enum : bool { value = true };
+};
+template <class FunctorType>
+struct ReduceFunctorHasShmemSize<
+    FunctorType,
+    typename std::enable_if<0 < sizeof(&FunctorType::template team_shmem_size<>)>::type> {
   enum : bool { value = true };
 };
 #endif
@@ -1322,8 +1357,7 @@ struct FunctorValueTraits<FunctorType, ArgTag,
                                       const bool&) const) {}
   //----------------------------------------
 
-  using ValueType =
-      decltype(deduce_reduce_type(tag_type(), &FunctorType::operator()));
+  using ValueType = decltype(FunctorValueTraits<FunctorType, ArgTag, false>::deduce_reduce_type(tag_type(), &FunctorType::operator()));
 
   enum { IS_VOID = std::is_same<VOIDTAG, ValueType>::value };
   enum { IS_REJECT = std::is_same<REJECTTAG, ValueType>::value };
@@ -2035,7 +2069,8 @@ template <class FunctorType, class ArgTag,
               typename FunctorValueTraits<FunctorType, ArgTag>::reference_type,
           class Enable = void>
 struct FunctorFinal {
-  KOKKOS_FORCEINLINE_FUNCTION static void final(const FunctorType&, void*) {}
+  KOKKOS_FORCEINLINE_FUNCTION static void final(const FunctorType&, void*) {
+  }
 };
 
 /* 'final' function provided */

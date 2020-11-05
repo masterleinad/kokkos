@@ -115,6 +115,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
     using std::reference_wrapper<T>::reference_wrapper;
 
+    using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
+
     template <typename Dummy = T>
     std::enable_if_t<std::is_same_v<Dummy, T> &&
                      ReduceFunctorHasJoin<Dummy>::value>
@@ -160,7 +162,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   return old_value;
                 });
           } else {
-            if constexpr (ReduceFunctorHasJoin<FunctorType>::value) {
+            if constexpr (ReduceFunctorHasJoin<Functor>::value) {
               return cl::sycl::ONEAPI::reduction(
                   result_ptr, identity,
                   [=](value_type& old_value, const value_type& new_value) {
@@ -191,9 +193,24 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     q.wait();
 
-    if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
-      functor.final(*result_ptr);	    
-      //FunctorFinal<Functor, WorkTag, value_type>::final(functor, result_ptr);
+    static_assert(ReduceFunctorHasFinal<Functor>::value == ReduceFunctorHasFinal<FunctorType>::value);
+    static_assert(ReduceFunctorHasJoin<Functor>::value == ReduceFunctorHasJoin<FunctorType>::value);
+
+    if constexpr (ReduceFunctorHasFinal<Functor>::value)
+    {
+      FunctorFinal<Functor, WorkTag/*, value_type&*/>::final(functor, result_ptr);
+/*      if constexpr (std::is_base_of<std::reference_wrapper<FunctorType>, Functor>::value)
+      {
+        decltype(FunctorFinalFunction<Functor, WorkTag>::enable_if(&Functor::template final<>)) dummy;
+	(void) dummy;
+      }
+      else
+      {
+        decltype(FunctorFinalFunction<FunctorType, WorkTag>::enable_if(&FunctorType::final)) dummy;
+	(void) dummy;
+      }*/
+
+    }
     else
       *m_result_ptr = *result_ptr;
 
