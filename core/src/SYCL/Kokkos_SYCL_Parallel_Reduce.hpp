@@ -266,8 +266,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           value_type host_result;
           ValueInit::init(m_functor, &host_result);
           q.memcpy(result_ptr, &host_result, sizeof(host_result)).wait();
-          break;
-        default: break;
       }
 
      if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
