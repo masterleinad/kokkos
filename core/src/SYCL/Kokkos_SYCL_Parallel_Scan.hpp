@@ -88,26 +88,25 @@ class ParallelScanSYCLBase {
   void scan_internal(cl::sycl::queue& q, pointer_type global_mem, std::size_t size)
   {
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size = 8;
+    constexpr size_t wgroup_size = 32;
     auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
 
     pointer_type group_results; 
       group_results = static_cast<pointer_type>(
         sycl::malloc(sizeof(value_type)*n_wgroups, q, sycl::usm::alloc::shared));
 
-      static_assert(std::is_same<typename std::remove_reference<decltype(*group_results)>::type, value_type>::value, "");
-
        q.submit([&, *this] (cl::sycl::handler& cgh) {
           sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
                          local_mem(sycl::range<1>(wgroup_size), cgh);
 
+          // FIXME_SYCL we get wrong results without this, not sure why
           sycl::stream out(1024, 256, cgh);
-          cgh.parallel_for<class reduction_kernel>(
+          cgh.parallel_for(
                sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
                [=] (sycl::nd_item<1> item) {
 
-            size_t local_id = item.get_local_linear_id();
-            size_t global_id = item.get_global_linear_id();
+            const auto local_id = item.get_local_linear_id();
+            const auto global_id = item.get_global_linear_id();
 
             // Initialize local memory
             if (global_id < size)
@@ -155,7 +154,7 @@ class ParallelScanSYCLBase {
        q.wait();
 
   q.submit([&, *this] (sycl::handler& cgh) {
-          cgh.parallel_for<class reduction_kernel>(
+          cgh.parallel_for(
                sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
                [=] (sycl::nd_item<1> item) {
             const auto global_id = item.get_global_linear_id();
@@ -189,7 +188,7 @@ class ParallelScanSYCLBase {
     q.submit([&, *this] (sycl::handler& cgh) {
           auto global_mem = m_scratch_space;
 //          sycl::stream out(4096, 1024, cgh);
-          cgh.parallel_for<class reduction_kernel>(
+          cgh.parallel_for(
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
 
@@ -209,7 +208,7 @@ class ParallelScanSYCLBase {
     q.submit([&, *this] (sycl::handler& cgh) {
 		    auto global_mem = m_scratch_space;
 //          sycl::stream out(4096, 1024, cgh);
-          cgh.parallel_for<class reduction_kernel>(
+          cgh.parallel_for(
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
 
