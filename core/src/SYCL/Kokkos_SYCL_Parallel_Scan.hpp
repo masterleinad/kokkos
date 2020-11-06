@@ -100,7 +100,7 @@ class ParallelScanSYCLBase {
                          local_mem(sycl::range<1>(wgroup_size), cgh);
 
           // FIXME_SYCL we get wrong results without this, not sure why
-          sycl::stream out(1024, 256, cgh);
+          sycl::stream out(1, 1, cgh);
           cgh.parallel_for(
                sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
                [=] (sycl::nd_item<1> item) {
@@ -153,15 +153,16 @@ class ParallelScanSYCLBase {
           scan_internal(q, group_results, n_wgroups);
        q.wait();
 
-  q.submit([&, *this] (sycl::handler& cgh) {
-          cgh.parallel_for(
-               sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
-               [=] (sycl::nd_item<1> item) {
-            const auto global_id = item.get_global_linear_id();
-               if (global_id < size)
-                global_mem[global_id] += group_results[item.get_group_linear_id()];
-              });});
-  q.wait();
+       q.submit([&, *this] (sycl::handler& cgh) {
+         cgh.parallel_for(
+           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+           [=] (sycl::nd_item<1> item) {
+             const auto global_id = item.get_global_linear_id();
+             if (global_id < size)
+               global_mem[global_id] += group_results[item.get_group_linear_id()];
+           });
+	 });
+       q.wait();
 
        cl::sycl::free(group_results, q);
   }
@@ -187,7 +188,6 @@ class ParallelScanSYCLBase {
     // Initialize global memory
     q.submit([&, *this] (sycl::handler& cgh) {
           auto global_mem = m_scratch_space;
-//          sycl::stream out(4096, 1024, cgh);
           cgh.parallel_for(
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
@@ -207,7 +207,6 @@ class ParallelScanSYCLBase {
     // Write results to global memory
     q.submit([&, *this] (sycl::handler& cgh) {
 		    auto global_mem = m_scratch_space;
-//          sycl::stream out(4096, 1024, cgh);
           cgh.parallel_for(
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
@@ -299,10 +298,6 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
         std::abort();
       }
     }
-
-
-    // FIXME_SYCL
-    //std::abort();
   }
 
   ParallelScanWithTotal(const FunctorType& arg_functor,
