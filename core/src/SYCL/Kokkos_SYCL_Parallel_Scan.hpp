@@ -88,15 +88,24 @@ class ParallelScanSYCLBase {
   void scan_internal(cl::sycl::queue& q, pointer_type global_mem, std::size_t size)
   {
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size = 16;
+    constexpr size_t wgroup_size = 8;
     auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
 
     pointer_type group_results; 
       group_results = static_cast<pointer_type>(
         sycl::malloc(sizeof(value_type)*n_wgroups, q, sycl::usm::alloc::shared));
 
+      static_assert(std::is_same<typename std::remove_reference<decltype(*group_results)>::type, value_type>::value, "");
+
+        if (size <= 32)
+       {
+               std::cout << "before scan" << std::endl;
+               for (unsigned int i=0; i<size; ++i)
+                       std::cout << i << ": " << global_mem[i] << std::endl;
+       }
+
        q.submit([&, *this] (cl::sycl::handler& cgh) {
-          sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
+          sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
                          local_mem(sycl::range<1>(wgroup_size), cgh);
 
           sycl::stream out(1024, 256, cgh);
@@ -119,8 +128,8 @@ class ParallelScanSYCLBase {
                auto idx = 2 * stride * (local_id+1)-1;
                if (idx < wgroup_size) {
                  local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
-                  out << "wgred[" << idx << "]=" << local_mem[idx]
-                      << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
+                //  out << "wgred[" << idx << "]=" << local_mem[idx]
+                 //     << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
                }
                item.barrier(sycl::access::fence_space::local_space);
             }
@@ -131,18 +140,39 @@ class ParallelScanSYCLBase {
 	    // Store intermediate results in global memory
             /*if (global_id < size)
                global_mem[global_id] = local_mem[local_id];*/
+
+	         if (size <=4)
+                         {
+                  out << "results before group scan[" << local_id << "]=" << local_mem[local_id] << cl::sycl::endl;
+                         }
 	  });
        });
+       q.wait();
 
+       if (n_wgroups <= 32)
+       {
+	       std::cout << "before group reduction" << std::endl;
+	       for (unsigned int i=0; i<n_wgroups; ++i)
+		       std::cout << i << ": " << group_results[i] << std::endl;
+       }
+	       
        if (n_wgroups>1)
        {
-	  std::cout << "Group scan start" << std::endl;	
+//	  std::cout << "Group scan start" << std::endl;	
           scan_internal(q, group_results, n_wgroups);
-          std::cout << "Group scan end" << std::endl;
+  //        std::cout << "Group scan end" << std::endl;
        }
 
+       q.wait();
+          if (n_wgroups <= 32)
+	  {
+               std::cout << "after group reduction" << std::endl;
+               for (unsigned int i=0; i<n_wgroups; ++i)
+                       std::cout << i << ": " << group_results[i] << std::endl;
+	  }
+
        q.submit([&, *this] (sycl::handler& cgh) {
-          sycl::accessor <int32_t, 1, sycl::access::mode::read_write, sycl::access::target::local>
+          sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
                          local_mem(sycl::range<1>(wgroup_size), cgh);
 
           sycl::stream out(1024, 256, cgh);
@@ -167,14 +197,23 @@ class ParallelScanSYCLBase {
                auto idx = 2 * stride * (local_id+1)-1;
                if (idx < wgroup_size) {
                  local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
-            /*      out << "wgred[" << idx << "]=" << local_mem[idx]
-                      << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;*/
+		         if (size <=4)
+			 {
+                  out << "wgred[" << idx << "]=" << local_mem[idx]
+                      << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
+			 }
                }
                item.barrier(sycl::access::fence_space::local_space);
             }
 
 	    if (local_id == 0)
               local_mem[wgroup_size-1] = group_results[item.get_group_linear_id()];
+
+        if (size <=4)
+                {
+                 out << wgroup_size << " loaded[" << local_id << "]=" << local_mem[local_id] << cl::sycl::endl;
+                }
+
 
             // Add results to all items
             for (size_t stride = wgroup_size/2; stride > 0; stride /=2)
@@ -184,9 +223,12 @@ class ParallelScanSYCLBase {
                  auto dummy = local_mem[idx-stride];
                  local_mem[idx-stride] = local_mem[idx];
                  local_mem[idx] += dummy;
+		 if (size <=4)
+		 {
 		  out << "wgadd[" << idx-stride << "]=" << local_mem[idx-stride] << ", " << stride << " " << local_id << cl::sycl::endl 
 		      << "wgadd[" << idx << "]=" << local_mem[idx] << "(" << idx << ", " << idx - stride << "), " << stride << " " << local_id << cl::sycl::endl
 		      << "dummy " << dummy << ", " << stride << " " << local_id << cl::sycl::endl; 
+		 }
                }
                item.barrier(sycl::access::fence_space::local_space);
             }
@@ -196,6 +238,13 @@ class ParallelScanSYCLBase {
               global_mem[global_id] = local_mem[local_id];
          });
        });
+
+          if (size <= 32)
+       {
+               std::cout << "after scan" << std::endl;
+               for (unsigned int i=0; i<size; ++i)
+                       std::cout << i << ": " << global_mem[i] << std::endl;
+       }
   }
 
   template <typename PolicyType, typename Functor>
@@ -230,8 +279,8 @@ class ParallelScanSYCLBase {
             typename FunctorType::value_type update = 0;
             functor(global_id, update, false);
             global_mem[global_id] = update;
-	      out << "global_mem[" << global_id << "]=" << update
-                   << " before global_mem[" << global_id << "]=" << global_mem[global_id] << cl::sycl::endl;
+	    //  out << "global_mem[" << global_id << "]=" << update
+            //       << " before global_mem[" << global_id << "]=" << global_mem[global_id] << cl::sycl::endl;
 	    });
 	  });
     q.wait();
@@ -252,8 +301,8 @@ class ParallelScanSYCLBase {
                typename FunctorType::value_type update = global_mem[global_id];
                functor(global_id, update, true);
 	       global_mem[global_id] = update;
-               out << "global_mem[" << global_id << "]=" << update 
-		   << " before global_mem[" << global_id << "]=" << global_mem[global_id] << cl::sycl::endl;
+             //  out << "global_mem[" << global_id << "]=" << update 
+		//   << " before global_mem[" << global_id << "]=" << global_mem[global_id] << cl::sycl::endl;
           });
        });
     q.wait();
@@ -323,13 +372,18 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
   inline void execute() {
     Base::impl_execute();
 
-    const auto nwork = Base::m_policy.end() - Base::m_policy.begin();
+    const long long nwork = Base::m_policy.end() - Base::m_policy.begin();
     if (nwork>0) {
       const int size = Base::ValueTraits::value_size(Base::m_functor);
       DeepCopy<HostSpace, Kokkos::Experimental::SYCLDeviceUSMSpace>(
           &m_returnvalue,
           Base::m_scratch_space + nwork-1,
           size);
+      if (m_returnvalue != (nwork*(nwork+1))/2)
+      {
+	      std::cout << m_returnvalue << " " << nwork << std::endl;
+        std::abort();
+      }
     }
 
 
