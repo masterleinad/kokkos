@@ -128,8 +128,6 @@ class ParallelScanSYCLBase {
                auto idx = 2 * stride * (local_id+1)-1;
                if (idx < wgroup_size) {
                  local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
-                //  out << "wgred[" << idx << "]=" << local_mem[idx]
-                 //     << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
                }
                item.barrier(sycl::access::fence_space::local_space);
             }
@@ -212,8 +210,6 @@ class ParallelScanSYCLBase {
             typename FunctorType::value_type update = 0;
             functor(global_id, update, false);
             global_mem[global_id] = update;
-	    //  out << "global_mem[" << global_id << "]=" << update
-            //       << " before global_mem[" << global_id << "]=" << global_mem[global_id] << cl::sycl::endl;
 	    });
 	  });
     q.wait();
@@ -234,8 +230,6 @@ class ParallelScanSYCLBase {
                typename FunctorType::value_type update = global_mem[global_id];
                functor(global_id, update, true);
 	       global_mem[global_id] = update;
-             //  out << "global_mem[" << global_id << "]=" << update 
-		//   << " before global_mem[" << global_id << "]=" << global_mem[global_id] << cl::sycl::endl;
           });
        });
     q.wait();
