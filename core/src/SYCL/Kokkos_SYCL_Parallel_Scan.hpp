@@ -182,9 +182,6 @@ class ParallelScanSYCLBase {
     if (len==0)
       return;
 
-    m_scratch_space = static_cast<pointer_type>(
-        sycl::malloc(sizeof(value_type)*len, q, sycl::usm::alloc::shared));
-
     // Initialize global memory
     q.submit([&, *this] (sycl::handler& cgh) {
           auto global_mem = m_scratch_space;
@@ -247,11 +244,15 @@ public:
 
  template <typename PostFunctor>
   void impl_execute(PostFunctor&& post_functor) {
+    m_scratch_space = static_cast<pointer_type>(
+        sycl::malloc(sizeof(value_type)*len, q, sycl::usm::alloc::shared));
+
     if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
       sycl_direct_launch(m_policy, m_functor);
     else
       sycl_indirect_launch(m_functor);
     post_functor();
+    cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
 }
 
   ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy)
@@ -266,7 +267,6 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
   using Base = ParallelScanSYCLBase<FunctorType, Traits...>;
 
   inline void execute() { Base::impl_execute([](){}); 
-	        cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
   }
 
   ParallelScan(const FunctorType& arg_functor,
@@ -301,8 +301,6 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
         std::abort();
       }
       }});
-
-      cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
   }
 
   ParallelScanWithTotal(const FunctorType& arg_functor,
