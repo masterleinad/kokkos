@@ -156,13 +156,6 @@ class ParallelScanSYCLBase {
 		       std::cout << i << ": " << group_results[i] << std::endl;
        }
 	       
-       if (n_wgroups>1)
-       {
-//	  std::cout << "Group scan start" << std::endl;	
-          scan_internal(q, group_results, n_wgroups);
-  //        std::cout << "Group scan end" << std::endl;
-       }
-
        q.wait();
           if (n_wgroups <= 32)
 	  {
@@ -239,12 +232,8 @@ class ParallelScanSYCLBase {
          });
        });
 
-          if (size <= 32)
-       {
-               std::cout << "after scan" << std::endl;
-               for (unsigned int i=0; i<size; ++i)
-                       std::cout << i << ": " << global_mem[i] << std::endl;
-       }
+       if (n_wgroups>1)
+          scan_internal(q, group_results, n_wgroups);
        q.wait();
 
   q.submit([&, *this] (sycl::handler& cgh) {
@@ -255,7 +244,6 @@ class ParallelScanSYCLBase {
                if (global_id < size)
                 global_mem[global_id] += group_results[item.get_group_linear_id()];
               });});
-
   q.wait();
 
        cl::sycl::free(group_results, q);
