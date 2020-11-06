@@ -150,7 +150,7 @@ TEST(TEST_CATEGORY, scan) {
   TestScan<TEST_EXECSPACE>(67500);
   TestScan<TEST_EXECSPACE>(100000);
   TestScan<TEST_EXECSPACE>(500000);
-//  TestScan<TEST_EXECSPACE>(100000);
+  TestScan<TEST_EXECSPACE>(100000);
   TEST_EXECSPACE().fence();
 }
 }  // namespace Test
