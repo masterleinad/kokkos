@@ -50,14 +50,14 @@ namespace Test {
 template <class Device>
 struct TestScan {
   using execution_space = Device;
-  using value_type      = double;
+  using value_type      = int64_t;
 
   Kokkos::View<int, Device, Kokkos::MemoryTraits<Kokkos::Atomic> > errors;
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int iwork, value_type& update,
                   const bool final_pass) const {
-    const long long n         = iwork + 1;
+    const value_type n         = iwork + 1;
     const value_type imbalance = ((1000 <= n) && (0 == n % 1000)) ? 1000 : 0;
 
     // Insert an artificial load imbalance
@@ -68,7 +68,6 @@ struct TestScan {
 
     update += n - imbalance;
 
-    (void) final_pass;
     if (final_pass) {
       const value_type answer =
           n & 1 ? (n * ((n + 1) / 2)) : ((n / 2) * (n + 1));
@@ -97,7 +96,7 @@ struct TestScan {
     update += input;
   }
 
-  TestScan(const value_type N) {
+  TestScan(const size_t N) {
     Kokkos::View<int, Device> errors_a("Errors");
     Kokkos::deep_copy(errors_a, 0);
     errors = errors_a;
@@ -113,7 +112,7 @@ struct TestScan {
     check_error();
   }
 
-  TestScan(const value_type& Start, const value_type& N) {
+  TestScan(const size_t Start, const size_t N) {
     using exec_policy = Kokkos::RangePolicy<execution_space>;
 
     Kokkos::View<int, Device> errors_a("Errors");
@@ -132,7 +131,7 @@ struct TestScan {
     ASSERT_EQ(total_errors, 0);
   }
 
-  static void test_range(const value_type& begin, const value_type& end) {
+  static void test_range(const size_t begin, const size_t end) {
     for (value_type i = begin; i < end; ++i) {
       (void)TestScan(i);
     }
@@ -142,15 +141,8 @@ struct TestScan {
 TEST(TEST_CATEGORY, scan) {
   TestScan<TEST_EXECSPACE>::test_range(1, 1000);
   TestScan<TEST_EXECSPACE>(0);
-  TestScan<TEST_EXECSPACE>(50000);
-
-  TestScan<TEST_EXECSPACE>(60000);
-  TestScan<TEST_EXECSPACE>(65000);
-
-  TestScan<TEST_EXECSPACE>(67500);
   TestScan<TEST_EXECSPACE>(100000);
-  TestScan<TEST_EXECSPACE>(500000);
-  TestScan<TEST_EXECSPACE>(100000);
+  TestScan<TEST_EXECSPACE>(10000000);
   TEST_EXECSPACE().fence();
 }
 }  // namespace Test
