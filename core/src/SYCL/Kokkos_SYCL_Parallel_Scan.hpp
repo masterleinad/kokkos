@@ -126,14 +126,10 @@ class ParallelScanSYCLBase {
             }
 
 	    if (local_id == 0)
+	    {
               group_results[item.get_group_linear_id()] = n_wgroups>1?local_mem[wgroup_size-1]:0;
-
-	    // Store intermediate results in global memory
-            /*if (global_id < size)
-               global_mem[global_id] = local_mem[local_id];*/
-
-	    if (local_id == 0)
-              local_mem[wgroup_size-1] = 0;//group_results[item.get_group_linear_id()];
+              local_mem[wgroup_size-1] = 0;
+	    }
 
 
             // Add results to all items
@@ -226,7 +222,6 @@ class ParallelScanSYCLBase {
        });
     q.wait();
 //    cl::sycl::free(m_scratch_space, q);
-//  std::abort();
   }
 
  template <typename Functor>
