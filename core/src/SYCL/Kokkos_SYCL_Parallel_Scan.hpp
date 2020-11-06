@@ -219,7 +219,6 @@ class ParallelScanSYCLBase {
           });
        });
     q.wait();
-//    cl::sycl::free(m_scratch_space, q);
   }
 
  template <typename Functor>
@@ -264,7 +263,9 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
  public:
   using Base = ParallelScanSYCLBase<FunctorType, Traits...>;
 
-  inline void execute() { Base::impl_execute(); }
+  inline void execute() { Base::impl_execute(); 
+	        cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
+  }
 
   ParallelScan(const FunctorType& arg_functor,
                const typename Base::Policy& arg_policy)
@@ -297,6 +298,8 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
 	      std::cout << m_returnvalue << " " << nwork << std::endl;
         std::abort();
       }
+
+      cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
     }
   }
 
