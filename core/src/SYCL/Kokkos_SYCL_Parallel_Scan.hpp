@@ -245,6 +245,8 @@ class ParallelScanSYCLBase {
                for (unsigned int i=0; i<size; ++i)
                        std::cout << i << ": " << global_mem[i] << std::endl;
        }
+       q.wait();
+       cl::sycl::free(group_results, q);
   }
 
   template <typename PolicyType, typename Functor>
@@ -306,6 +308,7 @@ class ParallelScanSYCLBase {
           });
        });
     q.wait();
+//    cl::sycl::free(m_scratch_space, q);
 //  std::abort();
   }
 
