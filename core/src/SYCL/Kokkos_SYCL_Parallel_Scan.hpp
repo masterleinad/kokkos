@@ -97,13 +97,6 @@ class ParallelScanSYCLBase {
 
       static_assert(std::is_same<typename std::remove_reference<decltype(*group_results)>::type, value_type>::value, "");
 
-        if (size <= 32)
-       {
-               std::cout << "before scan" << std::endl;
-               for (unsigned int i=0; i<size; ++i)
-                       std::cout << i << ": " << global_mem[i] << std::endl;
-       }
-
        q.submit([&, *this] (cl::sycl::handler& cgh) {
           sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
                          local_mem(sycl::range<1>(wgroup_size), cgh);
@@ -188,7 +181,6 @@ class ParallelScanSYCLBase {
     cl::sycl::queue& q = *instance.m_queue;
 
     std::size_t len = m_policy.end()-m_policy.begin();
-    std::cout << "length: " << len << std::endl;
 
     // FIXME_SYCL
     if (len==0)
