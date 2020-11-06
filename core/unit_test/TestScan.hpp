@@ -132,7 +132,7 @@ struct TestScan {
   }
 
   static void test_range(const size_t begin, const size_t end) {
-    for (value_type i = begin; i < end; ++i) {
+    for (auto i = begin; i < end; ++i) {
       (void)TestScan(i);
     }
   }

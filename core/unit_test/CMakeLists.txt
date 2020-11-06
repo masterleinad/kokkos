@@ -75,7 +75,42 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     # file. That then exceeded the shell command line max length.
     set(${Tag}_SOURCES1)
     foreach(Name
+        AtomicOperations_int
+        AtomicOperations_unsignedint
+        AtomicOperations_longint
+        AtomicOperations_unsignedlongint
+        AtomicOperations_longlongint
+        AtomicOperations_double
+        AtomicOperations_float
+        AtomicOperations_complexdouble
+        AtomicOperations_complexfloat
+        AtomicViews
+        Atomics
+        BlockSizeDeduction
+        Concepts
+        Complex
+        Crs
+        DeepCopyAlignment
+        FunctorAnalysis
+        Init
+        LocalDeepCopy
+        MDRange_a
+        MDRange_b
+        MDRange_c
+        MDRange_d
+        MDRange_e
+        MDRange_f
+        Other
+        RangePolicy
+        RangePolicyRequire
+        Reductions
+        Reducers_a
+        Reducers_b
+        Reducers_c
+        Reducers_d
+        Reductions_DeviceView
         Scan
+        SharedAlloc
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -91,6 +126,24 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     SET(${Tag}_SOURCES2)
     foreach(Name
       TeamBasic
+      TeamReductionScan
+      TeamScratch
+      TeamTeamSize
+      TeamVectorRange
+      UniqueToken
+      ViewAPI_a
+      ViewAPI_b
+      ViewAPI_c
+      ViewAPI_d
+      ViewAPI_e
+      ViewLayoutStrideAssignment
+      ViewMapping_a
+      ViewMapping_b
+      ViewMapping_subview
+      ViewOfClass
+      WorkGraph
+      View_64bit
+      ViewResize
       )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -111,6 +164,20 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     endif()
     foreach(Name
       SubView_a
+      SubView_b
+      SubView_c01
+      SubView_c02
+      SubView_c03
+      SubView_c04
+      SubView_c05
+      SubView_c06
+      SubView_c07
+      SubView_c08
+      SubView_c09
+      SubView_c10
+      SubView_c11
+      SubView_c12
+      SubView_c13
       )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -141,6 +208,7 @@ if(Kokkos_ENABLE_OPENMPTARGET)
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_MDRange_f.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Other.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Reductions_DeviceView.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Scan.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_TeamBasic.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_TeamScratch.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_TeamReductionScan.cpp
