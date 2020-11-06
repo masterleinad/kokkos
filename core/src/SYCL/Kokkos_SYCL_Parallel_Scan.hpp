@@ -184,7 +184,10 @@ class ParallelScanSYCLBase {
             auto global_id = item.get_id();
 
             typename FunctorType::value_type update = 0;
-            functor(global_id, update, false);
+	    if constexpr (std::is_same<WorkTag, void>::value)
+              functor(global_id, update, false);
+            else
+              functor(WorkTag(), global_id, update, false);
             global_mem[global_id] = update;
 	    });
 	  });
@@ -203,7 +206,10 @@ class ParallelScanSYCLBase {
             auto global_id = item.get_id();
 
                typename FunctorType::value_type update = global_mem[global_id];
-               functor(global_id, update, true);
+	       if constexpr (std::is_same<WorkTag, void>::value)
+                 functor(global_id, update, true);
+               else
+                 functor(WorkTag(), global_id, update, true);
 	       global_mem[global_id] = update;
           });
        });
@@ -289,11 +295,6 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
           &m_returnvalue,
           Base::m_scratch_space + nwork-1,
           size);
-      if (m_returnvalue != (nwork*(nwork+1))/2)
-      {
-	      std::cout << m_returnvalue << " " << nwork << std::endl;
-        std::abort();
-      }
       }});
   }
 
