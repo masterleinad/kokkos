@@ -47,17 +47,17 @@
 
 namespace Test {
 
-template <class Device, class WorkSpec = size_t>
+template <class Device>
 struct TestScan {
   using execution_space = Device;
-  using value_type      = int64_t;
+  using value_type      = double;
 
   Kokkos::View<int, Device, Kokkos::MemoryTraits<Kokkos::Atomic> > errors;
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int iwork, value_type& update,
                   const bool final_pass) const {
-    const value_type n         = iwork + 1;
+    const long long n         = iwork + 1;
     const value_type imbalance = ((1000 <= n) && (0 == n % 1000)) ? 1000 : 0;
 
     // Insert an artificial load imbalance
@@ -97,14 +97,14 @@ struct TestScan {
     update += input;
   }
 
-  TestScan(const WorkSpec& N) {
+  TestScan(const value_type N) {
     Kokkos::View<int, Device> errors_a("Errors");
     Kokkos::deep_copy(errors_a, 0);
     errors = errors_a;
 
     Kokkos::parallel_scan(N, *this);
 
-    int64_t total = 0;
+    value_type total = 0;
     Kokkos::parallel_scan(N, *this, total);
 
     // We can't return a value in a constructor so use a lambda as wrapper to
@@ -113,7 +113,7 @@ struct TestScan {
     check_error();
   }
 
-  TestScan(const WorkSpec& Start, const WorkSpec& N) {
+  TestScan(const value_type& Start, const value_type& N) {
     using exec_policy = Kokkos::RangePolicy<execution_space>;
 
     Kokkos::View<int, Device> errors_a("Errors");
@@ -132,8 +132,8 @@ struct TestScan {
     ASSERT_EQ(total_errors, 0);
   }
 
-  static void test_range(const WorkSpec& begin, const WorkSpec& end) {
-    for (WorkSpec i = begin; i < end; ++i) {
+  static void test_range(const value_type& begin, const value_type& end) {
+    for (value_type i = begin; i < end; ++i) {
       (void)TestScan(i);
     }
   }
@@ -142,24 +142,15 @@ struct TestScan {
 TEST(TEST_CATEGORY, scan) {
   TestScan<TEST_EXECSPACE>::test_range(1, 1000);
   TestScan<TEST_EXECSPACE>(0);
-  //TestScan<TEST_EXECSPACE>(100000);
-  //TestScan<TEST_EXECSPACE>(10000000);
+  TestScan<TEST_EXECSPACE>(50000);
+
+  TestScan<TEST_EXECSPACE>(60000);
+  TestScan<TEST_EXECSPACE>(65000);
+
+  TestScan<TEST_EXECSPACE>(67500);
+  TestScan<TEST_EXECSPACE>(100000);
+  TestScan<TEST_EXECSPACE>(500000);
+//  TestScan<TEST_EXECSPACE>(100000);
   TEST_EXECSPACE().fence();
 }
-
-/*TEST( TEST_CATEGORY, scan_small )
-{
-  using TestScanFunctor =
-      TestScan< TEST_EXECSPACE, Kokkos::Impl::ThreadsExecUseScanSmall >;
-
-  for ( int i = 0; i < 1000; ++i ) {
-    TestScanFunctor( 10 );
-    TestScanFunctor( 10000 );
-  }
-  TestScanFunctor( 1000000 );
-  TestScanFunctor( 10000000 );
-
-  TEST_EXECSPACE().fence();
-}*/
-
 }  // namespace Test
