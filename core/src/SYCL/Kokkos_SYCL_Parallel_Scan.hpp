@@ -207,7 +207,7 @@ class ParallelScanSYCLBase {
             }
 
 	    if (local_id == 0)
-              local_mem[wgroup_size-1] = group_results[item.get_group_linear_id()];
+              local_mem[wgroup_size-1] = 0;//group_results[item.get_group_linear_id()];
 
         if (size <=4)
                 {
@@ -246,6 +246,18 @@ class ParallelScanSYCLBase {
                        std::cout << i << ": " << global_mem[i] << std::endl;
        }
        q.wait();
+
+  q.submit([&, *this] (sycl::handler& cgh) {
+          cgh.parallel_for<class reduction_kernel>(
+               sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+               [=] (sycl::nd_item<1> item) {
+            const auto global_id = item.get_global_linear_id();
+               if (global_id < size)
+                global_mem[global_id] += group_results[item.get_group_linear_id()];
+              });});
+
+  q.wait();
+
        cl::sycl::free(group_results, q);
   }
 
