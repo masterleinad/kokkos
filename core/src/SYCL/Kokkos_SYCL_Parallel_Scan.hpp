@@ -176,11 +176,7 @@ class ParallelScanSYCLBase {
         *space.impl_internal_space_instance();
     cl::sycl::queue& q = *instance.m_queue;
 
-    std::size_t len = m_policy.end()-m_policy.begin();
-
-    // FIXME_SYCL
-    if (len==0)
-      return;
+    const std::size_t len = m_policy.end()-m_policy.begin();
 
     // Initialize global memory
     q.submit([&, *this] (sycl::handler& cgh) {
@@ -244,6 +240,8 @@ public:
 
  template <typename PostFunctor>
   void impl_execute(PostFunctor&& post_functor) {
+	  const auto& q = *(m_policy.space().impl_internal_space_instance()->m_queue);
+	      const std::size_t len = m_policy.end()-m_policy.begin();
     m_scratch_space = static_cast<pointer_type>(
         sycl::malloc(sizeof(value_type)*len, q, sycl::usm::alloc::shared));
 
@@ -252,7 +250,7 @@ public:
     else
       sycl_indirect_launch(m_functor);
     post_functor();
-    cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
+    cl::sycl::free(m_scratch_space, q);
 }
 
   ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy)
