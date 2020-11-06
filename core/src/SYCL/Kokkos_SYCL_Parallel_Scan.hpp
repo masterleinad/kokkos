@@ -145,59 +145,6 @@ class ParallelScanSYCLBase {
                          {
                   out << "results before group scan[" << local_id << "]=" << local_mem[local_id] << cl::sycl::endl;
                          }
-	  });
-       });
-       q.wait();
-
-       if (n_wgroups <= 32)
-       {
-	       std::cout << "before group reduction" << std::endl;
-	       for (unsigned int i=0; i<n_wgroups; ++i)
-		       std::cout << i << ": " << group_results[i] << std::endl;
-       }
-	       
-       q.wait();
-          if (n_wgroups <= 32)
-	  {
-               std::cout << "after group reduction" << std::endl;
-               for (unsigned int i=0; i<n_wgroups; ++i)
-                       std::cout << i << ": " << group_results[i] << std::endl;
-	  }
-
-       q.submit([&, *this] (sycl::handler& cgh) {
-          sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
-                         local_mem(sycl::range<1>(wgroup_size), cgh);
-
-          sycl::stream out(1024, 256, cgh);
-          cgh.parallel_for<class reduction_kernel>(
-               sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
-               [=] (sycl::nd_item<1> item) {
-
-            size_t local_id = item.get_local_linear_id();
-            size_t global_id = item.get_global_linear_id();
-
-	    // FIXME_SYCL
-	    // Should we rather save the results and reload?
-            // Initialize local memory
-            if (global_id < size)
-               local_mem[local_id] = global_mem[global_id];
-            else
-               local_mem[local_id] = value_type{};
-            item.barrier(sycl::access::fence_space::local_space);
-
-            // Perform workgroup reduction
-            for (size_t stride = 1; 2*stride < wgroup_size+1; stride *= 2) {
-               auto idx = 2 * stride * (local_id+1)-1;
-               if (idx < wgroup_size) {
-                 local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
-		         if (size <=4)
-			 {
-                  out << "wgred[" << idx << "]=" << local_mem[idx]
-                      << "(" << idx << ", " << idx - stride << ")" << cl::sycl::endl;
-			 }
-               }
-               item.barrier(sycl::access::fence_space::local_space);
-            }
 
 	    if (local_id == 0)
               local_mem[wgroup_size-1] = 0;//group_results[item.get_group_linear_id()];
