@@ -79,9 +79,6 @@ class ParallelScanSYCLBase {
   const FunctorType m_functor;
   const Policy m_policy;
   pointer_type m_scratch_space = nullptr;
-  size_type* m_scratch_flags = nullptr;
-  size_type m_final          = false;
-  int m_grid_x               = 0;
 
  private:
 
