@@ -141,18 +141,8 @@ class ParallelScanSYCLBase {
             /*if (global_id < size)
                global_mem[global_id] = local_mem[local_id];*/
 
-	         if (size <=4)
-                         {
-                  out << "results before group scan[" << local_id << "]=" << local_mem[local_id] << cl::sycl::endl;
-                         }
-
 	    if (local_id == 0)
               local_mem[wgroup_size-1] = 0;//group_results[item.get_group_linear_id()];
-
-        if (size <=4)
-                {
-                 out << wgroup_size << " loaded[" << local_id << "]=" << local_mem[local_id] << cl::sycl::endl;
-                }
 
 
             // Add results to all items
@@ -163,12 +153,6 @@ class ParallelScanSYCLBase {
                  auto dummy = local_mem[idx-stride];
                  local_mem[idx-stride] = local_mem[idx];
                  local_mem[idx] += dummy;
-		 if (size <=4)
-		 {
-		  out << "wgadd[" << idx-stride << "]=" << local_mem[idx-stride] << ", " << stride << " " << local_id << cl::sycl::endl 
-		      << "wgadd[" << idx << "]=" << local_mem[idx] << "(" << idx << ", " << idx - stride << "), " << stride << " " << local_id << cl::sycl::endl
-		      << "dummy " << dummy << ", " << stride << " " << local_id << cl::sycl::endl; 
-		 }
                }
                item.barrier(sycl::access::fence_space::local_space);
             }
