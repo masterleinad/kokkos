@@ -85,7 +85,7 @@ class ParallelScanSYCLBase {
 
  private:
 
-  void scan_internal(cl::sycl::queue& q, pointer_type global_mem, std::size_t size)
+  void scan_internal(cl::sycl::queue& q, pointer_type global_mem, std::size_t size) const
   {
     // FIXME_SYCL optimize
     constexpr size_t wgroup_size = 32;
@@ -167,9 +167,8 @@ class ParallelScanSYCLBase {
        cl::sycl::free(group_results, q);
   }
 
-  template <typename PolicyType, typename Functor>
-  void sycl_direct_launch(const PolicyType& /*policy*/,
-                          const Functor& functor) /*const*/ {
+  template <typename Functor>
+  void sycl_direct_launch(const Functor& functor) const {
   // Convenience references
     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
@@ -215,7 +214,7 @@ class ParallelScanSYCLBase {
   }
 
  template <typename Functor>
-  void sycl_indirect_launch(const Functor& functor) /*const*/ {
+  void sycl_indirect_launch(const Functor& functor) const {
     // Convenience references
     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
@@ -233,7 +232,7 @@ class ParallelScanSYCLBase {
         kernelFunctorPtr(new (kernelMem.data()) Functor(functor));
 
     auto kernelFunctor = std::reference_wrapper(*kernelFunctorPtr);
-    sycl_direct_launch(m_policy, kernelFunctor);
+    sycl_direct_launch(kernelFunctor);
   }
 
 public:
