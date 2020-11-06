@@ -245,11 +245,13 @@ class ParallelScanSYCLBase {
 
 public:
 
-  void impl_execute() {
+ template <typename PostFunctor>
+  void impl_execute(PostFunctor&& post_functor) {
     if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
       sycl_direct_launch(m_policy, m_functor);
     else
       sycl_indirect_launch(m_functor);
+    post_functor();
 }
 
   ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy)
@@ -263,7 +265,7 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
  public:
   using Base = ParallelScanSYCLBase<FunctorType, Traits...>;
 
-  inline void execute() { Base::impl_execute(); 
+  inline void execute() { Base::impl_execute([](){}); 
 	        cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
   }
 
@@ -284,7 +286,7 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
   ReturnType& m_returnvalue;
 
   inline void execute() {
-    Base::impl_execute();
+    Base::impl_execute([&](){
 
     const long long nwork = Base::m_policy.end() - Base::m_policy.begin();
     if (nwork>0) {
@@ -298,9 +300,9 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
 	      std::cout << m_returnvalue << " " << nwork << std::endl;
         std::abort();
       }
+      }});
 
       cl::sycl::free(Base::m_scratch_space, *(Base::m_policy.space().impl_internal_space_instance()->m_queue));
-    }
   }
 
   ParallelScanWithTotal(const FunctorType& arg_functor,
