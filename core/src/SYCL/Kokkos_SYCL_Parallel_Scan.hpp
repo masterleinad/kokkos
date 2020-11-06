@@ -192,7 +192,7 @@ class ParallelScanSYCLBase {
     // Initialize global memory
     q.submit([&, *this] (sycl::handler& cgh) {
           auto global_mem = m_scratch_space;
-          sycl::stream out(4096, 1024, cgh);
+//          sycl::stream out(4096, 1024, cgh);
           cgh.parallel_for<class reduction_kernel>(
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
@@ -212,7 +212,7 @@ class ParallelScanSYCLBase {
     // Write results to global memory
     q.submit([&, *this] (sycl::handler& cgh) {
 		    auto global_mem = m_scratch_space;
-          sycl::stream out(4096, 1024, cgh);
+//          sycl::stream out(4096, 1024, cgh);
           cgh.parallel_for<class reduction_kernel>(
                sycl::range<1>(len),
                [=] (sycl::item<1> item) {
