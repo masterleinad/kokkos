@@ -183,7 +183,7 @@ class ParallelScanSYCLBase {
 
             auto global_id = item.get_id();
 
-            typename FunctorType::value_type update = 0;
+            value_type update = 0;
 	    if constexpr (std::is_same<WorkTag, void>::value)
               functor(global_id, update, false);
             else
@@ -205,7 +205,7 @@ class ParallelScanSYCLBase {
 
             auto global_id = item.get_id();
 
-               typename FunctorType::value_type update = global_mem[global_id];
+               value_type update = global_mem[global_id];
 	       if constexpr (std::is_same<WorkTag, void>::value)
                  functor(global_id, update, true);
                else
