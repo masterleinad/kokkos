@@ -123,7 +123,7 @@ class ParallelScanSYCLBase {
             if (local_id == 0) {
               group_results[item.get_group_linear_id()] =
                   n_wgroups > 1 ? local_mem[wgroup_size - 1] : 0;
-              local_mem[wgroup_size - 1] = 0;
+              local_mem[wgroup_size - 1] = value_type{};
             }
 
             // Add results to all items
@@ -175,7 +175,7 @@ class ParallelScanSYCLBase {
       cgh.parallel_for(sycl::range<1>(len), [=](sycl::item<1> item) {
         auto global_id = item.get_id();
 
-        typename FunctorType::value_type update = 0;
+        value_type update{};
         if constexpr (std::is_same<WorkTag, void>::value)
           functor(global_id, update, false);
         else
@@ -194,7 +194,7 @@ class ParallelScanSYCLBase {
       cgh.parallel_for(sycl::range<1>(len), [=](sycl::item<1> item) {
         auto global_id = item.get_id();
 
-        typename FunctorType::value_type update = global_mem[global_id];
+        value_type update = global_mem[global_id];
         if constexpr (std::is_same<WorkTag, void>::value)
           functor(global_id, update, true);
         else
