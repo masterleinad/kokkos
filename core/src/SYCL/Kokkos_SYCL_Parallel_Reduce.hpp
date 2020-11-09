@@ -117,6 +117,13 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     template <typename Dummy = T>
     std::enable_if_t<std::is_same_v<Dummy, T> &&
+                     ReduceFunctorHasInit<Dummy>::value>
+    init(value_type& old_value, const value_type& new_value) const {
+      return this->get().init(old_value, new_value);
+    }
+
+    template <typename Dummy = T>
+    std::enable_if_t<std::is_same_v<Dummy, T> &&
                      ReduceFunctorHasJoin<Dummy>::value>
     join(value_type& old_value, const value_type& new_value) const {
       return this->get().join(old_value, new_value);
@@ -142,17 +149,18 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     auto result_ptr = static_cast<pointer_type>(
         sycl::malloc(sizeof(*m_result_ptr), q, sycl::usm::alloc::shared));
 
-    value_type host_result;
-    ValueInit::init(functor, &host_result);
+    value_type identity{};
+    if constexpr (!std::is_same<ReducerType, InvalidType>::value)
+      m_reducer.init(identity);
+
+    value_type host_result = identity;
+    if constexpr (ReduceFunctorHasInit<Functor>::value)
+      ValueInit::init(functor, &host_result);
     q.memcpy(result_ptr, &host_result, sizeof(host_result));
 
     q.submit([&](cl::sycl::handler& cgh) {
       // FIXME_SYCL a local size larger than 1 doesn't work for all cases
       cl::sycl::nd_range<1> range(policy.end() - policy.begin(), 1);
-
-      value_type identity{};
-      if constexpr (!std::is_same<ReducerType, InvalidType>::value)
-        m_reducer.init(identity);
 
       const auto reduction = [&]() {
         if constexpr (!std::is_same<ReducerType, InvalidType>::value) {
