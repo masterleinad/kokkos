@@ -166,7 +166,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           if constexpr (ReduceFunctorHasJoin<Functor>::value) {
             return cl::sycl::ONEAPI::reduction(
                 result_ptr, identity,
-                [=](value_type& old_value, const value_type& new_value) {
+                [&](value_type& old_value, const value_type& new_value) {
                   functor.join(old_value, new_value);
                   return old_value;
                 });
@@ -253,10 +253,13 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           break;
         case sycl::usm::alloc::device:
           // non-USM-allocated memory
-        case sycl::usm::alloc::unknown:
+        case sycl::usm::alloc::unknown: {
           value_type host_result;
           ValueInit::init(m_functor, &host_result);
           q.memcpy(result_ptr, &host_result, sizeof(host_result)).wait();
+          break;
+        }
+        default: Kokkos::abort("pointer type outside of SYCL specs.");
       }
 
       if constexpr (ReduceFunctorHasFinal<FunctorType>::value) {

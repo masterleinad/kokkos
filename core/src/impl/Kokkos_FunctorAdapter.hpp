@@ -81,7 +81,8 @@ struct ReduceFunctorHasInit<
     typename std::enable_if<0 < sizeof(&FunctorType::init)>::type> {
   enum : bool { value = true };
 };
-// FIXME_SYCL not all compiler recognize this as separate specialization
+// FIXME_SYCL not all compilers distinguish between the FunctorType::init and
+// the FunctorType::template init<> specialization
 #ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasInit<
@@ -110,7 +111,8 @@ struct ReduceFunctorHasJoin<
     typename std::enable_if<0 < sizeof(&FunctorType::join)>::type> {
   enum : bool { value = true };
 };
-// FIXME_SYCL not all compiler recognize this as separate specialization
+// FIXME_SYCL not all compilers distinguish between the FunctorType::join and
+// the FunctorType::template join<> specialization
 #ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasJoin<
@@ -133,7 +135,8 @@ struct ReduceFunctorHasFinal<
   enum : bool { value = true };
 };
 #else
-// FIXME_SYCL not all compiler recognize this as separate specialization
+// FIXME_SYCL not all compilers distinguish between the FunctorType::final and
+// the FunctorType::template final<> specialization
 #ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasFinal<
@@ -166,7 +169,9 @@ struct ReduceFunctorHasShmemSize<
   enum : bool { value = true };
 };
 #else
-// FIXME_SYCL not all compiler recognize this as separate specialization
+// FIXME_SYCL not all compilers distinguish between the
+// FunctorType::team_shmem_size and the FunctorType::template team_shmem_size<>
+// specialization
 #ifdef KOKKOS_ENABLE_SYCL
 template <class FunctorType>
 struct ReduceFunctorHasShmemSize<
