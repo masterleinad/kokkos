@@ -158,7 +158,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         if constexpr (!std::is_same<ReducerType, InvalidType>::value) {
           return cl::sycl::ONEAPI::reduction(
               result_ptr, identity,
-              [&](value_type& old_value, const value_type& new_value) {
+              [this](value_type& old_value, const value_type& new_value) {
                 m_reducer.join(old_value, new_value);
                 return old_value;
               });
@@ -166,7 +166,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           if constexpr (ReduceFunctorHasJoin<Functor>::value) {
             return cl::sycl::ONEAPI::reduction(
                 result_ptr, identity,
-                [&](value_type& old_value, const value_type& new_value) {
+                [functor](value_type& old_value, const value_type& new_value) {
                   functor.join(old_value, new_value);
                   return old_value;
                 });
