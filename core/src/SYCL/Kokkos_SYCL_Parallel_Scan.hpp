@@ -46,6 +46,7 @@
 #define KOKKO_SYCL_PARALLEL_SCAN_HPP
 
 #include <Kokkos_Macros.hpp>
+#include <memory>
 #if defined(KOKKOS_ENABLE_SYCL)
 
 namespace Kokkos {
@@ -87,9 +88,12 @@ class ParallelScanSYCLBase {
     constexpr size_t wgroup_size = 32;
     auto n_wgroups               = (size + wgroup_size - 1) / wgroup_size;
 
-    pointer_type group_results;
-    group_results = static_cast<pointer_type>(sycl::malloc(
-        sizeof(value_type) * n_wgroups, q, sycl::usm::alloc::shared));
+    auto deleter = [&q](value_type* ptr) { cl::sycl::free(ptr, q); };
+    std::unique_ptr<value_type[], decltype(deleter)> group_results_memory(
+        static_cast<pointer_type>(sycl::malloc(sizeof(value_type) * n_wgroups,
+                                               q, sycl::usm::alloc::shared)),
+        deleter);
+    auto group_results = group_results_memory.get();
 
     q.submit([&, *this](cl::sycl::handler& cgh) {
       sycl::accessor<value_type, 1, sycl::access::mode::read_write,
@@ -155,8 +159,6 @@ class ParallelScanSYCLBase {
                        });
     });
     q.wait();
-
-    cl::sycl::free(group_results, q);
   }
 
   template <typename Functor>
@@ -232,15 +234,19 @@ class ParallelScanSYCLBase {
   void impl_execute(PostFunctor&& post_functor) {
     const auto& q = *(m_policy.space().impl_internal_space_instance()->m_queue);
     const std::size_t len = m_policy.end() - m_policy.begin();
-    m_scratch_space       = static_cast<pointer_type>(
-        sycl::malloc(sizeof(value_type) * len, q, sycl::usm::alloc::shared));
+
+    auto deleter = [&q](value_type* ptr) { cl::sycl::free(ptr, q); };
+    std::unique_ptr<value_type[], decltype(deleter)> result_memory(
+        static_cast<pointer_type>(sycl::malloc(sizeof(value_type) * len, q,
+                                               sycl::usm::alloc::shared)),
+        deleter);
+    m_scratch_space = result_memory.get();
 
     if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
       sycl_direct_launch(m_policy, m_functor);
     else
       sycl_indirect_launch(m_functor);
     post_functor();
-    cl::sycl::free(m_scratch_space, q);
   }
 
   ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy)
