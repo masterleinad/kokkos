@@ -149,100 +149,105 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
   ParallelFor()        = delete;
   ParallelFor& operator=(ParallelFor const&) = delete;
 
+  cl::sycl::nd_range<3> compute_ranges () const
+  {
+    // FIXME_SYCL optimize
+    const int maxblocks = 32;
+    if constexpr (Policy::rank == 2) {
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0], m_policy.m_tile[1],1);
+      cl::sycl::range<3> global_sizes(std::min<index_type>((m_policy.m_upper[0] - m_policy.m_lower[0] + local_sizes[0] - 1) /
+                       local_sizes[0],
+                   maxblocks),
+          std::min<index_type>((m_policy.m_upper[1] - m_policy.m_lower[1] + local_sizes[1] - 1) /
+                       local_sizes[1],
+                   maxblocks),1);
+      return {global_sizes, local_sizes};
+
+    } 
+    if constexpr(Policy::rank == 3) {
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0], m_policy.m_tile[1], m_policy.m_tile[2]);
+      cl::sycl::range<3> global_sizes(std::min<index_type>((m_policy.m_upper[0] - m_policy.m_lower[0] + local_sizes[0] - 1) /
+                       local_sizes[0],
+                   maxblocks),
+          std::min<index_type>((m_policy.m_upper[1] - m_policy.m_lower[1] + local_sizes[1] - 1) /
+                       local_sizes[1],
+                   maxblocks),
+          std::min<index_type>((m_policy.m_upper[2] - m_policy.m_lower[2] + local_sizes[2] - 1) /
+                       local_sizes[2],
+                   maxblocks));
+       return {global_sizes, local_sizes};
+    }
+    if constexpr(Policy::rank == 4) {
+      // id0,id1 encoded within first index; id2 to second index; id3 to third index
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
+                                     m_policy.m_tile[2], m_policy.m_tile[3]);
+      cl::sycl::range<3> global_sizes(std::min<index_type>(m_policy.m_tile_end[0] *
+                                         m_policy.m_tile_end[1],
+                   maxblocks),
+          std::min<index_type>((m_policy.m_upper[2] - m_policy.m_lower[2] + local_sizes[1] - 1) /
+                       local_sizes[1],
+                   maxblocks),
+          std::min<index_type>((m_policy.m_upper[3] - m_policy.m_lower[3] + local_sizes[2] - 1) /
+                       local_sizes[2],
+                   maxblocks));
+      return {global_sizes, local_sizes};
+    } 
+   if constexpr(Policy::rank == 5) {
+      // id0,id1 encoded within first index; id2,id3 to second index; id4 to third index
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
+                       m_policy.m_tile[2] * m_policy.m_tile[3],
+                       m_policy.m_tile[4]);
+      cl::sycl::range<3> global_sizes(
+          std::min<index_type>(m_policy.m_tile_end[0] * m_policy.m_tile_end[1], maxblocks),
+          std::min<index_type>(m_policy.m_tile_end[2] * m_policy.m_tile_end[3], maxblocks),
+          std::min<index_type>((m_policy.m_upper[4] - m_policy.m_lower[4] + local_sizes[2] - 1) /
+                       local_sizes[2],
+                   maxblocks));
+      return {global_sizes, local_sizes};
+    } 
+    if constexpr(Policy::rank == 6) {
+      // id0,id1 encoded within first index; id2,id3 to second index; id4,id5 to third index
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
+                       m_policy.m_tile[2] * m_policy.m_tile[3],
+                       m_policy.m_tile[4] * m_policy.m_tile[5]);
+      cl::sycl::range<3> global_sizes(std::min<index_type>(m_policy.m_tile_end[0] *
+                                                       m_policy.m_tile_end[1],
+                               maxblocks),
+                      std::min<index_type>(m_policy.m_tile_end[2] *
+                                                       m_policy.m_tile_end[3],
+                               maxblocks),
+                      std::min<index_type>(m_policy.m_tile_end[4] *
+                                                       m_policy.m_tile_end[5],
+                               maxblocks));
+      return {global_sizes, local_sizes};
+    } 
+    static_assert(Policy::rank>1 && Policy::rank<7, "Kokkos::MDRange Error: Exceeded rank bounds with SYCL\n");
+    }
+
   template <typename Functor>
-  static void sycl_direct_launch(const Policy& policy, const Functor& functor) {
+  void sycl_direct_launch(const Functor& functor) const {
     // Convenience references
-    const Kokkos::Experimental::SYCL& space = policy.space();
+    const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
     cl::sycl::queue& q = *instance.m_queue;
 
     q.wait();
 
-    if (policy.m_num_tiles == 0) return;
-    // FIXME_SYCL optimize
-    const int maxblocks = 32;
-    if constexpr (Policy::rank == 2) {
-      cl::sycl::range<2> local_sizes(policy.m_tile[0], policy.m_tile[1]);
-      cl::sycl::range<2> global_sizes(std::min<index_type>((policy.m_upper[0] - policy.m_lower[0] + local_sizes[0] - 1) /
-                       local_sizes[0],
-                   maxblocks),
-          std::min<index_type>((policy.m_upper[1] - policy.m_lower[1] + local_sizes[1] - 1) /
-                       local_sizes[1],
-                   maxblocks));
-      cl::sycl::nd_range<2> range(global_sizes, local_sizes);
+    if (m_policy.m_num_tiles == 0) return;
 
-    } else if (Policy::rank == 3) {
-      cl::sycl::range<3> local_sizes(policy.m_tile[0], policy.m_tile[1], policy.m_tile[2]);
-      cl::sycl::range<3> global_sizes(std::min<index_type>((policy.m_upper[0] - policy.m_lower[0] + local_sizes[0] - 1) /
-                       local_sizes[0],
-                   maxblocks),
-          std::min<index_type>((policy.m_upper[1] - policy.m_lower[1] + local_sizes[1] - 1) /
-                       local_sizes[1],
-                   maxblocks),
-          std::min<index_type>((policy.m_upper[2] - policy.m_lower[2] + local_sizes[2] - 1) /
-                       local_sizes[2],
-                   maxblocks));
-      cl::sycl::nd_range<3> range(global_sizes, local_sizes);
-    } else if (Policy::rank == 4) {
-      // id0,id1 encoded within threadIdx.x; id2 to threadIdx.y; id3 to
-      // threadIdx.z
-      cl::sycl::range<3> local_sizes(policy.m_tile[0] * policy.m_tile[1],
-                                     policy.m_tile[2], policy.m_tile[3]);
-      cl::sycl::range<3> global_sizes(std::min<index_type>(policy.m_tile_end[0] *
-                                         policy.m_tile_end[1],
-                   maxblocks),
-          std::min<index_type>((policy.m_upper[2] - policy.m_lower[2] + local_sizes[1] - 1) /
-                       local_sizes[1],
-                   maxblocks),
-          std::min<index_type>((policy.m_upper[3] - policy.m_lower[3] + local_sizes[2] - 1) /
-                       local_sizes[2],
-                   maxblocks));
-      cl::sycl::nd_range<3> range(global_sizes, local_sizes);
-    } else if (Policy::rank == 5) {
-      // id0,id1 encoded within threadIdx.x; id2,id3 to threadIdx.y; id4
-      // to threadIdx.z
-      cl::sycl::range<3> local_sizes(policy.m_tile[0] * policy.m_tile[1],
-                       policy.m_tile[2] * policy.m_tile[3],
-                       policy.m_tile[4]);
-      cl::sycl::range<3> global_sizes(
-          std::min<index_type>(policy.m_tile_end[0] * policy.m_tile_end[1], maxblocks),
-          std::min<index_type>(policy.m_tile_end[2] * policy.m_tile_end[3], maxblocks),
-          std::min<index_type>((policy.m_upper[4] - policy.m_lower[4] + local_sizes[2] - 1) /
-                       local_sizes[2],
-                   maxblocks));
-    } else if (Policy::rank == 6) {
-      // id0,id1 encoded within threadIdx.x; id2,id3 to threadIdx.y;
-      // id4,id5 to threadIdx.z
-      cl::sycl::range<3> local_sizes(policy.m_tile[0] * policy.m_tile[1],
-                       policy.m_tile[2] * policy.m_tile[3],
-                       policy.m_tile[4] * policy.m_tile[5]);
-      cl::sycl::range<3> global_sizes(std::min<index_type>(policy.m_tile_end[0] *
-                                                       policy.m_tile_end[1],
-                               maxblocks),
-                      std::min<index_type>(policy.m_tile_end[2] *
-                                                       policy.m_tile_end[3],
-                               maxblocks),
-                      std::min<index_type>(policy.m_tile_end[4] *
-                                                       policy.m_tile_end[5],
-                               maxblocks));
-    } else {
-      Kokkos::abort("Kokkos::MDRange Error: Exceeded rank bounds with HIP\n");
-    }
-
-    /*q.submit([functor, policy](cl::sycl::handler& cgh) {
-      cl::sycl::range<1> range(policy.end() - policy.begin());
+    q.submit([functor, this](cl::sycl::handler& cgh) {
+      const auto range = compute_ranges();
 
       cgh.parallel_for(range, [=](cl::sycl::item<1> item) {
         const typename Policy::index_type id =
-            static_cast<typename Policy::index_type>(item.get_linear_id()) +
-            policy.begin();
+            static_cast<typename Policy::index_type>(item.get_linear_id());
         if constexpr (std::is_same<WorkTag, void>::value)
           functor(id);
         else
           functor(WorkTag(), id);
       });
-    });*/
+    });
 
     q.wait();
   }
@@ -267,7 +272,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
 
     // Use reference_wrapper (because it is both trivially copyable and
     // invocable) and launch it
-    sycl_direct_launch(m_policy, std::reference_wrapper(*kernelFunctorPtr));
+    sycl_direct_launch(std::reference_wrapper(*kernelFunctorPtr));
   }
 
  public:
@@ -278,7 +283,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
     // otherwise, we will launch it indirectly via explicitly creating
     // it in USM shared memory.
     if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
-      sycl_direct_launch(m_policy, m_functor);
+      sycl_direct_launch(m_functor);
     else
       sycl_indirect_launch();
   }
