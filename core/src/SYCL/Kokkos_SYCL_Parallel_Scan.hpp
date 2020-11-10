@@ -82,8 +82,9 @@ class ParallelScanSYCLBase {
   pointer_type m_scratch_space = nullptr;
 
  private:
-  void scan_internal(cl::sycl::queue& q, pointer_type global_mem,
-                     std::size_t size) const {
+  template <typename Functor>
+  void scan_internal(cl::sycl::queue& q, const Functor& functor,
+                     pointer_type global_mem, std::size_t size) const {
     // FIXME_SYCL optimize
     constexpr size_t wgroup_size = 32;
     auto n_wgroups               = (size + wgroup_size - 1) / wgroup_size;
@@ -95,7 +96,7 @@ class ParallelScanSYCLBase {
         deleter);
     auto group_results = group_results_memory.get();
 
-    q.submit([&, *this](cl::sycl::handler& cgh) {
+    q.submit([&](cl::sycl::handler& cgh) {
       sycl::accessor<value_type, 1, sycl::access::mode::read_write,
                      sycl::access::target::local>
           local_mem(sycl::range<1>(wgroup_size), cgh);
@@ -110,43 +111,53 @@ class ParallelScanSYCLBase {
 
             // Initialize local memory
             if (global_id < size)
-              local_mem[local_id] = global_mem[global_id];
+              ValueOps::copy(functor, &local_mem[local_id],
+                             &global_mem[global_id]);
             else
-              local_mem[local_id] = value_type{};
+              ValueInit::init(functor, &local_mem[local_id]);
             item.barrier(sycl::access::fence_space::local_space);
 
             // Perform workgroup reduction
             for (size_t stride = 1; 2 * stride < wgroup_size + 1; stride *= 2) {
               auto idx = 2 * stride * (local_id + 1) - 1;
-              if (idx < wgroup_size) {
-                local_mem[idx] = local_mem[idx] + local_mem[idx - stride];
-              }
+              if (idx < wgroup_size)
+                ValueJoin::join(functor, &local_mem[idx],
+                                &local_mem[idx - stride]);
               item.barrier(sycl::access::fence_space::local_space);
             }
 
             if (local_id == 0) {
-              group_results[item.get_group_linear_id()] =
-                  n_wgroups > 1 ? local_mem[wgroup_size - 1] : 0;
-              local_mem[wgroup_size - 1] = value_type{};
+              if (n_wgroups > 1)
+                ValueOps::copy(functor,
+                               &group_results[item.get_group_linear_id()],
+                               &local_mem[wgroup_size - 1]);
+              else
+                ValueInit::init(functor,
+                                &group_results[item.get_group_linear_id()]);
+              ValueInit::init(functor, &local_mem[wgroup_size - 1]);
             }
 
             // Add results to all items
             for (size_t stride = wgroup_size / 2; stride > 0; stride /= 2) {
               auto idx = 2 * stride * (local_id + 1) - 1;
               if (idx < wgroup_size) {
-                auto dummy              = local_mem[idx - stride];
-                local_mem[idx - stride] = local_mem[idx];
-                local_mem[idx] += dummy;
+                value_type dummy;
+                ValueOps::copy(functor, &dummy, &local_mem[idx - stride]);
+                ValueOps::copy(functor, &local_mem[idx - stride],
+                               &local_mem[idx]);
+                ValueJoin::join(functor, &local_mem[idx], &dummy);
               }
               item.barrier(sycl::access::fence_space::local_space);
             }
 
             // Write results to global memory
-            if (global_id < size) global_mem[global_id] = local_mem[local_id];
+            if (global_id < size)
+              ValueOps::copy(functor, &global_mem[global_id],
+                             &local_mem[local_id]);
           });
     });
 
-    if (n_wgroups > 1) scan_internal(q, group_results, n_wgroups);
+    if (n_wgroups > 1) scan_internal(q, functor, group_results, n_wgroups);
     q.wait();
 
     q.submit([&, *this](sycl::handler& cgh) {
@@ -154,8 +165,9 @@ class ParallelScanSYCLBase {
                        [=](sycl::nd_item<1> item) {
                          const auto global_id = item.get_global_linear_id();
                          if (global_id < size)
-                           global_mem[global_id] +=
-                               group_results[item.get_group_linear_id()];
+                           ValueJoin::join(
+                               functor, &global_mem[global_id],
+                               &group_results[item.get_group_linear_id()]);
                        });
     });
     q.wait();
@@ -185,13 +197,13 @@ class ParallelScanSYCLBase {
               functor(id, update, false);
             else
               functor(WorkTag(), id, update, false);
-            global_mem[id] = update;
+            ValueOps::copy(functor, &global_mem[id], &update);
           });
     });
     q.wait();
 
     // Perform the actual exlcusive scan
-    scan_internal(q, m_scratch_space, len);
+    scan_internal(q, functor, m_scratch_space, len);
 
     // Write results to global memory
     q.submit([&, *this](sycl::handler& cgh) {
@@ -204,7 +216,7 @@ class ParallelScanSYCLBase {
           functor(global_id, update, true);
         else
           functor(WorkTag(), global_id, update, true);
-        global_mem[global_id] = update;
+        ValueOps::copy(functor, &global_mem[global_id], &update);
       });
     });
     q.wait();
