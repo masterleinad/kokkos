@@ -54,6 +54,7 @@
 #ifdef KOKKOS_ENABLE_HIP
 #include <HIP/Kokkos_HIP_Abort.hpp>
 #endif
+#include <CL/sycl.hpp>
 
 #ifndef KOKKOS_ABORT_MESSAGE_BUFFER_SIZE
 #define KOKKOS_ABORT_MESSAGE_BUFFER_SIZE 2048
@@ -198,6 +199,9 @@ KOKKOS_IMPL_ABORT_NORETURN KOKKOS_INLINE_FUNCTION void abort(
 #elif !defined(KOKKOS_ENABLE_OPENMPTARGET) && !defined(__SYCL_DEVICE_ONLY__)
   Kokkos::Impl::host_abort(message);
 #else
+  static const __attribute__((opencl_constant)) char FMT[] = "Aborting with message `%s'.\n";
+  sycl::ONEAPI::experimental::printf(FMT, message);
+  //throw "error";
   (void)message;  // FIXME_OPENMPTARGET, FIXME_SYCL
 #endif
 }
