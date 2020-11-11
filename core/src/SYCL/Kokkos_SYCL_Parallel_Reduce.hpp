@@ -153,10 +153,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     if constexpr (!std::is_same<ReducerType, InvalidType>::value)
       m_reducer.init(identity);
 
-    value_type host_result = identity;
+    *result_ptr = identity;
     if constexpr (ReduceFunctorHasInit<Functor>::value)
-      ValueInit::init(functor, &host_result);
-    q.memcpy(result_ptr, &host_result, sizeof(host_result));
+      ValueInit::init(functor, result_ptr);
 
     q.submit([&](cl::sycl::handler& cgh) {
       // FIXME_SYCL a local size larger than 1 doesn't work for all cases
