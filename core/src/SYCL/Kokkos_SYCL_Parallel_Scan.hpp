@@ -148,7 +148,7 @@ class ParallelScanSYCLBase {
 
        if (n_wgroups>1)
           scan_internal(q, group_results, n_wgroups);
-       q.wait();
+       q.wait_and_throw();
 
        q.submit([&, *this] (sycl::handler& cgh) {
          cgh.parallel_for(
@@ -159,7 +159,7 @@ class ParallelScanSYCLBase {
                global_mem[global_id] += group_results[item.get_group_linear_id()];
            });
 	 });
-       q.wait();
+       q.wait_and_throw();
 
        cl::sycl::free(group_results, q);
   }
@@ -191,7 +191,7 @@ class ParallelScanSYCLBase {
             global_mem[global_id] = update;
 	    });
 	  });
-    q.wait();
+    q.wait_and_throw();
 
     // Perform the actual exlcusive scan
     scan_internal(q, m_scratch_space, len);
@@ -213,7 +213,7 @@ class ParallelScanSYCLBase {
 	       global_mem[global_id] = update;
           });
        });
-    q.wait();
+    q.wait_and_throw();
   }
 
  template <typename Functor>

@@ -192,7 +192,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                        });
     });
 
-    q.wait();
+    q.wait_and_throw();
 
     static_assert(ReduceFunctorHasFinal<Functor>::value ==
                   ReduceFunctorHasFinal<FunctorType>::value);
@@ -256,7 +256,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         case sycl::usm::alloc::unknown:
           value_type host_result;
           ValueInit::init(m_functor, &host_result);
-          q.memcpy(result_ptr, &host_result, sizeof(host_result)).wait();
+          q.memcpy(result_ptr, &host_result, sizeof(host_result)).wait_and_throw();
       }
 
       if constexpr (ReduceFunctorHasFinal<FunctorType>::value) {

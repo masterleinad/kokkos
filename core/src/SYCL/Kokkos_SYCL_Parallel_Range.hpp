@@ -71,7 +71,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
         *space.impl_internal_space_instance();
     cl::sycl::queue& q = *instance.m_queue;
 
-    q.wait();
+    q.wait_and_throw();
 
     q.submit([functor, policy](cl::sycl::handler& cgh) {
       cl::sycl::range<1> range(policy.end() - policy.begin());
@@ -87,7 +87,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
       });
     });
 
-    q.wait();
+    q.wait_and_throw();
   }
 
   // Indirectly launch a functor by explicitly creating it in USM shared memory
@@ -232,7 +232,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
         *space.impl_internal_space_instance();
     cl::sycl::queue& q = *instance.m_queue;
 
-    q.wait();
+    q.wait_and_throw();
 
     if (m_policy.m_num_tiles == 0) return;
 
@@ -249,7 +249,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
       });
     });
 
-    q.wait();
+    q.wait_and_throw();
   }
 
   // Indirectly launch a functor by explicitly creating it in USM shared memory
