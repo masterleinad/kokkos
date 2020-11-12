@@ -266,8 +266,12 @@ void impl_testResize() {
             for (size_t i4 = 0; i4 < sizes[4]; ++i4) {
               if (h_view_5d(i0, i1, i2, i3, i4) !=
                   h_view_5d_old(i0, i1, i2, i3, i4)) {
+		      std::cout << "h_view_5d(" <<i0<<", "<<i1<<", "<<i2<<", "<<i3<<", "<<i4<<")="
+			        << h_view_5d(i0, i1, i2, i3, i4) <<"!="
+				<< h_view_5d_old(i0, i1, i2, i3, i4) << "="
+				<< "h_view_5d_old(" <<i0<<", "<<i1<<", "<<i2<<", "<<i3<<", "<<i4<< std::endl;
                 test = false;
-                break;
+                //break;
               }
             }
           }

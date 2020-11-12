@@ -1806,7 +1806,14 @@ struct TestMDRange_4D {
 
       parallel_for(
           range, KOKKOS_LAMBDA(const int i, const int j, const int k,
-                               const int l) { v(i, j, k, l) = 3; });
+                               const int l) { 
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+          static const CONSTANT char FMT[] = "accessing %d %d %d %d\n";
+          sycl::ONEAPI::experimental::printf(FMT, i, j, k, l);
+#endif
+	  v(i, j, k, l) = 3; 
+        });
 
       TestMDRange_4D::HostViewType h_view = Kokkos::create_mirror_view(v);
       Kokkos::deep_copy(h_view, v);

@@ -64,8 +64,9 @@ void test_dispatch() {
     }
   }
 }
-
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, dispatch) { test_dispatch<TEST_EXECSPACE>(); }
+#endif
 #endif
 
 }  // namespace Test

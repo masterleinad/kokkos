@@ -47,8 +47,11 @@
 namespace Test {
 
 TEST(TEST_CATEGORY, mdrange_4d) {
+// FIXME_SYCL requires MDRange parallel_reduce
+#ifndef KOKKOS_ENABLE_SYCL
   TestMDRange_4D<TEST_EXECSPACE>::test_reduce4(100, 10, 10, 10);
-  TestMDRange_4D<TEST_EXECSPACE>::test_for4(100, 10, 10, 10);
+#endif
+  TestMDRange_4D<TEST_EXECSPACE>::test_for4(2, 2, 2, 2);
 }
 
 }  // namespace Test
