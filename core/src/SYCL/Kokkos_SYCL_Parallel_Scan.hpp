@@ -89,6 +89,7 @@ class ParallelScanSYCLBase {
     constexpr size_t wgroup_size = 32;
     auto n_wgroups               = (size + wgroup_size - 1) / wgroup_size;
 
+    // FIXME_SYCL The allocation should be handled by the execution space
     auto deleter = [&q](value_type* ptr) { cl::sycl::free(ptr, q); };
     std::unique_ptr<value_type[], decltype(deleter)> group_results_memory(
         static_cast<pointer_type>(sycl::malloc(sizeof(value_type) * n_wgroups,
@@ -250,6 +251,9 @@ class ParallelScanSYCLBase {
     const auto& q = *(m_policy.space().impl_internal_space_instance()->m_queue);
     const std::size_t len = m_policy.end() - m_policy.begin();
 
+    // FIXME_SYCL The allocation should be handled by the execution space
+    // consider only storing one value per block and recreate initial results in
+    // the end before doing the final pass
     auto deleter = [&q](value_type* ptr) { cl::sycl::free(ptr, q); };
     std::unique_ptr<value_type[], decltype(deleter)> result_memory(
         static_cast<pointer_type>(sycl::malloc(sizeof(value_type) * len, q,
