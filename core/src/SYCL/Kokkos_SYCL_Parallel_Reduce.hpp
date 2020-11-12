@@ -151,8 +151,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       cl::sycl::nd_range<1> range(policy.end() - policy.begin(), 1);
 
       value_type identity{};
-      if constexpr(!std::is_same<ReducerType, InvalidType>::value)
-         m_reducer.init(identity);
+      if constexpr (!std::is_same<ReducerType, InvalidType>::value)
+        m_reducer.init(identity);
 
       const auto reduction = [&]() {
         if constexpr (!std::is_same<ReducerType, InvalidType>::value) {
@@ -256,7 +256,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         case sycl::usm::alloc::unknown:
           value_type host_result;
           ValueInit::init(m_functor, &host_result);
-          q.memcpy(result_ptr, &host_result, sizeof(host_result)).wait_and_throw();
+          q.memcpy(result_ptr, &host_result, sizeof(host_result))
+              .wait_and_throw();
       }
 
       if constexpr (ReduceFunctorHasFinal<FunctorType>::value) {

@@ -68,13 +68,16 @@ template <typename PolicyType, typename Functor>
 struct DeviceIterateTile<2, PolicyType, Functor, void> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_)
       : m_policy(policy_), m_func(f_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type n_global_y, index_type /*n_global_z*/, index_type global_x, index_type global_y,
-                  index_type /*global_z*/, index_type local_x,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type n_global_y,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type global_y, index_type /*global_z*/,
+                  index_type local_x, index_type local_y,
+                  index_type /*local_z*/) const {
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
       for (index_type tile_id1 = global_y; tile_id1 < m_policy.m_tile_end[1];
@@ -134,9 +137,11 @@ struct DeviceIterateTile<2, PolicyType, Functor, Tag> {
       : m_policy(policy_), m_func(f_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type n_global_y, index_type /*n_global_z*/, index_type global_x, index_type global_y,
-                  index_type /*global_z*/, index_type local_x,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type n_global_y,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type global_y, index_type /*global_z*/,
+                  index_type local_x, index_type local_y,
+                  index_type /*local_z*/) const {
     if (PolicyType::inner_direction == PolicyType::Left) {
       // Loop over size maxnumblocks until full range covered
       for (index_type tile_id1 = global_y; tile_id1 < m_policy.m_tile_end[1];
@@ -190,13 +195,15 @@ template <typename PolicyType, typename Functor>
 struct DeviceIterateTile<3, PolicyType, Functor, void> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_)
       : m_policy(policy_), m_func(f_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type n_global_y, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type n_global_x, index_type n_global_y,
+                  index_type n_global_z, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
       for (index_type tile_id2 = global_z; tile_id2 < m_policy.m_tile_end[2];
@@ -274,9 +281,10 @@ struct DeviceIterateTile<3, PolicyType, Functor, Tag> {
       : m_policy(policy_), m_func(f_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type n_global_y, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type n_global_x, index_type n_global_y,
+                  index_type n_global_z, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     if (PolicyType::inner_direction == PolicyType::Left) {
       for (index_type tile_id2 = global_z; tile_id2 < m_policy.m_tile_end[2];
            tile_id2 += n_global_z) {
@@ -347,15 +355,17 @@ template <typename PolicyType, typename Functor>
 struct DeviceIterateTile<4, PolicyType, Functor, void> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_)
       : m_policy(policy_), m_func(f_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type /*n_global_x*/, index_type n_global_y, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type /*n_global_x*/, index_type n_global_y,
+                  index_type n_global_z, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
       const index_type temp0  = m_policy.m_tile_end[0];
@@ -479,9 +489,10 @@ struct DeviceIterateTile<4, PolicyType, Functor, Tag> {
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type /*n_global_x*/, index_type n_global_y, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type /*n_global_x*/, index_type n_global_y,
+                  index_type n_global_z, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     if (PolicyType::inner_direction == PolicyType::Left) {
       const index_type temp0  = m_policy.m_tile_end[0];
       const index_type temp1  = m_policy.m_tile_end[1];
@@ -596,15 +607,17 @@ template <typename PolicyType, typename Functor>
 struct DeviceIterateTile<5, PolicyType, Functor, void> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_)
       : m_policy(policy_), m_func(f_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/,
+                  index_type n_global_z, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
       index_type temp0        = m_policy.m_tile_end[0];
@@ -774,9 +787,10 @@ struct DeviceIterateTile<5, PolicyType, Functor, Tag> {
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/,
+                  index_type n_global_z, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
       index_type temp0        = m_policy.m_tile_end[0];
@@ -940,15 +954,17 @@ template <typename PolicyType, typename Functor>
 struct DeviceIterateTile<6, PolicyType, Functor, void> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& rp_, const Functor& f_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& rp_,
+                                                const Functor& f_)
       : m_policy(rp_), m_func(f_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
       index_type temp0        = m_policy.m_tile_end[0];
@@ -1160,9 +1176,10 @@ struct DeviceIterateTile<6, PolicyType, Functor, Tag> {
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type global_y, index_type global_z,
-                  index_type local_x, index_type local_y,
-                  index_type local_z) const {
+  void exec_range(index_type /*n_global_x*/, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type global_y, index_type global_z, index_type local_x,
+                  index_type local_y, index_type local_z) const {
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
       index_type temp0        = m_policy.m_tile_end[0];
@@ -1422,14 +1439,17 @@ struct DeviceIterateTile<
     typename std::enable_if<!is_array_type<ValueType>::value>::type> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& rp_, const Functor& f_,
-                               ValueType& v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& rp_,
+                                                const Functor& f_,
+                                                ValueType& v_)
       : m_policy(rp_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -1512,9 +1532,11 @@ struct DeviceIterateTile<
       : m_policy(rp_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -1594,14 +1616,17 @@ struct DeviceIterateTile<
     typename std::enable_if<!is_array_type<ValueType>::value>::type> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_,
-                               ValueType& v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_,
+                                                ValueType& v_)
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -1687,9 +1712,11 @@ struct DeviceIterateTile<
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -1769,16 +1796,19 @@ struct DeviceIterateTile<
     typename std::enable_if<!is_array_type<ValueType>::value>::type> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_,
-                               ValueType& v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_,
+                                                ValueType& v_)
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -1863,9 +1893,11 @@ struct DeviceIterateTile<
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -1944,16 +1976,19 @@ struct DeviceIterateTile<
     typename std::enable_if<!is_array_type<ValueType>::value>::type> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_,
-                               ValueType& v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_,
+                                                ValueType& v_)
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2033,16 +2068,19 @@ struct DeviceIterateTile<
                             !is_void<Tag>::value>::type> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_,
-                               ValueType& v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_,
+                                                ValueType& v_)
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2121,16 +2159,19 @@ struct DeviceIterateTile<
     typename std::enable_if<!is_array_type<ValueType>::value>::type> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_,
-                               ValueType& v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_,
+                                                ValueType& v_)
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2210,16 +2251,19 @@ struct DeviceIterateTile<
                             !is_void<Tag>::value>::type> {
   using index_type = typename PolicyType::index_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& rp_, const Functor& f_,
-                               ValueType& v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& rp_,
+                                                const Functor& f_,
+                                                ValueType& v_)
       : m_policy(rp_), m_func(f_), m_v(v_) {}
 
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2300,14 +2344,17 @@ struct DeviceIterateTile<
   using index_type = typename PolicyType::index_type;
   using value_type = typename is_array_type<ValueType>::value_type;
 
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_, const Functor& f_,
-                               value_type* v_)
+  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
+                                                const Functor& f_,
+                                                value_type* v_)
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2393,9 +2440,11 @@ struct DeviceIterateTile<
       : m_policy(rp_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2479,9 +2528,11 @@ struct DeviceIterateTile<
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2572,9 +2623,11 @@ struct DeviceIterateTile<
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2660,9 +2713,11 @@ struct DeviceIterateTile<
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2749,9 +2804,11 @@ struct DeviceIterateTile<
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2839,9 +2896,11 @@ struct DeviceIterateTile<
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2930,9 +2989,11 @@ struct DeviceIterateTile<
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -3020,9 +3081,11 @@ struct DeviceIterateTile<
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -3111,9 +3174,11 @@ struct DeviceIterateTile<
   static constexpr index_type max_blocks = 65535;
 
   KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
-                  index_type /*global_z*/, index_type /*local_x*/,
-                  index_type local_y, index_type /*local_z*/) const {
+  void exec_range(index_type n_global_x, index_type /*n_global_y*/,
+                  index_type /*n_global_z*/, index_type global_x,
+                  index_type /*global_y*/, index_type /*global_z*/,
+                  index_type /*local_x*/, index_type local_y,
+                  index_type /*local_z*/) const {
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset

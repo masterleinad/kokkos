@@ -199,7 +199,8 @@ KOKKOS_IMPL_ABORT_NORETURN KOKKOS_INLINE_FUNCTION void abort(
 #elif !defined(KOKKOS_ENABLE_OPENMPTARGET) && !defined(__SYCL_DEVICE_ONLY__)
   Kokkos::Impl::host_abort(message);
 #else
-  static const __attribute__((opencl_constant)) char FMT[] = "Aborting with message `%s'.\n";
+  static const __attribute__((opencl_constant)) char FMT[] =
+      "Aborting with message `%s'.\n";
   sycl::ONEAPI::experimental::printf(FMT, message);
   (void)message;  // FIXME_OPENMPTARGET, FIXME_SYCL
 #endif

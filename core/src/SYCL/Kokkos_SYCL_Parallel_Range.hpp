@@ -135,7 +135,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
 // ParallelFor
 template <class FunctorType, class... Traits>
 class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
-                  Kokkos::Experimental::SYCL> {
+                                Kokkos::Experimental::SYCL> {
  public:
   using Policy = Kokkos::MDRangePolicy<Traits...>;
 
@@ -151,56 +151,67 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
   ParallelFor()        = delete;
   ParallelFor& operator=(ParallelFor const&) = delete;
 
-  cl::sycl::nd_range<3> compute_ranges () const
-  {
+  cl::sycl::nd_range<3> compute_ranges() const {
     if constexpr (Policy::rank == 2) {
-      cl::sycl::range<3> local_sizes(m_policy.m_tile[0], m_policy.m_tile[1],1);
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0], m_policy.m_tile[1], 1);
       cl::sycl::range<3> global_sizes(m_policy.m_upper[0] - m_policy.m_lower[0],
                                       m_policy.m_upper[1] - m_policy.m_lower[1],
-				      1);
+                                      1);
       return {global_sizes, local_sizes};
-
-    } 
-    if constexpr(Policy::rank == 3) {
-      cl::sycl::range<3> local_sizes(m_policy.m_tile[0], m_policy.m_tile[1], m_policy.m_tile[2]);
-      cl::sycl::range<3> global_sizes(m_policy.m_upper[0] - m_policy.m_lower[0],
-                                      m_policy.m_upper[1] - m_policy.m_lower[1],
-                                      m_policy.m_upper[2] - m_policy.m_lower[2]);
-       return {global_sizes, local_sizes};
     }
-    if constexpr(Policy::rank == 4) {
-      // id0,id1 encoded within first index; id2 to second index; id3 to third index
+    if constexpr (Policy::rank == 3) {
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0], m_policy.m_tile[1],
+                                     m_policy.m_tile[2]);
+      cl::sycl::range<3> global_sizes(
+          m_policy.m_upper[0] - m_policy.m_lower[0],
+          m_policy.m_upper[1] - m_policy.m_lower[1],
+          m_policy.m_upper[2] - m_policy.m_lower[2]);
+      return {global_sizes, local_sizes};
+    }
+    if constexpr (Policy::rank == 4) {
+      // id0,id1 encoded within first index; id2 to second index; id3 to third
+      // index
       cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
                                      m_policy.m_tile[2], m_policy.m_tile[3]);
-      cl::sycl::range<3> global_sizes((m_policy.m_upper[0]-m_policy.m_lower[0])*(m_policy.m_upper[1]-m_policy.m_lower[1]),
+      cl::sycl::range<3> global_sizes(
+          (m_policy.m_upper[0] - m_policy.m_lower[0]) *
+              (m_policy.m_upper[1] - m_policy.m_lower[1]),
           m_policy.m_upper[2] - m_policy.m_lower[2],
           m_policy.m_upper[3] - m_policy.m_lower[3]);
       return {global_sizes, local_sizes};
-    } 
-   if constexpr(Policy::rank == 5) {
-      // id0,id1 encoded within first index; id2,id3 to second index; id4 to third index
+    }
+    if constexpr (Policy::rank == 5) {
+      // id0,id1 encoded within first index; id2,id3 to second index; id4 to
+      // third index
       cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
-                       m_policy.m_tile[2] * m_policy.m_tile[3],
-                       m_policy.m_tile[4]);
+                                     m_policy.m_tile[2] * m_policy.m_tile[3],
+                                     m_policy.m_tile[4]);
       cl::sycl::range<3> global_sizes(
-          (m_policy.m_upper[0] - m_policy.m_lower[0])*(m_policy.m_upper[1] - m_policy.m_lower[1]),
-          (m_policy.m_upper[2] - m_policy.m_lower[2])*(m_policy.m_upper[3] - m_policy.m_lower[3]),
+          (m_policy.m_upper[0] - m_policy.m_lower[0]) *
+              (m_policy.m_upper[1] - m_policy.m_lower[1]),
+          (m_policy.m_upper[2] - m_policy.m_lower[2]) *
+              (m_policy.m_upper[3] - m_policy.m_lower[3]),
           m_policy.m_upper[4] - m_policy.m_lower[4]);
       return {global_sizes, local_sizes};
-    } 
-    if constexpr(Policy::rank == 6) {
-      // id0,id1 encoded within first index; id2,id3 to second index; id4,id5 to third index
-      cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
-                       m_policy.m_tile[2] * m_policy.m_tile[3],
-                       m_policy.m_tile[4] * m_policy.m_tile[5]);
-      cl::sycl::range<3> global_sizes(
-		            (m_policy.m_upper[0] - m_policy.m_lower[0])*(m_policy.m_upper[1] - m_policy.m_lower[1]),
-          (m_policy.m_upper[2] - m_policy.m_lower[2])*(m_policy.m_upper[3] - m_policy.m_lower[3]), 
-          (m_policy.m_upper[4] - m_policy.m_lower[4])*(m_policy.m_upper[5] - m_policy.m_lower[5]));
-      return {global_sizes, local_sizes};
-    } 
-    static_assert(Policy::rank>1 && Policy::rank<7, "Kokkos::MDRange Error: Exceeded rank bounds with SYCL\n");
     }
+    if constexpr (Policy::rank == 6) {
+      // id0,id1 encoded within first index; id2,id3 to second index; id4,id5 to
+      // third index
+      cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
+                                     m_policy.m_tile[2] * m_policy.m_tile[3],
+                                     m_policy.m_tile[4] * m_policy.m_tile[5]);
+      cl::sycl::range<3> global_sizes(
+          (m_policy.m_upper[0] - m_policy.m_lower[0]) *
+              (m_policy.m_upper[1] - m_policy.m_lower[1]),
+          (m_policy.m_upper[2] - m_policy.m_lower[2]) *
+              (m_policy.m_upper[3] - m_policy.m_lower[3]),
+          (m_policy.m_upper[4] - m_policy.m_lower[4]) *
+              (m_policy.m_upper[5] - m_policy.m_lower[5]));
+      return {global_sizes, local_sizes};
+    }
+    static_assert(Policy::rank > 1 && Policy::rank < 7,
+                  "Kokkos::MDRange Error: Exceeded rank bounds with SYCL\n");
+  }
 
   template <typename Functor>
   void sycl_direct_launch(const Functor& functor) const {
@@ -214,34 +225,36 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
 
     if (m_policy.m_num_tiles == 0) return;
 
-    auto &policy = m_policy;
- 
+    auto& policy = m_policy;
+
     q.submit([functor, this, policy](cl::sycl::handler& cgh) {
       const auto range = compute_ranges();
 
       cgh.parallel_for(range, [functor, policy](cl::sycl::nd_item<3> item) {
         const auto local_x =
             static_cast<typename Policy::index_type>(item.get_local_id(0));
-	const auto local_y =
+        const auto local_y =
             static_cast<typename Policy::index_type>(item.get_local_id(1));
-	const auto local_z =
+        const auto local_z =
             static_cast<typename Policy::index_type>(item.get_local_id(2));
-       const auto global_x =
+        const auto global_x =
             static_cast<typename Policy::index_type>(item.get_group(0));
         const auto global_y =
             static_cast<typename Policy::index_type>(item.get_group(1));
         const auto global_z =
             static_cast<typename Policy::index_type>(item.get_group(2));
-	const auto n_global_x =
+        const auto n_global_x =
             static_cast<typename Policy::index_type>(item.get_group_range(0));
         const auto n_global_y =
             static_cast<typename Policy::index_type>(item.get_group_range(1));
         const auto n_global_z =
             static_cast<typename Policy::index_type>(item.get_group_range(2));
-  
-	     Kokkos::Impl::DeviceIterateTile<Policy::rank, Policy, Functor,
-                                    typename Policy::work_tag>(policy, functor)
-        .exec_range(n_global_x, n_global_y, n_global_z, global_x, global_y, global_z, local_x, local_y, local_z);
+
+        Kokkos::Impl::DeviceIterateTile<Policy::rank, Policy, Functor,
+                                        typename Policy::work_tag>(policy,
+                                                                   functor)
+            .exec_range(n_global_x, n_global_y, n_global_z, global_x, global_y,
+                        global_z, local_x, local_y, local_z);
       });
     });
 
@@ -287,6 +300,5 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
   ParallelFor(const FunctorType& arg_functor, const Policy& arg_policy)
       : m_functor(arg_functor), m_policy(arg_policy) {}
 };
-
 
 #endif  // KOKKOS_SYCL_PARALLEL_RANGE_HPP_

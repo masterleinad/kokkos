@@ -81,7 +81,7 @@ struct TestScan {
                  static_cast<long>(answer));
         }
 #else
-	(void) fail;
+        (void)fail;
 #endif
       }
     }

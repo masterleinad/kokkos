@@ -163,12 +163,13 @@ struct TestRange {
   void operator()(const VerifyInitTag &, const int i) const {
     if (i != m_flags(i)) {
 #ifdef __SYCL_DEVICE_ONLY__
-  #define CONSTANT __attribute__((opencl_constant))
-    using sycl::ONEAPI::experimental::printf;
+#define CONSTANT __attribute__((opencl_constant))
+      using sycl::ONEAPI::experimental::printf;
 #else
-  #define CONSTANT
+#define CONSTANT
 #endif
-      static const CONSTANT char FMT1[] = "TestRange::test_for_error at %d != %d\n";
+      static const CONSTANT char FMT1[] =
+          "TestRange::test_for_error at %d != %d\n";
       printf(FMT1, i, m_flags(i));
     }
   }
@@ -181,13 +182,14 @@ struct TestRange {
   KOKKOS_INLINE_FUNCTION
   void operator()(const VerifyResetTag &, const int i) const {
     if (2 * i != m_flags(i)) {
-	    #ifdef __SYCL_DEVICE_ONLY__
-  #define CONSTANT __attribute__((opencl_constant))
-    using sycl::ONEAPI::experimental::printf;
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+      using sycl::ONEAPI::experimental::printf;
 #else
-  #define CONSTANT
+#define CONSTANT
 #endif
-      static const CONSTANT char FMT1[] = "TestRange::test_for_error at %d != %d\n";
+      static const CONSTANT char FMT1[] =
+          "TestRange::test_for_error at %d != %d\n";
       printf(FMT1, i, m_flags(i));
     }
   }
@@ -200,14 +202,15 @@ struct TestRange {
   KOKKOS_INLINE_FUNCTION
   void operator()(const VerifyOffsetTag &, const int i) const {
     if (i + offset != m_flags(i)) {
-  #ifdef __SYCL_DEVICE_ONLY__
-  #define CONSTANT __attribute__((opencl_constant))
-    using sycl::ONEAPI::experimental::printf;
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+      using sycl::ONEAPI::experimental::printf;
 #else
-  #define CONSTANT
+#define CONSTANT
 #endif
-      static const CONSTANT char FMT1[] = "TestRange::test_for_error at %d != %d\n";
-      printf(FMT1, i+offset, m_flags(i));
+      static const CONSTANT char FMT1[] =
+          "TestRange::test_for_error at %d != %d\n";
+      printf(FMT1, i + offset, m_flags(i));
     }
   }
 
@@ -289,18 +292,19 @@ struct TestRange {
     update += m_flags(i);
 
 #ifdef __SYCL_DEVICE_ONLY__
-  #define CONSTANT __attribute__((opencl_constant))
+#define CONSTANT __attribute__((opencl_constant))
     using sycl::ONEAPI::experimental::printf;
 #else
-  #define CONSTANT
+#define CONSTANT
 #endif
 
     static const CONSTANT char FMT1[] = "TestRange::test_scan (%d,%d,%d)\n";
-        printf(FMT1, update, i, m_flags(i));
+    printf(FMT1, update, i, m_flags(i));
 
     if (final) {
       if (update != (i * (i + 1)) / 2) {
-        static const CONSTANT char FMT[] = "TestRange::test_scan error (%d,%d) : %d != %d\n";
+        static const CONSTANT char FMT[] =
+            "TestRange::test_scan error (%d,%d) : %d != %d\n";
         printf(FMT, i, m_flags(i), (i * (i + 1)) / 2, update);
       }
       result_view(i) = update;
@@ -469,7 +473,8 @@ TEST(TEST_CATEGORY, range_scan) {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(0);
     f.test_scan();
   }
-#if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_SYCL)
+#if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && \
+    !defined(KOKKOS_ENABLE_SYCL)
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(0);
     f.test_dynamic_policy();
@@ -484,7 +489,8 @@ TEST(TEST_CATEGORY, range_scan) {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(3);
     f.test_scan();
   }
-#if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_SYCL)
+#if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && \
+    !defined(KOKKOS_ENABLE_SYCL)
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(3);
     f.test_dynamic_policy();
@@ -499,7 +505,8 @@ TEST(TEST_CATEGORY, range_scan) {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(1001);
     f.test_scan();
   }
-#if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_SYCL)
+#if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) && \
+    !defined(KOKKOS_ENABLE_SYCL)
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(1001);
     f.test_dynamic_policy();
