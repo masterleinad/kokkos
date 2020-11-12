@@ -124,10 +124,12 @@ struct TestComplexConstruction {
   }
 };
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, complex_construction) {
   TestComplexConstruction<TEST_EXECSPACE> test;
   test.testit();
 }
+#endif
 
 // Test Math FUnction
 

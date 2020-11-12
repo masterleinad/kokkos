@@ -441,6 +441,7 @@ if(Kokkos_ENABLE_SYCL)
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Atomics.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_AtomicViews.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_BlockSizeDeduction.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Complex.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Crs.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_DeepCopyAlignment.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_LocalDeepCopy.cpp
