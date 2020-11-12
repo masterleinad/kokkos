@@ -160,7 +160,7 @@ class ParallelScanSYCLBase {
     if (n_wgroups > 1) scan_internal(q, functor, group_results, n_wgroups);
     q.wait();
 
-    q.submit([&, *this](sycl::handler& cgh) {
+    q.submit([&](sycl::handler& cgh) {
       cgh.parallel_for(sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
                        [=](sycl::nd_item<1> item) {
                          const auto global_id = item.get_global_linear_id();
@@ -184,21 +184,21 @@ class ParallelScanSYCLBase {
     const std::size_t len = m_policy.end() - m_policy.begin();
 
     // Initialize global memory
-    q.submit([&, *this](sycl::handler& cgh) {
+    q.submit([&](sycl::handler& cgh) {
       auto global_mem = m_scratch_space;
-      cgh.parallel_for(
-          sycl::range<1>(len), [this, global_mem, functor](sycl::item<1> item) {
-            const typename Policy::index_type id =
-                static_cast<typename Policy::index_type>(item.get_id()) +
-                m_policy.begin();
-            value_type update{};
-            ValueInit::init(functor, &update);
-            if constexpr (std::is_same<WorkTag, void>::value)
-              functor(id, update, false);
-            else
-              functor(WorkTag(), id, update, false);
-            ValueOps::copy(functor, &global_mem[id], &update);
-          });
+      auto policy     = m_policy;
+      cgh.parallel_for(sycl::range<1>(len), [=](sycl::item<1> item) {
+        const typename Policy::index_type id =
+            static_cast<typename Policy::index_type>(item.get_id()) +
+            policy.begin();
+        value_type update{};
+        ValueInit::init(functor, &update);
+        if constexpr (std::is_same<WorkTag, void>::value)
+          functor(id, update, false);
+        else
+          functor(WorkTag(), id, update, false);
+        ValueOps::copy(functor, &global_mem[id], &update);
+      });
     });
     q.wait();
 
@@ -206,7 +206,7 @@ class ParallelScanSYCLBase {
     scan_internal(q, functor, m_scratch_space, len);
 
     // Write results to global memory
-    q.submit([&, *this](sycl::handler& cgh) {
+    q.submit([&](sycl::handler& cgh) {
       auto global_mem = m_scratch_space;
       cgh.parallel_for(sycl::range<1>(len), [=](sycl::item<1> item) {
         auto global_id = item.get_id();
