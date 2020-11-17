@@ -247,7 +247,7 @@ class ParallelScanSYCLBase {
 
  public:
   template <typename PostFunctor>
-  void impl_execute(PostFunctor&& post_functor) {
+  void impl_execute(const PostFunctor& post_functor) {
     const auto& q = *(m_policy.space().impl_internal_space_instance()->m_queue);
     const std::size_t len = m_policy.end() - m_policy.begin();
 
