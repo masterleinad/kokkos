@@ -95,6 +95,7 @@ void unlock_address_host_space(void* ptr);
 }  // namespace Kokkos
 
 namespace Kokkos {
+
 /// \class HostSpace
 /// \brief Memory management for host memory.
 ///
@@ -166,9 +167,6 @@ class HostSpace {
                   const size_t arg_logical_size = 0) const;
 
  private:
-  template <class, class, class, class>
-  friend class Kokkos::Experimental::LogicalMemorySpace;
-
   void* impl_allocate(const char* arg_label, const size_t arg_alloc_size,
                       const size_t arg_logical_size = 0,
                       const Kokkos::Tools::SpaceHandle =

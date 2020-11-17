@@ -56,7 +56,6 @@
 #include <KokkosCore_Config_DeclareBackend.hpp>
 
 #include <Kokkos_AnonymousSpace.hpp>
-#include <Kokkos_LogicalSpaces.hpp>
 #include <Kokkos_Pair.hpp>
 #include <Kokkos_MemoryPool.hpp>
 #include <Kokkos_Array.hpp>
