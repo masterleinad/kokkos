@@ -47,9 +47,9 @@
 namespace Test {
 
 TEST(TEST_CATEGORY, mdrange_3d) {
-#ifndef KOKKOS_ENABLE_SYCL
   TestMDRange_3D<TEST_EXECSPACE>::test_for3(1, 10, 100);
   TestMDRange_3D<TEST_EXECSPACE>::test_for3(100, 10, 100);
+#ifndef KOKKOS_ENABLE_SYCL
   // FIXME_SYCL requires MDRange parallel_reduce
   TestMDRange_3D<TEST_EXECSPACE>::test_reduce3(1, 10, 100);
   TestMDRange_3D<TEST_EXECSPACE>::test_reduce3(100, 10, 100);

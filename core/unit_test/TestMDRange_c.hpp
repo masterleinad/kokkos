@@ -50,8 +50,8 @@ TEST(TEST_CATEGORY, mdrange_2d) {
 // FIXME_SYCL requires MDRange parallel_reduce
 #ifndef KOKKOS_ENABLE_SYCL
   TestMDRange_2D<TEST_EXECSPACE>::test_reduce2(100, 100);
-  TestMDRange_2D<TEST_EXECSPACE>::test_for2(100, 100);
 #endif
+  TestMDRange_2D<TEST_EXECSPACE>::test_for2(100, 100);
 }
 
   // FIXME_SYCL requires MDRange parallel_reduce
