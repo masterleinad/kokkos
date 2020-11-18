@@ -44,7 +44,7 @@ SET(KOKKOS_OPENMPTARGET_FEATURE_LEVEL 12)
 SET(KOKKOS_OPENMPTARGET_NAME Experimental::OpenMPTarget)
 SET(KOKKOS_SERIAL_FEATURE_LEVEL 999)
 SET(KOKKOS_SERIAL_NAME Serial)
-SET(KOKKOS_SYCL_FEATURE_LEVEL 9)
+SET(KOKKOS_SYCL_FEATURE_LEVEL 5)
 SET(KOKKOS_SYCL_NAME Experimental::SYCL)
 SET(KOKKOS_THREADS_FEATURE_LEVEL 999)
 SET(KOKKOS_THREADS_NAME Threads)
@@ -75,11 +75,42 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     # file. That then exceeded the shell command line max length.
     set(${Tag}_SOURCES1)
     foreach(Name
+        AtomicOperations_int
+        AtomicOperations_unsignedint
+        AtomicOperations_longint
+        AtomicOperations_unsignedlongint
+        AtomicOperations_longlongint
+        AtomicOperations_double
+        AtomicOperations_float
+        AtomicOperations_complexdouble
+        AtomicOperations_complexfloat
+        AtomicViews
+        Atomics
+        BlockSizeDeduction
+        Concepts
+        Complex
+        Crs
+        DeepCopyAlignment
+        FunctorAnalysis
+        Init
+        LocalDeepCopy
+        MDRange_a
         MDRange_b
         MDRange_c
         MDRange_d
         MDRange_e
         MDRange_f
+        Other
+        RangePolicy
+        RangePolicyRequire
+        Reductions
+        Reducers_a
+        Reducers_b
+        Reducers_c
+        Reducers_d
+        Reductions_DeviceView
+        Scan
+        SharedAlloc
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -94,6 +125,12 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
 
     SET(${Tag}_SOURCES2)
     foreach(Name
+      TeamBasic
+      TeamReductionScan
+      TeamScratch
+      TeamTeamSize
+      TeamVectorRange
+      UniqueToken
       ViewAPI_a
       ViewAPI_b
       ViewAPI_c
@@ -106,6 +143,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
       ViewOfClass
       WorkGraph
       View_64bit
+      ViewResize
       )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -126,6 +164,20 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     endif()
     foreach(Name
       SubView_a
+      SubView_b
+      SubView_c01
+      SubView_c02
+      SubView_c03
+      SubView_c04
+      SubView_c05
+      SubView_c06
+      SubView_c07
+      SubView_c08
+      SubView_c09
+      SubView_c10
+      SubView_c11
+      SubView_c12
+      SubView_c13
       )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -389,17 +441,25 @@ if(Kokkos_ENABLE_SYCL)
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Atomics.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_AtomicViews.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_BlockSizeDeduction.cpp
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Complex.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Crs.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_DeepCopyAlignment.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_LocalDeepCopy.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_MDRange_a.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_MDRange_b.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_MDRange_c.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_MDRange_d.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_MDRange_e.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_MDRange_f.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Other.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_RangePolicy.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_RangePolicyRequire.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reductions.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reducers_a.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reducers_b.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reducers_c.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reducers_d.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Reductions_DeviceView.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_Scan.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_SharedAlloc.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_SubView_c04.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_SubView_c05.cpp
