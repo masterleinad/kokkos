@@ -356,8 +356,20 @@ struct DeviceIterateTile<4, PolicyType, Functor, void> {
   void exec_range(index_type /*n_global_x*/, index_type n_global_y, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
                   index_type local_x, index_type local_y,
                   index_type local_z) const {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+    static const CONSTANT char FMT[] = "0ngy %d, ngz %d, gx %d, gy %d, gz %d, lx %d, ly %d, lz %d\n";
+    sycl::ONEAPI::experimental::printf(FMT, n_global_y, n_global_z, global_x, global_y, global_z, local_x, local_y, local_z);
+#endif
+
     // LL
     if (PolicyType::inner_direction == PolicyType::Left) {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+      static const CONSTANT char FMT[] = "Using LL\n";
+      sycl::ONEAPI::experimental::printf(FMT);
+#endif
+
       const index_type temp0  = m_policy.m_tile_end[0];
       const index_type temp1  = m_policy.m_tile_end[1];
       const index_type numbl0 = (temp0 <= max_blocks ? temp0 : max_blocks);
@@ -410,6 +422,12 @@ struct DeviceIterateTile<4, PolicyType, Functor, void> {
     }
     // LR
     else {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+      static const CONSTANT char FMT[] = "Using LR\n";
+      sycl::ONEAPI::experimental::printf(FMT);
+#endif
+
       const index_type temp0  = m_policy.m_tile_end[0];
       const index_type temp1  = m_policy.m_tile_end[1];
       const index_type numbl1 = (temp1 <= max_blocks ? temp1 : max_blocks);
@@ -450,7 +468,25 @@ struct DeviceIterateTile<4, PolicyType, Functor, void> {
                         static_cast<index_type>(m_policy.m_lower[3]);
                     if (offset_3 < m_policy.m_upper[3] &&
                         local_z < m_policy.m_tile[3]) {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+                      static const CONSTANT char FMT[] = "0ngy %d, ngz %d, gx %d, gy %d, gz %d, lx %d, ly %d, lz %d access %d %d %d %d\n";
+                      sycl::ONEAPI::experimental::printf(FMT, n_global_y, n_global_z, global_x, global_y, global_z, local_x, local_y, local_z, offset_0, offset_1, offset_2, offset_3);
+#endif
                       m_func(offset_0, offset_1, offset_2, offset_3);
+		      [](index_type i, index_type j, index_type k, index_type l)
+		      {
+		      #ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+          static const CONSTANT char FMT[] = "1accessing %d %d %d %d\n";
+          sycl::ONEAPI::experimental::printf(FMT, i, j, k, l);
+#else
+          (void) i;
+          (void) j;
+          (void) k;
+          (void) l;
+#endif
+		      }(offset_0, offset_1, offset_2, offset_3);
                     }
                   }
                 }
@@ -482,6 +518,12 @@ struct DeviceIterateTile<4, PolicyType, Functor, Tag> {
   void exec_range(index_type /*n_global_x*/, index_type n_global_y, index_type n_global_z, index_type global_x, index_type global_y, index_type global_z,
                   index_type local_x, index_type local_y,
                   index_type local_z) const {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+    static const CONSTANT char FMT[] = "1ngy %d, ngz %d, gx %d, gy %d, gz %d, lx %d, ly %d, lz %d\n";
+    sycl::ONEAPI::experimental::printf(FMT, n_global_y, n_global_z, global_x, global_y, global_z, local_x, local_y, local_z);
+#endif
+
     if (PolicyType::inner_direction == PolicyType::Left) {
       const index_type temp0  = m_policy.m_tile_end[0];
       const index_type temp1  = m_policy.m_tile_end[1];
@@ -1779,6 +1821,12 @@ struct DeviceIterateTile<
   void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
                   index_type /*global_z*/, index_type /*local_x*/,
                   index_type local_y, index_type /*local_z*/) const {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+    static const CONSTANT char FMT[] = "2ngx %d, gx %d, ly %d\n";
+    sycl::ONEAPI::experimental::printf(FMT, n_global_x, global_x, local_y);
+#endif
+
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -1866,6 +1914,12 @@ struct DeviceIterateTile<
   void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
                   index_type /*global_z*/, index_type /*local_x*/,
                   index_type local_y, index_type /*local_z*/) const {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+    static const CONSTANT char FMT[] = "3ngx %d,gx %d, ly %d\n";
+    sycl::ONEAPI::experimental::printf(FMT, n_global_x, global_x, local_y);
+#endif
+
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2663,6 +2717,11 @@ struct DeviceIterateTile<
   void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
                   index_type /*global_z*/, index_type /*local_x*/,
                   index_type local_y, index_type /*local_z*/) const {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+    static const CONSTANT char FMT[] = "4ngx %d, gx %d, ly %d\n";
+    sycl::ONEAPI::experimental::printf(FMT, n_global_x, global_x, local_y);
+#endif
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
@@ -2752,6 +2811,11 @@ struct DeviceIterateTile<
   void exec_range(index_type n_global_x, index_type /*n_global_y*/, index_type /*n_global_z*/, index_type global_x, index_type /*global_y*/,
                   index_type /*global_z*/, index_type /*local_x*/,
                   index_type local_y, index_type /*local_z*/) const {
+#ifdef __SYCL_DEVICE_ONLY__
+#define CONSTANT __attribute__((opencl_constant))
+    static const CONSTANT char FMT[] = "5ngx %d, gx %d, ly %d\n";
+    sycl::ONEAPI::experimental::printf(FMT, n_global_x, global_x, local_y);
+#endif
     if (global_x < m_policy.m_num_tiles &&
         local_y < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset

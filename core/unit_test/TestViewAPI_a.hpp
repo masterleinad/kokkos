@@ -46,8 +46,8 @@
 
 namespace Test {
 
-TEST(TEST_CATEGORY, view_api_a) {
-  TestViewAPI<double, TEST_EXECSPACE>::run_test();
-}
+//TEST(TEST_CATEGORY, view_api_a) {
+//  TestViewAPI<double, TEST_EXECSPACE>::run_test();
+//}
 
 }  // namespace Test

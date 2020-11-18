@@ -1809,8 +1809,13 @@ struct TestMDRange_4D {
                                const int l) { 
 #ifdef __SYCL_DEVICE_ONLY__
 #define CONSTANT __attribute__((opencl_constant))
-          static const CONSTANT char FMT[] = "accessing %d %d %d %d\n";
+          static const CONSTANT char FMT[] = "2accessing %d %d %d %d\n";
           sycl::ONEAPI::experimental::printf(FMT, i, j, k, l);
+#else
+	  (void) i;
+	  (void) j;
+	  (void) k;
+	  (void) l;
 #endif
 	  v(i, j, k, l) = 3; 
         });
