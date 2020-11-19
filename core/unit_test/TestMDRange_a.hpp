@@ -51,7 +51,7 @@ TEST(TEST_CATEGORY, mdrange_5d) {
 #ifndef KOKKOS_ENABLE_SYCL
   TestMDRange_5D<TEST_EXECSPACE>::test_reduce5(100, 10, 10, 10, 5);
 #endif
-  TestMDRange_5D<TEST_EXECSPACE>::test_for5(100, 10, 10, 10, 5);
+  TestMDRange_5D<TEST_EXECSPACE>::test_for5(100, 2, 2, 2, 2);
 }
 
 }  // namespace Test

@@ -165,16 +165,16 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
       cl::sycl::range<3> local_sizes(m_policy.m_tile[0], m_policy.m_tile[1], m_policy.m_tile[2]);
       cl::sycl::range<3> global_sizes((m_policy.m_upper[0] - m_policy.m_lower[0]+local_sizes[0]-1)/local_sizes[0]*local_sizes[0],
                                       (m_policy.m_upper[1] - m_policy.m_lower[1]+local_sizes[1]-1)/local_sizes[1]*local_sizes[1],
-                                      (m_policy.m_upper[2] - m_policy.m_lower[2]+local_sizes[1]-1)/local_sizes[1]*local_sizes[1]);
+                                      (m_policy.m_upper[2] - m_policy.m_lower[2]+local_sizes[2]-1)/local_sizes[2]*local_sizes[2]);
        return {global_sizes, local_sizes};
     }
     if constexpr(Policy::rank == 4) {
       // id0,id1 encoded within first index; id2 to second index; id3 to third index
       cl::sycl::range<3> local_sizes(m_policy.m_tile[0] * m_policy.m_tile[1],
                                      m_policy.m_tile[2], m_policy.m_tile[3]);
-      cl::sycl::range<3> global_sizes(((m_policy.m_upper[0]-m_policy.m_lower[0])*(m_policy.m_upper[1]-m_policy.m_lower[1])+local_sizes[0]-1)/local_sizes[0]*local_sizes[0],
-          (m_policy.m_upper[2] - m_policy.m_lower[2]+local_sizes[1]-1)/local_sizes[1]*local_sizes[1],
-          (m_policy.m_upper[3] - m_policy.m_lower[3]+local_sizes[1]-1)/local_sizes[1]*local_sizes[1]);
+      cl::sycl::range<3> global_sizes(m_policy.m_tile_end[0]*m_policy.m_tile[0]*m_policy.m_tile_end[1]*m_policy.m_tile[1],
+          m_policy.m_tile_end[2]*m_policy.m_tile[2],
+          m_policy.m_tile_end[3]*m_policy.m_tile[3]);
       return {global_sizes, local_sizes};
     }
    if constexpr(Policy::rank == 5) {
@@ -183,9 +183,11 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
                        m_policy.m_tile[2] * m_policy.m_tile[3],
                        m_policy.m_tile[4]);
       cl::sycl::range<3> global_sizes(
-          ((m_policy.m_upper[0] - m_policy.m_lower[0])*(m_policy.m_upper[1] - m_policy.m_lower[1])+local_sizes[0]-1)/local_sizes[0]*local_sizes[0],
-          ((m_policy.m_upper[2] - m_policy.m_lower[2])*(m_policy.m_upper[3] - m_policy.m_lower[3])+local_sizes[1]-1)/local_sizes[1]*local_sizes[1],
-          (m_policy.m_upper[4] - m_policy.m_lower[4]+local_sizes[1]-1)/local_sizes[1]*local_sizes[1]);
+          m_policy.m_tile_end[0]*m_policy.m_tile[0]*m_policy.m_tile_end[1]*m_policy.m_tile[1],
+          m_policy.m_tile_end[2]*m_policy.m_tile[2]*m_policy.m_tile_end[3]*m_policy.m_tile[3],
+          m_policy.m_tile_end[4]*m_policy.m_tile[4]);
+      std::cout << global_sizes[0] << ' ' << global_sizes[1] << ' ' << global_sizes[2] << ' ' 
+	        << local_sizes[0]  << ' ' << local_sizes[1]  << ' ' << local_sizes[2]  << std::endl;
       return {global_sizes, local_sizes};
     }
     if constexpr(Policy::rank == 6) {
@@ -196,7 +198,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
       cl::sycl::range<3> global_sizes(
                             ((m_policy.m_upper[0] - m_policy.m_lower[0])*(m_policy.m_upper[1] - m_policy.m_lower[1])+local_sizes[0]-1)/local_sizes[0]*local_sizes[0],
           ((m_policy.m_upper[2] - m_policy.m_lower[2])*(m_policy.m_upper[3] - m_policy.m_lower[3])+local_sizes[1]-1)/local_sizes[1]*local_sizes[1],
-          ((m_policy.m_upper[4] - m_policy.m_lower[4])*(m_policy.m_upper[5] - m_policy.m_lower[5])+local_sizes[1]-1)/local_sizes[1]*local_sizes[1]);
+          ((m_policy.m_upper[4] - m_policy.m_lower[4])*(m_policy.m_upper[5] - m_policy.m_lower[5])+local_sizes[2]-1)/local_sizes[2]*local_sizes[2]);
       return {global_sizes, local_sizes};
     }
     static_assert(Policy::rank>1 && Policy::rank<7, "Kokkos::MDRange Error: Exceeded rank bounds with SYCL\n");
