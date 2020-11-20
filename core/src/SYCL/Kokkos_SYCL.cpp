@@ -93,7 +93,7 @@ bool SYCL::impl_is_initialized() {
 
 void SYCL::impl_finalize() { Impl::SYCLInternal::singleton().finalize(); }
 
-void SYCL::fence() const { m_space_instance->m_queue->wait(); }
+void SYCL::fence() const { m_space_instance->m_queue->wait_and_throw(); }
 
 int SYCL::sycl_device() const {
   return impl_internal_space_instance()->m_syclDev;

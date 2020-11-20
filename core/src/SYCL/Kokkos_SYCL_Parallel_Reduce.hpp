@@ -208,7 +208,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                          });
       });
 
-      q.wait();
+      q.wait_and_throw();
     }
 
     if constexpr (ReduceFunctorHasFinal<Functor>::value)

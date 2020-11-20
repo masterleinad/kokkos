@@ -65,10 +65,11 @@ void USM_memcpy(Kokkos::Experimental::Impl::SYCLInternal& space, void* dst,
 }
 
 void USM_memcpy(void* dst, const void* src, size_t n) {
-  Kokkos::Experimental::Impl::SYCLInternal::singleton().m_queue->wait();
+  Kokkos::Experimental::Impl::SYCLInternal::singleton()
+      .m_queue->wait_and_throw();
   USM_memcpy(*Kokkos::Experimental::Impl::SYCLInternal::singleton().m_queue,
              dst, src, n)
-      .wait();
+      .wait_and_throw();
 }
 }  // namespace
 
