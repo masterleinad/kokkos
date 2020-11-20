@@ -367,6 +367,10 @@ struct MDRangePolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
         && !std::is_same<typename traits::execution_space,
                          Kokkos::Experimental::HIP>::value
 #endif
+#if defined(KOKKOS_ENABLE_SYCL)
+        && !std::is_same<typename traits::execution_space,
+                         Kokkos::Experimental::SYCL>::value
+#endif
     ) {
       index_type span;
       for (int i = 0; i < rank; ++i) {
@@ -385,8 +389,9 @@ struct MDRangePolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
         m_prod_tile_dims *= m_tile[i];
       }
     }
-#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)
-    else  // Cuda or HIP
+#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP) || \
+    defined(KOKKOS_ENABLE_SYCL)
+    else  // Cuda, HIP or SYCL
     {
       index_type span;
       int increment  = 1;
