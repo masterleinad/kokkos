@@ -63,8 +63,10 @@ struct ParallelForFunctor {
       : _data(data), _value(value) {}
 
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int i) const { _data[i] = (i + 1) * _value; 
-	  Kokkos::abort("Testing SYCL abort");}
+  void operator()(const int i) const {
+    _data[i] = (i + 1) * _value;
+    Kokkos::abort("Testing SYCL abort");
+  }
 };
 
 template <class ExecSpace>
