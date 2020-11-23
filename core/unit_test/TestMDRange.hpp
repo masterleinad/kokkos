@@ -1412,8 +1412,8 @@ struct TestMDRange_3D {
       using point_type = typename range_type::point_type;
 
 #ifndef KOKKOS_ENABLE_SYCL
-  range_type range(point_type{{0, 0, 0}}, point_type{{N0, N1, N2}},
-                       til=e_type{{8, 8, 8}});
+      range_type range(point_type{{0, 0, 0}}, point_type{{N0, N1, N2}},
+                       til = e_type{{8, 8, 8}});
 #else
       range_type range(point_type{{0, 0, 0}}, point_type{{N0, N1, N2}},
                        tile_type{{8, 8, 4}});
@@ -3047,7 +3047,7 @@ struct TestMDRange_6D {
       int s4 = 1;
       int s5 = 1;
 #ifndef KOKKOS_ENABLE_SYCL
-       // tile dims 3,3,3,3,3,3 more than cuda can handle with debugging
+      // tile dims 3,3,3,3,3,3 more than cuda can handle with debugging
       range_type range(point_type{{s0, s1, s2, s3, s4, s5}},
                        point_type{{N0, N1, N2, N3, N4, N5}},
                        tile_type{{3, 3, 3, 3, 2, 3}});
