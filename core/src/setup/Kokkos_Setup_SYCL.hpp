@@ -42,25 +42,18 @@
 //@HEADER
 */
 
-#ifndef KOKKOS_SYCL_ABORT_HPP
-#define KOKKOS_SYCL_ABORT_HPP
+#ifndef KOKKOS_SETUP_SYCL_HPP_
+#define KOKKOS_SETUP_SYCL_HPP_
 
-#include <Kokkos_Macros.hpp>
-#if defined(KOKKOS_ENABLE_SYCL)
+#include <CL/sycl.hpp>
 
-namespace Kokkos {
-namespace Impl {
-
-inline void sycl_abort(char const *msg) {
-#ifdef KOKKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
-  (void)msg;
-#else
-  KOKKOS_PRINTF("Aborting with message %s.\n", msg);
+#ifdef __SYCL_DEVICE_ONLY__
+#define KOKKOS_PRINTF(format, ...) \
+do\
+{ \
+  static const __attribute__((opencl_constant)) char fmt[] = (format); \
+  sycl::ONEAPI::experimental::printf(fmt, __VA_ARGS__); \
+} while(0)
 #endif
-}
 
-}  // namespace Impl
-}  // namespace Kokkos
-
-#endif
 #endif

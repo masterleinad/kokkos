@@ -382,6 +382,11 @@
 #define KOKKOS_IMPL_DEVICE_FUNCTION
 #endif
 
+#if !defined(KOKKOS_PRINTF)
+#define KOKKOS_PRINTF(format, ...) \
+  printf((format), __VA_ARGS__)
+#endif
+
 //----------------------------------------------------------------------------
 // Define final version of functions. This is so that clang tidy can find these
 // macros more easily

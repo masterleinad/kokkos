@@ -152,3 +152,8 @@ IF (KOKKOS_ENABLE_HIP)
 ENDIF()
 
 KOKKOS_DEVICE_OPTION(SYCL OFF DEVICE "Whether to build SYCL backend")
+
+## HIP has extra setup requirements, turn on Kokkos_Setup_HIP.hpp in macros
+IF (KOKKOS_ENABLE_SYCL)
+  LIST(APPEND DEVICE_SETUP_LIST SYCL)
+ENDIF()
