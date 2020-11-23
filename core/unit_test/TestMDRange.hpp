@@ -1413,7 +1413,7 @@ struct TestMDRange_3D {
 
 #ifndef KOKKOS_ENABLE_SYCL
       range_type range(point_type{{0, 0, 0}}, point_type{{N0, N1, N2}},
-                       til = e_type{{8, 8, 8}});
+                       tile_type{{8, 8, 8}});
 #else
       range_type range(point_type{{0, 0, 0}}, point_type{{N0, N1, N2}},
                        tile_type{{8, 8, 4}});
