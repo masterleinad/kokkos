@@ -164,7 +164,7 @@ struct TestRange {
     if (i != m_flags(i)) {
       // FIXME_SYCL printf needs a workaround
 #ifndef __SYCL_DEVICE_ONLY__
-      printf("TestRange::test_for error at %d != %d\n", i, m_flags(i));
+      printf("TestRange::test_for_error at %d != %d\n", i, m_flags(i));
 #endif
     }
   }
@@ -179,7 +179,7 @@ struct TestRange {
     if (2 * i != m_flags(i)) {
       // FIXME_SYCL printf needs a workaround
 #ifndef __SYCL_DEVICE_ONLY__
-      printf("TestRange::test_for error at %d != %d\n", i, m_flags(i));
+      printf("TestRange::test_for_error at %d != %d\n", i, m_flags(i));
 #endif
     }
   }
@@ -194,7 +194,7 @@ struct TestRange {
     if (i + offset != m_flags(i)) {
       // FIXME_SYCL printf needs a workaround
 #ifndef __SYCL_DEVICE_ONLY__
-      printf("TestRange::test_for error at %d != %d\n", i + offset, m_flags(i));
+      printf("TestRange::test_for_error at %d != %d\n", i + offset, m_flags(i));
 #endif
     }
   }
