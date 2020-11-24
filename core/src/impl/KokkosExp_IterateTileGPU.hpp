@@ -67,28 +67,31 @@ struct EmulateCUDADim3 {
 #endif
 
 template <class Tag, class Functor, class... Args>
-__device__ __inline__ typename std::enable_if<std::is_void<Tag>::value>::type
-_tag_invoke(Functor const& f, Args&&... args) {
+KOKKOS_IMPL_DEVICE_FUNCTION
+    typename std::enable_if<std::is_void<Tag>::value>::type
+    _tag_invoke(Functor const& f, Args&&... args) {
   f((Args &&) args...);
 }
 
 template <class Tag, class Functor, class... Args>
-__device__ __inline__ typename std::enable_if<!std::is_void<Tag>::value>::type
-_tag_invoke(Functor const& f, Args&&... args) {
+KOKKOS_IMPL_DEVICE_FUNCTION
+    typename std::enable_if<!std::is_void<Tag>::value>::type
+    _tag_invoke(Functor const& f, Args&&... args) {
   f(Tag{}, (Args &&) args...);
 }
 
 template <class Tag, class Functor, class T, size_t N, size_t... Idxs,
           class... Args>
-__device__ __inline__ void _tag_invoke_array_helper(
+KOKKOS_IMPL_DEVICE_FUNCTION void _tag_invoke_array_helper(
     Functor const& f, T (&vals)[N], integer_sequence<size_t, Idxs...>,
     Args&&... args) {
   _tag_invoke<Tag>(f, vals[Idxs]..., (Args &&) args...);
 }
 
 template <class Tag, class Functor, class T, size_t N, class... Args>
-__device__ __inline__ void _tag_invoke_array(Functor const& f, T (&vals)[N],
-                                             Args&&... args) {
+KOKKOS_IMPL_DEVICE_FUNCTION void _tag_invoke_array(Functor const& f,
+                                                   T (&vals)[N],
+                                                   Args&&... args) {
   _tag_invoke_array_helper<Tag>(f, vals, make_index_sequence<N>{},
                                 (Args &&) args...);
 }
