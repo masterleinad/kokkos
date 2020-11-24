@@ -353,7 +353,8 @@ struct DeviceIterateTile<4, PolicyType, Functor, Tag> {
                         static_cast<index_type>(m_policy.m_lower[0]);
                     if (offset_0 < m_policy.m_upper[0] &&
                         thr_id0 < m_policy.m_tile[0]) {
-                      Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1, offset_2, offset_3);
+                      Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1,
+                                             offset_2, offset_3);
                     }
                   }
                 }
@@ -409,7 +410,8 @@ struct DeviceIterateTile<4, PolicyType, Functor, Tag> {
                     if (offset_3 < m_policy.m_upper[3] &&
                         static_cast<index_type>(threadIdx.z) <
                             m_policy.m_tile[3]) {
-                      Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1, offset_2, offset_3);
+                      Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1,
+                                             offset_2, offset_3);
                     }
                   }
                 }
@@ -525,8 +527,8 @@ struct DeviceIterateTile<5, PolicyType, Functor, Tag> {
                             static_cast<index_type>(m_policy.m_lower[0]);
                         if (offset_0 < m_policy.m_upper[0] &&
                             thr_id0 < m_policy.m_tile[0]) {
-                          Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1, offset_2, offset_3,
-                                 offset_4);
+                          Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1,
+                                                 offset_2, offset_3, offset_4);
                         }
                       }
                     }
@@ -607,8 +609,8 @@ struct DeviceIterateTile<5, PolicyType, Functor, Tag> {
                         if (offset_4 < m_policy.m_upper[4] &&
                             static_cast<index_type>(threadIdx.z) <
                                 m_policy.m_tile[4]) {
-                          Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1, offset_2, offset_3,
-                                 offset_4);
+                          Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1,
+                                                 offset_2, offset_3, offset_4);
                         }
                       }
                     }
@@ -745,8 +747,9 @@ struct DeviceIterateTile<6, PolicyType, Functor, Tag> {
                                 static_cast<index_type>(m_policy.m_lower[0]);
                             if (offset_0 < m_policy.m_upper[0] &&
                                 thr_id0 < m_policy.m_tile[0]) {
-                              Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1, offset_2,
-                                     offset_3, offset_4, offset_5);
+                              Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1,
+                                                     offset_2, offset_3,
+                                                     offset_4, offset_5);
                             }
                           }
                         }
@@ -847,8 +850,9 @@ struct DeviceIterateTile<6, PolicyType, Functor, Tag> {
                                 static_cast<index_type>(m_policy.m_lower[5]);
                             if (offset_5 < m_policy.m_upper[5] &&
                                 thr_id5 < m_policy.m_tile[5]) {
-                              Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1, offset_2,
-                                     offset_3, offset_4, offset_5);
+                              Impl::_tag_invoke<Tag>(m_func, offset_0, offset_1,
+                                                     offset_2, offset_3,
+                                                     offset_4, offset_5);
                             }
                           }
                         }
@@ -897,9 +901,11 @@ struct is_array_type<T[]> : std::true_type {
 };
 
 // ------------------------------------------------------------------ //
-template <int N, typename PolicyType, typename Functor, typename Tag,
-          typename ValueType, typename Enable = void>
-struct DeviceIterateTile;
+
+template <typename T>
+using value_type_storage_t =
+    typename std::conditional<is_array_type<T>::value, std::decay<T>,
+                              std::add_lvalue_reference<T> >::type::type;
 
 // ParallelReduce iteration pattern
 // Scalar reductions
@@ -925,18 +931,15 @@ struct DeviceIterateTile;
 //    if offset withinin range bounds AND local offset within tile bounds, call
 //    functor
 
-// ValueType = T
-// Rank 2
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    2, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<!is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
+template <int N, typename PolicyType, typename Functor, typename Tag,
+          typename ValueType, typename Enable = void>
+struct DeviceIterateTile {
+  using index_type         = typename PolicyType::index_type;
+  using value_type_storage = value_type_storage_t<ValueType>;
 
 #ifdef KOKKOS_ENABLE_SYCL
   KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, ValueType& v_,
+      const PolicyType& policy_, const Functor& f_, value_type_storage v_,
       const EmulateCUDADim3<index_type> gridDim_,
       const EmulateCUDADim3<index_type> blockIdx_,
       const EmulateCUDADim3<index_type> threadIdx_)
@@ -949,7 +952,7 @@ struct DeviceIterateTile<
 #else
   KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
                                                 const Functor& f_,
-                                                ValueType& v_)
+                                                value_type_storage v_)
       : m_policy(policy_), m_func(f_), m_v(v_) {}
 #endif
 
@@ -984,11 +987,11 @@ struct DeviceIterateTile<
             m_offset[i] += m_local_offset[i];
             if (!(m_offset[i] < m_policy.m_upper[i] &&
                   m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
+              in_bounds = false;
             }
           }
           if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_v);
+            Impl::_tag_invoke_array<Tag>(m_func, m_offset, m_v);
           }
         }
         // LR
@@ -1009,11 +1012,11 @@ struct DeviceIterateTile<
             m_offset[i] += m_local_offset[i];
             if (!(m_offset[i] < m_policy.m_upper[i] &&
                   m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
+              in_bounds = false;
             }
           }
           if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_v);
+            Impl::_tag_invoke_array<Tag>(m_func, m_offset, m_v);
           }
         }
       }
@@ -1023,958 +1026,7 @@ struct DeviceIterateTile<
  private:
   const PolicyType& m_policy;
   const Functor& m_func;
-  ValueType& m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 3
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    3, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<!is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, ValueType& v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                ValueType& v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] =
-                (thrd_idx %
-                 m_policy.m_tile[i]);  // Move this to first computation,
-                                       // add to m_offset right away
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  ValueType& m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 4
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    4, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<!is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, ValueType& v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                ValueType& v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  static constexpr index_type max_blocks = 65535;
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  ValueType& m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 5
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    5, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<!is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, ValueType& v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                ValueType& v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  static constexpr index_type max_blocks = 65535;
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  ValueType& m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 6
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    6, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<!is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, ValueType& v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                ValueType& v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  static constexpr index_type max_blocks = 65535;
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_offset[5], m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_offset[5], m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  ValueType& m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// ValueType = T[], T*
-// Rank 2
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    2, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-  using value_type = typename is_array_type<ValueType>::value_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, value_type* v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                value_type* v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_v);
-          }
-        }
-      }  // end for loop over num_tiles - product of tiles in each direction
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  value_type* m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 3
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    3, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-  using value_type = typename is_array_type<ValueType>::value_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, value_type* v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                value_type* v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  value_type* m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 4
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    4, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-  using value_type = typename is_array_type<ValueType>::value_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, value_type* v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                value_type* v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  static constexpr index_type max_blocks = 65535;
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with (index_type)threadIdx_y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  value_type* m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 5
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    5, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-  using value_type = typename is_array_type<ValueType>::value_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, value_type* v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                value_type* v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  static constexpr index_type max_blocks = 65535;
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  value_type* m_v;
-#ifdef KOKKOS_ENABLE_SYCL
-  const EmulateCUDADim3<index_type> gridDim;
-  const EmulateCUDADim3<index_type> blockIdx;
-  const EmulateCUDADim3<index_type> threadIdx;
-#endif
-};
-
-// Rank 6
-template <typename PolicyType, typename Functor, typename Tag,
-          typename ValueType>
-struct DeviceIterateTile<
-    6, PolicyType, Functor, Tag, ValueType,
-    typename std::enable_if<is_array_type<ValueType>::value>::type> {
-  using index_type = typename PolicyType::index_type;
-  using value_type = typename is_array_type<ValueType>::value_type;
-
-#ifdef KOKKOS_ENABLE_SYCL
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(
-      const PolicyType& policy_, const Functor& f_, value_type* v_,
-      const EmulateCUDADim3<index_type> gridDim_,
-      const EmulateCUDADim3<index_type> blockIdx_,
-      const EmulateCUDADim3<index_type> threadIdx_)
-      : m_policy(policy_),
-        m_func(f_),
-        m_v(v_),
-        gridDim(gridDim_),
-        blockIdx(blockIdx_),
-        threadIdx(threadIdx_) {}
-#else
-  KOKKOS_IMPL_DEVICE_FUNCTION DeviceIterateTile(const PolicyType& policy_,
-                                                const Functor& f_,
-                                                value_type* v_)
-      : m_policy(policy_), m_func(f_), m_v(v_) {}
-#endif
-
-  static constexpr index_type max_blocks = 65535;
-
-  KOKKOS_IMPL_DEVICE_FUNCTION
-  void exec_range() const {
-    if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
-        static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
-      index_type m_offset[PolicyType::rank];  // tile starting global id offset
-      index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
-
-      for (index_type tileidx = static_cast<index_type>(blockIdx.x);
-           tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
-        index_type tile_idx =
-            tileidx;  // temp because tile_idx will be modified while
-                      // determining tile starting point offsets
-        index_type thrd_idx = static_cast<index_type>(threadIdx.y);
-        bool in_bounds      = true;
-
-        // LL
-        if (PolicyType::inner_direction == PolicyType::Left) {
-          for (int i = 0; i < PolicyType::rank; ++i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_offset[5], m_v);
-          }
-        }
-        // LR
-        else {
-          for (int i = PolicyType::rank - 1; i >= 0; --i) {
-            m_offset[i] =
-                (tile_idx % m_policy.m_tile_end[i]) * m_policy.m_tile[i] +
-                m_policy.m_lower[i];
-            tile_idx /= m_policy.m_tile_end[i];
-
-            // tile-local indices identified with threadIdx.y
-            m_local_offset[i] = (thrd_idx % m_policy.m_tile[i]);
-            thrd_idx /= m_policy.m_tile[i];
-
-            m_offset[i] += m_local_offset[i];
-            if (!(m_offset[i] < m_policy.m_upper[i] &&
-                  m_local_offset[i] < m_policy.m_tile[i])) {
-              in_bounds &= false;
-            }
-          }
-          if (in_bounds) {
-            Impl::_tag_invoke<Tag>(m_func, m_offset[0], m_offset[1], m_offset[2], m_offset[3],
-                   m_offset[4], m_offset[5], m_v);
-          }
-        }
-      }
-    }
-  }  // end exec_range
-
- private:
-  const PolicyType& m_policy;
-  const Functor& m_func;
-  value_type* m_v;
+  value_type_storage m_v;
 #ifdef KOKKOS_ENABLE_SYCL
   const EmulateCUDADim3<index_type> gridDim;
   const EmulateCUDADim3<index_type> blockIdx;
