@@ -55,7 +55,7 @@ inline void sycl_abort(char const *msg) {
 #ifdef KOKKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
   (void)msg;
 #else
-  KOKKOS_PRINTF("Aborting with message %s.\n", msg);
+  KOKKOS_IMPL_PRINTF("Aborting with message %s.\n", msg);
 #endif
 }
 

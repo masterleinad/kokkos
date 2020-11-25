@@ -48,10 +48,10 @@
 #include <CL/sycl.hpp>
 
 #ifdef __SYCL_DEVICE_ONLY__
-#define KOKKOS_PRINTF(format, ...)                                       \
+#define KOKKOS_IMPL_PRINTF(format, ...)                                  \
   do {                                                                   \
     static const __attribute__((opencl_constant)) char fmt[] = (format); \
-    sycl::ONEAPI::experimental::printf(fmt, __VA_ARGS__);                \
+    sycl::ONEAPI::experimental::printf(fmt, ##__VA_ARGS__);              \
   } while (0)
 #endif
 

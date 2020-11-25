@@ -382,8 +382,8 @@
 #define KOKKOS_IMPL_DEVICE_FUNCTION
 #endif
 
-#if !defined(KOKKOS_PRINTF)
-#define KOKKOS_PRINTF(format, ...) printf((format), __VA_ARGS__)
+#if !defined(KOKKOS_IMPL_PRINTF)
+#define KOKKOS_IMPL_PRINTF(format, ...) printf((format), ##__VA_ARGS__)
 #endif
 
 //----------------------------------------------------------------------------
