@@ -252,7 +252,7 @@ SharedAllocationRecord<Kokkos::Experimental::SYCLDeviceUSMSpace, void>::
   strncpy(header.m_label, label.c_str(),
           SharedAllocationHeader::maximum_label_length);
   // Set last element zero, in case c_str is too long
-  header.m_label[SharedAllocationHeader::maximum_label_length - 1] = (char)0;
+  header.m_label[SharedAllocationHeader::maximum_label_length - 1] = '\0';
 
   memcpy(m_alloc_ptr, &header, sizeof(SharedAllocationHeader));
 }
@@ -281,7 +281,7 @@ SharedAllocationRecord<Kokkos::Experimental::SYCLSharedUSMSpace, void>::
 
   // Set last element zero, in case c_str is too long
   RecordBase::m_alloc_ptr
-      ->m_label[SharedAllocationHeader::maximum_label_length - 1] = (char)0;
+      ->m_label[SharedAllocationHeader::maximum_label_length - 1] = '\0';
 }
 
 }  // namespace Impl
