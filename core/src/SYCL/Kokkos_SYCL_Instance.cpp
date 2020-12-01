@@ -97,13 +97,16 @@ void SYCLInternal::initialize(const sycl::device& d) {
   const bool ok_dev  = true;
   if (ok_init && ok_dev) {
     auto exception_handler = [](sycl::exception_list exceptions) {
+      bool asynchronous_error = false;
       for (std::exception_ptr const& e : exceptions) {
         try {
           std::rethrow_exception(e);
         } catch (sycl::exception const& e) {
-          Kokkos::abort(e.what());
+          fprintf(stderr, "%s\n", e.what());
         }
       }
+      if (asynchronous_error)
+        Kokkos::abort("There was an asynchronous SYCL error\n");
     };
     m_queue = std::make_unique<sycl::queue>(d, exception_handler);
     std::cout << SYCL::SYCLDevice(d) << '\n';
