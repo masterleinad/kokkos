@@ -390,17 +390,21 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     cl::sycl::queue& q = *instance.m_queue;
 
     q.submit([&](sycl::handler& cgh) {
-      cgh.parallel_for_work_group(
-          sycl::range<1>(m_league_size), sycl::range<1>(m_team_size),
-          [this, functor](sycl::group<1> g) {
-            const member_type team_member(nullptr, m_shmem_begin, m_shmem_size,
-                                          nullptr, m_scratch_size[1], g);
+      auto team_lambda = [this, functor](sycl::group<1> g) {
+      // FIXME_SYCL Add scratch memory
+        const member_type team_member(nullptr, m_shmem_begin, m_shmem_size,
+                                      nullptr, m_scratch_size[1], g);
 
-            if constexpr (std::is_same<work_tag, void>::value)
-              functor(team_member);
-            else
-              functor(work_tag(), team_member);
-          });
+        if constexpr (std::is_same<work_tag, void>::value)
+          functor(team_member);
+        else
+          functor(work_tag(), team_member);
+      };
+      if (m_team_size > 0)
+        cgh.parallel_for_work_group(sycl::range<1>(m_league_size),
+                                    sycl::range<1>(m_team_size), team_lambda);
+      else
+        cgh.parallel_for_work_group(sycl::range<1>(m_league_size), team_lambda);
     });
     q.wait();
   }
