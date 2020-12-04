@@ -73,8 +73,10 @@ struct Hierarchical_ForLoop_A {
           Kokkos::parallel_for(
               Kokkos::TeamThreadRange(team, v.extent(1)), [=](const int m) {
                 for (int i = startDim1;
-                     i < (startDim1 + (int)(sX / ls) + modDim1); ++i)
+                     i < (startDim1 + (int)(sX / ls) + modDim1); ++i) {
                   v(i, m) = i * v.extent(1) + m;
+                  // KOKKOS_IMPL_PRINTF("acessing %d/%d %d/%d\n", i, m, sX, sY);
+                }
               });
         });
 
