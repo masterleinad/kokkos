@@ -71,7 +71,7 @@ struct HierarchicalBasics {
     Kokkos::parallel_for(
         "Teams", pol, KOKKOS_LAMBDA(const team_t &team) {
     // FIXME_SYCL Can't ask for team_rank
-#ifndef KOKKOS_ENABLES_SYCL
+#ifndef KOKKOS_ENABLE_SYCL
           const int tR = team.team_rank();
 #endif
           const int tS = team.team_size();
