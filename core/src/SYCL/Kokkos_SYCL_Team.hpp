@@ -133,6 +133,8 @@ class SYCLTeamMember {
     // sycl::barrier(group);
   }
 
+  KOKKOS_INLINE_FUNCTION sycl::group<1> group() const { return m_group; }
+
   //--------------------------------------------------------------------------
 
   template <class ValueType>
@@ -313,25 +315,27 @@ struct TeamVectorRangeBoundariesStruct<iType, SYCLTeamMember> {
 template <typename iType>
 struct ThreadVectorRangeBoundariesStruct<iType, SYCLTeamMember> {
   using index_type = iType;
+  const SYCLTeamMember& member;
   const index_type start;
   const index_type end;
 
   KOKKOS_INLINE_FUNCTION
-  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember, index_type count)
-      : start(static_cast<index_type>(0)), end(count) {}
+  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember& thread,
+                                    index_type count)
+      : member(thread), start(static_cast<index_type>(0)), end(count) {}
+
+  /*  KOKKOS_INLINE_FUNCTION
+    ThreadVectorRangeBoundariesStruct(index_type count)
+        : member(thread_), start(static_cast<index_type>(0)), end(count) {}*/
 
   KOKKOS_INLINE_FUNCTION
-  ThreadVectorRangeBoundariesStruct(index_type count)
-      : start(static_cast<index_type>(0)), end(count) {}
+  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember& thread,
+                                    index_type arg_begin, index_type arg_end)
+      : member(thread), start(arg_begin), end(arg_end) {}
 
-  KOKKOS_INLINE_FUNCTION
-  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember, index_type arg_begin,
-                                    index_type arg_end)
-      : start(arg_begin), end(arg_end) {}
-
-  KOKKOS_INLINE_FUNCTION
-  ThreadVectorRangeBoundariesStruct(index_type arg_begin, index_type arg_end)
-      : start(arg_begin), end(arg_end) {}
+  /*  KOKKOS_INLINE_FUNCTION
+    ThreadVectorRangeBoundariesStruct(index_type arg_begin, index_type arg_end)
+        : start(arg_begin), end(arg_end) {}*/
 };
 
 }  // namespace Impl
@@ -411,10 +415,13 @@ Impl::VectorSingleStruct<Impl::SYCLTeamMember> PerThread(
 template <typename iType, class Closure>
 KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::TeamThreadRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
-    /*loop_boundaries*/,
-    const Closure& /*closure*/) {
-  // FIXME_SYCL
-  Kokkos::abort("Not implemented!");
+        loop_boundaries,
+    const Closure& closure) {
+  loop_boundaries.member.group().parallel_for_work_item(
+      sycl::range<1>(loop_boundaries.end - loop_boundaries.start),
+      [=](sycl::h_item<1> item) {
+        closure(item.get_local()[0] + loop_boundaries.start);
+      });
 }
 
 //----------------------------------------------------------------------------
@@ -505,10 +512,15 @@ KOKKOS_INLINE_FUNCTION void parallel_scan(
 template <typename iType, class Closure>
 KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::TeamVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
-    /*loop_boundaries*/,
-    const Closure& /*closure*/) {
-  // FIXME_SYCL
-  Kokkos::abort("Not implemented!");
+        loop_boundaries,
+    const Closure& closure) {
+  loop_boundaries.member.group().parallel_for_work_item(
+      sycl::range<1>(loop_boundaries.end - loop_boundaries.start),
+      [=](sycl::h_item<1> item) {
+        closure(item.get_local()[0] + loop_boundaries.start);
+        // KOKKOS_IMPL_PRINTF("global %zu, local %zu\n",
+        // item.get_global_id()[0], item.get_local()[0]);
+      });
 }
 
 template <typename iType, class Closure, class ReducerType>
@@ -543,10 +555,13 @@ KOKKOS_INLINE_FUNCTION
 template <typename iType, class Closure>
 KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
-    /*loop_boundaries*/,
-    const Closure& /*closure*/) {
-  // FIXME_SYCL
-  Kokkos::abort("Not implemented!");
+        loop_boundaries,
+    const Closure& closure) {
+  loop_boundaries.member.group().parallel_for_work_item(
+      sycl::range<1>(loop_boundaries.end - loop_boundaries.start),
+      [=](sycl::h_item<1> item) {
+        closure(item.get_local()[0] + loop_boundaries.start);
+      });
 }
 
 //----------------------------------------------------------------------------
