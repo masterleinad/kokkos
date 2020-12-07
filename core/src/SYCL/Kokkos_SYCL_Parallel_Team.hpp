@@ -94,10 +94,10 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
   }
 
   template <typename FunctorType>
-  int team_size_max(FunctorType const& /*f*/, ParallelForTag const&) const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-    return 0;
+  int team_size_max(FunctorType const& f, ParallelForTag const&) const {
+    using closure_type =
+        Impl::ParallelFor<FunctorType, TeamPolicy<Properties...>>;
+    return internal_team_size_max<closure_type>(f);
   }
 
   template <class FunctorType>
@@ -339,9 +339,7 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
 
   template <class ClosureType, class FunctorType>
   int internal_team_size_max(const FunctorType& /*f*/) const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-    return 0;
+    return m_space.impl_internal_space_instance()->m_maxThreadsPerSM;
   }
 
   template <class ClosureType, class FunctorType>

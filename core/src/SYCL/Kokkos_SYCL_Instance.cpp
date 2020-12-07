@@ -99,6 +99,9 @@ void SYCLInternal::initialize(const cl::sycl::device& d) {
     m_queue = std::make_unique<cl::sycl::queue>(d);
     std::cout << SYCL::SYCLDevice(d) << '\n';
     m_indirectKernel.emplace(IndirectKernelAllocator(*m_queue));
+
+    m_maxThreadsPerSM =
+        d.template get_info<cl::sycl::info::device::max_work_group_size>();
   } else {
     std::ostringstream msg;
     msg << "Kokkos::Experimental::SYCL::initialize(...) FAILED";
