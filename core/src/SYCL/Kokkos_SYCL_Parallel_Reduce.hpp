@@ -221,7 +221,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
                              Kokkos::Experimental::SYCLDeviceUSMSpace>(
           space, m_result_ptr, result_ptr, sizeof(*m_result_ptr));
-    q.wait();
+    space.fence();
 
     sycl::free(result_ptr, q);
   }
