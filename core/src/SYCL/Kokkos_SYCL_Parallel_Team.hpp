@@ -390,13 +390,13 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     cl::sycl::queue& q = *instance.m_queue;
 
     q.submit([&](sycl::handler& cgh) {
-      const auto shmem_begin = m_shmem_begin;
-      const auto shmem_size = m_shmem_size;
+      const auto shmem_begin  = m_shmem_begin;
+      const auto shmem_size   = m_shmem_size;
       const auto scratch_size = m_scratch_size[1];
-      auto team_lambda = [=](sycl::group<1> g) {
+      auto team_lambda        = [=](sycl::group<1> g) {
         // FIXME_SYCL Add scratch memory
-        const member_type team_member(nullptr, shmem_begin, shmem_size,
-                                      nullptr, scratch_size, g);
+        const member_type team_member(nullptr, shmem_begin, shmem_size, nullptr,
+                                      scratch_size, g);
 
         if constexpr (std::is_same<work_tag, void>::value)
           functor(team_member);
