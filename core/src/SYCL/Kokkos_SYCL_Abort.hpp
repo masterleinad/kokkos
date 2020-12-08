@@ -54,6 +54,9 @@ namespace Kokkos {
 namespace Impl {
 
 inline void sycl_abort(char const *msg) {
+#ifdef KOKKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
+  (void)msg;
+#else
 #ifdef __SYCL_DEVICE_ONLY__
   static const __attribute__((opencl_constant)) char format[] =
       "Aborting with message `%s'.\n";
@@ -62,6 +65,7 @@ inline void sycl_abort(char const *msg) {
   static const char format[] = "Aborting with message `%s'.\n";
 #endif
   printf(format, msg);
+#endif
 }
 
 }  // namespace Impl
