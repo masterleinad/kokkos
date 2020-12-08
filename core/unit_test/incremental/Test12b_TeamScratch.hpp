@@ -104,10 +104,10 @@ struct TeamScratch {
 };
 
 TEST(TEST_CATEGORY, IncrTest_12b_TeamScratch) {
-  TeamScratch<TEST_EXECSPACE> test;
+/*  TeamScratch<TEST_EXECSPACE> test;
   test.run(1, 4, 4);
   test.run(4, 7, 10);
-  test.run(14, 277, 321);
+  test.run(14, 277, 321);*/
 }
 
 }  // namespace Test
