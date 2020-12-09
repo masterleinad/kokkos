@@ -387,7 +387,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     const Kokkos::Experimental::SYCL& space = policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
-    cl::sycl::queue& q = *instance.m_queue;
+    sycl::queue& q = *instance.m_queue;
 
     q.submit([&](sycl::handler& cgh) {
       const auto shmem_begin  = m_shmem_begin;
