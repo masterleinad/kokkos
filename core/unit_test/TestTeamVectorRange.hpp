@@ -244,8 +244,10 @@ struct functor_teamvector_for {
     shared_int values         = shared_int(team.team_shmem(), shmemSize);
 
     if (values.data() == nullptr || values.extent(0) < shmemSize) {
+#ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
+#endif
     } else {
       // Initialize shared memory.
       Kokkos::parallel_for(Kokkos::TeamVectorRange(team, 131),

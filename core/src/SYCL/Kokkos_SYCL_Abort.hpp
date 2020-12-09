@@ -66,6 +66,7 @@ inline void sycl_abort(char const *msg) {
 #endif
   printf(format, msg);
 #endif
+  std::abort();
 }
 
 }  // namespace Impl

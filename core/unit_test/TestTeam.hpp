@@ -87,9 +87,11 @@ struct TestTeamPolicy {
         member.team_rank() + member.team_size() * member.league_rank();
 
     if (tid != m_flags(member.team_rank(), member.league_rank())) {
+#ifndef KOKKOS_ENABLE_SYCL
       printf("TestTeamPolicy member(%d,%d) error %d != %d\n",
              member.league_rank(), member.team_rank(), tid,
              m_flags(member.team_rank(), member.league_rank()));
+#endif
     }
   }
 

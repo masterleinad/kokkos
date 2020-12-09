@@ -76,9 +76,11 @@ struct functor_team_for {
     const size_type shmemSize = team.team_size() * 13;
     shared_int values         = shared_int(team.team_shmem(), shmemSize);
 
-    if (values.data() == nullptr || values.extent(0) < shmemSize) {
+    if (values.data() == nullptr || static_cast<size_type>(values.extent(0)) < shmemSize) {
+#ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
+#endif
     } else {
       // Initialize shared memory.
       values(team.team_rank()) = 0;
@@ -281,9 +283,11 @@ struct functor_team_vector_for {
     const size_type shmemSize = team.team_size() * 13;
     shared_int values         = shared_int(team.team_shmem(), shmemSize);
 
-    if (values.data() == nullptr || values.extent(0) < shmemSize) {
+    if (values.data() == nullptr || static_cast<size_type>(values.extent(0)) < shmemSize) {
+#ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
+#endif
     } else {
       team.team_barrier();
 
@@ -460,8 +464,10 @@ struct functor_vec_single {
         [&](int /*i*/, Scalar &val) { val += value; }, value2);
 
     if (value2 != (value * Scalar(nEnd - nStart))) {
+#ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED vector_single broadcast %i %i %f %f\n", team.league_rank(),
              team.team_rank(), (double)value2, (double)value);
+#endif
 
       flag() = 1;
     }
@@ -491,8 +497,10 @@ struct functor_vec_for {
 
     if (values.data() == nullptr ||
         values.extent(0) < (unsigned)team.team_size() * 13) {
+#ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate memory of size %i\n",
              static_cast<int>(team.team_size() * 13));
+#endif
       flag() = 1;
     } else {
       Kokkos::parallel_for(Kokkos::ThreadVectorRange(team, 13), [&](int i) {
