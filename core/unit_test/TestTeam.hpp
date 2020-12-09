@@ -138,14 +138,14 @@ struct TestTeamPolicy {
     using policy_type_init =
         Kokkos::TeamPolicy<ScheduleType, ExecSpace, VerifyInitTag>;
 
-    const int team_size = policy_type(league_size, 1)
+    /*const int team_size = policy_type(league_size, 1)
                               .team_size_max(functor, Kokkos::ParallelForTag());
     const int team_size_init =
         policy_type_init(league_size, 1)
-            .team_size_max(functor, Kokkos::ParallelForTag());
+            .team_size_max(functor, Kokkos::ParallelForTag());*/
 
-    Kokkos::parallel_for(policy_type(league_size, team_size), functor);
-    Kokkos::parallel_for(policy_type_init(league_size, team_size_init),
+    Kokkos::parallel_for(policy_type(league_size, Kokkos::AUTO), functor);
+    Kokkos::parallel_for(policy_type_init(league_size, Kokkos::AUTO),
                          functor);
 
     test_small_league_size();

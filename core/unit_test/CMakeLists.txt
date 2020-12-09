@@ -195,7 +195,9 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
       list(APPEND ${Tag}_SOURCES2 ${file})
     endforeach()
 
-    SET(${Tag}_SOURCES ${${Tag}_SOURCES1} ${${Tag}_SOURCES2})
+    SET(${Tag}_SOURCES 
+	    #${${Tag}_SOURCES1} 
+	    ${${Tag}_SOURCES2})
   endif()
 endforeach()
 
@@ -479,8 +481,8 @@ if(Kokkos_ENABLE_SYCL)
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamReductionScan.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamScan.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamScratch.cpp
-       #${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamTeamSize.cpp
-       #${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamVectorRange.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamTeamSize.cpp
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamVectorRange.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_UniqueToken.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_WorkGraph.cpp
   )
