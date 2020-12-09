@@ -65,6 +65,8 @@ TEST(TEST_CATEGORY, team_for) {
       1000);
 }
 
+// FIXME_SYCL team reduction and broadcast not yet implemented
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_reduce) {
   TestTeamPolicy<TEST_EXECSPACE,
                  Kokkos::Schedule<Kokkos::Static> >::test_reduce(0);
@@ -216,6 +218,7 @@ TEST(TEST_CATEGORY, team_broadcast_double) {
       }
   }
 }
+#endif
 
 }  // namespace Test
 
