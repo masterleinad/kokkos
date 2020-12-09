@@ -193,10 +193,11 @@ class SYCLTeamMember {
    *  non-deterministic.
    */
   template <typename Type>
-  KOKKOS_INLINE_FUNCTION Type team_scan(const Type& /*value*/,
+  KOKKOS_INLINE_FUNCTION Type team_scan(const Type& value,
                                         Type* const /*global_accum*/) const {
     // FIXME_SYCL
     Kokkos::abort("Not implemented!");
+    return value;
   }
 
   /** \brief  Intra-team exclusive prefix sum with team_rank() ordering.
