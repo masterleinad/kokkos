@@ -407,7 +407,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
       else
         cgh.parallel_for_work_group(sycl::range<1>(m_league_size), team_lambda);
     });
-    q.wait();
+    space.fence();
   }
 
   // Indirectly launch a functor by explicitly creating it in USM shared memory
