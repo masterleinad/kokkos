@@ -128,9 +128,8 @@ class SYCLTeamMember {
     return m_group.get_local_range(0);
   }
   KOKKOS_INLINE_FUNCTION void team_barrier() const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-    // sycl::barrier(group);
+    // FIXME_SYCL This should be sycl::barrier(group); in SYCL2020
+    m_group.mem_fence<sycl::access::mode::read_write>();
   }
 
   KOKKOS_INLINE_FUNCTION sycl::group<1> group() const { return m_group; }
