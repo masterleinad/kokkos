@@ -69,22 +69,6 @@ struct SYCLJoinFunctor {
 };
 
 /**\brief  Team member_type passed to TeamPolicy or TeamTask closures.
- *
- *  SYCL thread blocks for team closures are dimensioned as:
- *    blockDim.x == number of "vector lanes" per "thread"
- *    blockDim.y == number of "threads" per team
- *    blockDim.z == number of teams in a block
- *  where
- *    A set of teams exactly fill a warp OR a team is the whole block
- *      ( 0 == WarpSize % ( blockDim.x * blockDim.y ) )
- *      OR
- *      ( 1 == blockDim.z )
-
- *  Thus when 1 < blockDim.z the team is warp-synchronous
- *  and __syncthreads should not be called in team collectives.
- *
- *  When multiple teams are mapped onto a single block then the
- *  total available shared memory must be partitioned among teams.
  */
 class SYCLTeamMember {
  public:
@@ -152,18 +136,6 @@ class SYCLTeamMember {
 
   //--------------------------------------------------------------------------
   /**\brief  Reduction across a team
-   *
-   *  Mapping of teams onto blocks:
-   *    blockDim.x  is "vector lanes"
-   *    blockDim.y  is team "threads"
-   *    blockDim.z  is number of teams per block
-   *
-   *  Requires:
-   *    blockDim.x is power two
-   *    blockDim.x <= SYCLTraits::WarpSize
-   *    ( 0 == SYCLTraits::WarpSize % ( blockDim.x * blockDim.y )
-   *      OR
-   *    ( 1 == blockDim.z )
    */
   template <typename ReducerType>
   KOKKOS_INLINE_FUNCTION
@@ -324,18 +296,10 @@ struct ThreadVectorRangeBoundariesStruct<iType, SYCLTeamMember> {
                                     index_type count)
       : member(thread), start(static_cast<index_type>(0)), end(count) {}
 
-  /*  KOKKOS_INLINE_FUNCTION
-    ThreadVectorRangeBoundariesStruct(index_type count)
-        : member(thread_), start(static_cast<index_type>(0)), end(count) {}*/
-
   KOKKOS_INLINE_FUNCTION
   ThreadVectorRangeBoundariesStruct(const SYCLTeamMember& thread,
                                     index_type arg_begin, index_type arg_end)
       : member(thread), start(arg_begin), end(arg_end) {}
-
-  /*  KOKKOS_INLINE_FUNCTION
-    ThreadVectorRangeBoundariesStruct(index_type arg_begin, index_type arg_end)
-        : start(arg_begin), end(arg_end) {}*/
 };
 
 }  // namespace Impl
@@ -410,7 +374,7 @@ Impl::VectorSingleStruct<Impl::SYCLTeamMember> PerThread(
  *
  *  Executes closure(iType i) for each i=[0..N).
  *
- * The range [0..N) is mapped to all threads of the the calling thread team.
+ * The range [0..N) is mapped to all threads of the calling thread team.
  */
 template <typename iType, class Closure>
 KOKKOS_INLINE_FUNCTION void parallel_for(
@@ -518,8 +482,6 @@ KOKKOS_INLINE_FUNCTION void parallel_for(
       sycl::range<1>(loop_boundaries.end - loop_boundaries.start),
       [=](sycl::h_item<1> item) {
         closure(item.get_local()[0] + loop_boundaries.start);
-        // KOKKOS_IMPL_PRINTF("global %zu, local %zu\n",
-        // item.get_global_id()[0], item.get_local()[0]);
       });
 }
 
@@ -550,7 +512,7 @@ KOKKOS_INLINE_FUNCTION
  *
  *  Executes closure(iType i) for each i=[0..N)
  *
- * The range [0..N) is mapped to all vector lanes of the the calling thread.
+ * The range [0..N) is mapped to all vector lanes of the calling thread.
  */
 template <typename iType, class Closure>
 KOKKOS_INLINE_FUNCTION void parallel_for(
@@ -666,6 +628,6 @@ KOKKOS_INLINE_FUNCTION void single(
 
 }  // namespace Kokkos
 
-#endif /* defined( __SYCLCC__ ) */
+#endif
 
 #endif /* #ifndef KOKKOS_SYCL_TEAM_HPP */

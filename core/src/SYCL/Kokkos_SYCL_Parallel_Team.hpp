@@ -181,11 +181,9 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
   }
 
   static int scratch_size_max(int level) {
-    return level == 0
-               ? 8 * 4
-               :  // 1024 * 4 :  // FIXME_SYCL arbitrarily setting this to 4kB
-               2 * 1024 * 8;  // 1024);    // FIXME_SYCL arbitrarily setting
-                              // this to 2MB
+    return level == 0 ? 1024 * 4
+                      :          // FIXME_SYCL arbitrarily setting this to 4kB
+               2 * 1024 * 1024;  // FIXME_SYCL arbitrarily setting this to 2MB
   }
   inline void impl_set_vector_length(size_t size) { m_vector_length = size; }
   inline void impl_set_team_size(size_t size) { m_team_size = size; }
@@ -363,12 +361,6 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
   using work_tag      = typename Policy::work_tag;
   using launch_bounds = typename Policy::launch_bounds;
 
-  // Algorithmic constraints: blockDim.y is a power of two AND
-  // blockDim.y  == blockDim.z == 1 shared memory utilization:
-  //
-  //  [ team   reduce space ]
-  //  [ team   shared space ]
-
   FunctorType const m_functor;
   Policy const m_policy;
   size_type const m_league_size;
@@ -450,7 +442,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
         m_league_size(arg_policy.league_size()),
         m_team_size(arg_policy.team_size()),
         m_vector_size(arg_policy.impl_vector_length()) {
-    // FIXME_SYCL do stuff
+    // FIXME_SYCL check_parameters
   }
 };
 
@@ -491,20 +483,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
   using functor_type = FunctorType;
   using size_type    = Kokkos::Experimental::SYCL::size_type;
 
-  static int constexpr UseShflReduction = (value_traits::StaticValueSize != 0);
-
  private:
-  struct ShflReductionTag {};
-  struct SHMEMReductionTag {};
-
-  // Algorithmic constraints: blockDim.y is a power of two AND
-  // blockDim.y == blockDim.z == 1 shared memory utilization:
-  //
-  //  [ global reduce space ]
-  //  [ team   reduce space ]
-  //  [ team   shared space ]
-  //
-
   const FunctorType m_functor;
   const Policy m_policy;
   const ReducerType m_reducer;
@@ -522,42 +501,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
   int m_team_size;
   const size_type m_vector_size;
 
-  template <class TagType>
-
-  typename std::enable_if<std::is_same<TagType, void>::value>::type exec_team(
-      member_type const& member, reference_type update) const {
-    m_functor(member, update);
-  }
-
-  template <class TagType>
-
-  typename std::enable_if<!std::is_same<TagType, void>::value>::type exec_team(
-      member_type const& member, reference_type update) const {
-    m_functor(TagType(), member, update);
-  }
-
-  void iterate_through_league(int const /*threadid*/,
-                              reference_type /*value*/) const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-  }
-
  public:
-  void operator()() const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-  }
-
-  void run(SHMEMReductionTag, int const /*threadid*/) const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-  }
-
-  void run(ShflReductionTag, int const /*threadid*/) const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-  }
-
   inline void execute() {
     // FIXME_SYCL
     Kokkos::abort("Not implemented!");
