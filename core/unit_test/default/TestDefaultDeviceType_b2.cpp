@@ -51,6 +51,7 @@
 #include <default/TestDefaultDeviceType_Category.hpp>
 #include <TestReduceCombinatorical.hpp>
 
+#ifndef KOKKOS_ENABLE_SYCL
 namespace Test {
 
 TEST(defaultdevicetype, reduce_instantiation_b2) {
@@ -58,5 +59,5 @@ TEST(defaultdevicetype, reduce_instantiation_b2) {
 }
 
 }  // namespace Test
-
+#endif
 #endif
