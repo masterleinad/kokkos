@@ -158,7 +158,7 @@ TEST(TEST_CATEGORY, team_policy_max_recommended) {
   test_team_policy_max_recommended<double, 2, policy_type>(0);
   test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size /
                                                            3);
-  test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size);
+  /*test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size);
   test_team_policy_max_recommended<double, 2, policy_type_128_8>(0);
   test_team_policy_max_recommended<double, 2, policy_type_128_8>(
       max_scratch_size / 3 / 8);
@@ -183,7 +183,7 @@ TEST(TEST_CATEGORY, team_policy_max_recommended) {
   test_team_policy_max_recommended<double, 16, policy_type_1024_2>(
       max_scratch_size / 3 / 2);
   test_team_policy_max_recommended<double, 16, policy_type_1024_2>(
-      max_scratch_size / 2);
+      max_scratch_size / 2);*/
 }
 
 template <typename TeamHandleType, typename ReducerValueType>
