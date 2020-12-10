@@ -120,9 +120,6 @@ void test_team_policy_max_recommended_static_size(int scratch_size) {
   Kokkos::parallel_for(PolicyType(10000, team_size_rec_for, 4)
                            .set_scratch_size(0, Kokkos::PerTeam(scratch_size)),
                        FunctorFor<T, N, PolicyType, S>());
-
-  // FIXME_SYCL requires team reduction
-#ifndef KOKKOS_ENABLE_SYCL
   MyArray<T, N> val;
   double n_leagues = 10000;
   // FIXME_HIP
@@ -142,7 +139,6 @@ void test_team_policy_max_recommended_static_size(int scratch_size) {
           .set_scratch_size(0, Kokkos::PerTeam(scratch_size)),
       FunctorReduce<T, N, PolicyType, S>(), val);
   Kokkos::fence();
-#endif
 }
 
 template <class T, int N, class PolicyType>
@@ -153,63 +149,38 @@ void test_team_policy_max_recommended(int scratch_size) {
       scratch_size);
 }
 
-// FIXME_SYCL Failing with error:
-// Total size of kernel arguments exceeds limit! Total arguments size: 8012,
-// limit: 2048 error: backend compiler failed build. -11
-// (CL_BUILD_PROGRAM_FAILURE) -11 (CL_BUILD_PROGRAM_FAILURE)" thrown in the test
-// body.
-#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_policy_max_recommended) {
   int max_scratch_size = policy_type::scratch_size_max(0);
   test_team_policy_max_recommended<double, 2, policy_type>(0);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size /
                                                            3);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 2, policy_type_128_8>(0);
-  std::cout << "Blubb" << std::endl;
-
   test_team_policy_max_recommended<double, 2, policy_type_128_8>(
       max_scratch_size / 3 / 8);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 2, policy_type_128_8>(
       max_scratch_size / 8);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 2, policy_type_1024_2>(0);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 2, policy_type_1024_2>(
       max_scratch_size / 3 / 2);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 2, policy_type_1024_2>(
       max_scratch_size / 2);
 
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type>(0);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type>(max_scratch_size /
                                                             3);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type>(max_scratch_size);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type_128_8>(0);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type_128_8>(
       max_scratch_size / 3 / 8);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type_128_8>(
       max_scratch_size / 8);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type_1024_2>(0);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type_1024_2>(
       max_scratch_size / 3 / 2);
-  std::cout << "Blubb" << std::endl;
   test_team_policy_max_recommended<double, 16, policy_type_1024_2>(
       max_scratch_size / 2);
 }
-#endif
 
 template <typename TeamHandleType, typename ReducerValueType>
 struct PrintFunctor1 {
@@ -228,8 +199,6 @@ struct PrintFunctor2 {
   }
 };
 
-// FIXME_SYCL team reduction not yet implemented
-#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_policy_max_scalar_without_plus_equal_k) {
   using ExecSpace           = TEST_EXECSPACE;
   using ReducerType         = Kokkos::MinMax<double, Kokkos::HostSpace>;
@@ -259,6 +228,5 @@ TEST(TEST_CATEGORY, team_policy_max_scalar_without_plus_equal_k) {
                           PrintFunctor2<TeamHandleType, double>{}, sum);
   printf("Sum: %lf\n", sum);
 }
-#endif
 
 }  // namespace Test

@@ -244,6 +244,7 @@ struct functor_teamvector_for {
     shared_int values         = shared_int(team.team_shmem(), shmemSize);
 
     if (values.data() == nullptr || values.extent(0) < shmemSize) {
+      // FIMXE_SYCL  needs printf workaround
 #ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
@@ -451,6 +452,7 @@ bool test_scalar(int nteams, int team_size, int test) {
         Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
         functor_teamvector_for<Scalar, ExecutionSpace>(d_flag));
   }
+  // FIXME_SYCL team reduce not implemented
 #ifndef KOKKOS_ENABLE_SYCL
   else if (test == 1) {
     Kokkos::parallel_for(

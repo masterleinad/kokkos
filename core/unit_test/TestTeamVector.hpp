@@ -78,6 +78,7 @@ struct functor_team_for {
 
     if (values.data() == nullptr ||
         static_cast<size_type>(values.extent(0)) < shmemSize) {
+      // FIXME_SYCL needs printf workaround
 #ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
@@ -286,6 +287,7 @@ struct functor_team_vector_for {
 
     if (values.data() == nullptr ||
         static_cast<size_type>(values.extent(0)) < shmemSize) {
+      // FIXME_SYCL needs printf workaround
 #ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
@@ -466,6 +468,7 @@ struct functor_vec_single {
         [&](int /*i*/, Scalar &val) { val += value; }, value2);
 
     if (value2 != (value * Scalar(nEnd - nStart))) {
+      // FIXME_SYCL  needs printf workaround
 #ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED vector_single broadcast %i %i %f %f\n", team.league_rank(),
              team.team_rank(), (double)value2, (double)value);
@@ -499,6 +502,7 @@ struct functor_vec_for {
 
     if (values.data() == nullptr ||
         values.extent(0) < (unsigned)team.team_size() * 13) {
+// FIXME_SYCL needs printf workaround
 #ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate memory of size %i\n",
              static_cast<int>(team.team_size() * 13));
