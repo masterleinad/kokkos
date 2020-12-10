@@ -181,9 +181,11 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
   }
 
   static int scratch_size_max(int level) {
-    return 
-        level == 0 ? 8*4://1024 * 4 :  // FIXME_SYCL arbitrarily setting this to 4kB
-            2 * 1024 * 8;//1024);    // FIXME_SYCL arbitrarily setting this to 2MB
+    return level == 0
+               ? 8 * 4
+               :  // 1024 * 4 :  // FIXME_SYCL arbitrarily setting this to 4kB
+               2 * 1024 * 8;  // 1024);    // FIXME_SYCL arbitrarily setting
+                              // this to 2MB
   }
   inline void impl_set_vector_length(size_t size) { m_vector_length = size; }
   inline void impl_set_team_size(size_t size) { m_team_size = size; }

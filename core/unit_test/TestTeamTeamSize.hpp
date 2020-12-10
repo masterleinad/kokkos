@@ -153,10 +153,11 @@ void test_team_policy_max_recommended(int scratch_size) {
       scratch_size);
 }
 
-// FIXME_SYCL Failing with error: 
-// Total size of kernel arguments exceeds limit! Total arguments size: 8012, limit: 2048
-// error: backend compiler failed build.
-// -11 (CL_BUILD_PROGRAM_FAILURE) -11 (CL_BUILD_PROGRAM_FAILURE)" thrown in the test body.
+// FIXME_SYCL Failing with error:
+// Total size of kernel arguments exceeds limit! Total arguments size: 8012,
+// limit: 2048 error: backend compiler failed build. -11
+// (CL_BUILD_PROGRAM_FAILURE) -11 (CL_BUILD_PROGRAM_FAILURE)" thrown in the test
+// body.
 #ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_policy_max_recommended) {
   int max_scratch_size = policy_type::scratch_size_max(0);

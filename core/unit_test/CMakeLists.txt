@@ -196,8 +196,8 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
       list(APPEND ${Tag}_SOURCES2 ${file})
     endforeach()
 
-    SET(${Tag}_SOURCES 
-	    #${${Tag}_SOURCES1} 
+    SET(${Tag}_SOURCES
+	    #${${Tag}_SOURCES1}
 	    ${${Tag}_SOURCES2})
   endif()
 endforeach()
