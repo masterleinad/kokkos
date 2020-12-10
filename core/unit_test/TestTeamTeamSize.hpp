@@ -120,6 +120,9 @@ void test_team_policy_max_recommended_static_size(int scratch_size) {
   Kokkos::parallel_for(PolicyType(10000, team_size_rec_for, 4)
                            .set_scratch_size(0, Kokkos::PerTeam(scratch_size)),
                        FunctorFor<T, N, PolicyType, S>());
+
+  // FIXME_SYCL requires team reduction
+#ifndef KOKKOS_ENABLE_SYCL
   MyArray<T, N> val;
   double n_leagues = 10000;
   // FIXME_HIP
@@ -139,6 +142,7 @@ void test_team_policy_max_recommended_static_size(int scratch_size) {
           .set_scratch_size(0, Kokkos::PerTeam(scratch_size)),
       FunctorReduce<T, N, PolicyType, S>(), val);
   Kokkos::fence();
+#endif
 }
 
 template <class T, int N, class PolicyType>

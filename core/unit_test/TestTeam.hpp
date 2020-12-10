@@ -135,8 +135,7 @@ struct TestTeamPolicy {
   static void test_for(const size_t league_size) {
 	  // FIXME_SYCL requires team rank
 #ifdef KOKKOS_ENABLE_SYCL
-	  if (league_size==0)
-#endif
+	  if (false/*league_size==0*/)
 	  {
     TestTeamPolicy functor(league_size);
     using policy_type = Kokkos::TeamPolicy<ScheduleType, ExecSpace>;
@@ -153,6 +152,7 @@ struct TestTeamPolicy {
     Kokkos::parallel_for(policy_type_init(league_size, team_size_init),
                          functor);
 	  }
+#endif
 
     test_small_league_size();
     test_constructors();
