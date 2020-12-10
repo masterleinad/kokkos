@@ -76,7 +76,8 @@ struct functor_team_for {
     const size_type shmemSize = team.team_size() * 13;
     shared_int values         = shared_int(team.team_shmem(), shmemSize);
 
-    if (values.data() == nullptr || static_cast<size_type>(values.extent(0)) < shmemSize) {
+    if (values.data() == nullptr ||
+        static_cast<size_type>(values.extent(0)) < shmemSize) {
 #ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
@@ -283,7 +284,8 @@ struct functor_team_vector_for {
     const size_type shmemSize = team.team_size() * 13;
     shared_int values         = shared_int(team.team_shmem(), shmemSize);
 
-    if (values.data() == nullptr || static_cast<size_type>(values.extent(0)) < shmemSize) {
+    if (values.data() == nullptr ||
+        static_cast<size_type>(values.extent(0)) < shmemSize) {
 #ifndef KOKKOS_ENABLE_SYCL
       printf("FAILED to allocate shared memory of size %u\n",
              static_cast<unsigned int>(shmemSize));
