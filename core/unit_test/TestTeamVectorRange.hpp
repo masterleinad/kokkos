@@ -450,7 +450,9 @@ bool test_scalar(int nteams, int team_size, int test) {
         "Test::TeamVectorFor",
         Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
         functor_teamvector_for<Scalar, ExecutionSpace>(d_flag));
-  } else if (test == 1) {
+  }
+#ifndef KOKKOS_ENABLE_SYCL
+  else if (test == 1) {
     Kokkos::parallel_for(
         "Test::TeamVectorReduce",
         Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
@@ -461,6 +463,7 @@ bool test_scalar(int nteams, int team_size, int test) {
         Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
         functor_teamvector_reduce_reducer<Scalar, ExecutionSpace>(d_flag));
   }
+#endif
 
   Kokkos::deep_copy(h_flag, d_flag);
 
