@@ -51,7 +51,6 @@ namespace Test {
 TEST(TEST_CATEGORY, team_for) {
   TestTeamPolicy<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >::test_for(
       0);
-#ifndef KOKKOS_ENABLE_SYCL
   TestTeamPolicy<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >::test_for(
       0);
 
@@ -64,7 +63,6 @@ TEST(TEST_CATEGORY, team_for) {
       1000);
   TestTeamPolicy<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >::test_for(
       1000);
-#endif
 }
 
 // FIXME_SYCL team reduction and broadcast not yet implemented
