@@ -69,14 +69,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   using reference_type  = typename Analysis::reference_type;
 
   using WorkTag = typename Policy::work_tag;
-  using ReducerConditional =
-      Kokkos::Impl::if_c<std::is_same<InvalidType, ReducerType>::value,
-                         FunctorType, ReducerType>;
-  using WorkTagFwd =
-      std::conditional_t<std::is_same<InvalidType, ReducerType>::value, WorkTag,
-                         void>;
-  using ValueInit =
-      typename Kokkos::Impl::FunctorValueInit<FunctorType, WorkTagFwd>;
 
  public:
   // V - View
@@ -147,83 +139,124 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     static_assert(ReduceFunctorHasJoin<Functor>::value ==
                   ReduceFunctorHasJoin<FunctorType>::value);
 
+    using ReducerConditional =
+      Kokkos::Impl::if_c<std::is_same<InvalidType, ReducerType>::value,
+                         Functor, ReducerType>;
+    using ReducerTypeFwd = typename ReducerConditional::type;
+    using WorkTagFwd =
+      std::conditional_t<std::is_same<InvalidType, ReducerType>::value, WorkTag,
+                         void>;
+    using ValueInit = Kokkos::Impl::FunctorValueInit<Functor, WorkTagFwd>;
+    using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
+    using ValueOps  = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
+
     // Convenience references
     const Kokkos::Experimental::SYCL& space = policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
     sycl::queue& q = *instance.m_queue;
 
-    auto result_ptr = static_cast<pointer_type>(
-        sycl::malloc(sizeof(*m_result_ptr), q, sycl::usm::alloc::shared));
+    std::size_t size = policy.end() - policy.begin();
+    auto results_ptr = static_cast<pointer_type>(
+        sycl::malloc(sizeof(*m_result_ptr)*std::max<std::size_t>(size,1), q, sycl::usm::alloc::shared));
 
-    value_type identity{};
-    if constexpr (!std::is_same<ReducerType, InvalidType>::value)
-      m_reducer.init(identity);
-
-    *result_ptr = identity;
-    if constexpr (ReduceFunctorHasInit<Functor>::value)
-      ValueInit::init(functor, result_ptr);
-
-    if (policy.begin() != policy.end()) {
-      q.submit([&](sycl::handler& cgh) {
-        // FIXME_SYCL a local size larger than 1 doesn't work for all cases
-        sycl::nd_range<1> range(policy.end() - policy.begin(), 1);
-
-        const auto reduction = [&]() {
-          if constexpr (!std::is_same<ReducerType, InvalidType>::value) {
-            return sycl::ONEAPI::reduction(
-                result_ptr, identity,
-                [this](value_type& old_value, const value_type& new_value) {
-                  m_reducer.join(old_value, new_value);
-                  return old_value;
-                });
-          } else {
-            if constexpr (ReduceFunctorHasJoin<Functor>::value) {
-              return sycl::ONEAPI::reduction(
-                  result_ptr, identity,
-                  [functor](value_type& old_value,
-                            const value_type& new_value) {
-                    functor.join(old_value, new_value);
-                    return old_value;
-                  });
-            } else {
-              return sycl::ONEAPI::reduction(result_ptr, identity,
-                                             std::plus<>());
-            }
-          }
-        }();
-
-        cgh.parallel_for(range, reduction,
-                         [=](sycl::nd_item<1> item, auto& sum) {
-                           const typename Policy::index_type id =
-                               static_cast<typename Policy::index_type>(
-                                   item.get_global_id(0)) +
-                               policy.begin();
-                           value_type partial = identity;
-                           if constexpr (std::is_same<WorkTag, void>::value)
-                             functor(id, partial);
-                           else
-                             functor(WorkTag(), id, partial);
-                           sum.combine(partial);
-                         });
+    //Initialize global memory
+    q.submit([&](sycl::handler& cgh) {
+      auto policy     = m_policy;
+      cgh.parallel_for(sycl::range<1>(std::max<std::size_t>(size, 1)), [=](sycl::item<1> item) {
+        value_type update;
+        ValueInit::init(functor, &update);
+        if (size>0)
+        {
+          const typename Policy::index_type id =
+            static_cast<typename Policy::index_type>(item.get_id()) +
+            policy.begin();
+          if constexpr (std::is_same<WorkTag, void>::value)
+            functor(id, update);
+          else
+            functor(WorkTag(), id, update);
+          ValueOps::copy(functor, &results_ptr[id], &update);
+#ifdef __SYCL_DEVICE_ONLY__
+          static const __attribute__((opencl_constant)) char format[] = "Initializing global %d: %f\n";
+          using sycl::ONEAPI::experimental::printf;
+          printf(format, id, results_ptr[id]);
+#endif
+        }
+        else
+          ValueOps::copy(functor, &results_ptr[0], &update);
       });
+    });
+    space.fence();
 
-      q.wait();
+    // FIMXE_SYCL optimize
+    constexpr size_t wgroup_size = 32;
+    while (size > 1) {
+      auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
+      q.submit([&] (sycl::handler& cgh) {
+        sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
+          local_mem(sycl::range<1>(wgroup_size), cgh);
+        auto& selected_reducer = ReducerConditional::select(functor, m_reducer);
+         
+        // FIXME_SYCL we get wrong results without this, not sure why
+        sycl::stream out(1024, 128, cgh);
+        cgh.parallel_for(
+          sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+          [=] (sycl::nd_item<1> item) {
+            const auto local_id = item.get_local_linear_id();
+            const auto global_id = item.get_global_linear_id();
+
+            // Initialize local memory
+            if (global_id < size)
+	    {
+              ValueOps::copy(functor, &local_mem[local_id], &results_ptr[global_id]);
+	       /*out << "Initializing " << local_id  << ": " << local_mem[local_id]
+                   << ", " << global_id << ": " << results_ptr[global_id] << sycl::endl;*/
+	    }
+            else
+	    {
+              ValueInit::init(functor, &local_mem[local_id]);
+/*              out << "Initializing " << local_id  << ": " << local_mem[local_id] 
+	        << ", " << global_id << sycl::endl;*/
+	    }
+            item.barrier(sycl::access::fence_space::local_space);
+
+            //Perform workgroup reduction
+            for(size_t stride = 1; 2 * stride < wgroup_size + 1; stride *= 2) {
+              auto idx = 2 * stride * (local_id + 1) - 1;
+              if (idx < wgroup_size)
+	      {
+                ValueJoin::join(selected_reducer, 
+                                &local_mem[idx],
+                                &local_mem[idx - stride]);
+	        out << "Reducing " << stride << '/' << wgroup_size << ' ' 
+                    << idx << " + " << idx-stride << ": " 
+                    << local_mem[idx] << ", " << local_mem[idx-stride] << sycl::endl;
+	      }
+              item.barrier(sycl::access::fence_space::local_space);
+            }
+
+            out << "Final " << local_id  << ": " << local_mem[local_id] << sycl::endl;
+            if (local_id == 0)
+              ValueOps::copy(functor, &results_ptr[item.get_group_linear_id()], &local_mem[wgroup_size-1]);
+          });
+      });
+      space.fence();
+      size = n_wgroups;
     }
 
     if constexpr (ReduceFunctorHasFinal<Functor>::value)
       q.submit([&](sycl::handler& cgh) {
         cgh.single_task([=]() {
-          FunctorFinal<Functor, WorkTag>::final(functor, result_ptr);
+          FunctorFinal<Functor, WorkTag>::final(functor, results_ptr);
         });
       });
     else
       Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
                              Kokkos::Experimental::SYCLDeviceUSMSpace>(
-          space, m_result_ptr, result_ptr, sizeof(*m_result_ptr));
-    q.wait();
+          space, m_result_ptr, results_ptr, sizeof(*m_result_ptr));
+    space.fence();
 
-    sycl::free(result_ptr, q);
+    sycl::free(results_ptr, q);
   }
 
   template <typename Functor>
