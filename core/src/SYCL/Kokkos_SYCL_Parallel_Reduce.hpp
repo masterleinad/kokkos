@@ -197,8 +197,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           local_mem(sycl::range<1>(wgroup_size), cgh);
         auto& selected_reducer = ReducerConditional::select(functor, m_reducer);
          
-        // FIXME_SYCL we get wrong results without this, not sure why
-        sycl::stream out(1024, 128, cgh);
         cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
           [=] (sycl::nd_item<1> item) {
@@ -207,35 +205,21 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
             // Initialize local memory
             if (global_id < size)
-	    {
               ValueOps::copy(functor, &local_mem[local_id], &results_ptr[global_id]);
-	       /*out << "Initializing " << local_id  << ": " << local_mem[local_id]
-                   << ", " << global_id << ": " << results_ptr[global_id] << sycl::endl;*/
-	    }
             else
-	    {
               ValueInit::init(functor, &local_mem[local_id]);
-/*              out << "Initializing " << local_id  << ": " << local_mem[local_id] 
-	        << ", " << global_id << sycl::endl;*/
-	    }
             item.barrier(sycl::access::fence_space::local_space);
 
             //Perform workgroup reduction
             for(size_t stride = 1; 2 * stride < wgroup_size + 1; stride *= 2) {
               auto idx = 2 * stride * (local_id + 1) - 1;
               if (idx < wgroup_size)
-	      {
                 ValueJoin::join(selected_reducer, 
                                 &local_mem[idx],
                                 &local_mem[idx - stride]);
-	        out << "Reducing " << stride << '/' << wgroup_size << ' ' 
-                    << idx << " + " << idx-stride << ": " 
-                    << local_mem[idx] << ", " << local_mem[idx-stride] << sycl::endl;
-	      }
               item.barrier(sycl::access::fence_space::local_space);
             }
 
-            out << "Final " << local_id  << ": " << local_mem[local_id] << sycl::endl;
             if (local_id == 0)
               ValueOps::copy(functor, &results_ptr[item.get_group_linear_id()], &local_mem[wgroup_size-1]);
           });
