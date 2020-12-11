@@ -427,6 +427,8 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
 
  public:
   inline void execute() const {
+    if (m_league_size == 0) return;
+
     // if the functor is trivially copyable, we can launch it directly;
     // otherwise, we will launch it indirectly via explicitly creating
     // it in USM shared memory.
