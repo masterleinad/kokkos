@@ -370,6 +370,8 @@ bool Test(int test) {
 
 }  // namespace TestCXX11
 
+// FIXME_SYCL requires TeamPolicy
+#ifndef KOKKOS_ENABLE_SYCL
 namespace Test {
 // FIXME_SYCL requires TeamPolicy
 #ifndef KOKKOS_ENABLE_SYCL
@@ -384,3 +386,4 @@ TEST(TEST_CATEGORY, cxx11) {
 #endif
 
 }  // namespace Test
+#endif

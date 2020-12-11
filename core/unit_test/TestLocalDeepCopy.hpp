@@ -1091,6 +1091,7 @@ struct DeepCopyScratchFunctor {
 };
 }  // namespace Impl
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, deep_copy_scratch) {
   using TestDeviceTeamPolicy = Kokkos::TeamPolicy<TEST_EXECSPACE>;
 
