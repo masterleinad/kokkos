@@ -47,9 +47,12 @@
 #include <TestNonTrivialScalarTypes.hpp>
 
 namespace Test {
+// FIXME_SYCL fix this!
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, reducers_complex_double) {
   TestReducers<Kokkos::complex<double>, TEST_EXECSPACE>::execute_basic();
 }
+#endif
 
 TEST(TEST_CATEGORY, reducers_struct) {
   TestReducers<array_reduce<float, 1>, TEST_EXECSPACE>::test_sum(1031);
