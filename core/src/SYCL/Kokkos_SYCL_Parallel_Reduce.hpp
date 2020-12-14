@@ -132,7 +132,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   template <typename PolicyType, typename Functor, typename Reducer>
   void sycl_direct_launch(const PolicyType& policy,
                           const Functor& functor,
-			  const Reducer& /*reducer*/) const {
+			  const Reducer& reducer) const {
     static_assert(ReduceFunctorHasInit<Functor>::value ==
                   ReduceFunctorHasInit<FunctorType>::value);
     static_assert(ReduceFunctorHasFinal<Functor>::value ==
@@ -140,15 +140,15 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     static_assert(ReduceFunctorHasJoin<Functor>::value ==
                   ReduceFunctorHasJoin<FunctorType>::value);
 
-/*    using ReducerConditional =
+    using ReducerConditional =
       Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value,
                          Functor, Reducer>;
- //   using ReducerTypeFwd = typename ReducerConditional::type;*/
+    using ReducerTypeFwd = typename ReducerConditional::type;
     using WorkTagFwd =
       std::conditional_t<std::is_same<InvalidType, Reducer>::value, WorkTag,
                          void>;
     using ValueInit = Kokkos::Impl::FunctorValueInit<Functor, WorkTagFwd>;
-//    using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
+    using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
     using ValueOps  = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
 
     // Convenience references
@@ -163,7 +163,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     //Initialize global memory
     q.submit([&](sycl::handler& cgh) {
-//      auto policy     = m_policy;
+      auto policy     = m_policy;
       cgh.parallel_for(sycl::range<1>(std::max<std::size_t>(size, 1)), [=](sycl::item<1> item) {
         value_type update;
         ValueInit::init(functor, &update);
@@ -193,7 +193,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       q.submit([&] (sycl::handler& cgh) {
         sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
           local_mem(sycl::range<1>(wgroup_size), cgh);
-        //auto selected_reducer = ReducerConditional::select(functor, reducer);
+        auto selected_reducer = ReducerConditional::select(functor, reducer);
         
         cl::sycl::stream out(1024, 128, cgh);	
         cgh.parallel_for(
@@ -217,9 +217,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 	      {
 	        out << "combining " << idx << " + " << idx-stride << ": " 
 		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
-               /* ValueJoin::join(selected_reducer, 
+                ValueJoin::join(selected_reducer, 
                                 &local_mem[idx],
-                                &local_mem[idx - stride]);*/
+                                &local_mem[idx - stride]);
         	 out << "combining " << idx << " + " << idx-stride << ": "
                     << local_mem[idx] << sycl::endl;
 
@@ -228,11 +228,11 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             }
 
             out << "writing to " << local_id << " " << item.get_group_linear_id() << sycl::endl;
-            /*if (local_id == 0)
+            if (local_id == 0)
 	    {
               out << "writing to " << item.get_group_linear_id() << sycl::endl;
               ValueOps::copy(functor, &results_ptr[item.get_group_linear_id()], &local_mem[wgroup_size-1]);
-	    }*/
+	    }
           });
       });
       space.fence();
