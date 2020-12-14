@@ -186,16 +186,16 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     // FIMXE_SYCL optimize
     constexpr size_t wgroup_size = 32;
-    std::cout << "initial size is " << size << std::endl;
+    //std::cout << "initial size is " << size << std::endl;
     while (size > 1) {
-      std::cout << "size is " << size << std::endl;
+      //std::cout << "size is " << size << std::endl;
       auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
       q.submit([&] (sycl::handler& cgh) {
         sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
           local_mem(sycl::range<1>(wgroup_size), cgh);
         auto selected_reducer = ReducerConditional::select(functor, reducer);
         
-        //cl::sycl::stream out(1024, 128, cgh);	
+        cl::sycl::stream out(1024, 128, cgh);	
         cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
           [=] (sycl::nd_item<1> item) {
@@ -215,13 +215,13 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               auto idx = 2 * stride * (local_id + 1) - 1;
               if (idx < wgroup_size)
 	      {
-	        //out << "combining " << idx << " + " << idx-stride << ": " 
-		//    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
+	        out << "combining " << idx << " + " << idx-stride << ": " 
+		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
                 ValueJoin::join(selected_reducer, 
                                 &local_mem[idx],
                                 &local_mem[idx - stride]);
-        	// out << "combining " << idx << " + " << idx-stride << ": "
-                //    << local_mem[idx] << sycl::endl;
+        	out << "combining " << idx << " + " << idx-stride << ": "
+                    << local_mem[idx] << sycl::endl;
 
 	      }
               item.barrier(sycl::access::fence_space::local_space);

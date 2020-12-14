@@ -238,7 +238,7 @@ void SYCLSpaceInitializer::initialize(const InitArguments& args) {
       0 < use_gpu) {
     // FIXME_SYCL choose a specific device
     Kokkos::Experimental::SYCL::impl_initialize(
-        Kokkos::Experimental::SYCL::SYCLDevice(sycl::host_selector()));
+        Kokkos::Experimental::SYCL::SYCLDevice(sycl::default_selector()));
   }
 }
 
