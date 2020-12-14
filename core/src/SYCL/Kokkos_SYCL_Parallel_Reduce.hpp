@@ -251,7 +251,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           space, m_result_ptr, results_ptr, sizeof(*m_result_ptr));
     space.fence();
 
-    //sycl::free(results_ptr, q);
+    sycl::free(results_ptr, q);
   }
 
   template <typename Functor, typename Reducer>
