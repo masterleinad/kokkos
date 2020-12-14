@@ -82,6 +82,7 @@ class SYCLInternal {
       std::vector<IndirectKernelAllocator::value_type, IndirectKernelAllocator>;
   using IndirectKernel = std::optional<IndirectKernelMemory>;
   IndirectKernel m_indirectKernel;
+  IndirectKernel m_indirectReducer;
 
   static int was_finalized;
 

@@ -613,6 +613,14 @@ void test_offsetview_offsets_rank1() {
   Kokkos::parallel_reduce(
       "Reduce1", execution_policy(-3, 4),
       KOKKOS_LAMBDA(const int ii, int& lerrors) {
+      #ifdef __SYCL_DEVICE_ONLY__
+  static const __attribute__((opencl_constant)) char format[] =
+      "Acessing %d\n";
+  using sycl::ONEAPI::experimental::printf;
+#else
+  static const char format[] = "Acessing %d\n";
+#endif
+  printf(format, ii);
         offset_view_type ov(v, {ii});
         lerrors += (ov(3) != element({3 - ii}));
       },

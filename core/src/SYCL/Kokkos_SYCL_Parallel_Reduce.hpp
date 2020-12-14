@@ -132,7 +132,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   template <typename PolicyType, typename Functor, typename Reducer>
   void sycl_direct_launch(const PolicyType& policy,
                           const Functor& functor,
-			  const Reducer& reducer) const {
+			  const Reducer& /*reducer*/) const {
     static_assert(ReduceFunctorHasInit<Functor>::value ==
                   ReduceFunctorHasInit<FunctorType>::value);
     static_assert(ReduceFunctorHasFinal<Functor>::value ==
@@ -140,15 +140,15 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     static_assert(ReduceFunctorHasJoin<Functor>::value ==
                   ReduceFunctorHasJoin<FunctorType>::value);
 
-    using ReducerConditional =
+/*    using ReducerConditional =
       Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value,
                          Functor, Reducer>;
-    using ReducerTypeFwd = typename ReducerConditional::type;
+ //   using ReducerTypeFwd = typename ReducerConditional::type;*/
     using WorkTagFwd =
       std::conditional_t<std::is_same<InvalidType, Reducer>::value, WorkTag,
                          void>;
     using ValueInit = Kokkos::Impl::FunctorValueInit<Functor, WorkTagFwd>;
-    using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
+//    using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
     using ValueOps  = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
 
     // Convenience references
@@ -163,20 +163,20 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     //Initialize global memory
     q.submit([&](sycl::handler& cgh) {
-      auto policy     = m_policy;
-      cgh.parallel_for(sycl::range<1>(std::max<std::size_t>(size, 1)), [=](sycl::item<1> item) {
+//      auto policy     = m_policy;
+      cgh.parallel_for(sycl::range<1>(std::max<std::size_t>(size, 1)), [=](sycl::item<1> /*item*/) {
         value_type update;
         ValueInit::init(functor, &update);
         if (size>0)
         {
-          const typename Policy::index_type id =
+          /*const typename Policy::index_type id =
             static_cast<typename Policy::index_type>(item.get_id()) +
-            policy.begin();
-          if constexpr (std::is_same<WorkTag, void>::value)
+            policy.begin();*/
+          /*if constexpr (std::is_same<WorkTag, void>::value)
             functor(id, update);
           else
-            functor(WorkTag(), id, update);
-          ValueOps::copy(functor, &results_ptr[id], &update);
+            functor(WorkTag(), id, update);*/
+          //ValueOps::copy(functor, &results_ptr[id], &update);
         }
         else
           ValueOps::copy(functor, &results_ptr[0], &update);
@@ -186,12 +186,14 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     // FIMXE_SYCL optimize
     constexpr size_t wgroup_size = 32;
+    std::cout << "initial size is " << size << std::endl;
     while (size > 1) {
+      std::cout << "size is " << size << std::endl;
       auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
       q.submit([&] (sycl::handler& cgh) {
         sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
           local_mem(sycl::range<1>(wgroup_size), cgh);
-        auto& selected_reducer = ReducerConditional::select(functor, reducer);
+        //auto selected_reducer = ReducerConditional::select(functor, reducer);
         
         cl::sycl::stream out(1024, 128, cgh);	
         cgh.parallel_for(
@@ -199,6 +201,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           [=] (sycl::nd_item<1> item) {
             const auto local_id = item.get_local_linear_id();
             const auto global_id = item.get_global_linear_id();
+	                out << "writing to " << local_id << " " << item.get_group_linear_id() << sycl::endl;
 
             // Initialize local memory
             if (global_id < size)
@@ -214,9 +217,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 	      {
 	        out << "combining " << idx << " + " << idx-stride << ": " 
 		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
-                ValueJoin::join(selected_reducer, 
+               /* ValueJoin::join(selected_reducer, 
                                 &local_mem[idx],
-                                &local_mem[idx - stride]);
+                                &local_mem[idx - stride]);*/
         	 out << "combining " << idx << " + " << idx-stride << ": "
                     << local_mem[idx] << sycl::endl;
 
@@ -224,8 +227,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               item.barrier(sycl::access::fence_space::local_space);
             }
 
-            if (local_id == 0)
+            out << "writing to " << local_id << " " << item.get_group_linear_id() << sycl::endl;
+            /*if (local_id == 0)
+	    {
+              out << "writing to " << item.get_group_linear_id() << sycl::endl;
               ValueOps::copy(functor, &results_ptr[item.get_group_linear_id()], &local_mem[wgroup_size-1]);
+	    }*/
           });
       });
       space.fence();
@@ -244,7 +251,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           space, m_result_ptr, results_ptr, sizeof(*m_result_ptr));
     space.fence();
 
-    sycl::free(results_ptr, q);
+    //sycl::free(results_ptr, q);
   }
 
   template <typename Functor, typename Reducer>
@@ -256,38 +263,36 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& kernelMem =
         *instance.m_indirectKernel;
 
+    // Allocate USM shared memory for the functor
+    kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
+
+    // Placement new a copy of functor into USM shared memory
+    //
+    // Store it in a unique_ptr to call its destructor on scope exit
+    std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
+        new (kernelMem.data()) Functor(functor));
+    auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
+
     if constexpr (!std::is_same<Reducer, InvalidType>::value)
     {
-      // Allocate USM shared memory for the functor
-      kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)+sizeof(reducer)));
-//      reducerMem.resize(std::max(reducerMem.size(), sizeof(reducer)));
+      Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& reducerMem =
+        *instance.m_indirectReducer;
+
+      // Allocate USM shared memory for the reducer
+      reducerMem.resize(std::max(reducerMem.size(), sizeof(reducer)));
 
       // Placement new a copy of functor into USM shared memory
       //
       // Store it in a unique_ptr to call its destructor on scope exit
-      std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
-          new (kernelMem.data()) Functor(functor));
       std::unique_ptr<Reducer, Kokkos::Impl::destruct_delete> kernelReducerPtr(
-          new (&kernelMem[sizeof(functor)]) Reducer(reducer));
+          new (reducerMem.data()) Reducer(reducer));
 
-      auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
       auto kernelReducer = ExtendedReferenceWrapper<Reducer>(*kernelReducerPtr);
       sycl_direct_launch(m_policy, kernelFunctor, kernelReducer);
     }
     else
-    {
-      // Allocate USM shared memory for the functor
-      kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
-
-      // Placement new a copy of functor into USM shared memory
-      //
-      // Store it in a unique_ptr to call its destructor on scope exit
-      std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
-          new (kernelMem.data()) Functor(functor));
-
-      auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
       sycl_direct_launch(m_policy, kernelFunctor, reducer);
-    }
+
   }
 
  public:

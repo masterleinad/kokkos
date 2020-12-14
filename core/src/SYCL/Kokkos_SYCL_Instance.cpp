@@ -99,6 +99,7 @@ void SYCLInternal::initialize(const sycl::device& d) {
     m_queue = std::make_unique<sycl::queue>(d);
     std::cout << SYCL::SYCLDevice(d) << '\n';
     m_indirectKernel.emplace(IndirectKernelAllocator(*m_queue));
+    m_indirectReducer.emplace(IndirectKernelAllocator(*m_queue));
   } else {
     std::ostringstream msg;
     msg << "Kokkos::Experimental::SYCL::initialize(...) FAILED";
@@ -119,6 +120,7 @@ void SYCLInternal::finalize() {
   }
 
   m_indirectKernel.reset();
+  m_indirectReducer.reset();
   m_queue.reset();
 }
 
