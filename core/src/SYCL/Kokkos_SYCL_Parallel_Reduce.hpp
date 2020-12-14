@@ -129,9 +129,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     }
   };
 
-  template <typename PolicyType, typename Functor>
+  template <typename PolicyType, typename Functor, typename Reducer>
   void sycl_direct_launch(const PolicyType& policy,
-                          const Functor& functor) const {
+                          const Functor& functor,
+			  const Reducer& reducer) const {
     static_assert(ReduceFunctorHasInit<Functor>::value ==
                   ReduceFunctorHasInit<FunctorType>::value);
     static_assert(ReduceFunctorHasFinal<Functor>::value ==
@@ -140,11 +141,11 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   ReduceFunctorHasJoin<FunctorType>::value);
 
     using ReducerConditional =
-      Kokkos::Impl::if_c<std::is_same<InvalidType, ReducerType>::value,
-                         Functor, ReducerType>;
+      Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value,
+                         Functor, Reducer>;
     using ReducerTypeFwd = typename ReducerConditional::type;
     using WorkTagFwd =
-      std::conditional_t<std::is_same<InvalidType, ReducerType>::value, WorkTag,
+      std::conditional_t<std::is_same<InvalidType, Reducer>::value, WorkTag,
                          void>;
     using ValueInit = Kokkos::Impl::FunctorValueInit<Functor, WorkTagFwd>;
     using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
@@ -176,11 +177,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           else
             functor(WorkTag(), id, update);
           ValueOps::copy(functor, &results_ptr[id], &update);
-#ifdef __SYCL_DEVICE_ONLY__
-          static const __attribute__((opencl_constant)) char format[] = "Initializing global %d: %f\n";
-          using sycl::ONEAPI::experimental::printf;
-          printf(format, id, results_ptr[id]);
-#endif
         }
         else
           ValueOps::copy(functor, &results_ptr[0], &update);
@@ -195,8 +191,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       q.submit([&] (sycl::handler& cgh) {
         sycl::accessor <value_type, 1, sycl::access::mode::read_write, sycl::access::target::local>
           local_mem(sycl::range<1>(wgroup_size), cgh);
-        auto& selected_reducer = ReducerConditional::select(functor, m_reducer);
-         
+        auto& selected_reducer = ReducerConditional::select(functor, reducer);
+        
+        cl::sycl::stream out(1024, 128, cgh);	
         cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
           [=] (sycl::nd_item<1> item) {
@@ -214,9 +211,16 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             for(size_t stride = 1; 2 * stride < wgroup_size + 1; stride *= 2) {
               auto idx = 2 * stride * (local_id + 1) - 1;
               if (idx < wgroup_size)
+	      {
+	        out << "combining " << idx << " + " << idx-stride << ": " 
+		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
                 ValueJoin::join(selected_reducer, 
                                 &local_mem[idx],
                                 &local_mem[idx - stride]);
+        	 out << "combining " << idx << " + " << idx-stride << ": "
+                    << local_mem[idx] << sycl::endl;
+
+	      }
               item.barrier(sycl::access::fence_space::local_space);
             }
 
@@ -243,8 +247,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     sycl::free(results_ptr, q);
   }
 
-  template <typename Functor>
-  void sycl_indirect_launch(const Functor& functor) const {
+  template <typename Functor, typename Reducer>
+  void sycl_indirect_launch(const Functor& functor, const Reducer& reducer) const {
     // Convenience references
     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
@@ -252,25 +256,46 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& kernelMem =
         *instance.m_indirectKernel;
 
-    // Allocate USM shared memory for the functor
-    kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
+    if constexpr (!std::is_same<Reducer, InvalidType>::value)
+    {
+      // Allocate USM shared memory for the functor
+      kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)+sizeof(reducer)));
+//      reducerMem.resize(std::max(reducerMem.size(), sizeof(reducer)));
 
-    // Placement new a copy of functor into USM shared memory
-    //
-    // Store it in a unique_ptr to call its destructor on scope exit
-    std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
-        new (kernelMem.data()) Functor(functor));
+      // Placement new a copy of functor into USM shared memory
+      //
+      // Store it in a unique_ptr to call its destructor on scope exit
+      std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
+          new (kernelMem.data()) Functor(functor));
+      std::unique_ptr<Reducer, Kokkos::Impl::destruct_delete> kernelReducerPtr(
+          new (&kernelMem[sizeof(functor)]) Reducer(reducer));
 
-    auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
-    sycl_direct_launch(m_policy, kernelFunctor);
+      auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
+      auto kernelReducer = ExtendedReferenceWrapper<Reducer>(*kernelReducerPtr);
+      sycl_direct_launch(m_policy, kernelFunctor, kernelReducer);
+    }
+    else
+    {
+      // Allocate USM shared memory for the functor
+      kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
+
+      // Placement new a copy of functor into USM shared memory
+      //
+      // Store it in a unique_ptr to call its destructor on scope exit
+      std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
+          new (kernelMem.data()) Functor(functor));
+
+      auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
+      sycl_direct_launch(m_policy, kernelFunctor, reducer);
+    }
   }
 
  public:
   void execute() const {
-    if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
-      sycl_direct_launch(m_policy, m_functor);
+    if constexpr (std::is_trivially_copyable_v<decltype(m_functor)> && std::is_trivially_copyable_v<decltype(m_reducer)>)
+      sycl_direct_launch(m_policy, m_functor, m_reducer);
     else
-      sycl_indirect_launch(m_functor);
+      sycl_indirect_launch(m_functor, m_reducer);
   }
 
  private:
