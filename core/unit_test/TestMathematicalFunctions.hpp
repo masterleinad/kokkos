@@ -317,32 +317,32 @@ struct math_function_name;
 // Generally the expected ULP error should come from here:
 // https://www.gnu.org/software/libc/manual/html_node/Errors-in-Math-Functions.html
 // For now 1s largely seem to work ...
-DEFINE_UNARY_FUNCTION_EVAL(exp, 1);
-DEFINE_UNARY_FUNCTION_EVAL(exp2, 1);
-DEFINE_UNARY_FUNCTION_EVAL(expm1, 1);
+DEFINE_UNARY_FUNCTION_EVAL(exp, 2);
+DEFINE_UNARY_FUNCTION_EVAL(exp2, 2);
+DEFINE_UNARY_FUNCTION_EVAL(expm1, 2);
 DEFINE_UNARY_FUNCTION_EVAL(log, 2);
-DEFINE_UNARY_FUNCTION_EVAL(log10, 1);
-DEFINE_UNARY_FUNCTION_EVAL(log2, 1);
+DEFINE_UNARY_FUNCTION_EVAL(log10, 2);
+DEFINE_UNARY_FUNCTION_EVAL(log2, 2);
 DEFINE_UNARY_FUNCTION_EVAL(log1p, 2);
 
-DEFINE_UNARY_FUNCTION_EVAL(sqrt, 1);
-DEFINE_UNARY_FUNCTION_EVAL(cbrt, 1);
+DEFINE_UNARY_FUNCTION_EVAL(sqrt, 2);
+DEFINE_UNARY_FUNCTION_EVAL(cbrt, 2);
 
-DEFINE_UNARY_FUNCTION_EVAL(sin, 1);
-DEFINE_UNARY_FUNCTION_EVAL(cos, 1);
-DEFINE_UNARY_FUNCTION_EVAL(tan, 1);
-DEFINE_UNARY_FUNCTION_EVAL(asin, 1);
-DEFINE_UNARY_FUNCTION_EVAL(acos, 1);
-DEFINE_UNARY_FUNCTION_EVAL(atan, 1);
+DEFINE_UNARY_FUNCTION_EVAL(sin, 2);
+DEFINE_UNARY_FUNCTION_EVAL(cos, 2);
+DEFINE_UNARY_FUNCTION_EVAL(tan, 2);
+DEFINE_UNARY_FUNCTION_EVAL(asin, 2);
+DEFINE_UNARY_FUNCTION_EVAL(acos, 2);
+DEFINE_UNARY_FUNCTION_EVAL(atan, 2);
 
-DEFINE_UNARY_FUNCTION_EVAL(sinh, 1);
-DEFINE_UNARY_FUNCTION_EVAL(cosh, 1);
-DEFINE_UNARY_FUNCTION_EVAL(tanh, 1);
+DEFINE_UNARY_FUNCTION_EVAL(sinh, 2);
+DEFINE_UNARY_FUNCTION_EVAL(cosh, 2);
+DEFINE_UNARY_FUNCTION_EVAL(tanh, 2);
 DEFINE_UNARY_FUNCTION_EVAL(asinh, 4);
-DEFINE_UNARY_FUNCTION_EVAL(acosh, 1);
+DEFINE_UNARY_FUNCTION_EVAL(acosh, 2);
 DEFINE_UNARY_FUNCTION_EVAL(atanh, 2);
 
-DEFINE_UNARY_FUNCTION_EVAL(erf, 1);
+DEFINE_UNARY_FUNCTION_EVAL(erf, 2);
 DEFINE_UNARY_FUNCTION_EVAL(erfc, 5);
 // has a larger error due to some impls doing integer exact.
 // We cast always to double leading to larger difference when comparing our
@@ -350,11 +350,11 @@ DEFINE_UNARY_FUNCTION_EVAL(erfc, 5);
 DEFINE_UNARY_FUNCTION_EVAL(tgamma, 200);
 DEFINE_UNARY_FUNCTION_EVAL(lgamma, 2);
 
-DEFINE_UNARY_FUNCTION_EVAL(ceil, 1);
-DEFINE_UNARY_FUNCTION_EVAL(floor, 1);
-DEFINE_UNARY_FUNCTION_EVAL(trunc, 1);
+DEFINE_UNARY_FUNCTION_EVAL(ceil, 2);
+DEFINE_UNARY_FUNCTION_EVAL(floor, 2);
+DEFINE_UNARY_FUNCTION_EVAL(trunc, 2);
 #ifndef KOKKOS_ENABLE_SYCL
-DEFINE_UNARY_FUNCTION_EVAL(nearbyint, 1);
+DEFINE_UNARY_FUNCTION_EVAL(nearbyint, 2);
 #endif
 
 #undef DEFINE_UNARY_FUNCTION_EVAL
@@ -423,25 +423,16 @@ struct TestMathUnaryFunction : FloatingPointComparison {
   }
   void run() {
     int errors = 0;
-    std::cout << "start" << std::endl;
     Kokkos::parallel_reduce(Kokkos::RangePolicy<Space>(0, N), *this, errors);
-    std::cout << "end" << std::endl;
     ASSERT_EQ(errors, 0);
-    if (errors !=0)
-      std::abort();
   }
   KOKKOS_FUNCTION void operator()(int i, int& e) const {
     bool ar = compare(Func::eval(val_[i]), res_[i], Func::ulp_factor());
     if (!ar) {
       ++e;
-#if !defined(KOKKOS_ENABLE_SYCL)
-#ifdef __SYCL_DEVICE_ONLY__
-      static const __attribute__((opencl_constant)) char format[] =
-      "value at %f which is %f was expected to be %f\n";
-      using sycl::ONEAPI::experimental::printf;
-      printf(format, (double)val_[i],
+#if !defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ENABLE_HIP)
+      printf("value at %f which is %f was expected to be %f\n", (double)val_[i],
              (double)Func::eval(val_[i]), (double)res_[i]);
-#endif
 #endif
     }
   }
@@ -507,7 +498,7 @@ TEST(TEST_CATEGORY, mathematical_functions_trigonometric_functions) {
   TEST_MATH_FUNCTION(sin)({.7l, .8l, .9l});
 #endif
 
-  /*TEST_MATH_FUNCTION(cos)({true, false});
+  TEST_MATH_FUNCTION(cos)({true, false});
   TEST_MATH_FUNCTION(cos)({-3, -2, -1, 0, 1});
   TEST_MATH_FUNCTION(cos)({-3l, -2l, -1l, 0l, 1l});
   TEST_MATH_FUNCTION(cos)({-3ll, -2ll, -1ll, 0ll, 1ll});
@@ -572,9 +563,9 @@ TEST(TEST_CATEGORY, mathematical_functions_trigonometric_functions) {
   TEST_MATH_FUNCTION(atan)({-.98l, .67l, -54.l, .34l, -.21l});
 #endif
 
-  // TODO atan2*/
+  // TODO atan2
 }
-/*
+
 TEST(TEST_CATEGORY, mathematical_functions_power_functions) {
   TEST_MATH_FUNCTION(sqrt)({0, 1, 2, 3, 5, 7, 11});
   TEST_MATH_FUNCTION(sqrt)({0l, 1l, 2l, 3l, 5l, 7l, 11l});
@@ -868,4 +859,4 @@ TEST(TEST_CATEGORY,
   TEST_MATH_FUNCTION(nearbyint)({12.3l, 4.56l, 789.l});
 #endif
 #endif
-}*/
+}

@@ -195,13 +195,13 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           local_mem(sycl::range<1>(wgroup_size), cgh);
         auto selected_reducer = ReducerConditional::select(functor, reducer);
         
-        cl::sycl::stream out(1024, 128, cgh);	
+        //cl::sycl::stream out(1024, 128, cgh);	
         cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
           [=] (sycl::nd_item<1> item) {
             const auto local_id = item.get_local_linear_id();
             const auto global_id = item.get_global_linear_id();
-	                out << "writing to " << local_id << " " << item.get_group_linear_id() << sycl::endl;
+            //out << "writing to " << local_id << " " << item.get_group_linear_id() << sycl::endl;
 
             // Initialize local memory
             if (global_id < size)
@@ -215,22 +215,22 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               auto idx = 2 * stride * (local_id + 1) - 1;
               if (idx < wgroup_size)
 	      {
-	        out << "combining " << idx << " + " << idx-stride << ": " 
-		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
+	        //out << "combining " << idx << " + " << idx-stride << ": " 
+		//    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
                 ValueJoin::join(selected_reducer, 
                                 &local_mem[idx],
                                 &local_mem[idx - stride]);
-        	 out << "combining " << idx << " + " << idx-stride << ": "
-                    << local_mem[idx] << sycl::endl;
+        	// out << "combining " << idx << " + " << idx-stride << ": "
+                //    << local_mem[idx] << sycl::endl;
 
 	      }
               item.barrier(sycl::access::fence_space::local_space);
             }
 
-            out << "writing to " << local_id << " " << item.get_group_linear_id() << sycl::endl;
+            //out << "writing to " << local_id << " " << item.get_group_linear_id() << sycl::endl;
             if (local_id == 0)
 	    {
-              out << "writing to " << item.get_group_linear_id() << sycl::endl;
+              //out << "writing to " << item.get_group_linear_id() << sycl::endl;
               ValueOps::copy(functor, &results_ptr[item.get_group_linear_id()], &local_mem[wgroup_size-1]);
 	    }
           });
