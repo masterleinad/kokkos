@@ -164,19 +164,19 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     //Initialize global memory
     q.submit([&](sycl::handler& cgh) {
 //      auto policy     = m_policy;
-      cgh.parallel_for(sycl::range<1>(std::max<std::size_t>(size, 1)), [=](sycl::item<1> /*item*/) {
+      cgh.parallel_for(sycl::range<1>(std::max<std::size_t>(size, 1)), [=](sycl::item<1> item) {
         value_type update;
         ValueInit::init(functor, &update);
         if (size>0)
         {
-          /*const typename Policy::index_type id =
+          const typename Policy::index_type id =
             static_cast<typename Policy::index_type>(item.get_id()) +
-            policy.begin();*/
-          /*if constexpr (std::is_same<WorkTag, void>::value)
+            policy.begin();
+          if constexpr (std::is_same<WorkTag, void>::value)
             functor(id, update);
           else
-            functor(WorkTag(), id, update);*/
-          //ValueOps::copy(functor, &results_ptr[id], &update);
+            functor(WorkTag(), id, update);
+          ValueOps::copy(functor, &results_ptr[item.get_id()], &update);
         }
         else
           ValueOps::copy(functor, &results_ptr[0], &update);
