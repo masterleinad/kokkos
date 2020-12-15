@@ -86,20 +86,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         m_result_ptr(reducer.view().data()) {}
 
  private:
-  template <typename TagType>
-  std::enable_if_t<std::is_void<TagType>::value> exec(reference_type update) {
-    using member_type = typename Policy::member_type;
-    member_type e     = m_policy.end();
-    for (member_type i = m_policy.begin(); i < e; ++i) m_functor(i, update);
-  }
-
-  template <typename TagType>
-  std::enable_if_t<!std::is_void<TagType>::value> exec(reference_type update) {
-    using member_type = typename Policy::member_type;
-    member_type e     = m_policy.end();
-    for (member_type i = m_policy.begin(); i < e; ++i)
-      m_functor(TagType{}, i, update);
-  }
 
   template <typename T>
   struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
@@ -139,6 +125,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   ReduceFunctorHasFinal<FunctorType>::value);
     static_assert(ReduceFunctorHasJoin<Functor>::value ==
                   ReduceFunctorHasJoin<FunctorType>::value);
+    static_assert(ReduceFunctorHasJoin<Reducer>::value ==
+                  ReduceFunctorHasJoin<ReducerType>::value);
 
     using ReducerConditional =
       Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value,
@@ -215,13 +203,13 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               auto idx = 2 * stride * (local_id + 1) - 1;
               if (idx < wgroup_size)
 	      {
-	        out << "combining " << idx << " + " << idx-stride << ": " 
-		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;
+	        /*out << "combining " << idx << " + " << idx-stride << ": " 
+		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;*/
                 ValueJoin::join(selected_reducer, 
-                                &local_mem[idx],
-                                &local_mem[idx - stride]);
-        	out << "combining " << idx << " + " << idx-stride << ": "
-                    << local_mem[idx] << sycl::endl;
+                                pointer_type(&local_mem[idx]),
+                                pointer_type(&local_mem[idx - stride]));
+/*        	out << "combining " << idx << " + " << idx-stride << ": "
+                    << local_mem[idx] << sycl::endl;*/
 
 	      }
               item.barrier(sycl::access::fence_space::local_space);

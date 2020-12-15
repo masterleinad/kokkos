@@ -80,6 +80,13 @@ class ReduceFunctor {
   */
 
   KOKKOS_INLINE_FUNCTION
+  void join(value_type& dst, const value_type& src) const {
+    dst.value[0] += src.value[0];
+    dst.value[1] += src.value[1];
+    dst.value[2] += src.value[2];
+  }
+
+  KOKKOS_INLINE_FUNCTION
   void join(volatile value_type& dst, const volatile value_type& src) const {
     dst.value[0] += src.value[0];
     dst.value[1] += src.value[1];
