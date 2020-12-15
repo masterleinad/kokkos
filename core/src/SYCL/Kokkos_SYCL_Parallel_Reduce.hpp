@@ -152,12 +152,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     using ReducerConditional =
       Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value,
                          Functor, Reducer>;
-    //using ReducerTypeFwd = typename ReducerConditional::type;
+    using ReducerTypeFwd = typename ReducerConditional::type;
     using WorkTagFwd =
       std::conditional_t<std::is_same<InvalidType, Reducer>::value, WorkTag,
                          void>;
     using ValueInit = Kokkos::Impl::FunctorValueInit<Functor, WorkTagFwd>;
-    using ValueJoin = Kokkos::Impl::FunctorValueJoin</*ReducerTypeFwd*/Functor, WorkTagFwd>;
+    using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
     using ValueOps  = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
 
     // Convenience references
@@ -228,7 +228,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;*/
                 //functor.join(local_mem[idx], local_mem[idx-stride]);
                 (void) selected_reducer;
-                ValueJoin::join(functor, 
+                ValueJoin::join(selected_reducer, 
                                 &local_mem[idx],
                                 &local_mem[idx - stride]);
 /*        	out << "combining " << idx << " + " << idx-stride << ": "
