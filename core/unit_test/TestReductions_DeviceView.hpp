@@ -95,6 +95,8 @@ struct MDRangePolicyFunctor {
   }
 };
 
+// FIXME_SYCL requires TeamPolicy
+#ifndef KOKKOS_ENABLE_SYCL
 struct TeamPolicyFunctor {
   int M;
   TeamPolicyFunctor(int M_) : M(M_) {}
@@ -105,6 +107,7 @@ struct TeamPolicyFunctor {
     for (int i = team.team_rank(); i < M; i += team.team_size()) lsum += 1;
   }
 };
+#endif
 
 }  // namespace
 
@@ -114,6 +117,8 @@ TEST(TEST_CATEGORY, reduce_device_view_range_policy) {
                           RangePolicyFunctor());
 }
 
+// FIXME_SYCL requires MDRangePolicy parallel_reduce
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, reduce_device_view_mdrange_policy) {
   int N = 1000 * 1024 * 1024;
   test_reduce_device_view(
@@ -122,6 +127,7 @@ TEST(TEST_CATEGORY, reduce_device_view_mdrange_policy) {
           {0, 0, 0}, {1000, 1024, 1024}),
       MDRangePolicyFunctor());
 }
+#endif
 
 // FIXME_SYCL requires TeamPolicy
 #ifndef KOKKOS_ENABLE_SYCL
