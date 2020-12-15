@@ -75,44 +75,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     # file. That then exceeded the shell command line max length.
     set(${Tag}_SOURCES1)
     foreach(Name
-        AtomicOperations_int
-        AtomicOperations_unsignedint
-        AtomicOperations_longint
-        AtomicOperations_unsignedlongint
-        AtomicOperations_longlongint
-        AtomicOperations_double
-        AtomicOperations_float
-        AtomicOperations_complexdouble
-        AtomicOperations_complexfloat
-        AtomicViews
-        Atomics
-        BlockSizeDeduction
-        Concepts
-        Complex
-        Crs
-        DeepCopyAlignment
-        FunctorAnalysis
-        Init
-        LocalDeepCopy
-        MathematicalFunctions
-        MDRange_a
-        MDRange_b
-        MDRange_c
-        MDRange_d
-        MDRange_e
-        MDRange_f
-        Other
-        RangePolicy
-        RangePolicyRequire
         Reductions
-        Reducers_a
-        Reducers_b
-        Reducers_c
-        Reducers_d
-        Reductions_DeviceView
-        Scan
-        SharedAlloc
-        ViewMapping_a
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -196,7 +159,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
       list(APPEND ${Tag}_SOURCES2 ${file})
     endforeach()
 
-    SET(${Tag}_SOURCES ${${Tag}_SOURCES1} ${${Tag}_SOURCES2})
+    SET(${Tag}_SOURCES ${${Tag}_SOURCES1})
   endif()
 endforeach()
 

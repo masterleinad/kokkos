@@ -88,6 +88,24 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
  private:
 
   template <typename T>
+  struct HasJoin {
+
+  template <typename U>
+  static constexpr
+  decltype(std::declval<U>().join(std::declval<typename FunctorValueTraits<T, WorkTag>::value_type&>(), std::declval<const typename FunctorValueTraits<T, WorkTag>::value_type&>()), bool())
+  test_join(int) {
+    return true;
+  }
+
+  template <typename U>
+  static constexpr bool test_join(...) {
+    return false;
+  }
+
+  static constexpr bool value = test_join<T>(int());
+  };
+
+  template <typename T>
   struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
     using std::reference_wrapper<T>::reference_wrapper;
 
@@ -102,8 +120,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     template <typename Dummy = T>
     std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasJoin<Dummy>::value>
-    join(value_type& old_value, const value_type& new_value) const {
+                     HasJoin<Dummy>::value>
+    join(volatile value_type& old_value, const volatile value_type& new_value) const {
       return this->get().join(old_value, new_value);
     }
 
@@ -123,20 +141,23 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   ReduceFunctorHasInit<FunctorType>::value);
     static_assert(ReduceFunctorHasFinal<Functor>::value ==
                   ReduceFunctorHasFinal<FunctorType>::value);
-    static_assert(ReduceFunctorHasJoin<Functor>::value ==
-                  ReduceFunctorHasJoin<FunctorType>::value);
-    static_assert(ReduceFunctorHasJoin<Reducer>::value ==
-                  ReduceFunctorHasJoin<ReducerType>::value);
+    static_assert(HasJoin<Functor>::value ==
+                  HasJoin<FunctorType>::value);
+    if constexpr(!std::is_same<Reducer, InvalidType>::value)
+      static_assert(HasJoin<Reducer>::value == HasJoin<ReducerType>::value);
+
+    //FunctorType foo = "";
+    //(void) foo;
 
     using ReducerConditional =
       Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value,
                          Functor, Reducer>;
-    using ReducerTypeFwd = typename ReducerConditional::type;
+    //using ReducerTypeFwd = typename ReducerConditional::type;
     using WorkTagFwd =
       std::conditional_t<std::is_same<InvalidType, Reducer>::value, WorkTag,
                          void>;
     using ValueInit = Kokkos::Impl::FunctorValueInit<Functor, WorkTagFwd>;
-    using ValueJoin = Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
+    using ValueJoin = Kokkos::Impl::FunctorValueJoin</*ReducerTypeFwd*/Functor, WorkTagFwd>;
     using ValueOps  = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
 
     // Convenience references
@@ -153,8 +174,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     q.submit([&](sycl::handler& cgh) {
       auto policy     = m_policy;
       cgh.parallel_for(sycl::range<1>(std::max<std::size_t>(size, 1)), [=](sycl::item<1> item) {
-        value_type update;
-        ValueInit::init(functor, &update);
+        value_type dummy;
+        reference_type update = ValueInit::init(functor, &dummy);
         if (size>0)
         {
           const typename Policy::index_type id =
@@ -205,9 +226,11 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 	      {
 	        /*out << "combining " << idx << " + " << idx-stride << ": " 
 		    << local_mem[idx] <<  " + " <<  local_mem[idx-stride] << sycl::endl;*/
-                ValueJoin::join(selected_reducer, 
-                                pointer_type(&local_mem[idx]),
-                                pointer_type(&local_mem[idx - stride]));
+                //functor.join(local_mem[idx], local_mem[idx-stride]);
+                (void) selected_reducer;
+                ValueJoin::join(functor, 
+                                &local_mem[idx],
+                                &local_mem[idx - stride]);
 /*        	out << "combining " << idx << " + " << idx-stride << ": "
                     << local_mem[idx] << sycl::endl;*/
 
