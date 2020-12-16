@@ -61,6 +61,12 @@ class ReduceFunctor {
     ScalarType value[3];
   };
 
+  friend std::ostream& operator<<(std::ostream& os, const value_type& values)
+  {
+    os << values.value[0] << " " << values.value[1] << " " << values.value[2];
+    return os;
+  }
+
   const size_type nwork;
 
   KOKKOS_INLINE_FUNCTION
@@ -81,16 +87,34 @@ class ReduceFunctor {
 
   KOKKOS_INLINE_FUNCTION
   void join(value_type& dst, const value_type& src) const {
+    std::cout << "Adding " << dst << " and " << src << '\n'; 	  
     dst.value[0] += src.value[0];
     dst.value[1] += src.value[1];
     dst.value[2] += src.value[2];
+    std::cout << "Result is " << dst << std::endl;
   }
 
   KOKKOS_INLINE_FUNCTION
   void join(volatile value_type& dst, const volatile value_type& src) const {
+#ifdef __SYCL_DEVICE_ONLY__
+    {
+      static const __attribute__((opencl_constant)) char format[] =
+        "Adding %d %d %d and %d %d %d\n";
+      using sycl::ONEAPI::experimental::printf;
+      printf(format, dst.value[0], dst.value[1], dst.value[2], src.value[0], src.value[1], src.value[2]);
+    }
+#endif
     dst.value[0] += src.value[0];
     dst.value[1] += src.value[1];
     dst.value[2] += src.value[2];
+#ifdef __SYCL_DEVICE_ONLY__
+    {
+      static const __attribute__((opencl_constant)) char format[] =
+        "Result is %d %d %d\n";
+      using sycl::ONEAPI::experimental::printf;
+      printf(format, dst.value[0], dst.value[1], dst.value[2]);
+    }
+#endif
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -98,6 +122,12 @@ class ReduceFunctor {
     dst.value[0] += 1;
     dst.value[1] += iwork + 1;
     dst.value[2] += nwork - iwork;
+#ifdef __SYCL_DEVICE_ONLY__
+    static const __attribute__((opencl_constant)) char format[] =
+      "Initial %d: %d %d %d\n";
+    using sycl::ONEAPI::experimental::printf;
+    printf(format, iwork, dst.value[0], dst.value[1], dst.value[2]);
+#endif
   }
 };
 
@@ -266,15 +296,15 @@ class TestReduce {
 
   TestReduce(const size_type& nwork) {
     run_test(nwork);
-    run_test_final(nwork);
+    //run_test_final(nwork);
   }
 
   void run_test(const size_type& nwork) {
     using functor_type = Test::ReduceFunctor<ScalarType, execution_space>;
     using value_type   = typename functor_type::value_type;
 
-    enum { Count = 3 };
-    enum { Repeat = 100 };
+    enum { Count = 1 };
+    enum { Repeat = 1 };
 
     value_type result[Repeat];
 
@@ -297,8 +327,8 @@ class TestReduce {
     using functor_type = Test::ReduceFunctorFinal<execution_space>;
     using value_type   = typename functor_type::value_type;
 
-    enum { Count = 3 };
-    enum { Repeat = 100 };
+    enum { Count = 1 };
+    enum { Repeat = 1 };
 
     value_type result[Repeat];
 
@@ -472,8 +502,12 @@ class TestReduceDynamicView {
 }  // namespace
 
 TEST(TEST_CATEGORY, int64_t_reduce) {
-  TestReduce<int64_t, TEST_EXECSPACE>(0);
-  TestReduce<int64_t, TEST_EXECSPACE>(1000000);
+  for (unsigned i=64; i<100; i*=2)
+  {
+	  std::cout << "Testing " << i << std::endl;
+    //TestReduce<int64_t, TEST_EXECSPACE>(0);
+    TestReduce<int, TEST_EXECSPACE>dummy (i);
+  }
 }
 
 TEST(TEST_CATEGORY, double_reduce) {

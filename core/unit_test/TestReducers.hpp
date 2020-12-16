@@ -1012,7 +1012,7 @@ struct TestReducers {
     test_sum(10001);
     test_prod(35);
     test_min(10003);
-    test_minloc(10003);
+    //test_minloc(10003);
     test_max(10007);
     test_maxloc(10007);
     test_minmaxloc(10007);
