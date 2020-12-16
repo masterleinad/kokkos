@@ -48,6 +48,11 @@
 #include <CL/sycl.hpp>
 
 #ifdef __SYCL_DEVICE_ONLY__
+#ifdef KOKKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
+#define KOKKOS_IMPL_PRINTF(...) \
+  do {                          \
+  } while (0)
+#else
 #define KOKKOS_IMPL_PRINTF(format, ...)                                  \
   do {                                                                   \
     static const __attribute__((opencl_constant)) char fmt[] = (format); \
