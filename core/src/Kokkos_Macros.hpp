@@ -383,7 +383,7 @@
 #endif
 
 #if !defined(KOKKOS_IMPL_PRINTF)
-#define KOKKOS_IMPL_PRINTF(format, ...) printf((format), ##__VA_ARGS__)
+#define KOKKOS_IMPL_PRINTF(...) printf(__VA_ARGS__)
 #endif
 
 //----------------------------------------------------------------------------
