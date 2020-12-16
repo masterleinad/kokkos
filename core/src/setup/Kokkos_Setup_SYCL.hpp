@@ -59,5 +59,6 @@
     sycl::ONEAPI::experimental::printf(fmt, ##__VA_ARGS__);              \
   } while (0)
 #endif
+#endif
 
 #endif
