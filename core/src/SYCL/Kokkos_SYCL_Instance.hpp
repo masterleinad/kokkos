@@ -104,17 +104,22 @@ class SYCLInternal {
     void reset() {
       assert(!m_size);
 
-      sycl::free(m_data, m_q);
-      m_capacity = 0;
-      m_data     = nullptr;
+      if (m_data) {
+        sycl::free(m_data, *m_q);
+        m_capacity = 0;
+        m_data     = nullptr;
+      }
+      m_q.reset();
     }
 
     void reset(sycl::queue q) {
       reset();
-      m_q = std::move(q);
+      m_q.emplace(std::move(q));
     }
 
-    USMObjectMem()                    = default;
+    USMObjectMem() = default;
+    explicit USMObjectMem(sycl::queue q) noexcept : m_q(std::move(q)) {}
+
     USMObjectMem(USMObjectMem const&) = delete;
     USMObjectMem(USMObjectMem&&)      = delete;
     USMObjectMem& operator=(USMObjectMem&&) = delete;
@@ -123,12 +128,8 @@ class SYCLInternal {
     ~USMObjectMem() {
       assert(!m_size);
 
-      sycl::free(m_data, m_q);
+      if (m_data) sycl::free(m_data, *m_q);
     }
-
-    explicit USMObjectMem(sycl::queue q) noexcept : m_q(std::move(q)) {}
-
-    sycl::queue queue() const noexcept { return m_q; }
 
     void* data() noexcept { return m_data; }
     const void* data() const noexcept { return m_data; }
@@ -143,9 +144,12 @@ class SYCLInternal {
 
       if (m_capacity < n) {
         // First free what we have (in case malloc can reuse it)
-        sycl::free(m_data, m_q);
+        if (m_data)
+          sycl::free(m_data, *m_q);
+        else
+          assert(m_q);
 
-        m_data = sycl::malloc(n, m_q, kind);
+        m_data = sycl::malloc(n, *m_q, kind);
         if (!m_data) {
           m_capacity = 0;
           throw std::bad_alloc();
@@ -167,7 +171,7 @@ class SYCLInternal {
     template <typename T>
     std::unique_ptr<T, Deleter> memcpy_from(const T& t) {
       reserve(sizeof(T));
-      sycl::event memcopied = m_q.memcpy(m_data, std::addressof(t), sizeof(T));
+      sycl::event memcopied = m_q->memcpy(m_data, std::addressof(t), sizeof(T));
       memcopied.wait();
 
       std::unique_ptr<T, Deleter> ptr(reinterpret_cast<T*>(m_data),
@@ -215,7 +219,7 @@ class SYCLInternal {
     T& memcpy_to(T& t) {
       assert(sizeof(T) == m_size);
 
-      sycl::event memcopied = m_q.memcpy(std::addressof(t), m_data, sizeof(T));
+      sycl::event memcopied = m_q->memcpy(std::addressof(t), m_data, sizeof(T));
       memcopied.wait();
 
       return t;
@@ -245,9 +249,10 @@ class SYCLInternal {
    private:
     // USMObjectMem class invariants
     //  !m_data == !m_capacity
+    //  m_q || !m_data
     //  m_data || !m_size
     //  m_size <= m_capacity
-    sycl::queue m_q;
+    std::optional<sycl::queue> m_q;
     void* m_data      = nullptr;
     size_t m_size     = 0;  // sizeof(T) iff m_data points to live T
     size_t m_capacity = 0;
