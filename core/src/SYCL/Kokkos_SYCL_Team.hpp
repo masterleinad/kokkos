@@ -223,10 +223,10 @@ class SYCLTeamMember {
                  void* scratch_level_1_ptr, const int scratch_level_1_size,
                  const sycl::group<1> group)
       : m_team_reduce(shared),
-        m_team_shared(((char*)shared) + shared_begin, shared_size,
+        m_team_shared(static_cast<char*>(shared) + shared_begin, shared_size,
                       scratch_level_1_ptr, scratch_level_1_size),
         m_team_reduce_size(shared_begin),
-        // FIXME_SYCL should group.get_group_id(0) in SYCL2020
+        // FIXME_SYCL should be group.get_group_id(0) in SYCL2020
         m_league_rank(group.get_id(0)),
         m_league_size(group.get_group_range(0)),
         m_group(group) {}
