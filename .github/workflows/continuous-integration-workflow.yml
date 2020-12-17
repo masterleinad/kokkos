@@ -57,10 +57,10 @@ jobs:
       - name: Install
         run: sudo cmake --build builddir --target install
       - name: Coverage
-        working-directory: builddir
         uses: codecov/codecov-action@v1
         with:
           name: codecov-umbrella
           fail_ci_if_error: true
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
+        working-directory: builddir
