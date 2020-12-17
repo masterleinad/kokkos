@@ -101,29 +101,24 @@ class SYCLInternal {
 
     static constexpr sycl::usm::alloc kind = Kind;
 
-    friend void swap(USMObjectMem& lhs, USMObjectMem& rhs) noexcept {
-      assert(!lhs.m_size);
-      assert(!rhs.m_size);
+    void reset() {
+      assert(!m_size);
 
-      using std::swap;
-      swap(lhs.m_q, rhs.m_q);
-      swap(lhs.m_data, rhs.m_data);
-      swap(lhs.m_size, rhs.m_size);
-      swap(lhs.m_capacity, rhs.m_capacity);
+      sycl::free(m_data, m_q);
+      m_capacity = 0;
+      m_data     = nullptr;
+    }
+
+    void reset(sycl::queue q) {
+      reset();
+      m_q = std::move(q);
     }
 
     USMObjectMem()                    = default;
     USMObjectMem(USMObjectMem const&) = delete;
+    USMObjectMem(USMObjectMem&&)      = delete;
+    USMObjectMem& operator=(USMObjectMem&&) = delete;
     USMObjectMem& operator=(USMObjectMem const&) = delete;
-
-    USMObjectMem(USMObjectMem&& that) noexcept : USMObjectMem() {
-      swap(*this, that);
-    }
-
-    USMObjectMem& operator=(USMObjectMem&& that) noexcept {
-      swap(*this, that);
-      return *this;
-    }
 
     ~USMObjectMem() {
       assert(!m_size);
@@ -248,9 +243,13 @@ class SYCLInternal {
     }
 
    private:
+    // USMObjectMem class invariants
+    //  !m_data == !m_capacity
+    //  m_data || !m_size
+    //  m_size <= m_capacity
     sycl::queue m_q;
     void* m_data      = nullptr;
-    size_t m_size     = 0;
+    size_t m_size     = 0;  // sizeof(T) iff m_data points to live T
     size_t m_capacity = 0;
   };
 
