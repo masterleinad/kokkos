@@ -239,17 +239,16 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       size = n_wgroups;
     }
 
-    if constexpr (ReduceFunctorHasFinal<Functor>::value) {
+    space.fence();
+    if constexpr (ReduceFunctorHasFinal<Functor>::value)
       q.submit([&](sycl::handler& cgh) {
         cgh.single_task([=]() {
           FunctorFinal<Functor, WorkTag>::final(functor, results_ptr);
         });
       });
-      space.fence();
-    }
-
-    Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
-                           Kokkos::Experimental::SYCLDeviceUSMSpace>(
+    else
+      Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
+                             Kokkos::Experimental::SYCLDeviceUSMSpace>(
         space, m_result_ptr, results_ptr, sizeof(*m_result_ptr));
     space.fence();
 
