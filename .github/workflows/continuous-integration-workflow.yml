@@ -59,4 +59,4 @@ jobs:
         working-directory: builddir
         run: |
           mkdir -p $HOME/.local/bin && wget -O $HOME/.local/bin/codecov https://codecov.io/bash && chmod +x $HOME/.local/bin/codecov
-          if [[ ${matrix.cxx} != 'g++' ]]; then codecov -x "llvm-cov gcov" -F "${matrix.cxx}"; else codecov -x gcov -F "${CC}"; fi;
+          if [[ ${{ matrix.cxx }} != 'g++' ]]; then codecov -x "llvm-cov gcov" -F "${{ matrix.cxx }}"; else codecov -x gcov -F "${{ matrix.cxx }}"; fi;
