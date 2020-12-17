@@ -42,6 +42,7 @@ jobs:
             -DKokkos_ENABLE_OPENMP=${{ matrix.openmp }} \
             -DKokkos_ENABLE_TESTS=ON \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DCMAKE_CXX_FLAGS="-Werror --coverage" \
             -DCMAKE_BUILD_TYPE=${{ matrix.cmake_build_type }} 
       - name: Build
         run: |
@@ -55,8 +56,10 @@ jobs:
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
       - name: Install
         run: sudo cmake --build builddir --target install
-      - name: coverage
-        working-directory: builddir
-        run: |
-          mkdir -p $HOME/.local/bin && wget -O $HOME/.local/bin/codecov https://codecov.io/bash && chmod +x $HOME/.local/bin/codecov
-          if [[ ${{ matrix.cxx }} != 'g++' ]]; then codecov -x "llvm-cov gcov" -F "${{ matrix.cxx }}"; else codecov -x gcov -F "${{ matrix.cxx }}"; fi;
+      - name: Coverage
+        uses: codecov/codecov-action@v1
+        with:
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
