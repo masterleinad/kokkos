@@ -253,7 +253,8 @@ class SYCLInternal {
     //
     //  The above invariants mean that:
     //  if m_size != 0 then m_data != 0
-    //  if m_data != 0 then m_q != nullopt && m_capacity != 0
+    //  if m_data != 0 then m_capacity != 0 && m_q != nullopt
+    //  if m_data == 0 then m_capacity == 0
 
     std::optional<sycl::queue> m_q;
     void* m_data      = nullptr;
