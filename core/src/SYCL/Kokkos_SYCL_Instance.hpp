@@ -248,10 +248,16 @@ class SYCLInternal {
 
    private:
     // USMObjectMem class invariants
+    //
     //  !m_data == !m_capacity
     //  m_q || !m_data
     //  m_data || !m_size
     //  m_size <= m_capacity
+    //
+    //  The above invariants mean that:
+    //  if m_size != 0 then m_data != 0
+    //  if m_data != 0 then m_q != nullopt && m_capacity != 0
+
     std::optional<sycl::queue> m_q;
     void* m_data      = nullptr;
     size_t m_size     = 0;  // sizeof(T) iff m_data points to live T
