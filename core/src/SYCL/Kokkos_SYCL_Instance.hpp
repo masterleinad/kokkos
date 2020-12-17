@@ -83,7 +83,6 @@ class SYCLInternal {
       template <typename T>
       void operator()(T* p) const noexcept {
         assert(m_mem);
-        assert(p == m_mem->m_data);
         assert(sizeof(T) == m_mem->m_size);
 
         if constexpr (sycl::usm::alloc::device == kind)
