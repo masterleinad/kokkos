@@ -140,13 +140,11 @@ class SYCLInternal {
     // returns the new capacity
     size_t reserve(size_t n) {
       assert(!m_size);
+      assert(m_q);
 
       if (m_capacity < n) {
         // First free what we have (in case malloc can reuse it)
-        if (m_data)
-          sycl::free(m_data, *m_q);
-        else
-          assert(m_q);
+        sycl::free(m_data, *m_q);
 
         m_data = sycl::malloc(n, *m_q, kind);
         if (!m_data) {
