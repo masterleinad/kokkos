@@ -48,7 +48,7 @@
 #include <CL/sycl.hpp>
 
 #ifdef __SYCL_DEVICE_ONLY__
-#ifdef KOKiKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
+#ifdef KOKKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
 namespace Kokkos {
 namespace ImplSYCL {
 template <typename... Args>
