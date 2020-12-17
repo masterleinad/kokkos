@@ -55,3 +55,12 @@ jobs:
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
       - name: Install
         run: sudo cmake --build builddir --target install
+      - name: coverage
+        working-directory: builddir
+        run:
+          mkdir -p $HOME/.local/bin && wget -O $HOME/.local/bin/codecov https://codecov.io/bash && chmod +x $HOME/.local/bin/codecov
+          if [[ ${matrix.cxx} != 'g++' ]]; then
+            codecov -x "llvm-cov gcov" -F "${matrix.cxx}";
+          else
+            codecov -x gcov -F "${CC}";
+          fi;
