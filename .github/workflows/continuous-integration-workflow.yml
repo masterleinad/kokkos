@@ -57,6 +57,7 @@ jobs:
       - name: Install
         run: sudo cmake --build builddir --target install
       - name: Coverage
+        working-directory: builddir
         uses: codecov/codecov-action@v1
         with:
           name: codecov-umbrella
