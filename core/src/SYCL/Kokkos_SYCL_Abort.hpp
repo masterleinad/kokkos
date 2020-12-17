@@ -52,7 +52,6 @@ namespace Kokkos {
 namespace Impl {
 
 inline void sycl_abort(char const *msg) {
-  (void)msg;
   KOKKOS_IMPL_PRINTF("Aborting with message %s.\n", msg);
 }
 

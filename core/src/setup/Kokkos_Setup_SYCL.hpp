@@ -48,9 +48,18 @@
 #include <CL/sycl.hpp>
 
 #ifdef __SYCL_DEVICE_ONLY__
-#ifdef KOKKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
-#define KOKKOS_IMPL_PRINTF(...) \
-  do {                          \
+#ifdef KOKiKOS_IMPL_DISABLE_SYCL_DEVICE_PRINTF
+namespace Kokkos {
+namespace ImplSYCL {
+template <typename... Args>
+void sink(Args&&... args) {
+  (void)(sizeof...(args));
+}
+}  // namespace ImplSYCL
+}  // namespace Kokkos
+#define KOKKOS_IMPL_PRINTF(...)          \
+  do {                                   \
+    Kokkos::ImplSYCL::sink(__VA_ARGS__); \
   } while (0)
 #else
 #define KOKKOS_IMPL_PRINTF(format, ...)                                  \
