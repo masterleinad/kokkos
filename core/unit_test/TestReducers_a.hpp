@@ -44,12 +44,9 @@
 
 #include <TestReducers.hpp>
 
-// FIXME_SYCL fix this!
-#ifndef KOKKOS_ENABLE_SYCL
 namespace Test {
 TEST(TEST_CATEGORY, reducers_int) {
   TestReducers<int, TEST_EXECSPACE>::execute_integer();
 }
 
 }  // namespace Test
-#endif

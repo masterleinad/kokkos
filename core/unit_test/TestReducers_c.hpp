@@ -44,11 +44,8 @@
 
 #include <TestReducers.hpp>
 
-// FIXME_SYCL fix this!
-#ifndef KOKKOS_ENABLE_SYCL
 namespace Test {
 TEST(TEST_CATEGORY, reducers_double) {
   TestReducers<double, TEST_EXECSPACE>::execute_float();
 }
 }  // namespace Test
-#endif
