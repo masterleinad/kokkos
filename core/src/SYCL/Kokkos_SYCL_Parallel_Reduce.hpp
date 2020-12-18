@@ -174,6 +174,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         sizeof(*m_result_ptr) * init_size, q, sycl::usm::alloc::shared));*/
     auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * init_size));
 
+    value_type dummy;
+    auto update = ValueInit::init(selected_reducer, &dummy);
+    ValueOps::copy(functor, &results_ptr[0], &update);
+
     // Initialize global memory
     q.submit([&](sycl::handler& cgh) {
       auto policy = m_policy;
