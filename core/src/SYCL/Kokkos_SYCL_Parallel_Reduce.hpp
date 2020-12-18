@@ -170,10 +170,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     std::size_t size     = policy.end() - policy.begin();
     const auto init_size = std::max<std::size_t>(size, 1);
-    auto results_ptr     = static_cast<pointer_type>(sycl::malloc(
-        sizeof(*m_result_ptr) * init_size, q, sycl::usm::alloc::shared));
-
-    ValueInit::init(selected_reducer, results_ptr);
+    /*auto results_ptr     = static_cast<pointer_type>(sycl::malloc(
+        sizeof(*m_result_ptr) * init_size, q, sycl::usm::alloc::shared));*/
+    auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * init_size));
 
     // Initialize global memory
     q.submit([&](sycl::handler& cgh) {
