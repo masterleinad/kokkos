@@ -464,13 +464,12 @@ class TestReduceDynamicView {
 
 }  // namespace
 
-// FIXME_SYCL fix this!
-#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, int64_t_reduce) {
   TestReduce<int64_t, TEST_EXECSPACE>(0);
   TestReduce<int64_t, TEST_EXECSPACE>(1000000);
 }
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, double_reduce) {
   TestReduce<double, TEST_EXECSPACE>(0);
   TestReduce<double, TEST_EXECSPACE>(1000000);
