@@ -438,7 +438,7 @@ class TestReduceDynamicView {
     const uint64_t nw   = nwork;
     const uint64_t nsum = nw % 2 ? nw * ((nw + 1) / 2) : (nw / 2) * (nw + 1);
 
-    for (unsigned count = 1; count < CountLimit; ++count) {
+    for (unsigned count = 2; count < CountLimit; ++count) {
       result_type result("result", count);
       result_host_type host_result = Kokkos::create_mirror(result);
 
