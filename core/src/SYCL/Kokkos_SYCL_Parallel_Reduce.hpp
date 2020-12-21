@@ -201,7 +201,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       q.submit([&](sycl::handler& cgh) {
         sycl::accessor<value_type, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
-            local_mem(sycl::range<1>(wgroup_size), cgh);
+            local_mem(sycl::range<1>(wgroup_size)*value_count, cgh);
 
         cgh.parallel_for(
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
@@ -211,10 +211,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
               // Initialize local memory
               if (global_id < size)
-                ValueOps::copy(functor, &local_mem[local_id],
-                               &results_ptr[global_id]);
+                ValueOps::copy(functor, &local_mem[local_id*value_count],
+                               &results_ptr[global_id*value_count]);
               else
-                ValueInit::init(selected_reducer, &local_mem[local_id]);
+                ValueInit::init(selected_reducer, &local_mem[local_id*value_count]);
               item.barrier(sycl::access::fence_space::local_space);
 
               // Perform workgroup reduction
@@ -222,16 +222,16 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                    stride *= 2) {
                 auto idx = 2 * stride * (local_id + 1) - 1;
                 if (idx < wgroup_size) {
-                  ValueJoin::join(selected_reducer, &local_mem[idx],
-                                  &local_mem[idx - stride]);
+                  ValueJoin::join(selected_reducer, &local_mem[idx*value_count],
+                                  &local_mem[(idx - stride)*value_count]);
                 }
                 item.barrier(sycl::access::fence_space::local_space);
               }
 
               if (local_id == 0)
                 ValueOps::copy(functor,
-                               &results_ptr[item.get_group_linear_id()],
-                               &local_mem[wgroup_size - 1]);
+                               &results_ptr[(item.get_group_linear_id())*value_count],
+                               &local_mem[(wgroup_size - 1)*value_count]);
             });
       });
       space.fence();
@@ -251,7 +251,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     {
       Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
                              Kokkos::Experimental::SYCLDeviceUSMSpace>(
-        space, m_result_ptr, results_ptr, sizeof(*m_result_ptr));
+        space, m_result_ptr, results_ptr, sizeof(*m_result_ptr)*value_count);
       space.fence();
     }
 
