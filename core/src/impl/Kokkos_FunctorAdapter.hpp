@@ -1912,6 +1912,7 @@ struct FunctorValueOps<FunctorType, ArgTag, T*> {
                                                void* const lhs,
                                                const void* const rhs) {
     const int n = FunctorValueTraits<FunctorType, ArgTag>::value_count(f);
+
     for (int i = 0; i < n; ++i) {
       ((T*)lhs)[i] = ((const T*)rhs)[i];
     }
