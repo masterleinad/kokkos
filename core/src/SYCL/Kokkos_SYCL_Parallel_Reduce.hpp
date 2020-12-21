@@ -172,15 +172,15 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     const auto init_size = std::max<std::size_t>(size, 1);
     const auto value_count  = FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(selected_reducer);
     std::cout << "value_count: " << value_count << std::endl;
-    if (value_count != 1)
-	    std::abort();
+/*    if (value_count != 1)
+	    std::abort();*/
      const auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * value_count * init_size));
 
     // Initialize global memory
     q.submit([&](sycl::handler& cgh) {
       auto policy = m_policy;
       cgh.parallel_for(sycl::range<1>(init_size), [=](sycl::item<1> item) {
-        reference_type update = ValueInit::init(selected_reducer, &results_ptr[item.get_id()]);
+        reference_type update = ValueInit::init(selected_reducer, &results_ptr[item.get_id()*value_count]);
         if (size > 0) {
           const typename Policy::index_type id =
               static_cast<typename Policy::index_type>(item.get_id()) +
@@ -213,8 +213,11 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               if (global_id < size)
                 ValueOps::copy(functor, &local_mem[local_id*value_count],
                                &results_ptr[global_id*value_count]);
+
               else
                 ValueInit::init(selected_reducer, &local_mem[local_id*value_count]);
+/*              for (unsigned int i=0; i<value_count; ++ i)
+		  KOKKOS_IMPL_PRINTF("initial [%lu][%d] %ld\n", global_id, i, local_mem[local_id*value_count+i]);*/
               item.barrier(sycl::access::fence_space::local_space);
 
               // Perform workgroup reduction

@@ -433,12 +433,12 @@ class TestReduceDynamicView {
     using result_type      = Kokkos::View<ScalarType*, DeviceType>;
     using result_host_type = typename result_type::HostMirror;
 
-    const unsigned CountLimit = 2;
+    const unsigned CountLimit = 23;
 
     const uint64_t nw   = nwork;
     const uint64_t nsum = nw % 2 ? nw * ((nw + 1) / 2) : (nw / 2) * (nw + 1);
 
-    for (unsigned count = 2; count < CountLimit; ++count) {
+    for (unsigned count = 0; count < CountLimit; ++count) {
       result_type result("result", count);
       result_host_type host_result = Kokkos::create_mirror(result);
 
@@ -473,16 +473,16 @@ TEST(TEST_CATEGORY, double_reduce) {
   TestReduce<double, TEST_EXECSPACE>(0);
   TestReduce<double, TEST_EXECSPACE>(1000000);
 }
-/*
+
 TEST(TEST_CATEGORY, int64_t_reduce_dynamic) {
   TestReduceDynamic<int64_t, TEST_EXECSPACE>(0);
   TestReduceDynamic<int64_t, TEST_EXECSPACE>(1000000);
-}*/
-/*
+}
+
 TEST(TEST_CATEGORY, double_reduce_dynamic) {
   TestReduceDynamic<double, TEST_EXECSPACE>(0);
   TestReduceDynamic<double, TEST_EXECSPACE>(1000000);
-}*/
+}
 
 TEST(TEST_CATEGORY, int64_t_reduce_dynamic_view) {
   TestReduceDynamicView<int64_t, TEST_EXECSPACE>(0);

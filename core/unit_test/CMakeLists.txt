@@ -75,20 +75,20 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     # file. That then exceeded the shell command line max length.
     set(${Tag}_SOURCES1)
     foreach(Name
-        MDRange_a
-        MDRange_b
-        MDRange_c
-        MDRange_d
-        MDRange_e
-        MDRange_f
-        RangePolicy
-        RangePolicyRequire
+		    #MDRange_a
+	#MDRange_b
+	#MDRange_c
+	#MDRange_d
+	#MDRange_e
+	#MDRange_f
+	#RangePolicy
+	#RangePolicyRequire
         Reductions
-        Reducers_a
-        Reducers_b
-        Reducers_c
-        Reducers_d
-        Reductions_DeviceView
+	#        Reducers_a
+	#Reducers_b
+	#Reducers_c
+	#Reducers_d
+	#Reductions_DeviceView
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
