@@ -48,5 +48,5 @@
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
 #include <TestReduce.hpp>
 #endif
-//#include <TestCXX11Deduction.hpp>
+#include <TestCXX11Deduction.hpp>
 #endif

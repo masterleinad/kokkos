@@ -110,7 +110,7 @@ struct TeamPolicyFunctor {
 #endif
 
 }  // namespace
-/*
+
 TEST(TEST_CATEGORY, reduce_device_view_range_policy) {
 #ifdef KOKKOS_ENABLE_SYCL
   int N = 100 * 1024 * 1024;
@@ -119,7 +119,7 @@ TEST(TEST_CATEGORY, reduce_device_view_range_policy) {
 #endif
   test_reduce_device_view(N, Kokkos::RangePolicy<TEST_EXECSPACE>(0, N),
                           RangePolicyFunctor());
-}*/
+}
 
 // FIXME_SYCL requires MDRangePolicy parallel_reduce
 #ifndef KOKKOS_ENABLE_SYCL
