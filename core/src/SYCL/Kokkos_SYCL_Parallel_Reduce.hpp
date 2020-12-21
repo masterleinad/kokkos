@@ -172,15 +172,16 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     const auto init_size = std::max<std::size_t>(size, 1);
     /*auto results_ptr     = static_cast<pointer_type>(sycl::malloc(
         sizeof(*m_result_ptr) * init_size, q, sycl::usm::alloc::shared));*/
-    const auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * 3 * init_size));
+     const auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(selected_reducer) * init_size));
 
+    std::cout << "results_ptr " << results_ptr << " end " << (void*)(reinterpret_cast<char*>(results_ptr)+sizeof(*m_result_ptr) * FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(selected_reducer) * init_size) << std::endl;
+//    value_type dummy{};
     std::cout << "results_ptr " << results_ptr << std::endl;
-    value_type dummy;
-    std::cout << "results_ptr " << results_ptr << std::endl;
-    ValueInit::init(selected_reducer, &dummy);
+  //  std::cout << "dummy" << dummy << " address " << &dummy << std::endl;
+    ValueInit::init(selected_reducer, static_cast<value_type*>(results_ptr));
     std::cout << "results_ptr " << results_ptr << std::endl;
     //KOKKOS_IMPL_PRINTF("dummy %d\n", dummy);
-    ValueOps::copy(functor, &results_ptr[0], &dummy);
+//    ValueOps::copy(functor, &results_ptr[0], &dummy);
     std::cout << "results_ptr " << results_ptr << std::endl;
     //KOKKOS_IMPL_PRINTF("reults %d, dummy %d\n", results_ptr[0], dummy);
 
