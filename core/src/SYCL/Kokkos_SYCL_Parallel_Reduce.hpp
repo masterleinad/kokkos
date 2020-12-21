@@ -174,7 +174,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     std::cout << "value_count: " << value_count << std::endl;
 /*    if (value_count != 1)
 	    std::abort();*/
-     const auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * value_count * init_size));
+     const auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * std::max(value_count,1u) * init_size));
 
     // Initialize global memory
     q.submit([&](sycl::handler& cgh) {
