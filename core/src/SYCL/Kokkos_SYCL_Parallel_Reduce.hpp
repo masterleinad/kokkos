@@ -174,27 +174,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     std::cout << "value_count: " << value_count << std::endl;
     if (value_count != 1)
 	    std::abort();
-    /*auto results_ptr     = static_cast<pointer_type>(sycl::malloc(
-        sizeof(*m_result_ptr) * init_size, q, sycl::usm::alloc::shared));*/
      const auto results_ptr = static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate("SYCL parallel_reduce result storage", sizeof(*m_result_ptr) * value_count * init_size));
-
- /*   std::cout << "results_ptr " << results_ptr << " end " << (void*)(reinterpret_cast<char*>(results_ptr)+sizeof(*m_result_ptr) * value_count * init_size) << std::endl;
-//    value_type dummy{};
-    std::cout << "results_ptr " << results_ptr << std::endl;
-  //  std::cout << "dummy" << dummy << " address " << &dummy << std::endl;
-    ValueInit::init(selected_reducer, static_cast<value_type*>(results_ptr));
-    std::cout << "results_ptr " << results_ptr << std::endl;
-    //KOKKOS_IMPL_PRINTF("dummy %d\n", dummy);
-//    ValueOps::copy(functor, &results_ptr[0], &dummy);
-    std::cout << "results_ptr " << results_ptr << std::endl;
-    //KOKKOS_IMPL_PRINTF("reults %d, dummy %d\n", results_ptr[0], dummy);*/
 
     // Initialize global memory
     q.submit([&](sycl::handler& cgh) {
-/*     sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                    sycl::access::target::local>
-            local_mem(sycl::range<1>(value_count), cgh);*/
-
       auto policy = m_policy;
       cgh.parallel_for(sycl::range<1>(init_size), [=](sycl::item<1> item) {
         reference_type update = ValueInit::init(selected_reducer, &results_ptr[item.get_id()]);
@@ -207,7 +190,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           else
             functor(WorkTag(), id, update);
         }
-//        ValueOps::copy(functor, &results_ptr[item.get_id()], local_mem.data());
       });
     });
     space.fence();
