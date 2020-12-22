@@ -54,13 +54,11 @@ jobs:
         run: ctest --output-on-failure
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
-      - name: Install
-        run: sudo cmake --build builddir --target install
       - name: Coverage
         uses: codecov/codecov-action@v1
         with:
-          name: codecov-umbrella
+          name: kokkos-${{ matrix.distro }}-${{ matrix.cxx }}-${{ matrix.cmake_build_type }}-${{ matrix.openmp}}
           fail_ci_if_error: true
-          path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
-        working-directory: builddir
+          working-directory: builddir
+
