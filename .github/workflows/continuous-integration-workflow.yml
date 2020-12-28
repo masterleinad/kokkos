@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
       - uses: actions/cache@v2
         with:
           path: ~/.ccache
