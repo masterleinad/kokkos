@@ -52,11 +52,15 @@ jobs:
           cmake --build builddir --parallel 2
           ccache -s
       - name: Tests and coverage
-        working-directory: builddir
         run: |
           ctest --output-on-failure
-          curl -s https://codecov.io/bash --output codecov.sh
-          bash codecov.sh -v -s builddir
+          mkdir -p $HOME/.local/bin && wget -O $HOME/.local/bin/codecov https://codecov.io/bash && chmod +x $HOME/.local/bin/codecov
+          pushd builddir
+          if [[ ${CC} = clang* ]]; then \
+            codecov -x "llvm-cov gcov" -F "${CC}"; \
+          else \
+            codecov -x gcov -F "${CC}"; \
+          fi
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
 
