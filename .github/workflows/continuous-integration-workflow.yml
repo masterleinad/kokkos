@@ -56,7 +56,7 @@ jobs:
         run: |
           ctest --output-on-failure
           curl -s https://codecov.io/bash --output codecov.sh
-          bash codecov.sh
+          bash codecov.sh -v -s builddir
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
 
