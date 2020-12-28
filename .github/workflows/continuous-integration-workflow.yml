@@ -56,10 +56,10 @@ jobs:
           ctest --output-on-failure
           mkdir -p $HOME/.local/bin && wget -O $HOME/.local/bin/codecov https://codecov.io/bash && chmod +x $HOME/.local/bin/codecov
           pushd builddir
-          if [[ ${CC} = clang* ]]; then \
-            codecov -x "llvm-cov gcov" -F "${CC}"; \
-          else \
-            codecov -x gcov -F "${CC}"; \
+          if [[ ${{ matrix.cxx }} = g++ ]]; then    \
+            codecov -x gcov -F "${{ matrix.cxx }}"; \
+          else                                      \
+            codecov -x "llvm-cov gcov" -F "${{ matrix.cxx }}";  \
           fi
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
