@@ -9,7 +9,7 @@ jobs:
         distro: ['fedora:latest', 'fedora:rawhide', 'ubuntu:latest']
         cxx: ['g++', 'clang++']
         cmake_build_type: ['Release', 'Debug']
-        openmp: ['ON']
+        openmp: ['OFF']
         include:
           - distro: 'fedora:intel'
             cxx: 'icpc'
