@@ -55,7 +55,8 @@ jobs:
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
       - name: Coverage
-        uses: codecov/codecov-action@v1
+        uses: actions/checkout@master
+      - uses: codecov/codecov-action@v1
         with:
           name: kokkos-${{ matrix.distro }}-${{ matrix.cxx }}-${{ matrix.cmake_build_type }}-${{ matrix.openmp}}
           fail_ci_if_error: true
