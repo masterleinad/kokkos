@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2.2.0
-        with:
-          fetch-depth: 0
       - uses: actions/cache@v2
         with:
           path: ~/.ccache
@@ -51,16 +49,16 @@ jobs:
           ccache -z
           cmake --build builddir --parallel 2
           ccache -s
-      - name: Tests and coverage
-        run: |
-          ctest --output-on-failure
-          mkdir -p $HOME/.local/bin && wget -O $HOME/.local/bin/codecov https://codecov.io/bash && chmod +x $HOME/.local/bin/codecov
-          pushd builddir
-          if [[ ${{ matrix.cxx }} = g++ ]]; then    \
-            bash $HOME/.local/bin/codecov -x gcov -F "${{ matrix.cxx }}"; \
-          else                                      \
-            bash $HOME/.local/bin/codecov -x "llvm-cov gcov" -F "${{ matrix.cxx }}";  \
-          fi
+      - name: Tests
+        working-directory: builddir
+        run: ctest --output-on-failure
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
+      - name: Coverage
+        uses: codecov/codecov-action@v1
+        with:
+          name: kokkos-${{ matrix.distro }}-${{ matrix.cxx }}-${{ matrix.cmake_build_type }}-${{ matrix.openmp}}
+          fail_ci_if_error: true
+          verbose: true
+          working-directory: builddir
 
