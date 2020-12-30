@@ -478,11 +478,8 @@ KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::TeamVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
         loop_boundaries,
     const Closure& closure) {
-  loop_boundaries.member.group().parallel_for_work_item(
-      sycl::range<1>(loop_boundaries.end - loop_boundaries.start),
-      [=](sycl::h_item<1> item) {
-        closure(item.get_local()[0] + loop_boundaries.start);
-      });
+  for (auto i = loop_boundaries.start; i != loop_boundaries.end; ++i)
+    closure(i);
 }
 
 template <typename iType, class Closure, class ReducerType>
@@ -519,11 +516,8 @@ KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
         loop_boundaries,
     const Closure& closure) {
-  loop_boundaries.member.group().parallel_for_work_item(
-      sycl::range<1>(loop_boundaries.end - loop_boundaries.start),
-      [=](sycl::h_item<1> item) {
-        closure(item.get_local()[0] + loop_boundaries.start);
-      });
+  for (auto i = loop_boundaries.start; i != loop_boundaries.end; ++i)
+    closure(i);
 }
 
 //----------------------------------------------------------------------------
