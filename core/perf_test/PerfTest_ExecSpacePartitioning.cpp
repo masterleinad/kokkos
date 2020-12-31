@@ -35,6 +35,25 @@ struct SpaceInstance<Kokkos::Cuda> {
   }
 };
 #endif
+
+#ifdef KOKKOS_ENABLE_SYCL
+template <>
+struct SpaceInstance<Kokkos::Experimental::SYCL> {
+  static Kokkos::Experimental::SYCL create() {
+    hipStream_t stream;
+    hipStreamCreate(&stream);
+    return Kokkos::Experimental::SYCL(stream);
+  }
+  static void destroy(Kokkos::Experimental::SYCL& space) {
+    hipStream_t stream = space.hip_stream();
+    hpiStreamDestroy(stream);
+  }
+  static bool overlap() {
+    return value;
+  }
+};
+#endif
+
 #endif
 }  // namespace
 

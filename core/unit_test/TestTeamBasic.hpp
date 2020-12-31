@@ -164,10 +164,7 @@ TEST(TEST_CATEGORY, team_broadcast_float) {
 #ifdef KOKKOS_ENABLE_CUDA
     if (!std::is_same<TEST_EXECSPACE, Kokkos::Cuda>::value)
 #endif
-    // FIXME_HIP
-#ifdef KOKKOS_ENABLE_HIP
       if (!std::is_same<TEST_EXECSPACE, Kokkos::Experimental::HIP>::value)
-#endif
       {
         TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                           float>::test_teambroadcast(1000, 1.3);
@@ -203,10 +200,7 @@ TEST(TEST_CATEGORY, team_broadcast_double) {
 #ifdef KOKKOS_ENABLE_CUDA
     if (!std::is_same<TEST_EXECSPACE, Kokkos::Cuda>::value)
 #endif
-    // FIXME_HIP
-#ifdef KOKKOS_ENABLE_HIP
       if (!std::is_same<TEST_EXECSPACE, Kokkos::Experimental::HIP>::value)
-#endif
       {
         TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                           double>::test_teambroadcast(1000, 1.3);
