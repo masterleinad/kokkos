@@ -111,6 +111,9 @@ TEST(TEST_CATEGORY, IncrTest_12b_TeamScratch) {
   test.run(4, 7, 10);
 #ifdef KOKKOS_ENABLE_OPENMPTARGET
   test.run(14, 277, 1);
+  // running out of local memory
+#elif defined(KOKKOS_ENABLE_SYCL)
+  test.run(14, 19, 321);
 #else
   test.run(14, 277, 321);
 #endif
