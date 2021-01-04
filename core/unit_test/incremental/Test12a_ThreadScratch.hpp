@@ -118,14 +118,14 @@ struct ThreadScratch {
   }
 };
 
-// FIXME_SYCL thread scratch memory not yet implemented
-#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, IncrTest_12a_ThreadScratch) {
   ThreadScratch<TEST_EXECSPACE> test;
   test.run(1, 55, 9);
   test.run(2, 4, 22);
+  // FIXME_SYCL this gives a wrong result yet
+#ifndef KOKKOS_ENABLE_SYCL
   test.run(14, 277, 321);
-}
 #endif
+}
 
 }  // namespace Test
