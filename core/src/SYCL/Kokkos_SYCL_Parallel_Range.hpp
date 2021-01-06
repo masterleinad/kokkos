@@ -188,7 +188,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
     }
     if constexpr (Policy::rank == 6) {
       // id0,id1 encoded within first index; id2,id3 to second index; id4,id5
-      // to third index
+      // third index
       sycl::range<3> local_sizes(m_tile[0] * m_tile[1], m_tile[2] * m_tile[3],
                                  m_tile[4] * m_tile[5]);
       sycl::range<3> global_sizes(
@@ -240,8 +240,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
     space.fence();
   }
 
-  // Indirectly launch a functor by explicitly creating it in USM shared
-  // memory
+  // Indirectly launch a functor by explicitly creating it in USM shared memory
   void sycl_indirect_launch() const {
     // Convenience references
     const Kokkos::Experimental::SYCL& space = m_policy.space();
