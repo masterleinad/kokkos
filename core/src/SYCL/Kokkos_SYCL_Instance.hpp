@@ -86,7 +86,7 @@ class SYCLInternal {
         assert(sizeof(T) == m_mem->m_size);
 
         if constexpr (sycl::usm::alloc::device == kind)
-          // Only skipping the detor on trivially copyable types
+          // Only skipping the dtor on trivially copyable types
           static_assert(std::is_trivially_copyable_v<T>);
         else
           p->~T();
@@ -101,7 +101,7 @@ class SYCLInternal {
     static constexpr sycl::usm::alloc kind = Kind;
 
     void reset() {
-      assert(!m_size);
+      assert(m_size == 0);
 
       if (m_data) {
         sycl::free(m_data, *m_q);
@@ -125,7 +125,7 @@ class SYCLInternal {
     USMObjectMem& operator=(USMObjectMem const&) = delete;
 
     ~USMObjectMem() {
-      assert(!m_size);
+      assert(m_size == 0);
 
       if (m_data) sycl::free(m_data, *m_q);
     }
@@ -139,7 +139,7 @@ class SYCLInternal {
     // reserve() allocates space for at least n bytes
     // returns the new capacity
     size_t reserve(size_t n) {
-      assert(!m_size);
+      assert(m_size == 0);
       assert(m_q);
 
       if (m_capacity < n) {
@@ -245,6 +245,7 @@ class SYCLInternal {
 
    private:
     // USMObjectMem class invariants
+    // All four expressions below must evaluate to true:
     //
     //  !m_data == !m_capacity
     //  m_q || !m_data
