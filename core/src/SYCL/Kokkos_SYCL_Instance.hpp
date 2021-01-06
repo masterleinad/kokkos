@@ -48,6 +48,8 @@
 #include <memory>
 #include <CL/sycl.hpp>
 
+#include <impl/Kokkos_Error.hpp>
+
 namespace Kokkos {
 namespace Experimental {
 namespace Impl {
@@ -159,6 +161,24 @@ class SYCLInternal {
     }
 
    private:
+    static void fence(sycl::event& wat) {
+      try {
+        wat.wait_and_throw();
+      } catch (sycl::exception const& e) {
+        Kokkos::Impl::throw_runtime_exception(
+            std::string("There was a synchronous SYCL error:\n") += e.what());
+      }
+    }
+
+    static void fence(sycl::queue& wat) {
+      try {
+        wat.wait_and_throw();
+      } catch (sycl::exception const& e) {
+        Kokkos::Impl::throw_runtime_exception(
+            std::string("There was a synchronous SYCL error:\n") += e.what());
+      }
+    }
+
     // This will memcpy an object T into memory held by this object
     // returns: a T* to that object
     //
@@ -169,7 +189,7 @@ class SYCLInternal {
     std::unique_ptr<T, Deleter> memcpy_from(const T& t) {
       reserve(sizeof(T));
       sycl::event memcopied = m_q->memcpy(m_data, std::addressof(t), sizeof(T));
-      memcopied.wait();
+      fence(memcopied);
 
       std::unique_ptr<T, Deleter> ptr(reinterpret_cast<T*>(m_data),
                                       Deleter(this));
@@ -217,7 +237,7 @@ class SYCLInternal {
       assert(sizeof(T) == m_size);
 
       sycl::event memcopied = m_q->memcpy(std::addressof(t), m_data, sizeof(T));
-      memcopied.wait();
+      fence(memcopied);
 
       return t;
     }
