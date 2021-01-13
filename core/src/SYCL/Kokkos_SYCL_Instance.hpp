@@ -74,6 +74,10 @@ class SYCLInternal {
 
   // USMObjectMem is a reusable buffer for a single object
   // in USM memory
+  //
+  // FIXME_SYCL replace direct calls to sycl memory management
+  // (sycl::malloc, sycl::free) with Kokkos memory spaces so
+  // memory usage is tracked.
   template <sycl::usm::alloc Kind>
   class USMObjectMem {
    public:
@@ -148,10 +152,12 @@ class SYCLInternal {
         // First free what we have (in case malloc can reuse it)
         sycl::free(m_data, *m_q);
 
+        // FIXME_SYCL replace malloc with Kokkos memory spaces
         m_data = sycl::malloc(n, *m_q, kind);
         if (!m_data) {
           m_capacity = 0;
-          throw std::bad_alloc();
+          Kokkos::Impl::throw_runtime_exception(
+              "bad_alloc: sycl::malloc failed");
         }
 
         m_capacity = n;
@@ -163,6 +169,9 @@ class SYCLInternal {
    private:
     // fence(...) takes any type with a .wait_and_throw() method
     // (sycl::event and sycl::queue)
+    //
+    // FIXME_SYCL This (and a public interface taking a sycl::event
+    // or sycl::queue) should really be in Kokkos::Experimental::SYCL
     template <typename WAT>
     static void fence(WAT& wat) {
       try {
