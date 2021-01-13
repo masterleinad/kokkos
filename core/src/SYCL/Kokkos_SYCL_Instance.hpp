@@ -70,7 +70,7 @@ class SYCLInternal {
   size_type* m_scratchSpace = nullptr;
   size_type* m_scratchFlags = nullptr;
 
-  std::unique_ptr<sycl::queue> m_queue;
+  std::optional<sycl::queue> m_queue;
 
   // USMObjectMem is a reusable buffer for a single object
   // in USM memory
@@ -294,7 +294,7 @@ class SYCLInternal {
 
   void initialize(const sycl::device& d);
 
-  int is_initialized() const { return m_queue != nullptr; }
+  int is_initialized() const { return m_queue.has_value(); }
 
   void finalize();
 };
