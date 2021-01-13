@@ -154,7 +154,7 @@ struct TestTeamPolicy {
 
   static void test_for(const size_t league_size) {
     // FIXME_SYCL requires team rank
- #ifdef KOKKOS_ENABLE_SYCL
+#ifdef KOKKOS_ENABLE_SYCL
     if (league_size == 0)
 #endif
     {
@@ -163,16 +163,19 @@ struct TestTeamPolicy {
       using policy_type_init =
           Kokkos::TeamPolicy<ScheduleType, ExecSpace, VerifyInitTag>;
 
-      // FIXME_OPENMPTARGET temporary restriction for team size to be at least 32
+      // FIXME_OPENMPTARGET temporary restriction for team size to be at least
+      // 32
 #ifdef KOKKOS_ENABLE_OPENMPTARGET
-      const int team_size = policy_type(league_size, 32)
-                                .team_size_max(functor, Kokkos::ParallelForTag());
+      const int team_size =
+          policy_type(league_size, 32)
+              .team_size_max(functor, Kokkos::ParallelForTag());
       const int team_size_init =
           policy_type_init(league_size, 32)
               .team_size_max(functor, Kokkos::ParallelForTag());
 #else
-      const int team_size = policy_type(league_size, 1)
-                                .team_size_max(functor, Kokkos::ParallelForTag());
+      const int team_size =
+          policy_type(league_size, 1)
+              .team_size_max(functor, Kokkos::ParallelForTag());
       const int team_size_init =
           policy_type_init(league_size, 1)
               .team_size_max(functor, Kokkos::ParallelForTag());
