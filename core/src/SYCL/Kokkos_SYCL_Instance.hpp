@@ -161,16 +161,10 @@ class SYCLInternal {
     }
 
    private:
-    static void fence(sycl::event& wat) {
-      try {
-        wat.wait_and_throw();
-      } catch (sycl::exception const& e) {
-        Kokkos::Impl::throw_runtime_exception(
-            std::string("There was a synchronous SYCL error:\n") += e.what());
-      }
-    }
-
-    static void fence(sycl::queue& wat) {
+    // fence(...) takes any type with a .wait_and_throw() method
+    // (sycl::event and sycl::queue)
+    template <typename WAT>
+    static void fence(WAT& wat) {
       try {
         wat.wait_and_throw();
       } catch (sycl::exception const& e) {
