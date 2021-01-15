@@ -371,8 +371,6 @@ bool Test(int test) {
 }  // namespace TestCXX11
 
 namespace Test {
-// FIXME_SYCL requires TeamPolicy
-#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, cxx11) {
   if (std::is_same<Kokkos::DefaultExecutionSpace, TEST_EXECSPACE>::value) {
     ASSERT_TRUE((TestCXX11::Test<TEST_EXECSPACE>(1)));
@@ -381,6 +379,5 @@ TEST(TEST_CATEGORY, cxx11) {
     ASSERT_TRUE((TestCXX11::Test<TEST_EXECSPACE>(4)));
   }
 }
-#endif
 
 }  // namespace Test
