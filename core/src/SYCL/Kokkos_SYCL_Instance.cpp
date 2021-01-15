@@ -113,6 +113,7 @@ void SYCLInternal::initialize(const sycl::device& d) {
     m_queue.emplace(d, exception_handler);
     std::cout << SYCL::SYCLDevice(d) << '\n';
     m_indirectKernel.emplace(IndirectKernelAllocator(*m_queue));
+    m_indirectReducer.emplace(IndirectKernelAllocator(*m_queue));
 
     m_maxThreadsPerSM =
         d.template get_info<sycl::info::device::max_work_group_size>();
@@ -136,6 +137,7 @@ void SYCLInternal::finalize() {
   }
 
   m_indirectKernel.reset();
+  m_indirectReducer.reset();
   m_queue.reset();
 }
 
