@@ -57,17 +57,6 @@
 namespace Kokkos {
 namespace Impl {
 
-template <typename Type>
-struct SYCLJoinFunctor {
-  using value_type = Type;
-
-  KOKKOS_INLINE_FUNCTION
-  static void join(volatile value_type& update,
-                   volatile const value_type& input) {
-    update += input;
-  }
-};
-
 /**\brief  Team member_type passed to TeamPolicy or TeamTask closures.
  */
 class SYCLTeamMember {
