@@ -661,14 +661,13 @@ KOKKOS_INLINE_FUNCTION
       thread, count);
 }
 
-template <typename iType1, typename iType2>
-KOKKOS_INLINE_FUNCTION Impl::ThreadVectorRangeBoundariesStruct<
-    typename std::common_type<iType1, iType2>::type, Impl::CudaTeamMember>
-ThreadVectorRange(const Impl::CudaTeamMember& thread, iType1 arg_begin,
-                  iType2 arg_end) {
-  using iType = typename std::common_type<iType1, iType2>::type;
+template <typename iType>
+KOKKOS_INLINE_FUNCTION
+    Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::CudaTeamMember>
+    ThreadVectorRange(const Impl::CudaTeamMember& thread, iType arg_begin,
+                      iType arg_end) {
   return Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::CudaTeamMember>(
-      thread, iType(arg_begin), iType(arg_end));
+      thread, arg_begin, arg_end);
 }
 
 KOKKOS_INLINE_FUNCTION

@@ -813,16 +813,14 @@ ThreadVectorRange(
   return Impl::ThreadVectorRangeBoundariesStruct<iType, Member>(member, count);
 }
 
-template <typename iType1, typename iType2, typename Member>
-KOKKOS_INLINE_FUNCTION Impl::ThreadVectorRangeBoundariesStruct<
-    typename std::common_type<iType1, iType2>::type, Member>
+template <typename iType, typename Member>
+KOKKOS_INLINE_FUNCTION Impl::ThreadVectorRangeBoundariesStruct<iType, Member>
 ThreadVectorRange(
-    Member const& member, iType1 arg_begin, iType2 arg_end,
+    Member const& member, iType arg_begin, iType arg_end,
     typename std::enable_if<
         Impl::is_thread_team_member<Member>::value>::type const** = nullptr) {
-  using iType = typename std::common_type<iType1, iType2>::type;
   return Impl::ThreadVectorRangeBoundariesStruct<iType, Member>(
-      member, iType(arg_begin), iType(arg_end));
+      member, arg_begin, arg_end);
 }
 
 //----------------------------------------------------------------------------

@@ -1047,16 +1047,13 @@ TeamThreadRange(const Impl::OpenMPTargetExecTeamMember& thread,
       iType, Impl::OpenMPTargetExecTeamMember>(thread, count);
 }
 
-template <typename iType1, typename iType2>
+template <typename iType>
 KOKKOS_INLINE_FUNCTION Impl::TeamThreadRangeBoundariesStruct<
-    typename std::common_type<iType1, iType2>::type,
-    Impl::OpenMPTargetExecTeamMember>
+    iType, Impl::OpenMPTargetExecTeamMember>
 TeamThreadRange(const Impl::OpenMPTargetExecTeamMember& thread,
-                const iType1& begin, const iType2& end) {
-  using iType = typename std::common_type<iType1, iType2>::type;
+                const iType& begin, const iType& end) {
   return Impl::TeamThreadRangeBoundariesStruct<
-      iType, Impl::OpenMPTargetExecTeamMember>(thread, iType(begin),
-                                               iType(end));
+      iType, Impl::OpenMPTargetExecTeamMember>(thread, begin, end);
 }
 
 template <typename iType>
@@ -1068,16 +1065,13 @@ ThreadVectorRange(const Impl::OpenMPTargetExecTeamMember& thread,
       iType, Impl::OpenMPTargetExecTeamMember>(thread, count);
 }
 
-template <typename iType1, typename iType2>
+template <typename iType>
 KOKKOS_INLINE_FUNCTION Impl::ThreadVectorRangeBoundariesStruct<
-    typename std::common_type<iType1, iType2>::type,
-    Impl::OpenMPTargetExecTeamMember>
+    iType, Impl::OpenMPTargetExecTeamMember>
 ThreadVectorRange(const Impl::OpenMPTargetExecTeamMember& thread,
-                  const iType1& arg_begin, const iType2& arg_end) {
-  using iType = typename std::common_type<iType1, iType2>::type;
+                  const iType& arg_begin, const iType& arg_end) {
   return Impl::ThreadVectorRangeBoundariesStruct<
-      iType, Impl::OpenMPTargetExecTeamMember>(thread, iType(arg_begin),
-                                               iType(arg_end));
+      iType, Impl::OpenMPTargetExecTeamMember>(thread, arg_begin, arg_end);
 }
 
 template <typename iType>
@@ -1089,16 +1083,13 @@ TeamVectorRange(const Impl::OpenMPTargetExecTeamMember& thread,
       iType, Impl::OpenMPTargetExecTeamMember>(thread, count);
 }
 
-template <typename iType1, typename iType2>
+template <typename iType>
 KOKKOS_INLINE_FUNCTION Impl::TeamVectorRangeBoundariesStruct<
-    typename std::common_type<iType1, iType2>::type,
-    Impl::OpenMPTargetExecTeamMember>
+    iType, Impl::OpenMPTargetExecTeamMember>
 TeamVectorRange(const Impl::OpenMPTargetExecTeamMember& thread,
-                const iType1& arg_begin, const iType2& arg_end) {
-  using iType = typename std::common_type<iType1, iType2>::type;
+                const iType& arg_begin, const iType& arg_end) {
   return Impl::TeamVectorRangeBoundariesStruct<
-      iType, Impl::OpenMPTargetExecTeamMember>(thread, iType(arg_begin),
-                                               iType(arg_end));
+      iType, Impl::OpenMPTargetExecTeamMember>(thread, arg_begin, arg_end);
 }
 
 KOKKOS_INLINE_FUNCTION

@@ -78,8 +78,8 @@ struct NonTrivialReduceFunctor {
 
 template <class ExecSpace>
 struct TestReduction {
-  value_type sum = 0.0;
-  const int m_num_elements;
+  value_type sum = 1000000.;
+  const std::size_t m_num_elements;
 
   TestReduction(int num_elements) : m_num_elements(num_elements) {}
 
@@ -136,7 +136,8 @@ struct TestReduction {
 };
 
 TEST(TEST_CATEGORY, IncrTest_05_reduction) {
-  for (unsigned int i = 0; i < 100; ++i) {
+  for (unsigned int i = 2; i < 3; ++i) {
+    std::cout << i << std::endl;
     TestReduction<TEST_EXECSPACE> test(i);
     test.sum_reduction();
     test.non_trivial_sum_reduction();

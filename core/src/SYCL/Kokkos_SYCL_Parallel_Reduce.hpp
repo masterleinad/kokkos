@@ -168,10 +168,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     sycl::queue& q = *instance.m_queue;
 
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size = 32;
+    const size_t wgroup_size = 32;//space.impl_internal_space_instance()->m_maxThreadsPerSM;;
     std::size_t size             = policy.end() - policy.begin();
     const auto init_size =
-        std::max<std::size_t>((size + wgroup_size - 1) / wgroup_size, 1);
+        std::max<std::size_t>(((size+1)/2 + wgroup_size - 1) / wgroup_size, 1);
     const auto value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
@@ -181,10 +181,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
     // FIXME_SYCL running on a CPU using an extra buffer was necessary to avoid
     // a race condition
-    const auto results_ptr2 =
+    /*const auto results_ptr2 =
         static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate(
             "SYCL parallel_reduce result storage2",
-            sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
+            sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));*/
 
     // Initialize global memory
     if (size <= 1) {
@@ -205,80 +205,101 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       space.fence();
     }
 
-    bool first_run = true;
-    while (size > 1) {
-      auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
-      q.submit([&](sycl::handler& cgh) {
-        sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
-            local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
-                      cgh);
+    auto n_wgroups = ((size+1)/2 + wgroup_size - 1) / wgroup_size;
+    std::cout << "size is " << size 
+	      << ", wgroup_size is " << wgroup_size 
+	      << ", n_wgroups is " << n_wgroups << std::endl;
 
-        cgh.parallel_for(
-            sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
-            [=](sycl::nd_item<1> item) {
-              const auto local_id  = item.get_local_linear_id();
-              const auto global_id = item.get_global_linear_id();
+    q.submit([&](sycl::handler& cgh) {
+      sycl::accessor<value_type, 1, sycl::access::mode::read_write,
+                     sycl::access::target::local>
+          local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
+                    cgh);
 
+      cgh.parallel_for(
+          sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+          [=](sycl::nd_item<1> item) {
+            bool first_run = true;
+            std::size_t my_size = size;
+
+            const auto local_id  = item.get_local_linear_id();
+            const auto global_id = wgroup_size*item.get_group_linear_id()*2+local_id;
+
+	    auto my_n_wgroups = ((my_size+1)/2 + wgroup_size - 1) / wgroup_size;
+            while (my_size > 1)
+            {
+              if (global_id==0)
+                KOKKOS_IMPL_PRINTF("my_size %lu\n", my_size);
               // Initialize local memory
               if (first_run) {
                 reference_type update = ValueInit::init(
                     selected_reducer, &local_mem[local_id * value_count]);
-                if (global_id < size) {
+                if (global_id < my_size) {
                   const typename Policy::index_type id =
                       static_cast<typename Policy::index_type>(global_id) +
                       policy.begin();
                   if constexpr (std::is_same<WorkTag, void>::value)
+		  {
                     functor(id, update);
+		    if (global_id + wgroup_size < my_size)
+                      functor(id+wgroup_size, update);
+		  }
                   else
+		  {
                     functor(WorkTag(), id, update);
+		    if (global_id + wgroup_size < my_size)
+			    functor(WorkTag(), id+wgroup_size, update);
+		  }
                 }
               } else {
-                if (global_id < size)
+                if (global_id < my_size)
+		{
                   ValueOps::copy(functor, &local_mem[local_id * value_count],
                                  &results_ptr[global_id * value_count]);
-
+		  if (global_id + wgroup_size < my_size)
+			  ValueOps::copy(functor, &local_mem[local_id * value_count],
+                                 &results_ptr[(global_id+wgroup_size)* value_count]);
+		}
                 else
                   ValueInit::init(selected_reducer,
                                   &local_mem[local_id * value_count]);
               }
               item.barrier(sycl::access::fence_space::local_space);
+	      KOKKOS_IMPL_PRINTF("%lu: Initializing with %f\n", global_id, local_mem[0]); 
 
               // Perform workgroup reduction
-              for (size_t stride = 1; 2 * stride < wgroup_size + 1;
-                   stride *= 2) {
-                auto idx = 2 * stride * (local_id + 1) - 1;
-                if (idx < wgroup_size) {
+              for (unsigned int stride = wgroup_size/2; stride > 0; stride >>= 1) {
+                const auto idx = local_id;
+                if (idx < stride) {
                   ValueJoin::join(selected_reducer,
                                   &local_mem[idx * value_count],
-                                  &local_mem[(idx - stride) * value_count]);
+                                  &local_mem[(idx + stride) * value_count]);
                 }
                 item.barrier(sycl::access::fence_space::local_space);
               }
 
               if (local_id == 0) {
+                KOKKOS_IMPL_PRINTF("%zu writing %f\n", item.get_group_linear_id(), local_mem[0]); 
                 ValueOps::copy(
                     functor,
-                    &results_ptr2[(item.get_group_linear_id()) * value_count],
-                    &local_mem[(wgroup_size - 1) * value_count]);
+                    &results_ptr[(item.get_group_linear_id()) * value_count],
+                    &local_mem[0]);
                 if constexpr (ReduceFunctorHasFinal<Functor>::value)
-                  if (n_wgroups <= 1)
+                  if (my_n_wgroups <= 1)
                     FunctorFinal<Functor, WorkTag>::final(
-                        functor, &results_ptr2[(item.get_group_linear_id()) *
+                        functor, &results_ptr[(item.get_group_linear_id()) *
                                                value_count]);
+                KOKKOS_IMPL_PRINTF("%zu written %f\n", item.get_group_linear_id(), results_ptr[item.get_group_linear_id()]);
               }
-            });
-      });
-      space.fence();
-      Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
-                             Kokkos::Experimental::SYCLDeviceUSMSpace>(
-          space, results_ptr, results_ptr2,
-          sizeof(*m_result_ptr) * value_count * n_wgroups);
-      space.fence();
+              //item.barrier(sycl::access::fence_space::global_space);
+              first_run = false;
+              my_size = my_n_wgroups;
+              my_n_wgroups = ((my_size+1)/2 + wgroup_size - 1) / wgroup_size;
+            }
+        });
+    });
 
-      first_run = false;
-      size      = n_wgroups;
-    }
+    std::cout << "written end " << results_ptr[0] << std::endl;
 
     if (m_result_ptr) {
       Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
@@ -289,7 +310,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     }
 
     sycl::free(results_ptr, q);
-    sycl::free(results_ptr2, q);
+    //sycl::free(results_ptr2, q);
   }
 
   template <typename Functor, typename Reducer>
@@ -299,25 +320,33 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
-    Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem& kernelMem =
-        instance.m_indirectKernelMem;
+    Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& kernelMem =
+        *instance.m_indirectKernel;
 
-    // Copy the functor into USM Shared Memory
-    using KernelFunctorPtr = std::unique_ptr<
-        Functor, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter>;
-    KernelFunctorPtr kernelFunctorPtr = kernelMem.copy_from(functor);
+    // Allocate USM shared memory for the functor
+    kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
+
+    // Placement new a copy of functor into USM shared memory
+    //
+    // Store it in a unique_ptr to call its destructor on scope exit
+    std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
+        new (kernelMem.data()) Functor(functor));
     auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
 
     if constexpr (!std::is_same<Reducer, InvalidType>::value) {
-      Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem& reducerMem =
-          instance.m_indirectReducerMem;
+      Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory&
+          reducerMem = *instance.m_indirectReducer;
 
-      // Copy the functor into USM Shared Memory
-      std::unique_ptr<
-          Reducer, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter>
-          kernelReducerPtr = reducerMem.copy_from(reducer);
+      // Allocate USM shared memory for the reducer
+      reducerMem.resize(std::max(reducerMem.size(), sizeof(reducer)));
+
+      // Placement new a copy of functor into USM shared memory
+      //
+      // Store it in a unique_ptr to call its destructor on scope exit
+      std::unique_ptr<Reducer, Kokkos::Impl::destruct_delete> kernelReducerPtr(
+          new (reducerMem.data()) Reducer(reducer));
+
       auto kernelReducer = ExtendedReferenceWrapper<Reducer>(*kernelReducerPtr);
-
       sycl_direct_launch(m_policy, kernelFunctor, kernelReducer);
     } else
       sycl_direct_launch(m_policy, kernelFunctor, reducer);

@@ -481,6 +481,76 @@ if(CMAKE_CUDA_COMPILER_LOADED AND NOT CUDAToolkit_BIN_DIR AND CMAKE_CUDA_COMPILE
   unset(cuda_dir)
 endif()
 
+IF(CMAKE_VERSION VERSION_LESS "3.12.0")
+  function(import_target_link_libraries target)
+    cmake_parse_arguments(HACK
+      "SYSTEM;INTERFACE;PUBLIC"
+      ""
+      ""
+      ${ARGN}
+    )
+    get_target_property(LIBS ${target} INTERFACE_LINK_LIBRARIES)
+    if (LIBS)
+      list(APPEND LIBS ${HACK_UNPARSED_ARGUMENTS})
+    else()
+      set(LIBS ${HACK_UNPARSED_ARGUMENTS})
+    endif()
+    set_target_properties(${target} PROPERTIES
+      INTERFACE_LINK_LIBRARIES "${LIBS}")
+  endfunction()
+ELSE()
+  function(import_target_link_libraries)
+    target_link_libraries(${ARGN})
+  endfunction()
+ENDIF()
+
+IF(CMAKE_VERSION VERSION_LESS "3.13.0")
+  function(import_target_link_directories target)
+    cmake_parse_arguments(HACK
+      "SYSTEM;INTERFACE;PUBLIC"
+      ""
+      ""
+      ${ARGN}
+    )
+    get_target_property(LINK_LIBS ${target} INTERFACE_LINK_LIBRARIES)
+    if (LINK_LIBS) #could be not-found
+      set(LINK_LIBS_LIST ${LINK_LIBS})
+    endif()
+    foreach(LIB ${HACK_UNPARSED_ARGUMENTS})
+      list(APPEND LINK_LIBS_LIST -L${LIB})
+    endforeach()
+    set_target_properties(${target} PROPERTIES
+      INTERFACE_LINK_LIBRARIES "${LINK_LIBS_LIST}")
+  endfunction()
+ELSE()
+  function(import_target_link_directories)
+    target_link_directories(${ARGN})
+  endfunction()
+ENDIF()
+
+IF(CMAKE_VERSION VERSION_LESS "3.12.0")
+  function(import_target_include_directories target)
+    cmake_parse_arguments(HACK
+      "SYSTEM;INTERFACE;PUBLIC"
+      ""
+      ""
+      ${ARGN}
+    )
+    get_target_property(INLUDE_DIRS ${target} INTERFACE_INCLUDE_DIRECTORIES)
+    if (INCLUDE_DIRS)
+      list(APPEND INCLUDE_DIRS ${HACK_UNPARSED_ARGUMENTS})
+    else()
+      set(INCLUDE_DIRS ${HACK_UNPARSED_ARGUMENTS})
+    endif()
+    set_target_properties(${target} PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${INCLUDE_DIRS}")
+  endfunction()
+ELSE()
+  function(import_target_include_directories)
+    target_include_directories(${ARGN})
+  endfunction()
+ENDIF()
+
 # Try language- or user-provided path first.
 if(CUDAToolkit_BIN_DIR)
   find_program(CUDAToolkit_NVCC_EXECUTABLE
@@ -784,11 +854,11 @@ if(CUDAToolkit_FOUND)
 
     if (NOT TARGET CUDA::${lib_name} AND CUDA_${lib_name}_LIBRARY)
       add_library(CUDA::${lib_name} IMPORTED INTERFACE)
-      target_include_directories(CUDA::${lib_name} SYSTEM INTERFACE "${CUDAToolkit_INCLUDE_DIRS}")
-      target_link_libraries(CUDA::${lib_name} INTERFACE "${CUDA_${lib_name}_LIBRARY}")
+      import_target_include_directories(CUDA::${lib_name} SYSTEM INTERFACE "${CUDAToolkit_INCLUDE_DIRS}")
+      import_target_link_libraries(CUDA::${lib_name} INTERFACE "${CUDA_${lib_name}_LIBRARY}")
       foreach(dep ${arg_DEPS})
         if(TARGET CUDA::${dep})
-          target_link_libraries(CUDA::${lib_name} INTERFACE CUDA::${dep})
+          import_target_link_libraries(CUDA::${lib_name} INTERFACE CUDA::${dep})
         endif()
       endforeach()
     endif()
@@ -796,8 +866,8 @@ if(CUDAToolkit_FOUND)
 
   if(NOT TARGET CUDA::toolkit)
     add_library(CUDA::toolkit IMPORTED INTERFACE)
-    target_include_directories(CUDA::toolkit SYSTEM INTERFACE "${CUDAToolkit_INCLUDE_DIRS}")
-    target_link_directories(CUDA::toolkit INTERFACE "${CUDAToolkit_LIBRARY_DIR}")
+    import_target_include_directories(CUDA::toolkit SYSTEM INTERFACE "${CUDAToolkit_INCLUDE_DIRS}")
+    import_target_link_directories(CUDA::toolkit INTERFACE "${CUDAToolkit_LIBRARY_DIR}")
   endif()
 
   _CUDAToolkit_find_and_add_import_lib(cuda_driver ALT cuda)
@@ -812,11 +882,11 @@ if(CUDAToolkit_FOUND)
      AND TARGET CUDA::cudart_static)
 
     add_library(CUDA::cudart_static_deps IMPORTED INTERFACE)
-    target_link_libraries(CUDA::cudart_static INTERFACE CUDA::cudart_static_deps)
+    import_target_link_libraries(CUDA::cudart_static INTERFACE CUDA::cudart_static_deps)
 
     if(UNIX AND (CMAKE_C_COMPILER OR CMAKE_CXX_COMPILER))
       find_package(Threads REQUIRED)
-      target_link_libraries(CUDA::cudart_static_deps INTERFACE Threads::Threads ${CMAKE_DL_LIBS})
+      import_target_link_libraries(CUDA::cudart_static_deps INTERFACE Threads::Threads ${CMAKE_DL_LIBS})
     endif()
 
     if(UNIX AND NOT APPLE)
@@ -826,7 +896,7 @@ if(CUDAToolkit_FOUND)
       if(NOT CUDAToolkit_rt_LIBRARY)
         message(WARNING "Could not find librt library, needed by CUDA::cudart_static")
       else()
-        target_link_libraries(CUDA::cudart_static_deps INTERFACE ${CUDAToolkit_rt_LIBRARY})
+        import_target_link_libraries(CUDA::cudart_static_deps INTERFACE ${CUDAToolkit_rt_LIBRARY})
       endif()
     endif()
   endif()

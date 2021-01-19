@@ -54,7 +54,6 @@
 #include <Cuda/Kokkos_Cuda_BlockSize_Deduction.hpp>
 #include <Cuda/Kokkos_Cuda_Instance.hpp>
 #include <Cuda/Kokkos_Cuda_Locks.hpp>
-#include <Cuda/Kokkos_Cuda_UniqueToken.hpp>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Tools.hpp>
 

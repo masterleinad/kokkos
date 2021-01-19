@@ -65,8 +65,6 @@ TEST(TEST_CATEGORY, team_for) {
       1000);
 }
 
-// FIXME_OPENMPTARGET wrong results
-#ifndef KOKKOS_ENABLE_OPENMPTARGET
 TEST(TEST_CATEGORY, team_reduce) {
   TestTeamPolicy<TEST_EXECSPACE,
                  Kokkos::Schedule<Kokkos::Static> >::test_reduce(0);
@@ -81,7 +79,6 @@ TEST(TEST_CATEGORY, team_reduce) {
   TestTeamPolicy<TEST_EXECSPACE,
                  Kokkos::Schedule<Kokkos::Dynamic> >::test_reduce(1000);
 }
-#endif
 
 TEST(TEST_CATEGORY, team_broadcast_long) {
   // FIXME_OPENMPTARGET

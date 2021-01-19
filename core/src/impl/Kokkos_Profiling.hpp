@@ -45,13 +45,13 @@
 #ifndef KOKKOS_IMPL_KOKKOS_PROFILING_HPP
 #define KOKKOS_IMPL_KOKKOS_PROFILING_HPP
 
+#include <impl/Kokkos_Profiling_Interface.hpp>
+#include <Kokkos_Macros.hpp>
 #include <Kokkos_Core_fwd.hpp>
 #include <Kokkos_ExecPolicy.hpp>
-#include <Kokkos_Macros.hpp>
 #include <Kokkos_Tuners.hpp>
-#include <impl/Kokkos_Profiling_Interface.hpp>
-#include <map>
 #include <string>
+#include <map>
 #include <type_traits>
 namespace Kokkos {
 
@@ -125,11 +125,8 @@ void syncDualView(const std::string& label, const void* const ptr,
 void modifyDualView(const std::string& label, const void* const ptr,
                     bool on_device);
 
-void declareMetadata(const std::string& key, const std::string& value);
-void initialize(const std::string& = {});
+void initialize();
 void finalize();
-bool printHelp(const std::string&);
-void parseArgs(const std::string&);
 
 Kokkos_Profiling_SpaceHandle make_space_handle(const char* space_name);
 
@@ -137,8 +134,6 @@ namespace Experimental {
 
 void set_init_callback(initFunction callback);
 void set_finalize_callback(finalizeFunction callback);
-void set_parse_args_callback(parseArgsFunction callback);
-void set_print_help_callback(printHelpFunction callback);
 void set_begin_parallel_for_callback(beginFunction callback);
 void set_end_parallel_for_callback(endFunction callback);
 void set_begin_parallel_reduce_callback(beginFunction callback);
@@ -161,7 +156,6 @@ void set_begin_fence_callback(beginFenceFunction callback);
 void set_end_fence_callback(endFenceFunction callback);
 void set_dual_view_sync_callback(dualViewSyncFunction callback);
 void set_dual_view_modify_callback(dualViewModifyFunction callback);
-void set_declare_metadata_callback(declareMetadataFunction callback);
 
 void set_declare_output_type_callback(outputTypeDeclarationFunction callback);
 void set_declare_input_type_callback(inputTypeDeclarationFunction callback);
@@ -521,8 +515,7 @@ void beginDeepCopy(const SpaceHandle dst_space, const std::string dst_label,
                    const uint64_t size);
 void endDeepCopy();
 void finalize();
-void initialize(const std::string& = {});
-
+void initialize();
 SpaceHandle make_space_handle(const char* space_name);
 
 namespace Experimental {
@@ -540,9 +533,7 @@ using Kokkos::Tools::Experimental::set_end_parallel_reduce_callback;
 using Kokkos::Tools::Experimental::set_end_parallel_scan_callback;
 using Kokkos::Tools::Experimental::set_finalize_callback;
 using Kokkos::Tools::Experimental::set_init_callback;
-using Kokkos::Tools::Experimental::set_parse_args_callback;
 using Kokkos::Tools::Experimental::set_pop_region_callback;
-using Kokkos::Tools::Experimental::set_print_help_callback;
 using Kokkos::Tools::Experimental::set_profile_event_callback;
 using Kokkos::Tools::Experimental::set_push_region_callback;
 using Kokkos::Tools::Experimental::set_start_profile_section_callback;
