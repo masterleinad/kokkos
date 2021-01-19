@@ -408,28 +408,34 @@ TEST(TEST_CATEGORY, range_reduce) {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> > f(0);
     f.test_reduce();
   }
+  std::cout << 1 << std::endl;
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(0);
     f.test_reduce();
   }
+  std::cout << 2 << std::endl;
 
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> > f(2);
     f.test_reduce();
   }
+  std::cout << 3 << std::endl;
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(3);
     f.test_reduce();
   }
+  std::cout << 4 << std::endl;
 
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> > f(1000);
     f.test_reduce();
   }
+  std::cout << 5 << std::endl;
   {
     TestRange<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> > f(1001);
     f.test_reduce();
   }
+  std::cout << 6 << std::endl;
 }
 
 // FIXME_SYCL needs parallel_scan

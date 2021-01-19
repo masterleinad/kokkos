@@ -299,33 +299,23 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
-    Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory& kernelMem =
-        *instance.m_indirectKernel;
+    Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem& kernelMem =
+        instance.m_indirectKernelMem;
 
-    // Allocate USM shared memory for the functor
-    kernelMem.resize(std::max(kernelMem.size(), sizeof(functor)));
-
-    // Placement new a copy of functor into USM shared memory
-    //
-    // Store it in a unique_ptr to call its destructor on scope exit
-    std::unique_ptr<Functor, Kokkos::Impl::destruct_delete> kernelFunctorPtr(
-        new (kernelMem.data()) Functor(functor));
+    // Copy the functor into USM Shared Memory
+    using KernelFunctorPtr =
+        std::unique_ptr<Functor, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter>;
+    KernelFunctorPtr kernelFunctorPtr = kernelMem.copy_from(functor);
     auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
 
     if constexpr (!std::is_same<Reducer, InvalidType>::value) {
-      Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMemory&
-          reducerMem = *instance.m_indirectReducer;
+      Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem&
+          reducerMem = instance.m_indirectReducerMem;
 
-      // Allocate USM shared memory for the reducer
-      reducerMem.resize(std::max(reducerMem.size(), sizeof(reducer)));
-
-      // Placement new a copy of functor into USM shared memory
-      //
-      // Store it in a unique_ptr to call its destructor on scope exit
-      std::unique_ptr<Reducer, Kokkos::Impl::destruct_delete> kernelReducerPtr(
-          new (reducerMem.data()) Reducer(reducer));
-
+      // Copy the functor into USM Shared Memory
+      std::unique_ptr<Reducer, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter> kernelReducerPtr = reducerMem.copy_from(reducer);
       auto kernelReducer = ExtendedReferenceWrapper<Reducer>(*kernelReducerPtr);
+
       sycl_direct_launch(m_policy, kernelFunctor, kernelReducer);
     } else
       sycl_direct_launch(m_policy, kernelFunctor, reducer);
