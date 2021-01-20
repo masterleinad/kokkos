@@ -181,8 +181,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             "SYCL parallel_reduce result storage",
             sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
     const auto finished_work_groups_ptr =
-        static_cast<int*>(Experimental::SYCLSharedUSMSpace().allocate(
-            "SYCL finished_work_groups", sizeof(int)));
+        static_cast<std::size_t*>(Experimental::SYCLSharedUSMSpace().allocate(
+            "SYCL finished_work_groups", sizeof(std::size_t)));
     *finished_work_groups_ptr = 0;
 
     // Initialize global memory
