@@ -180,10 +180,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate(
             "SYCL parallel_reduce result storage",
             sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
-    const auto finished_work_groups_ptr =
+    const auto finished_workgroups_ptr =
         static_cast<std::size_t*>(Experimental::SYCLSharedUSMSpace().allocate(
-            "SYCL finished_work_groups", sizeof(std::size_t)));
-    *finished_work_groups_ptr = 0;
+            "SYCL finished_workgroups", sizeof(std::size_t)));
+    *finished_workgroups_ptr = 0;
 
     // Initialize global memory
     if (size <= 1) {
@@ -208,8 +208,11 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     q.submit([&](sycl::handler& cgh) {
       sycl::accessor<value_type, 1, sycl::access::mode::read_write,
                      sycl::access::target::local>
-          local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
+          local_mem(sycl::range<1>(wgroup_size * std::max(value_count, 1u)),
                     cgh);
+      sycl::accessor<std::size_t, 1, sycl::access::mode::read_write,
+                     sycl::access::target::local>
+          local_count(sycl::range<1>(1), cgh);
 
       cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
@@ -257,18 +260,40 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
             item.barrier(sycl::access::fence_space::global_space);
 
+            // Let the last group do the final reduction
             if (local_id == 0)
-              if (atomic_fetch_add(finished_work_groups_ptr, 1) ==
-                  n_wgroups - 1) {
-                for (unsigned int i = 1; i < n_wgroups; ++i)
-                  ValueJoin::join(selected_reducer, results_ptr,
-                                  &results_ptr[i * value_count]);
-                if constexpr (ReduceFunctorHasFinal<Functor>::value)
-                  if (n_wgroups <= 1)
-                    FunctorFinal<Functor, WorkTag>::final(
-                        functor, &results_ptr[(item.get_group_linear_id()) *
-                                              value_count]);
+              local_count[0] = atomic_fetch_add(finished_workgroups_ptr, 1);
+            item.barrier(sycl::access::fence_space::local_space);
+            if (local_count[0] == n_wgroups - 1) {
+              // Load global values into local memory,
+              // reduce to fit workgroup size
+              ValueInit::init(selected_reducer,
+                              &local_mem[local_id * value_count]);
+              for (unsigned int i = local_id; i < n_wgroups; i += wgroup_size) {
+                ValueJoin::join(selected_reducer,
+                                &local_mem[local_id * value_count],
+                                &results_ptr[i * value_count]);
               }
+              item.barrier(sycl::access::fence_space::local_space);
+              // Perform workgroup reduction
+              for (unsigned int stride = wgroup_size / 2; stride > 0;
+                   stride >>= 1) {
+                const auto idx = local_id;
+                if (idx < stride) {
+                  ValueJoin::join(selected_reducer,
+                                  &local_mem[idx * value_count],
+                                  &local_mem[(idx + stride) * value_count]);
+                }
+                item.barrier(sycl::access::fence_space::local_space);
+              }
+
+              // Copy back to global memory
+              if (local_id == 0) {
+                if constexpr (ReduceFunctorHasFinal<Functor>::value)
+                  FunctorFinal<Functor, WorkTag>::final(functor, &local_mem[0]);
+                ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
+              }
+            }
           });
     });
     space.fence();
@@ -282,6 +307,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     }
 
     sycl::free(results_ptr, q);
+    sycl::free(finished_workgroups_ptr, q);
   }
 
   template <typename Functor, typename Reducer>
