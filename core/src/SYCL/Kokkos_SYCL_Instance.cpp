@@ -235,6 +235,7 @@ Kokkos::Experimental::SYCL::size_type *SYCLInternal::scratch_flags (
     Record::increment(r);
 
     m_scratchFlags = reinterpret_cast<size_type *>(r->data());
+  }
     m_queue->memset(m_scratchFlags, 0, m_scratchFlagsCount * sizeScratchGrain);
 
      try {
@@ -243,7 +244,6 @@ Kokkos::Experimental::SYCL::size_type *SYCLInternal::scratch_flags (
         Kokkos::Impl::throw_runtime_exception(
             std::string("There was a synchronous SYCL error:\n") += e.what());
       }
-  }
 
   return m_scratchFlags;
 }

@@ -136,7 +136,8 @@ struct TestReduction {
 };
 
 TEST(TEST_CATEGORY, IncrTest_05_reduction) {
-  for (unsigned int i = 0; i < 100; ++i) {
+  for (unsigned int i = 4; i < 6; ++i) {
+	  std::cout << i << '\n';
     TestReduction<TEST_EXECSPACE> test(i);
     test.sum_reduction();
     test.non_trivial_sum_reduction();
