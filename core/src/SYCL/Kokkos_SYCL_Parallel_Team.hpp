@@ -383,21 +383,20 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
       const auto shmem_begin  = m_shmem_begin;
       const auto shmem_size   = m_shmem_size;
       const auto scratch_size = m_scratch_size[1];
-      auto team_lambda        = [=](sycl::group<1> g) {
+      auto team_lambda        = [=](sycl::nd_item<1> item) {
         // FIXME_SYCL Add scratch memory
         const member_type team_member(nullptr, shmem_begin, shmem_size, nullptr,
-                                      scratch_size, g);
+                                      scratch_size, item);
 
         if constexpr (std::is_same<work_tag, void>::value)
           functor(team_member);
         else
           functor(work_tag(), team_member);
       };
-      if (m_team_size > 0)
-        cgh.parallel_for_work_group(sycl::range<1>(m_league_size),
-                                    sycl::range<1>(m_team_size), team_lambda);
-      else
-        cgh.parallel_for_work_group(sycl::range<1>(m_league_size), team_lambda);
+      assert(m_league_size>0);
+      assert(m_team_size>0);
+      cgh.parallel_for(sycl::nd_range<1>(m_league_size*m_team_size, m_team_size),
+                                  team_lambda);
     });
     space.fence();
   }

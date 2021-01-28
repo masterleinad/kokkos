@@ -99,8 +99,6 @@ void SYCL::fence() const {
   Impl::SYCLInternal::fence(*m_space_instance->m_queue);
 }
 
-void SYCL::impl_static_fence() { Kokkos::abort("Not implemented!"); }
-
 int SYCL::sycl_device() const {
   return impl_internal_space_instance()->m_syclDev;
 }
@@ -258,7 +256,9 @@ void SYCLSpaceInitializer::finalize(const bool all_spaces) {
 }
 
 void SYCLSpaceInitializer::fence() {
-  Kokkos::Experimental::SYCL::impl_static_fence();
+  // FIXME_SYCL should be
+  //  Kokkos::Experimental::SYCL::impl_static_fence();
+  Kokkos::Experimental::SYCL().fence();
 }
 
 void SYCLSpaceInitializer::print_configuration(std::ostream& msg,

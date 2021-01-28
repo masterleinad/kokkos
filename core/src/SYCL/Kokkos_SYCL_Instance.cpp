@@ -81,7 +81,7 @@ SYCLInternal& SYCLInternal::singleton() {
 
 // FIXME_SYCL
 void SYCLInternal::initialize(const sycl::device& d) {
-	std::abort();
+//	std::abort();
   if (was_finalized)
     Kokkos::abort("Calling SYCL::initialize after SYCL::finalize is illegal\n");
 
