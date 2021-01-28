@@ -395,7 +395,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
       };
       assert(m_league_size>0);
       assert(m_team_size>0);
-      cgh.parallel_for(sycl::nd_range<1>(m_league_size*m_team_size, m_team_size),
+      cgh.parallel_for(sycl::nd_range<1>((m_league_size+m_team_size-1)/m_team_size, m_team_size),
                                   team_lambda);
     });
     space.fence();
