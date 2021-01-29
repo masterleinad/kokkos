@@ -48,6 +48,8 @@
 
 namespace Test {
 
+	// FIXME_SYCL needs TeamPolicy reduce
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_shared_request) {
   TestSharedTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >();
   TestSharedTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >();
@@ -73,6 +75,7 @@ TEST(TEST_CATEGORY, team_lambda_shared_request) {
                        Kokkos::Schedule<Kokkos::Dynamic> >();
 }
 TEST(TEST_CATEGORY, scratch_align) { TestScratchAlignment<TEST_EXECSPACE>(); }
+#endif
 #endif
 
 TEST(TEST_CATEGORY, shmem_size) { TestShmemSize<TEST_EXECSPACE>(); }

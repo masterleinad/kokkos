@@ -199,6 +199,8 @@ struct PrintFunctor2 {
   }
 };
 
+// FIXME_SYCL Needs TeamPolicy reduce
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_policy_max_scalar_without_plus_equal_k) {
   using ExecSpace           = TEST_EXECSPACE;
   using ReducerType         = Kokkos::MinMax<double, Kokkos::HostSpace>;
@@ -228,5 +230,6 @@ TEST(TEST_CATEGORY, team_policy_max_scalar_without_plus_equal_k) {
                           PrintFunctor2<TeamHandleType, double>{}, sum);
   printf("Sum: %lf\n", sum);
 }
+#endif
 
 }  // namespace Test
