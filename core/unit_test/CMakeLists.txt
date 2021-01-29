@@ -489,6 +489,7 @@ if(Kokkos_ENABLE_SYCL)
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_AtomicViews.cpp
   )
   list(REMOVE_ITEM SYCL_SOURCES2A
+       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamVectorRange.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_UniqueToken.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_WorkGraph.cpp
   )

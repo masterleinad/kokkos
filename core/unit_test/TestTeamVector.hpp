@@ -70,6 +70,7 @@ struct functor_team_for {
     return shared_int::shmem_size(team_size * 13);
   }
 
+#ifndef KOKKOS_ENABLE_SYCL
   KOKKOS_INLINE_FUNCTION
   void operator()(typename policy_type::member_type team) const {
     using size_type           = typename shmem_space::size_type;
@@ -116,8 +117,9 @@ struct functor_team_for {
           flag() = 1;
         }
       });
-    }
+    }  
   }
+#endif
 };
 
 template <typename Scalar, class ExecutionSpace>
@@ -276,6 +278,7 @@ struct functor_team_vector_for {
     return shared_int::shmem_size(team_size * 13);
   }
 
+#ifndef KOKKOS_ENABLE_SYCL
   KOKKOS_INLINE_FUNCTION
   void operator()(typename policy_type::member_type team) const {
     using size_type = typename shared_int::size_type;
@@ -326,6 +329,7 @@ struct functor_team_vector_for {
       });
     }
   }
+#endif
 };
 
 template <typename Scalar, class ExecutionSpace>
@@ -490,6 +494,7 @@ struct functor_vec_for {
     return shared_int::shmem_size(team_size * 13);
   }
 
+#ifndef KOKKOS_ENABLE_SYCL
   KOKKOS_INLINE_FUNCTION
   void operator()(typename policy_type::member_type team) const {
     shared_int values = shared_int(team.team_shmem(), team.team_size() * 13);
@@ -526,6 +531,7 @@ struct functor_vec_for {
       });
     }
   }
+#endif
 };
 
 template <typename Scalar, class ExecutionSpace>
