@@ -186,7 +186,7 @@ struct TestTeamPolicy {
                            functor);
     }
 
-//    test_small_league_size();
+    test_small_league_size();
     test_constructors();
   }
 
