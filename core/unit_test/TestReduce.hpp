@@ -541,7 +541,11 @@ class TestReduceDynamicView {
 
 TEST(TEST_CATEGORY, int64_t_reduce) {
   TestReduce<int64_t, TEST_EXECSPACE>(0);
-  TestReduce<int64_t, TEST_EXECSPACE>(1000000);
+  for (unsigned int i=1; i<1000000; i*=10) {
+    std::cout << i << std::endl;
+    TestReduce<int64_t, TEST_EXECSPACE>{i};
+  }
+  //TestReduce<int64_t, TEST_EXECSPACE>(1000000);
 }
 
 TEST(TEST_CATEGORY, double_reduce) {
