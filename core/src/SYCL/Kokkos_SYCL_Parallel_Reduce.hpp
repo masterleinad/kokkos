@@ -179,10 +179,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate(
             "SYCL parallel_reduce result storage",
             sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
-    const auto results_ptr2 =
+/*    const auto results_ptr2 =
         static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate(
             "SYCL parallel_reduce result storage2",
-            sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
+            sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));*/
 
     // Initialize global memory
     if (size <= 1) {
@@ -256,22 +256,22 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               if (local_id == 0) {
                 ValueOps::copy(
                     functor,
-                    &results_ptr2[(item.get_group_linear_id()) * value_count],
+                    &results_ptr[(item.get_group_linear_id()) * value_count],
                     &local_mem[0]);
                 if constexpr (ReduceFunctorHasFinal<Functor>::value)
                   if (n_wgroups <= 1)
                     FunctorFinal<Functor, WorkTag>::final(
-                        functor, &results_ptr2[(item.get_group_linear_id()) *
+                        functor, &results_ptr[(item.get_group_linear_id()) *
                                                value_count]);
               }
             });
       });
       space.fence();
-      Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
+/*      Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
                              Kokkos::Experimental::SYCLDeviceUSMSpace>(
           space, results_ptr, results_ptr2,
           sizeof(*m_result_ptr) * value_count * n_wgroups);
-      space.fence();
+      space.fence();*/
 
       first_run = false;
       size      = n_wgroups;
@@ -286,7 +286,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     }
 
     sycl::free(results_ptr, q);
-    sycl::free(results_ptr2, q);
+    //sycl::free(results_ptr2, q);
   }
 
   template <typename Functor, typename Reducer>
