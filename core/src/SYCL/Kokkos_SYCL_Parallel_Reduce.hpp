@@ -199,7 +199,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             FunctorFinal<Functor, WorkTag>::final(functor, results_ptr);
         });
       });
-      space.fence();
+      q.submit_barrier();
     }
 
     bool first_run = true;
@@ -279,7 +279,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               }
             });
       });
-      space.fence();
+      q.submit_barrier();
 
       first_run = false;
       size      = n_wgroups;
