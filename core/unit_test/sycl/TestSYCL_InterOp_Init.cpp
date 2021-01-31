@@ -63,18 +63,15 @@ TEST(sycl, raw_sycl_interop) {
   }
   Kokkos::finalize();
 
-  int *ptr = p;
   queue.submit([&] (cl::sycl::handler& cgh) {
          cgh.parallel_for(sycl::range<1>(n), [=] (int idx) {
-         KOKKOS_IMPL_DO_NOT_USE_PRINTF("before %d: %d %p\n", idx, ptr[idx], (void*)(&ptr[idx]));
-         ptr[idx] += idx;
-         KOKKOS_IMPL_DO_NOT_USE_PRINTF("after %d: %d\n", idx, ptr[idx]);
+         p[idx] += idx;
          });
       });
   queue.wait_and_throw();
 
   int* h_p = new int[n];
-  queue.memcpy(h_p, &p[0], sizeof(int) * n);
+  queue.memcpy(h_p, p, sizeof(int) * n);
   queue.wait_and_throw();
   int64_t sum        = 0;
   int64_t sum_expect = 0;
