@@ -74,6 +74,7 @@ class SYCLInternal {
   size_type* m_scratchFlags = nullptr;
 
   std::optional<sycl::queue> m_queue;
+  static std::vector<sycl::queue> all_queues;
 
   // USMObjectMem is a reusable buffer for a single object
   // in USM memory

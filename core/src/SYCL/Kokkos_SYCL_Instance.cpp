@@ -55,6 +55,8 @@ namespace Impl {
 
 int SYCLInternal::was_finalized = 0;
 
+std::vector<sycl::queue> SYCLInternal::all_queues;
+
 SYCLInternal::~SYCLInternal() {
   if (m_scratchSpace || m_scratchFlags) {
     std::cerr << "Kokkos::Experimental::SYCL ERROR: Failed to call "
@@ -111,6 +113,7 @@ void SYCLInternal::initialize(const sycl::device& d) {
             "There was an asynchronous SYCL error!\n");
     };
     m_queue.emplace(d, exception_handler);
+    all_queues.push_back(*m_queue);
     std::cout << SYCL::SYCLDevice(d) << '\n';
 
     m_maxThreadsPerSM =
