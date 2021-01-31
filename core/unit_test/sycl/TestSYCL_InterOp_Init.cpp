@@ -53,7 +53,7 @@ TEST(sycl, raw_sycl_interop) {
   cl::sycl::default_selector device_selector;
   cl::sycl::queue queue(device_selector);
   int n = 5;
-  int* p = sycl::malloc_shared<int>(n, queue);
+  int* p = sycl::malloc_device<int>(n, queue);
 
   Kokkos::InitArguments arguments{-1, -1, -1, false};
   Kokkos::initialize(arguments);
