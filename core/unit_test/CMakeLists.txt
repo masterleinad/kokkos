@@ -115,7 +115,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
         MDRange_d
         MDRange_e
         MDRange_f
-        NumericTraits
+	#NumericTraits
         Other
         RangePolicy
         RangePolicyRequire
@@ -551,6 +551,18 @@ if(Kokkos_ENABLE_SYCL)
     SOURCES
       UnitTestMainInit.cpp
       ${SYCL_SOURCES2D}
+  )
+ KOKKOS_ADD_EXECUTABLE_AND_TEST(
+    UnitTest_SYCLInterOpInit
+    SOURCES
+      UnitTestMain.cpp
+      sycl/TestSYCL_InterOp_Init.cpp
+  )
+  KOKKOS_ADD_EXECUTABLE_AND_TEST(
+    UnitTest_SYCLInterOpStreams
+    SOURCES
+      UnitTestMain.cpp
+     sycl/TestSYCL_InterOp_Streams.cpp
   )
 endif()
 

@@ -295,6 +295,8 @@ class SYCLInternal {
 
   void initialize(const sycl::device& d);
 
+  void initialize(const sycl::queue& q);
+
   int is_initialized() const { return m_queue.has_value(); }
 
   void finalize();

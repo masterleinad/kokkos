@@ -81,6 +81,13 @@ SYCL::SYCL() : m_space_instance(&Impl::SYCLInternal::singleton()) {
       "SYCL instance constructor");
 }
 
+SYCL::SYCL(sycl::queue const stream)
+    : m_space_instance(new Impl::SYCLInternal) {
+  Impl::SYCLInternal::singleton().verify_is_initialized(
+      "SYCL instance constructor");
+  m_space_instance->initialize(stream);
+}
+
 int SYCL::concurrency() {
   // FIXME_SYCL We need a value larger than 1 here for some tests to pass,
   // clearly this is true but not the roght value
@@ -101,7 +108,7 @@ void SYCL::fence() const {
 
 void SYCL::impl_static_fence() {
        	for(auto& queue: Impl::SYCLInternal::all_queues)
-		queue.wait_and_throw();
+		Impl::SYCLInternal::fence(queue);
 }
 
 int SYCL::sycl_device() const {
@@ -236,7 +243,7 @@ std::ostream& SYCL::SYCLDevice::info(std::ostream& os) const {
 
 namespace Impl {
 
-int g_hip_space_factory_initialized =
+int g_sycl_space_factory_initialized =
     Kokkos::Impl::initialize_space_factory<SYCLSpaceInitializer>("170_SYCL");
 
 void SYCLSpaceInitializer::initialize(const InitArguments& args) {
