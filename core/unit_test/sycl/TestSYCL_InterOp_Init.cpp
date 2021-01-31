@@ -59,15 +59,14 @@ TEST(sycl, raw_sycl_interop) {
   Kokkos::initialize(arguments);
   {
   //Kokkos::View<int*, Kokkos::Experimental::SYCLDeviceUSMSpace> p("bla", n);
-  Kokkos::parallel_for("bla", Kokkos::RangePolicy<Kokkos::Experimental::SYCL>(0, n), KOKKOS_LAMBDA(int i)
+  /*Kokkos::parallel_for("bla", Kokkos::RangePolicy<Kokkos::Experimental::SYCL>(0, n), KOKKOS_LAMBDA(int i)
   {
     KOKKOS_IMPL_DO_NOT_USE_PRINTF("before 1 %d: %d %p\n", i, p[i], (void*)(&p[i]));
     p[i] = 5;
     KOKKOS_IMPL_DO_NOT_USE_PRINTF("before 2 %d: %d\n", i, p[i]);
-  });
-  //Kokkos::View<int*, Kokkos::MemoryTraits<Kokkos::Unmanaged>> v(p, 100);
-  //Kokkos::deep_copy(v, 5);
-
+  });*/
+    Kokkos::View<int*, Kokkos::MemoryTraits<Kokkos::Unmanaged>> v(p, 100);
+    Kokkos::deep_copy(v, 5);
   }
   Kokkos::finalize();
 
