@@ -53,7 +53,7 @@
 namespace Test {
 
 using value_type       = double;
-constexpr double value = 0.5;
+constexpr double value = 1.;
 
 struct ReduceFunctor {
   KOKKOS_INLINE_FUNCTION
@@ -136,7 +136,8 @@ struct TestReduction {
 };
 
 TEST(TEST_CATEGORY, IncrTest_05_reduction) {
-  for (unsigned int i = 0; i < 100; ++i) {
+  for (unsigned int i = 5; i < 6; ++i) {
+	  std::cout << i << std::endl;
     TestReduction<TEST_EXECSPACE> test(i);
     test.sum_reduction();
     test.non_trivial_sum_reduction();

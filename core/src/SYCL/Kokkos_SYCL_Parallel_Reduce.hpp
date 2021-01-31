@@ -202,6 +202,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     bool first_run = true;
     while (size > 1) {
+//	    std::cout << "size: " << size << std::endl;
       auto n_wgroups = ((size + values_per_thread-1)/values_per_thread + wgroup_size - 1) / wgroup_size;
       q.submit([&](sycl::handler& cgh) {
         sycl::accessor<value_type, 1, sycl::access::mode::read_write,
@@ -216,26 +217,34 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               const auto global_id = wgroup_size * item.get_group_linear_id() * values_per_thread + local_id;
 
               // Initialize local memory
+              const typename Policy::index_type upper_bound = (global_id+values_per_thread*wgroup_size)<size?global_id+values_per_thread*wgroup_size:size;
+
               if (first_run) {
                 reference_type update = ValueInit::init(
                     selected_reducer, &local_mem[local_id * value_count]);
-                for (unsigned int i = 0; i<values_per_thread && global_id+i*wgroup_size<size; ++i) {
-                  const typename Policy::index_type id =
-                      static_cast<typename Policy::index_type>(global_id+i*wgroup_size) +
-                      policy.begin();
+                for (typename Policy::index_type id = global_id; id < upper_bound; id+=wgroup_size) {
                   if constexpr (std::is_same<WorkTag, void>::value)
-                    functor(id, update);
+                    functor(id+policy.begin(), update);
                   else
-                    functor(WorkTag(), id, update);
+                    functor(WorkTag(), id+policy.begin(), update);
+                  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("Initialize thread %lu,%d(%d) with %ld\n" , global_id, id, upper_bound, local_mem[local_id*value_count].value[0]);
+
                 }
               } else {
-                for (unsigned int i = 0; i<values_per_thread && global_id+i*wgroup_size<size; ++i)
-                  ValueOps::copy(functor, &local_mem[local_id * value_count],
-                                 &results_ptr[(global_id+i*wgroup_size) * value_count]);
                 if (global_id>= size)
                   ValueInit::init(selected_reducer,
                                   &local_mem[local_id * value_count]);
+                else
+                  ValueOps::copy(functor, &local_mem[local_id * value_count],
+                                 &results_ptr[global_id * value_count]);
+                for (typename Policy::index_type id = global_id+wgroup_size; id < upper_bound; id+=wgroup_size)
+		{
+                  ValueJoin::join(selected_reducer, &local_mem[local_id * value_count],
+                                  &results_ptr[id * value_count]);
+                 //KOKKOS_IMPL_DO_NOT_USE_PRINTF("Initialize thread %lu,%d(%d) with %ld\n" , global_id, id, upper_bound, local_mem[local_id*value_count].value[0]);
+		}
               }
+              //KOKKOS_IMPL_DO_NOT_USE_PRINTF("Initialize thread final %lu(%d) with %ld\n" , global_id, upper_bound, local_mem[local_id*value_count].value[0]);
               item.barrier(sycl::access::fence_space::local_space);
 
               // Perform workgroup reduction
@@ -243,9 +252,11 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                    stride >>= 1) {
                 const auto idx = local_id;
                 if (idx < stride) {
+			 //KOKKOS_IMPL_DO_NOT_USE_PRINTF("joining thread %lu, %lu+%lu: %ld+%ld\n", global_id, idx, idx+stride, local_mem[idx*value_count].value[0], local_mem[(idx+stride)*value_count].value[0]);
                   ValueJoin::join(selected_reducer,
                                   &local_mem[idx * value_count],
                                   &local_mem[(idx + stride) * value_count]);
+		                //KOKKOS_IMPL_DO_NOT_USE_PRINTF("joined thread %lu, %lu: %ld\n", global_id, idx, local_mem[idx*value_count].value[0]);
                 }
                 item.barrier(sycl::access::fence_space::local_space);
               }

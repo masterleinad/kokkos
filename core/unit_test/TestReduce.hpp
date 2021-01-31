@@ -300,16 +300,16 @@ class TestReduce {
 
   TestReduce(const size_type& nwork) {
     run_test(nwork);
-    run_test_final(nwork);
-    run_test_final_tag(nwork);
+    //run_test_final(nwork);
+    //run_test_final_tag(nwork);
   }
 
   void run_test(const size_type& nwork) {
     using functor_type = Test::ReduceFunctor<ScalarType, execution_space>;
     using value_type   = typename functor_type::value_type;
 
-    enum { Count = 3 };
-    enum { Repeat = 100 };
+    enum { Count = 1 };
+    enum { Repeat = 1/* 00 */ };
 
     value_type result[Repeat];
 
@@ -323,6 +323,7 @@ class TestReduce {
     for (unsigned i = 0; i < Repeat; ++i) {
       for (unsigned j = 0; j < Count; ++j) {
         const uint64_t correct = 0 == j % 3 ? nw : nsum;
+	std::cout << j << std::endl;
         ASSERT_EQ((ScalarType)correct, result[i].value[j]);
       }
     }
@@ -541,13 +542,13 @@ class TestReduceDynamicView {
 
 TEST(TEST_CATEGORY, int64_t_reduce) {
   TestReduce<int64_t, TEST_EXECSPACE>(0);
-  for (unsigned int i=1; i<1000000; i*=10) {
+  for (unsigned int i=1; i<100; i*=10) {
     std::cout << i << std::endl;
     TestReduce<int64_t, TEST_EXECSPACE>{i};
   }
   //TestReduce<int64_t, TEST_EXECSPACE>(1000000);
 }
-
+/*
 TEST(TEST_CATEGORY, double_reduce) {
   TestReduce<double, TEST_EXECSPACE>(0);
   TestReduce<double, TEST_EXECSPACE>(1000000);
@@ -632,5 +633,5 @@ TEST(TEST_CATEGORY, int_combined_reduce_mixed) {
   ASSERT_EQ(nw, result1_v());
   ASSERT_EQ(nsum, result2);
   ASSERT_EQ(nsum, result3_v());
-}
+}*/
 }  // namespace Test
