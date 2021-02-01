@@ -52,14 +52,15 @@ namespace Test {
 TEST(sycl, raw_sycl_interop) {
   cl::sycl::default_selector device_selector;
   cl::sycl::queue queue(device_selector);
-  int n = 5;
+  int n = 100;
   int* p = sycl::malloc_device<int>(n, queue);
 
   Kokkos::InitArguments arguments{-1, -1, -1, false};
   Kokkos::initialize(arguments);
   {
-    Kokkos::View<int*, Kokkos::MemoryTraits<Kokkos::Unmanaged>> v(p, 100);
-    Kokkos::deep_copy(v, 5);
+    TEST_EXECSPACE space(queue);
+    Kokkos::View<int*, Kokkos::MemoryTraits<Kokkos::Unmanaged>> v(p, n);
+    Kokkos::deep_copy(space, v, 5);
   }
   Kokkos::finalize();
 
