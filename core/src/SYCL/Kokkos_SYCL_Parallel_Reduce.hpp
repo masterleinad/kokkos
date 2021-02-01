@@ -175,16 +175,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     const auto value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
-    const auto results_ptr =
-        static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate(
-            "SYCL parallel_reduce result storage",
-            sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
+    const auto results_ptr = static_cast<pointer_type>(sycl::malloc_shared(
+        sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size, q));
     // FIXME_SYCL running on a CPU using an extra buffer was necessary to avoid
     // a race condition
-    const auto results_ptr2 =
-        static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate(
-            "SYCL parallel_reduce result storage2",
-            sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
+    const auto results_ptr2 = static_cast<pointer_type>(sycl::malloc_shared(
+        sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size, q));
 
     // Initialize global memory
     if (size <= 1) {
