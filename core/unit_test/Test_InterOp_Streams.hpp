@@ -119,7 +119,9 @@ struct FunctorTeam {
       const {
     int i = team.league_rank();
     Kokkos::parallel_for(Kokkos::TeamThreadRange(team, 10),
-                         [&](const int j) { a(i * 10 + j) += 1; });
+                         [&](const int j) { 
+			 KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling for %d,%d\n", i,j);
+			 a(i * 10 + j) += 1; });
   }
 };
 
