@@ -74,6 +74,8 @@ TEST(sycl, raw_sycl_interop) {
   int* h_p = new int[n];
   queue.memcpy(h_p, p, sizeof(int) * n);
   queue.wait_and_throw();
+  sycl::free(p, queue);
+
   int64_t sum        = 0;
   int64_t sum_expect = 0;
   for (int i = 0; i < n; i++) {
