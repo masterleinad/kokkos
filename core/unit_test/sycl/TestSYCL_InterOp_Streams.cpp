@@ -59,20 +59,18 @@ TEST(sycl, raw_sycl_queues) {
     TEST_EXECSPACE space0(queue);
     Kokkos::View<int*, TEST_EXECSPACE> v(p, 100);
     Kokkos::deep_copy(space0, v, 5);
-//    int sum = 0;
+    int sum = 0;
 
-    std::cout << "Before parallel_for" << std::endl;
     Kokkos::parallel_for("Test::sycl::raw_sycl_queue::Range",
                          Kokkos::RangePolicy<TEST_EXECSPACE>(space0, 0, 100),
                          FunctorRange<MemorySpace>(v));
-    std::cout << "After parallel_for" << std::endl;
-/*    Kokkos::parallel_reduce(
+    Kokkos::parallel_reduce(
         "Test::sycl::raw_sycl_queue::RangeReduce",
         Kokkos::RangePolicy<TEST_EXECSPACE>(
-            space0, 0, 100),
+            0, 100),
         FunctorRangeReduce<MemorySpace>(v), sum);
     space0.fence();
-    ASSERT_EQ(6*100, sum);*/
+    ASSERT_EQ(6*100, sum);
 
     Kokkos::parallel_for("Test::sycl::raw_sycl_queue::MDRange",
                          Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<2>>(

@@ -76,7 +76,8 @@ struct FunctorRangeReduce {
       : a(a_) {}
 
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int i, int& lsum) const { lsum += a(i); }
+  void operator()(const int i, int& lsum) const { 
+	  lsum += a(i); }
 };
 
 template <typename MemorySpace>
@@ -120,7 +121,6 @@ struct FunctorTeam {
     int i = team.league_rank();
     Kokkos::parallel_for(Kokkos::TeamThreadRange(team, 10),
                          [&](const int j) { 
-			 KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling for %d,%d\n", i,j);
 			 a(i * 10 + j) += 1; });
   }
 };

@@ -178,10 +178,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     const auto value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
-    const auto results_ptr =
-        static_cast<pointer_type>(Experimental::SYCLSharedUSMSpace().allocate(
-            "SYCL parallel_reduce result storage",
-            sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
+    const auto results_ptr = static_cast<pointer_type>(sycl::malloc_shared(sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size, q));
 
     // Initialize global memory
     if (size <= 1) {
@@ -207,6 +204,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       auto n_wgroups = ((size + values_per_thread - 1) / values_per_thread +
                         wgroup_size - 1) /
                        wgroup_size;
+      std::cout << "submitting with size " << size << std::endl;
       q.submit([&](sycl::handler& cgh) {
         sycl::accessor<value_type, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
@@ -216,6 +214,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         cgh.parallel_for(
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
             [=](sycl::nd_item<1> item) {
+	    (void) item;
               const auto local_id = item.get_local_linear_id();
               const auto global_id =
                   wgroup_size * item.get_group_linear_id() * values_per_thread +
