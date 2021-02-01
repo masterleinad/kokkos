@@ -81,6 +81,7 @@ class SYCL {
 
   ~SYCL() = default;
   SYCL();
+  SYCL(sycl::queue);
 
   SYCL(SYCL&&)      = default;
   SYCL(const SYCL&) = default;

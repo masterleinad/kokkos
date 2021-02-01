@@ -81,6 +81,13 @@ SYCL::SYCL() : m_space_instance(&Impl::SYCLInternal::singleton()) {
       "SYCL instance constructor");
 }
 
+SYCL::SYCL(sycl::queue const stream)
+    : m_space_instance(new Impl::SYCLInternal) {
+  Impl::SYCLInternal::singleton().verify_is_initialized(
+      "SYCL instance constructor");
+  m_space_instance->initialize(stream);
+}
+
 int SYCL::concurrency() {
   // FIXME_SYCL We need a value larger than 1 here for some tests to pass,
   // clearly this is true but not the roght value
