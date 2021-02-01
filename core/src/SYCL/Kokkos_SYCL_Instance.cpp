@@ -55,7 +55,7 @@ namespace Impl {
 
 int SYCLInternal::was_finalized = 0;
 
-std::vector<sycl::queue> SYCLInternal::all_queues;
+std::vector<std::optional<sycl::queue>*> SYCLInternal::all_queues;
 
 SYCLInternal::~SYCLInternal() {
   if (m_scratchSpace || m_scratchFlags) {
@@ -117,7 +117,7 @@ void SYCLInternal::initialize(const sycl::queue& q) {
   const bool ok_dev  = true;
   if (ok_init && ok_dev) {
     m_queue = q;
-    all_queues.push_back(*m_queue);
+    all_queues.push_back(&m_queue);
     const sycl::device& d = m_queue->get_device();
     std::cout << SYCL::SYCLDevice(d) << '\n';
 

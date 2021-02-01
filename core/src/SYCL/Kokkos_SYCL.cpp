@@ -108,7 +108,7 @@ void SYCL::fence() const {
 
 void SYCL::impl_static_fence() {
   for (auto& queue : Impl::SYCLInternal::all_queues)
-    Impl::SYCLInternal::fence(queue);
+    Impl::SYCLInternal::fence(**queue);
 }
 
 int SYCL::sycl_device() const {
