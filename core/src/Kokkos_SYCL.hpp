@@ -90,6 +90,8 @@ class SYCL {
 
   uint32_t impl_instance_id() const noexcept { return 0; }
 
+  sycl::context get_context() const noexcept { return m_space_instance->m_queue->get_context(); };
+
   //@}
   //------------------------------------
   //! \name Functions that all Kokkos devices must implement.
