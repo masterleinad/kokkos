@@ -559,6 +559,12 @@ if(Kokkos_ENABLE_SYCL)
       sycl/TestSYCL_InterOp_Init.cpp
   )
   KOKKOS_ADD_EXECUTABLE_AND_TEST(
+    UnitTest_SYCLInterOpInit_Context
+    SOURCES
+    UnitTestMainInit.cpp
+      sycl/TestSYCL_InterOp_Init_Context.cpp
+  )
+  KOKKOS_ADD_EXECUTABLE_AND_TEST(
     UnitTest_SYCLInterOpStreams
     SOURCES
       UnitTestMain.cpp
