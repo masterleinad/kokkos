@@ -88,39 +88,6 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
     space.fence();
   }
 
-  template <bool is_memcpyable, typename T, typename Storage>
-  struct FunctionWrapper;
-
-  template <typename T, typename Storage>
-  struct FunctionWrapper<true, T, Storage>
-  {
-   FunctionWrapper(const T& functor, Storage&) : m_functor(functor)
-    {}
-    const T& get_functor() const { return m_functor;}
-    const T& m_functor;
-  };
-
-  template <typename T, typename Storage>
-  struct FunctionWrapper<false, T, Storage>
-  {
-    std::unique_ptr<T, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter> m_kernelFunctorPtr;
-      std::reference_wrapper<T> m_functor;
-
-	  public:
-    FunctionWrapper(const T& functor, Storage& storage) : 
-      m_kernelFunctorPtr(storage.copy_from(functor)),
-      m_functor(std::reference_wrapper(*m_kernelFunctorPtr))
-      {}
-
-    const auto& get_functor()const {return m_functor;}
-  };
-
-  template <typename T, typename Storage>
-  static auto make_function_wrapper(const T& functor, Storage& storage)
-  {
-    return FunctionWrapper<std::is_trivially_copyable_v<decltype(functor)>, T, Storage>(functor, storage);
-  }
-
  public:
   using functor_type = FunctorType;
 
@@ -137,7 +104,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
         Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem;
     IndirectKernelMem& indirectKernelMem = instance.m_indirectKernelMem;
 
-    const auto functor_wrapper = make_function_wrapper(m_functor, indirectKernelMem);
+    const auto functor_wrapper = make_sycl_function_wrapper(m_functor, indirectKernelMem);
     sycl_direct_launch(m_policy,functor_wrapper.get_functor());
   }
 
