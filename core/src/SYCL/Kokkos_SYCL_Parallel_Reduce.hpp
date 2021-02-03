@@ -292,37 +292,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     sycl::free(results_ptr2, q);
   }
 
-  template <typename Functor, typename Reducer>
-  void sycl_indirect_launch(const Functor& functor,
-                            const Reducer& reducer) const {
-    // Convenience references
-    const Kokkos::Experimental::SYCL& space = m_policy.space();
-    Kokkos::Experimental::Impl::SYCLInternal& instance =
-        *space.impl_internal_space_instance();
-    Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem& kernelMem =
-        instance.m_indirectKernelMem;
-
-    // Copy the functor into USM Shared Memory
-    using KernelFunctorPtr = std::unique_ptr<
-        Functor, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter>;
-    KernelFunctorPtr kernelFunctorPtr = kernelMem.copy_from(functor);
-    auto kernelFunctor = ExtendedReferenceWrapper<Functor>(*kernelFunctorPtr);
-
-    if constexpr (!std::is_same<Reducer, InvalidType>::value) {
-      Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem& reducerMem =
-          instance.m_indirectReducerMem;
-
-      // Copy the functor into USM Shared Memory
-      std::unique_ptr<
-          Reducer, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter>
-          kernelReducerPtr = reducerMem.copy_from(reducer);
-      auto kernelReducer = ExtendedReferenceWrapper<Reducer>(*kernelReducerPtr);
-
-      sycl_direct_launch(m_policy, kernelFunctor, kernelReducer);
-    } else
-      sycl_direct_launch(m_policy, kernelFunctor, reducer);
-  }
-
  public:
   void execute() const {
      const Kokkos::Experimental::SYCL& space = m_policy.space();
