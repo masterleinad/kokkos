@@ -294,9 +294,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
  public:
   void execute() const {
-     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
-        *space.impl_internal_space_instance();
+        *(m_policy.space()).impl_internal_space_instance();
     using IndirectKernelMem =
         Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem;
     IndirectKernelMem& indirectKernelMem = instance.m_indirectKernelMem;
