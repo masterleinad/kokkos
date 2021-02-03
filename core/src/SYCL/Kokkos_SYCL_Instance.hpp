@@ -340,8 +340,8 @@ class SYCLInternal {
       {}
 
     auto get_functor()const {
-      if constexpr (std::is_same_v<T, InvalidType>) 
-        return InvalidType{};
+      if constexpr (std::is_same_v<T, Kokkos::InvalidType>) 
+        return Kokkos::InvalidType{};
       else 
         return ReferenceWrapper(*m_kernelFunctorPtr);
     }
