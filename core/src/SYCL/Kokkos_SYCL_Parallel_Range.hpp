@@ -104,7 +104,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
         Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem;
     IndirectKernelMem& indirectKernelMem = instance.m_indirectKernelMem;
 
-    const auto functor_wrapper = make_sycl_function_wrapper(m_functor, indirectKernelMem);
+    const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper<std::reference_wrapper<FunctorType>>(m_functor, indirectKernelMem);
     sycl_direct_launch(m_policy,functor_wrapper.get_functor());
   }
 
@@ -225,37 +225,19 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
     space.fence();
   }
 
-  // Indirectly launch a functor by explicitly creating it in USM shared memory
-  void sycl_indirect_launch() const {
-    // Convenience references
-    const Kokkos::Experimental::SYCL& space = m_policy.space();
+ public:
+  using functor_type = FunctorType;
+
+  void execute() const {
+     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
     using IndirectKernelMem =
         Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem;
     IndirectKernelMem& indirectKernelMem = instance.m_indirectKernelMem;
 
-    // Copy the functor into USM Shared Memory
-    using KernelFunctorPtr =
-        std::unique_ptr<FunctorType, IndirectKernelMem::Deleter>;
-    KernelFunctorPtr kernelFunctorPtr = indirectKernelMem.copy_from(m_functor);
-
-    // Use reference_wrapper (because it is both trivially copyable and
-    // invocable) and launch it
-    sycl_direct_launch(std::reference_wrapper(*kernelFunctorPtr));
-  }
-
- public:
-  using functor_type = FunctorType;
-
-  void execute() const {
-    // if the functor is trivially copyable, we can launch it directly;
-    // otherwise, we will launch it indirectly via explicitly creating
-    // it in USM shared memory.
-    if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
-      sycl_direct_launch(m_functor);
-    else
-      sycl_indirect_launch();
+    const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper<std::reference_wrapper<FunctorType>>(m_functor, indirectKernelMem);
+    sycl_direct_launch(functor_wrapper.get_functor());
   }
 
   ParallelFor(const ParallelFor&) = delete;

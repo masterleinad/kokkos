@@ -325,11 +325,18 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
  public:
   void execute() const {
-    if constexpr (std::is_trivially_copyable_v<decltype(m_functor)> &&
-                  std::is_trivially_copyable_v<decltype(m_reducer)>)
-      sycl_direct_launch(m_policy, m_functor, m_reducer);
-    else
-      sycl_indirect_launch(m_functor, m_reducer);
+     const Kokkos::Experimental::SYCL& space = m_policy.space();
+    Kokkos::Experimental::Impl::SYCLInternal& instance =
+        *space.impl_internal_space_instance();
+    using IndirectKernelMem =
+        Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem;
+    IndirectKernelMem& indirectKernelMem = instance.m_indirectKernelMem;
+    IndirectKernelMem& indirectReducerMem = instance.m_indirectReducerMem;
+
+    const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper<ExtendedReferenceWrapper<FunctorType>>(m_functor, indirectKernelMem);
+    const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper<ExtendedReferenceWrapper<ReducerType>>(m_reducer, indirectReducerMem);
+
+    sycl_direct_launch(m_policy, functor_wrapper.get_functor(), reducer_wrapper.get_functor());
   }
 
  private:
