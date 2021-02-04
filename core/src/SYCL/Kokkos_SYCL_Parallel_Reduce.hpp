@@ -301,33 +301,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     IndirectKernelMem& indirectKernelMem = instance.m_indirectKernelMem;
     IndirectKernelMem& indirectReducerMem = instance.m_indirectReducerMem;
 
-    const auto functor_wrapper = Experimental::Impl::SYCLFunctionWrapper<std::is_trivially_copyable_v<decltype(m_functor)>, FunctorType, IndirectKernelMem, ExtendedReferenceWrapper<FunctorType>>(m_functor, indirectKernelMem);
-    const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper<ExtendedReferenceWrapper<ReducerType>>(m_reducer, indirectReducerMem);
-
-    if constexpr (std::is_trivially_copyable_v<decltype(m_functor)>)
-	   // &&
-           //       std::is_trivially_copyable_v<decltype(m_reducer)>)
-    {
-      static_assert(std::is_same<std::decay_t<decltype(functor_wrapper.get_functor())>, FunctorType>::value, "");
-      sycl_direct_launch(m_policy, m_functor, reducer_wrapper.get_functor());
-    }
-    else
-    {
-      sycl_direct_launch(m_policy, functor_wrapper.get_functor(), reducer_wrapper.get_functor());
-    }
-
-/*
-    Kokkos::Experimental::Impl::SYCLInternal& instance =
-        *(m_policy.space()).impl_internal_space_instance();
-    using IndirectKernelMem =
-        Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem;
-    IndirectKernelMem& indirectKernelMem = instance.m_indirectKernelMem;
-    IndirectKernelMem& indirectReducerMem = instance.m_indirectReducerMem;
-
     const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper<ExtendedReferenceWrapper<FunctorType>>(m_functor, indirectKernelMem);
     const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper<ExtendedReferenceWrapper<ReducerType>>(m_reducer, indirectReducerMem);
 
-    sycl_direct_launch(m_policy, functor_wrapper.get_functor(), reducer_wrapper.get_functor());*/
+    sycl_direct_launch(m_policy, functor_wrapper.get_functor(), reducer_wrapper.get_functor());
   }
 
  private:

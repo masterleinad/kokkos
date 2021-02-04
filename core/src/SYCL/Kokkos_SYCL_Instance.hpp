@@ -350,7 +350,7 @@ class SYCLInternal {
   template <typename ReferenceWrapper, typename Functor, typename Storage>
   static auto make_sycl_function_wrapper(const Functor& functor, Storage& storage)
   {
-    return SYCLFunctionWrapper<std::is_trivially_copyable_v<decltype(functor)>, Functor, Storage, ReferenceWrapper>(functor, storage);
+    return SYCLFunctionWrapper<std::is_trivially_copyable_v<Functor>, Functor, Storage, ReferenceWrapper>(functor, storage);
   }
 }  // namespace Impl
 }  // namespace Experimental
