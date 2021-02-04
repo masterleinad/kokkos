@@ -187,11 +187,11 @@ class ParallelScanSYCLBase {
     // Initialize global memory
     q.submit([&](sycl::handler& cgh) {
       auto global_mem = m_scratch_space;
-      auto policy     = m_policy;
+      auto begin     = m_policy.begin();
       cgh.parallel_for(sycl::range<1>(len), [=](sycl::item<1> item) {
         const typename Policy::index_type id =
             static_cast<typename Policy::index_type>(item.get_id()) +
-            policy.begin();
+            begin;
         value_type update{};
         ValueInit::init(functor, &update);
         if constexpr (std::is_same<WorkTag, void>::value)
