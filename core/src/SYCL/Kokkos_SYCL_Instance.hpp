@@ -320,13 +320,13 @@ class SYCLInternal {
   template <bool is_memcpyable, typename T, typename Storage, typename ReferenceWrapper>
   struct SYCLFunctionWrapper;
 
-  template <typename T, typename Storage, typename ReferenceWrapper>
-  struct SYCLFunctionWrapper<true, T, Storage, ReferenceWrapper>
+  template <typename Functor, typename Storage, typename ReferenceWrapper>
+  struct SYCLFunctionWrapper<true, Functor, Storage, ReferenceWrapper>
   {
-   SYCLFunctionWrapper(const T& functor, Storage&) : m_functor(functor)
+   SYCLFunctionWrapper(const Functor& functor, Storage&) : m_functor(functor)
     {}
-    const T& get_functor() const { return m_functor;}
-    const T& m_functor;
+    const Functor& get_functor() const { return m_functor;}
+    const Functor& m_functor;
   };
 
   template <typename T, typename Storage, typename ReferenceWrapper>
