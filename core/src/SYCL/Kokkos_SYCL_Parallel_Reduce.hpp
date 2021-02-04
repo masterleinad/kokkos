@@ -185,14 +185,15 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     // Initialize global memory
     if (size <= 1) {
       q.submit([&](sycl::handler& cgh) {
+        const auto begin  = policy.begin();
         cgh.single_task([=]() {
           reference_type update =
               ValueInit::init(selected_reducer, results_ptr);
           if (size == 1) {
             if constexpr (std::is_same<WorkTag, void>::value)
-              functor(policy.begin(), update);
+              functor(begin, update);
             else
-              functor(WorkTag(), policy.begin(), update);
+              functor(WorkTag(), begin, update);
           }
           if constexpr (ReduceFunctorHasFinal<Functor>::value)
             FunctorFinal<Functor, WorkTag>::final(functor, results_ptr);
@@ -209,6 +210,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                        sycl::access::target::local>
             local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
                       cgh);
+        const auto begin  = policy.begin();
 
         cgh.parallel_for(
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
@@ -223,7 +225,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                 if (global_id < size) {
                   const typename Policy::index_type id =
                       static_cast<typename Policy::index_type>(global_id) +
-                      policy.begin();
+                      begin;
                   if constexpr (std::is_same<WorkTag, void>::value)
                     functor(id, update);
                   else

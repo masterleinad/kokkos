@@ -74,10 +74,8 @@ class Kokkos::Impl::ParallelFor<FunctorType, ExecPolicy,
     q.submit([functor, policy](sycl::handler& cgh) {
       sycl::range<1> range(policy.end() - policy.begin());
 
-      cgh.parallel_for(range, [=](sycl::item<1> item) {
-        const typename Policy::index_type id =
-            static_cast<typename Policy::index_type>(item.get_linear_id()) +
-            policy.begin();
+      cgh.parallel_for(range, sycl::id<1>(policy.begin()), [=](sycl::item<1> item) {
+        const typename Policy::index_type id = item.get_linear_id();
         if constexpr (std::is_same<WorkTag, void>::value)
           functor(id);
         else
@@ -201,6 +199,25 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
                   "Kokkos::MDRange Error: Exceeded rank bounds with SYCL\n");
   }
 
+    // MDRangePolicy is not trivially copyable. Hence, replicate the data we really need in DeviceIterateTile in a trivially copyable struct.
+struct BarePolicy
+  {
+          using index_type = typename Policy::index_type;
+
+    BarePolicy(const Policy& policy):
+            m_lower(policy.m_lower),
+            m_upper(policy.m_upper),
+            m_tile(policy.m_tile),
+            m_tile_end(policy.m_tile_end)
+          {}
+
+    const typename Policy::point_type m_lower;
+    const typename Policy::point_type m_upper;
+    const typename Policy::tile_type m_tile;
+    const typename Policy::point_type m_tile_end;
+    static constexpr Iterate inner_direction = Policy::inner_direction;
+  };
+
   template <typename Functor>
   void sycl_direct_launch(const Functor& functor) const {
     // Convenience references
@@ -213,12 +230,12 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
 
     if (m_policy.m_num_tiles == 0) return;
 
-    auto& policy = m_policy;
+    const BarePolicy bare_policy(m_policy);
 
-    q.submit([functor, this, policy](sycl::handler& cgh) {
+    q.submit([functor, this, bare_policy](sycl::handler& cgh) {
       const auto range = compute_ranges();
 
-      cgh.parallel_for(range, [functor, policy](sycl::nd_item<3> item) {
+      cgh.parallel_for(range, [functor, bare_policy](sycl::nd_item<3> item) {
         const index_type local_x    = item.get_local_id(0);
         const index_type local_y    = item.get_local_id(1);
         const index_type local_z    = item.get_local_id(2);
@@ -229,9 +246,9 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
         const index_type n_global_y = item.get_group_range(1);
         const index_type n_global_z = item.get_group_range(2);
 
-        Kokkos::Impl::DeviceIterateTile<Policy::rank, Policy, Functor,
+        Kokkos::Impl::DeviceIterateTile<Policy::rank, BarePolicy, Functor,
                                         typename Policy::work_tag>(
-            policy, functor, {n_global_x, n_global_y, n_global_z},
+            bare_policy, functor, {n_global_x, n_global_y, n_global_z},
             {global_x, global_y, global_z}, {local_x, local_y, local_z})
             .exec_range();
       });

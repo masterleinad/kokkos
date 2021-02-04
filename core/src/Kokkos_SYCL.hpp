@@ -79,18 +79,18 @@ class SYCL {
 
   using scratch_memory_space = ScratchMemorySpace<SYCL>;
 
-  ~SYCL() = default;
+  ~SYCL() noexcept;
   SYCL();
   SYCL(sycl::queue);
 
-  SYCL(SYCL&&)      = default;
-  SYCL(const SYCL&) = default;
-  SYCL& operator=(SYCL&&) = default;
-  SYCL& operator=(const SYCL&) = default;
+  SYCL(SYCL&&) noexcept;
+  SYCL(const SYCL&);
+  SYCL& operator=(SYCL&&) noexcept;
+  SYCL& operator=(const SYCL&);
 
   uint32_t impl_instance_id() const noexcept { return 0; }
 
-  sycl::context get_context() const noexcept {
+  sycl::context sycl_context() const noexcept {
     return m_space_instance->m_queue->get_context();
   };
 
@@ -164,6 +164,7 @@ class SYCL {
 
  private:
   Impl::SYCLInternal* m_space_instance;
+  int* m_counter;
 };
 
 namespace Impl {
