@@ -53,8 +53,6 @@ namespace Kokkos {
 namespace Experimental {
 namespace Impl {
 
-int SYCLInternal::was_finalized = 0;
-
 std::vector<std::optional<sycl::queue>*> SYCLInternal::all_queues;
 
 SYCLInternal::~SYCLInternal() {

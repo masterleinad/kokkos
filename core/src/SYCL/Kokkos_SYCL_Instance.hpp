@@ -287,7 +287,7 @@ class SYCLInternal {
   using IndirectReducerMem = USMObjectMem<sycl::usm::alloc::shared>;
   IndirectReducerMem m_indirectReducerMem;
 
-  static int was_finalized;
+  bool was_finalized = false;
 
   static SYCLInternal& singleton();
 
