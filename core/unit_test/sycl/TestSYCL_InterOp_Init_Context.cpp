@@ -45,6 +45,8 @@
 #include <Kokkos_Core.hpp>
 #include <sycl/TestSYCL_Category.hpp>
 
+#include <array>
+
 namespace Test {
 
 // Test whether external allocations can be accessed by the default queue.
@@ -54,8 +56,8 @@ TEST(sycl, raw_sycl_interop_context_1) {
 
   cl::sycl::default_selector device_selector;
   cl::sycl::queue queue(default_context, device_selector);
-  int n  = 100;
-  int* p = sycl::malloc_device<int>(n, queue);
+  constexpr int n = 100;
+  int* p          = sycl::malloc_device<int>(n, queue);
 
   Kokkos::Experimental::SYCL space(queue);
   Kokkos::View<int*, Kokkos::MemoryTraits<Kokkos::Unmanaged>> v(p, n);
@@ -66,8 +68,8 @@ TEST(sycl, raw_sycl_interop_context_1) {
   });
   queue.wait_and_throw();
 
-  int* h_p = new int[n];
-  queue.memcpy(h_p, p, sizeof(int) * n);
+  std::array<int, n> h_p;
+  queue.memcpy(h_p.data(), p, sizeof(int) * n);
   queue.wait_and_throw();
   sycl::free(p, queue);
 
@@ -88,7 +90,7 @@ TEST(sycl, raw_sycl_interop_context_2) {
 
   cl::sycl::default_selector device_selector;
   cl::sycl::queue queue(default_context, device_selector);
-  int n = 10;
+  constexpr int n = 100;
 
   Kokkos::Experimental::SYCL space(queue);
   Kokkos::View<int*, Kokkos::Experimental::SYCLDeviceUSMSpace> v("default_view",
@@ -101,8 +103,8 @@ TEST(sycl, raw_sycl_interop_context_2) {
   });
   queue.wait_and_throw();
 
-  int* h_p = new int[n];
-  queue.memcpy(h_p, v_ptr, sizeof(int) * n);
+  std::array<int, n> h_p;
+  queue.memcpy(h_p.data(), v_ptr, sizeof(int) * n);
   queue.wait_and_throw();
 
   int64_t sum        = 0;

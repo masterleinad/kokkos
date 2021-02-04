@@ -45,6 +45,8 @@
 #include <Kokkos_Core.hpp>
 #include <sycl/TestSYCL_Category.hpp>
 
+#include <array>
+
 namespace Test {
 
 // Test whether allocations survive Kokkos initialize/finalize if done via Raw
@@ -52,8 +54,8 @@ namespace Test {
 TEST(sycl, raw_sycl_interop) {
   cl::sycl::default_selector device_selector;
   cl::sycl::queue queue(device_selector);
-  int n  = 100;
-  int* p = sycl::malloc_device<int>(n, queue);
+  constexpr int n = 100;
+  int* p          = sycl::malloc_device<int>(n, queue);
 
   Kokkos::InitArguments arguments{-1, -1, -1, false};
   Kokkos::initialize(arguments);
@@ -69,8 +71,8 @@ TEST(sycl, raw_sycl_interop) {
   });
   queue.wait_and_throw();
 
-  int* h_p = new int[n];
-  queue.memcpy(h_p, p, sizeof(int) * n);
+  std::array<int, n> h_p;
+  queue.memcpy(h_p.data(), p, sizeof(int) * n);
   queue.wait_and_throw();
   sycl::free(p, queue);
 
