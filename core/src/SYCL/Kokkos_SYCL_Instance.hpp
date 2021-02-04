@@ -317,7 +317,7 @@ class SYCLInternal {
   static void fence(sycl::event& e) { fence_helper(e); }
 };
 
-  template <bool is_memcpyable, typename T, typename Storage, typename ReferenceWrapper>
+  template <bool is_memcpyable, typename Functor, typename Storage, typename ReferenceWrapper>
   struct SYCLFunctionWrapper;
 
   template <typename Functor, typename Storage, typename ReferenceWrapper>
@@ -329,28 +329,28 @@ class SYCLInternal {
     const Functor& m_functor;
   };
 
-  template <typename T, typename Storage, typename ReferenceWrapper>
-  struct SYCLFunctionWrapper<false, T, Storage, ReferenceWrapper>
+  template <typename Functor, typename Storage, typename ReferenceWrapper>
+  struct SYCLFunctionWrapper<false, Functor, Storage, ReferenceWrapper>
   {
-    std::unique_ptr<T, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter> m_kernelFunctorPtr;
+    std::unique_ptr<Functor, Experimental::Impl::SYCLInternal::IndirectKernelMem::Deleter> m_kernelFunctorPtr;
 
           public:
-    SYCLFunctionWrapper(const T& functor, Storage& storage) :
+    SYCLFunctionWrapper(const Functor& functor, Storage& storage) :
       m_kernelFunctorPtr(storage.copy_from(functor))
       {}
 
     auto get_functor()const {
-      if constexpr (std::is_same_v<T, Kokkos::InvalidType>) 
+      if constexpr (std::is_same_v<Functor, Kokkos::InvalidType>) 
         return Kokkos::InvalidType{};
       else 
         return ReferenceWrapper(*m_kernelFunctorPtr);
     }
   };
 
-  template <typename ReferenceWrapper, typename T, typename Storage>
-  static auto make_sycl_function_wrapper(const T& functor, Storage& storage)
+  template <typename ReferenceWrapper, typename Functor, typename Storage>
+  static auto make_sycl_function_wrapper(const Functor& functor, Storage& storage)
   {
-    return SYCLFunctionWrapper<std::is_trivially_copyable_v<decltype(functor)>, T, Storage, ReferenceWrapper>(functor, storage);
+    return SYCLFunctionWrapper<std::is_trivially_copyable_v<decltype(functor)>, Functor, Storage, ReferenceWrapper>(functor, storage);
   }
 }  // namespace Impl
 }  // namespace Experimental
