@@ -340,10 +340,8 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
   int internal_team_size_max(const FunctorType& /*f*/) const {
 	  // We choose the maximum as the minimum of the number of threads allowed in a workgroup
 	  // and the number of threads that allow allocating the amount of local memory requested.
-    const auto thread_scratch_size =
-        m_thread_scratch_size[0] + m_thread_scratch_size[1];
     // If no scratch memory per thread is requested, the maximum is simply the maximum number of threads allowed in a workgroup.
-    if (thread_scratch_size == 0)
+    if (m_thread_scratch_size[0] == 0)
       return m_space.impl_internal_space_instance()->m_maxThreadsPerSM;
     // We wan to satisfy 
     // memory_per_team + memory_per_thread * thread_size < max_local_memory
@@ -351,8 +349,8 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
     // thread_size < (max_local_memory - memory_per_team)/memory_per_thread
     const auto max_threads_for_memory =
         (space().impl_internal_space_instance()->m_maxShmemPerBlock -
-         m_team_scratch_size[0] - m_team_scratch_size[1]) /
-        thread_scratch_size;
+         m_team_scratch_size[0]) /
+        m_thread_scratch_size[0];
     return std::min(m_space.impl_internal_space_instance()->m_maxThreadsPerSM,
                     max_threads_for_memory);
   }
@@ -398,6 +396,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     q.submit([&](sycl::handler& cgh) {
       const auto shmem_begin    = m_shmem_begin;
       const int scratch_size[2] = {m_scratch_size[0], m_scratch_size[1]};
+      void* const scratch_ptr[2] = {m_scratch_ptr[0], m_scratch_ptr[1]};
 
       // FIXME_SYCL accessors seem to need a size greater than zero at least for
       // host queues
@@ -408,15 +407,11 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
           team_scratch_memory_L0(
               sycl::range<1>(std::max(m_scratch_size[0] + shmem_begin, 1)),
               cgh);
-      sycl::accessor<char, 1, sycl::access::mode::read_write,
-                     sycl::access::target::local>
-          team_scratch_memory_L1(sycl::range<1>(std::max(m_scratch_size[1], 1)),
-                                 cgh);
 
       auto team_lambda = [=](sycl::nd_item<1> item) {
         const member_type team_member(
             team_scratch_memory_L0.get_pointer(), shmem_begin, scratch_size[0],
-            team_scratch_memory_L1.get_pointer(), scratch_size[1], item);
+            static_cast<char*>(scratch_ptr[1])+item.get_group(0)*scratch_size[1], scratch_size[1], item);
         if constexpr (std::is_same<work_tag, void>::value)
           functor(team_member);
         else
@@ -483,16 +478,20 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     // Functor's reduce memory, team scan memory, and team shared memory depend
     // upon team size.
     m_scratch_ptr[0] = nullptr;
-    m_scratch_ptr[1] = nullptr;
+    const Kokkos::Experimental::SYCL& space = m_policy.space();
+    Kokkos::Experimental::Impl::SYCLInternal& instance =
+        *space.impl_internal_space_instance();
+    sycl::queue& q = *instance.m_queue;
+    m_scratch_ptr[1] = sycl::malloc_device(sizeof(char)*m_scratch_size[1]*m_league_size, q);
 
     if (static_cast<int>(m_policy.space()
                              .impl_internal_space_instance()
                              ->m_maxShmemPerBlock) <
-        m_shmem_size + m_scratch_size[1]) {
+        m_shmem_size) {
       std::stringstream out;
       out << "Kokkos::Impl::ParallelFor<SYCL> insufficient shared memory! "
              "Requested "
-          << m_shmem_size + m_scratch_size[1] << " bytes but maximum is "
+          << m_shmem_size << " bytes but maximum is "
           << m_policy.space().impl_internal_space_instance()->m_maxShmemPerBlock
           << '\n';
       Kokkos::Impl::throw_runtime_exception(out.str());
@@ -501,6 +500,15 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     if (m_team_size > m_policy.team_size_max(arg_functor, ParallelForTag{}))
       Kokkos::Impl::throw_runtime_exception(std::string(
           "Kokkos::Impl::ParallelFor<SYCL> requested too large team size."));
+  }
+
+  ~ParallelFor()
+  {
+	  const Kokkos::Experimental::SYCL& space = m_policy.space();
+    Kokkos::Experimental::Impl::SYCLInternal& instance =
+        *space.impl_internal_space_instance();
+    sycl::queue& q = *instance.m_queue;
+    sycl::free(m_scratch_ptr[1], q);
   }
 };
 

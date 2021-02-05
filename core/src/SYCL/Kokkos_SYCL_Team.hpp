@@ -98,7 +98,7 @@ class SYCLTeamMember {
   KOKKOS_INLINE_FUNCTION int team_size() const {
     return m_item.get_local_range(0);
   }
-  KOKKOS_INLINE_FUNCTION void team_barrier() const { m_item.barrier(); }
+  KOKKOS_INLINE_FUNCTION void team_barrier() const { m_item.barrier(sycl::access::fence_space::global_and_local); }
 
   //--------------------------------------------------------------------------
 
