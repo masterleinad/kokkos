@@ -137,7 +137,7 @@ class SYCLTeamMember {
       typename std::enable_if<is_reducer<ReducerType>::value>::type
       team_reduce(ReducerType const& reducer,
                   typename ReducerType::value_type& value) const noexcept {
-    const auto idx = team_rank();
+    const unsigned int idx = team_rank();
     auto reduction_array =
         reinterpret_cast<typename ReducerType::value_type*>(m_team_reduce);
     reduction_array[idx] = value;
