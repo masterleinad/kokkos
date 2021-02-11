@@ -68,7 +68,7 @@ class SYCLTeamMember {
   mutable void* m_team_reduce;
   scratch_memory_space m_team_shared;
   int m_team_reduce_size;
-  sycl::nd_item<1> m_item;
+  sycl::nd_item<2> m_item;
 
  public:
   KOKKOS_INLINE_FUNCTION
@@ -104,7 +104,7 @@ class SYCLTeamMember {
   }
   KOKKOS_INLINE_FUNCTION void team_barrier() const { m_item.barrier(); }
 
-  KOKKOS_INLINE_FUNCTION const sycl::nd_item<1>& item() const { return m_item; }
+  KOKKOS_INLINE_FUNCTION const sycl::nd_item<2>& item() const { return m_item; }
 
   //--------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ class SYCLTeamMember {
   KOKKOS_INLINE_FUNCTION
   SYCLTeamMember(void* shared, const int shared_begin, const int shared_size,
                  void* scratch_level_1_ptr, const int scratch_level_1_size,
-                 const sycl::nd_item<1> item)
+                 const sycl::nd_item<2> item)
       : m_team_reduce(shared),
         m_team_shared(static_cast<char*>(shared) + shared_begin, shared_size,
                       scratch_level_1_ptr, scratch_level_1_size),
@@ -638,32 +638,30 @@ namespace Kokkos {
 
 template <class FunctorType>
 KOKKOS_INLINE_FUNCTION void single(
-    const Impl::VectorSingleStruct<Impl::SYCLTeamMember>&,
+    const Impl::VectorSingleStruct<Impl::SYCLTeamMember>& single_struct,
     const FunctorType& lambda) {
-  lambda();
+  if (single_struct.team_member.item().get_local_id(1) == 0) lambda();
 }
 
 template <class FunctorType>
 KOKKOS_INLINE_FUNCTION void single(
-    const Impl::ThreadSingleStruct<Impl::SYCLTeamMember>& thread_single,
+    const Impl::ThreadSingleStruct<Impl::SYCLTeamMember>& single_struct,
     const FunctorType& lambda) {
-  if (thread_single.team_member.team_rank() == 0) lambda();
+  if (single_struct.team_member.team_rank() == 0) lambda();
 }
 
 template <class FunctorType, class ValueType>
 KOKKOS_INLINE_FUNCTION void single(
-    const Impl::VectorSingleStruct<Impl::SYCLTeamMember>&,
-    const FunctorType& /*lambda*/, ValueType& /*val*/) {
-  // FIXME_SYCL
-  Kokkos::abort("Not implemented!");
+    const Impl::VectorSingleStruct<Impl::SYCLTeamMember>& single_struct,
+    const FunctorType& lambda, ValueType& val) {
+  if (single_struct.team_member.item().get_local_id(1) == 0) lambda(val);
 }
 
 template <class FunctorType, class ValueType>
 KOKKOS_INLINE_FUNCTION void single(
-    const Impl::ThreadSingleStruct<Impl::SYCLTeamMember>& /*single_struct*/,
-    const FunctorType& /*lambda*/, ValueType& /*val*/) {
-  // FIXME_SYCL
-  Kokkos::abort("Not implemented!");
+    const Impl::ThreadSingleStruct<Impl::SYCLTeamMember>& single_struct,
+    const FunctorType& lambda, ValueType& val) {
+  if (single_struct.team_member.team_rank() == 0) lambda(val);
 }
 
 }  // namespace Kokkos
