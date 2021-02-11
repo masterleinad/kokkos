@@ -147,7 +147,10 @@ class SYCLTeamMember {
         reducer.join(reduction_array[idx], reduction_array[idx + stride]);
       m_item.barrier(sycl::access::fence_space::local_space);
     }
+
     reducer.reference() = *reduction_array;
+    // make sure the reduction_array can be used again
+    m_item.barrier(sycl::access::fence_space::local_space);
   }
 
   //--------------------------------------------------------------------------
