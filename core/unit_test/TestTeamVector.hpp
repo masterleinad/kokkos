@@ -864,8 +864,6 @@ class TestTripleNestedReduce {
 
 #endif
 
-// FIXME_SYCL requires team reduce
-#ifndef KOKKOS_ENABLE_SYCL
 #if !(defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND) || defined(KOKKOS_ENABLE_HIP))
 TEST(TEST_CATEGORY, team_vector) {
   ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(0)));
@@ -883,6 +881,8 @@ TEST(TEST_CATEGORY, team_vector) {
 }
 #endif
 
+// FIXME_SYCL requires team reduce
+#ifndef KOKKOS_ENABLE_SYCL
 #if !defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
 TEST(TEST_CATEGORY, triple_nested_parallelism) {
 // With KOKKOS_ENABLE_DEBUG enabled, the functor uses too many registers to run
