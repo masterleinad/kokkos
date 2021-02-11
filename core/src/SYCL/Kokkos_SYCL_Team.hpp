@@ -629,10 +629,17 @@ KOKKOS_INLINE_FUNCTION
 template <typename iType, class Closure>
 KOKKOS_INLINE_FUNCTION void parallel_scan(
     const Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
-    /*loop_boundaries*/,
-    const Closure& /*closure*/) {
-  // FIXME_SYCL
-  Kokkos::abort("Not implemented!");
+        loop_boundaries,
+    const Closure& closure) {
+  // FIXME_SYCL modify for vector_length!=1
+  using value_type = typename Kokkos::Impl::FunctorAnalysis<
+      Kokkos::Impl::FunctorPatternInterface::SCAN, void, Closure>::value_type;
+
+  value_type accum{};
+
+  for (iType i = loop_boundaries.start; i < loop_boundaries.end; ++i) {
+    closure(i, accum, true);
+  }
 }
 
 }  // namespace Kokkos
