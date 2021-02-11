@@ -460,7 +460,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     m_shmem_size =
         (m_policy.scratch_size(0, m_team_size) +
          FunctorTeamShmemSize<FunctorType>::value(m_functor, m_team_size));
-    m_scratch_size[0] = m_policy.scratch_size(0, m_team_size);
+    m_scratch_size[0] = m_shmem_size;
     m_scratch_size[1] = m_policy.scratch_size(1, m_team_size);
 
     // FIXME_SYCL so far accessors used instead of these pointers
@@ -472,11 +472,11 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     m_scratch_ptr[1]     = sycl::malloc_device(
         sizeof(char) * m_scratch_size[1] * m_league_size, q);
 
-    if (static_cast<int>(space.m_maxShmemPerBlock) < m_shmem_size) {
+    if (static_cast<int>(space.m_maxShmemPerBlock) < m_shmem_size-m_shmem_begin) {
       std::stringstream out;
       out << "Kokkos::Impl::ParallelFor<SYCL> insufficient shared memory! "
              "Requested "
-          << m_shmem_size << " bytes but maximum is "
+          << m_shmem_size - m_shmem_begin << " bytes but maximum is "
           << m_policy.space().impl_internal_space_instance()->m_maxShmemPerBlock
           << '\n';
       Kokkos::Impl::throw_runtime_exception(out.str());
