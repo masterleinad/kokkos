@@ -411,7 +411,10 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
       void* const scratch_ptr[2] = {m_scratch_ptr[0], m_scratch_ptr[1]};
 
       cgh.parallel_for(
-          sycl::nd_range<2>(sycl::range<2>(m_league_size * m_team_size/m_vector_size, m_vector_size), sycl::range<2>(m_team_size/m_vector_size, m_vector_size)),
+          sycl::nd_range<2>(
+              sycl::range<2>(m_league_size * m_team_size / m_vector_size,
+                             m_vector_size),
+              sycl::range<2>(m_team_size / m_vector_size, m_vector_size)),
           [=](sycl::nd_item<2> item) {
             const member_type team_member(
                 team_scratch_memory_L0.get_pointer(), shmem_begin,
@@ -472,7 +475,8 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     m_scratch_ptr[1]     = sycl::malloc_device(
         sizeof(char) * m_scratch_size[1] * m_league_size, q);
 
-    if (static_cast<int>(space.m_maxShmemPerBlock) < m_shmem_size-m_shmem_begin) {
+    if (static_cast<int>(space.m_maxShmemPerBlock) <
+        m_shmem_size - m_shmem_begin) {
       std::stringstream out;
       out << "Kokkos::Impl::ParallelFor<SYCL> insufficient shared memory! "
              "Requested "
