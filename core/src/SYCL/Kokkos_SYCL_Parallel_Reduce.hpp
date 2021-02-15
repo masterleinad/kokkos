@@ -531,7 +531,16 @@ sycl::nd_range<3> compute_ranges() const {
     sycl::queue& q = *instance.m_queue;
 
     // FIXME_SYCL optimize
-    const sycl::nd_range<3> range = compute_ranges();
+    const int nwork = m_policy.m_num_tiles;
+    const int block_size = m_policy.m_prod_tile_dims;
+    const sycl::range<3> local_range (block_size, 1, 1);
+    const sycl::range<3> global_range (nwork * block_size,1 ,1);
+    // REMEMBER swap local x<->y
+    const sycl::nd_range<3> range {global_range, local_range};
+    // Make sure block size is a power of two
+    std::cout << "block_size: " << block_size << std::endl;
+    if ((block_size & (block_size - 1)))
+      Kokkos::abort("bla");
     std::cout << "global: " << range.get_global_range()[0] << ' '
                             << range.get_global_range()[1] << ' '
                             << range.get_global_range()[2] << ' '
@@ -605,8 +614,9 @@ sycl::nd_range<3> compute_ranges() const {
                 reference_type update = ValueInit::init(
                     selected_reducer, &local_mem[local_id * value_count]);
 
- const index_type local_x    = item.get_local_id(0);
-        const index_type local_y    = item.get_local_id(1);
+		// SWAPPED here to be conforming with CUDA implementation
+ const index_type local_x    = item.get_local_id(1);
+        const index_type local_y    = item.get_local_id(0);
         const index_type local_z    = item.get_local_id(2);
         const index_type global_x   = item.get_group(0);
         const index_type global_y   = item.get_group(1);
