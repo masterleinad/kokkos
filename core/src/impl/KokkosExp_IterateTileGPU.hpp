@@ -959,11 +959,14 @@ struct DeviceIterateTile {
 
   KOKKOS_IMPL_DEVICE_FUNCTION
   void exec_range() const {
+
+    KOKKOS_IMPL_DO_NOT_USE_PRINTF("gridDim= %d, %d, %d, blockIdx: %d %d %d, threadIdx: %d %d %d\n", gridDim.x, gridDim.y, gridDim.z, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
+
     if (static_cast<index_type>(blockIdx.x) < m_policy.m_num_tiles &&
         static_cast<index_type>(threadIdx.y) < m_policy.m_prod_tile_dims) {
       index_type m_offset[PolicyType::rank];  // tile starting global id offset
       index_type
-          m_local_offset[PolicyType::rank];  // tile starting global id offset
+          m_local_offset[PolicyType::rank];  // tile starting local id offset
 
       for (index_type tileidx = static_cast<index_type>(blockIdx.x);
            tileidx < m_policy.m_num_tiles; tileidx += gridDim.x) {
@@ -991,6 +994,8 @@ struct DeviceIterateTile {
               in_bounds = false;
             }
           }
+	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("gridDim= %d, %d, %d, blockIdx: %d %d %d, threadIdx: %d %d %d, Calling %d, %d, %d, %d\n", gridDim.x, gridDim.y, gridDim.z, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, m_offset[0], m_offset[1], m_local_offset[0], m_local_offset[1]);
+
           if (in_bounds) {
             Impl::_tag_invoke_array<Tag>(m_func, m_offset, m_v);
           }

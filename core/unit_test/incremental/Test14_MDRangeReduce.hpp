@@ -51,8 +51,8 @@
 
 namespace Test {
 using value_type = double;
-const int N      = 10;
-const int M      = 10;
+const int N      = 2;
+const int M      = 2;
 
 // A structure for complex number.
 struct MyComplex {
@@ -124,6 +124,7 @@ struct TestMDRangeReduce {
         mdPolicy_2D,
         KOKKOS_LAMBDA(const int i, const int j, value_type& update_value) {
           update_value += d_data(i, j);
+          KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling %d %d, %f, %f\n", i,j,update_value,d_data(i,j));
         },
         d_result);
 
