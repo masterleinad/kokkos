@@ -447,58 +447,6 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     }
   };
 
-sycl::nd_range<3> compute_ranges() const {
-    const auto& m_tile     = m_policy.m_tile;
-    const auto& m_tile_end = m_policy.m_tile_end;
-
-    if constexpr (Policy::rank == 2) {
-      sycl::range<3> local_sizes(m_tile[0], m_tile[1], 1);
-      sycl::range<3> global_sizes(m_tile_end[0] * m_tile[0],
-                                  m_tile_end[1] * m_tile[1], 1);
-      return {global_sizes, local_sizes};
-    }
-    if constexpr (Policy::rank == 3) {
-      sycl::range<3> local_sizes(m_tile[0], m_tile[1], m_tile[2]);
-      sycl::range<3> global_sizes(m_tile_end[0] * m_tile[0],
-                                  m_tile_end[1] * m_tile[1],
-                                  m_tile_end[2] * m_tile[2]);
-      return {global_sizes, local_sizes};
-    }
-    if constexpr (Policy::rank == 4) {
-      // id0,id1 encoded within first index; id2 to second index; id3 to third
-      // index
-      sycl::range<3> local_sizes(m_tile[0] * m_tile[1], m_tile[2], m_tile[3]);
-      sycl::range<3> global_sizes(
-          m_tile_end[0] * m_tile[0] * m_tile_end[1] * m_tile[1],
-          m_tile_end[2] * m_tile[2], m_tile_end[3] * m_tile[3]);
-      return {global_sizes, local_sizes};
-    }
-    if constexpr (Policy::rank == 5) {
-      // id0,id1 encoded within first index; id2,id3 to second index; id4 to
-      // third index
-      sycl::range<3> local_sizes(m_tile[0] * m_tile[1], m_tile[2] * m_tile[3],
-                                 m_tile[4]);
-      sycl::range<3> global_sizes(
-          m_tile_end[0] * m_tile[0] * m_tile_end[1] * m_tile[1],
-          m_tile_end[2] * m_tile[2] * m_tile_end[3] * m_tile[3],
-          m_tile_end[4] * m_tile[4]);
-      return {global_sizes, local_sizes};
-    }
-    if constexpr (Policy::rank == 6) {
-      // id0,id1 encoded within first index; id2,id3 to second index; id4,id5 to
-      // third index
-      sycl::range<3> local_sizes(m_tile[0] * m_tile[1], m_tile[2] * m_tile[3],
-                                 m_tile[4] * m_tile[5]);
-      sycl::range<3> global_sizes(
-          m_tile_end[0] * m_tile[0] * m_tile_end[1] * m_tile[1],
-          m_tile_end[2] * m_tile[2] * m_tile_end[3] * m_tile[3],
-          m_tile_end[4] * m_tile[4] * m_tile_end[5] * m_tile[5]);
-      return {global_sizes, local_sizes};
-    }
-    static_assert(Policy::rank > 1 && Policy::rank < 7,
-                  "Kokkos::MDRange Error: Exceeded rank bounds with SYCL\n");
-  }
-
   template <typename PolicyType, typename Functor, typename Reducer>
   void sycl_direct_launch(const PolicyType& policy, const Functor& functor,
                           const Reducer& reducer) const {
