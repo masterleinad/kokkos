@@ -425,31 +425,44 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
   struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
     using std::reference_wrapper<T>::reference_wrapper;
 
-    using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
+  //  using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
 
     template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasInit<Dummy>::value>
-    init(value_type& value) const {
-      return this->get().init(value);
+    std::enable_if_t<std::is_same_v<Dummy, T>/* &&
+                     ReduceFunctorHasInit<Dummy>::value*/>
+    init(reference_type value) const {
+      this->get().init(value);
     }
 
-    template <typename Dummy = T>
+     using scalar_type = double;
+  using value_type  = scalar_type[];
+  const unsigned value_count=1;
+
+  static_assert(std::is_same<scalar_type*, reference_type>::value, "");
+
+  /*KOKKOS_INLINE_FUNCTION
+  void init(scalar_type* dst) const {
+    for (unsigned i = 0; i < 1; ++i) {
+      dst[i] = 0.0;
+    }
+  }*/
+
+    /*template <typename Dummy = T>
     std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy>::value> join(
         volatile value_type& dest, const volatile value_type& src) const {
-      return this->get().join(dest, src);
+      this->get().join(dest, src);
     }
 
     template <typename Dummy = T>
     std::enable_if_t<std::is_same_v<Dummy, T> &&
                      ReduceFunctorHasFinal<Dummy>::value>
     final(value_type& value) const {
-      return this->get().final(value);
-    }
+      this->get().final(value);
+    }*/
   };
 
   template <typename PolicyType, typename Functor, typename Reducer>
-  void sycl_direct_launch(const PolicyType& policy, const Functor& functor,
+  void sycl_direct_launch(const PolicyType& /*policy*/, const Functor& functor,
                           const Reducer& reducer) const {
     static_assert(ReduceFunctorHasInit<Functor>::value ==
                   ReduceFunctorHasInit<FunctorType>::value);
@@ -468,9 +481,9 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                            void>;
     using ValueInit =
         Kokkos::Impl::FunctorValueInit<ReducerTypeFwd, WorkTagFwd>;
-    using ValueJoin =
+    /*using ValueJoin =
         Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
-    using ValueOps = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
+    using ValueOps = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;*/
 
     auto selected_reducer = ReducerConditional::select(functor, reducer);
 
@@ -500,14 +513,19 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     const auto results_ptr = static_cast<pointer_type>(sycl::malloc_shared(
         sizeof(value_type) * std::max(value_count, 1u) * init_size, q));
 
+//    static_assert(std::is_same<decltype(ValueInit::init(selected_reducer, results_ptr)), double>::value, "");
+
+reference_type update =
+              ValueInit::init(selected_reducer, results_ptr);
+(void) update;
+
     // If size<=1 we only call init(), the functor and possibly final once
     // working with the global scratch memory but don't copy back to
     // m_result_ptr yet.
-    if (size <= 1) {
+    /*if (size <= 1) {
       q.submit([&](sycl::handler& cgh) {
         cgh.single_task([=]() {
-          reference_type update =
-              ValueInit::init(selected_reducer, results_ptr);
+          reference_type update = ValueInit::init(selected_reducer, results_ptr);
           if (size == 1) {
  Kokkos::Impl::Reduce::DeviceIterateTile<Policy::rank, BarePolicy, Functor,
                                         typename Policy::work_tag, reference_type>(
@@ -518,13 +536,13 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
         });
       });
       m_space.fence();
-    }
+    }*/
 
     // Otherwise, we perform a reduction on the values in all workgroups
     // separately, write the workgroup results back to global memory and recurse
     // until only one workgroup does the reduction and thus gets the final
     // value.
-    bool first_run = true;
+    /*bool first_run = true;
     while (size > 1) {
       auto n_wgroups = (size + wgroup_size - 1) /
                        wgroup_size;
@@ -624,7 +642,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
 
       first_run = false;
       size      = n_wgroups;
-    }
+    }*/
 
     // At this point, the reduced value is written to the entry in results_ptr
     // and all that is left is to copy it back to the given result pointer if
@@ -654,7 +672,8 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper<
         ExtendedReferenceWrapper<ReducerType>>(m_reducer, indirectReducerMem);
 
-    sycl_direct_launch(m_policy, functor_wrapper.get_functor(),
+    (void) functor_wrapper;
+    sycl_direct_launch(m_policy, /*m_functor*/functor_wrapper.get_functor(),
                        reducer_wrapper.get_functor());
   }
 
