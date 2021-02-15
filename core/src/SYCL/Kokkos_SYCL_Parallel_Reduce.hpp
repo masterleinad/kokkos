@@ -538,9 +538,8 @@ sycl::nd_range<3> compute_ranges() const {
     // REMEMBER swap local x<->y
     const sycl::nd_range<3> range {global_range, local_range};
     // Make sure block size is a power of two
-    std::cout << "block_size: " << block_size << std::endl;
     if ((block_size & (block_size - 1)))
-      Kokkos::abort("bla");
+      Kokkos::abort("The product of the tile sizes must be a power of two!");
     std::cout << "global: " << range.get_global_range()[0] << ' '
                             << range.get_global_range()[1] << ' '
                             << range.get_global_range()[2] << ' '
@@ -629,7 +628,6 @@ sycl::nd_range<3> compute_ranges() const {
                                         typename Policy::work_tag, reference_type>(
             bare_policy, functor, update, {n_global_x, n_global_y, n_global_z},
             {global_x, global_y, global_z}, {local_x, local_y, local_z}).exec_range();
- KOKKOS_IMPL_DO_NOT_USE_PRINTF("init global_id %lu: %f\n", global_id, update);
               } else {
                 if (global_id >= size)
                   ValueInit::init(selected_reducer,

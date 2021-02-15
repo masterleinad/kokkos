@@ -51,8 +51,8 @@
 
 namespace Test {
 using value_type = double;
-const int N      = 2;
-const int M      = 2;
+const int N      = 10;
+const int M      = 10;
 
 // A structure for complex number.
 struct MyComplex {
