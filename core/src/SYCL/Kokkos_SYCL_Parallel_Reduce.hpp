@@ -394,6 +394,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                  const ReducerType& reducer)
       : m_functor(f),
         m_policy(p),
+	m_space(p.space()),
         m_reducer(reducer),
         m_result_ptr(reducer.view().data()) {}
 
