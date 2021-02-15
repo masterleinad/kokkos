@@ -480,14 +480,13 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     sycl::queue& q = *instance.m_queue;
 
     const int nwork = m_policy.m_num_tiles;
-    const int block_size = m_policy.m_prod_tile_dims;
+    const int block_size = std::pow(2, std::ceil(std::log2(m_policy.m_prod_tile_dims)));
+
     const sycl::range<3> local_range (block_size, 1, 1);
     // REMEMBER swap local x<->y to be conforming with Cuda/HIP implementation
     const sycl::range<3> global_range (nwork * block_size,1 ,1);
     const sycl::nd_range<3> range {global_range, local_range};
-    // Make sure block size is a power of two
-    if ((block_size & (block_size - 1)))
-      Kokkos::abort("The product of the tile sizes must be a power of two!");
+    std::cout << "block_size: " << block_size << std::endl;
 
     const size_t wgroup_size       = range.get_local_range().size();
     size_t size                   = range.get_global_range().size();

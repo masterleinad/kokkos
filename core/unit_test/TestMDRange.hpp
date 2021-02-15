@@ -2784,9 +2784,16 @@ struct TestMDRange_6D {
       int s3 = 1;
       int s4 = 1;
       int s5 = 1;
+
+      #ifdef KOKKOS_ENABLE_SYCL
+      range_type range(point_type{{s0, s1, s2, s3, s4, s5}},
+                       point_type{{N0, N1, N2, N3, N4, N5}},
+                       tile_type{{3, 3, 3, 2, 2, 2}});
+#else
       range_type range(point_type{{s0, s1, s2, s3, s4, s5}},
                        point_type{{N0, N1, N2, N3, N4, N5}},
                        tile_type{{3, 3, 3, 3, 3, 2}});
+#endif
 
       TestMDRange_6D functor(N0, N1, N2, N3, N4, N5);
 
@@ -2803,8 +2810,13 @@ struct TestMDRange_6D {
       using range_type =
           typename Kokkos::MDRangePolicy<ExecSpace, Kokkos::Rank<6>,
                                          Kokkos::IndexType<int>>;
+#ifdef KOKKOS_ENABLE_SYCL
+      range_type range({{0, 0, 0, 0, 0, 0}}, {{N0, N1, N2, N3, N4, N5}},
+                       {{3, 3, 3, 2, 2, 2}});
+#else
       range_type range({{0, 0, 0, 0, 0, 0}}, {{N0, N1, N2, N3, N4, N5}},
                        {{3, 3, 3, 3, 3, 2}});
+#endif
 
       TestMDRange_6D functor(N0, N1, N2, N3, N4, N5);
 
@@ -2823,8 +2835,14 @@ struct TestMDRange_6D {
       using range_type =
           typename Kokkos::MDRangePolicy<ExecSpace, Kokkos::Rank<6>,
                                          Kokkos::IndexType<int>>;
+
+#ifdef KOKKOS_ENABLE_SYCL
+            range_type range({{0, 0, 0, 0, 0, 0}}, {{N0, N1, N2, N3, N4, N5}},
+                       {{3, 3, 3, 2, 2, 2}});
+#else
       range_type range({{0, 0, 0, 0, 0, 0}}, {{N0, N1, N2, N3, N4, N5}},
                        {{3, 3, 3, 3, 3, 2}});
+#endif
 
       TestMDRange_6D functor(N0, N1, N2, N3, N4, N5);
 
@@ -2843,8 +2861,13 @@ struct TestMDRange_6D {
       using range_type =
           typename Kokkos::MDRangePolicy<ExecSpace, Kokkos::Rank<6>,
                                          Kokkos::IndexType<int>>;
+      #ifdef KOKKOS_ENABLE_SYCL
+            range_type range({{0, 0, 0, 0, 0, 0}}, {{N0, N1, N2, N3, N4, N5}},
+                       {{3, 3, 3, 2, 2, 2}});
+#else
       range_type range({{0, 0, 0, 0, 0, 0}}, {{N0, N1, N2, N3, N4, N5}},
                        {{3, 3, 3, 3, 3, 2}});
+#endif
 
       TestMDRange_6D functor(N0, N1, N2, N3, N4, N5);
 
