@@ -198,13 +198,16 @@ struct ReduceFunctorHasShmemSize<
 #endif
 
 template <class FunctorType, class ArgTag, class Enable = void>
-struct FunctorDeclaresValueType : public std::false_type {};
+struct FunctorDeclaresValueType : public std::false_type {
+using value_type = void;
+};
 
 template <class FunctorType, class ArgTag>
 struct FunctorDeclaresValueType<
     FunctorType, ArgTag,
     typename Impl::enable_if_type<typename FunctorType::value_type>::type>
-    : public std::true_type {};
+    : public std::true_type {
+    using value_type = typename FunctorType::value_type;};
 
 template <class FunctorType,
           bool Enable = (FunctorDeclaresValueType<FunctorType, void>::value) ||

@@ -342,42 +342,64 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   pointer_type m_result_ptr;
 };
 
- template <typename T, typename WorkTag>
-  struct ExtendedReferenceWrapper : std::reference_wrapper<const T> {
-    ExtendedReferenceWrapper(const T& t) : std::reference_wrapper<const T>(t), value_count(FunctorValueTraits<T, WorkTag>::value_count(t))
-    {}
-
-    using reference_type = typename FunctorValueTraits<T, WorkTag>::reference_type;
-    using value_type = std::conditional_t<FunctorDeclaresValueType<T, WorkTag>::value, typename T::value_type, std::remove_reference_t<reference_type>>;
-    //using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
-
-    template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasInit<Dummy>::value>
-    init(reference_type value) const {
-      this->get().init(value);
+template <typename T, typename WorkTag>
+struct HasJoin {
+    template <typename U>
+    static constexpr decltype(
+        std::declval<U>().join(
+            std::declval<
+                /*typename FunctorValueTraits<T, WorkTag>::reference_type*/
+	          typename FunctorValueTraits<T, WorkTag>::value_type &>(),
+            std::declval<
+	    /*
+                const typename FunctorValueTraits<T, WorkTag>::reference_type*/
+	        const typename FunctorValueTraits<T, WorkTag>::value_type&>())
+		,
+        bool())
+    test_join(int) {
+      return true;
     }
 
-     using scalar_type = double;
-  //using value_type  = scalar_type[];
-  const unsigned value_count;
-
-  static_assert(std::is_same<scalar_type*, reference_type>::value, "");
-  static_assert(std::is_same<value_type,typename T::value_type>::value, "");
-
-    /*template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy>::value> join(
-        volatile value_type& dest, const volatile value_type& src) const {
-      this->get().join(dest, src);
+    template <typename U>
+    static constexpr bool test_join(...) {
+      return false;
     }
 
-    template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasFinal<Dummy>::value>
-    final(value_type& value) const {
-      this->get().final(value);
-    }*/
-  };
+    static constexpr bool value = test_join<T>(int());
+};
+
+template <typename T, typename WorkTag>
+struct ExtendedReferenceWrapper : std::reference_wrapper<const T> {
+  ExtendedReferenceWrapper(const T& t) : std::reference_wrapper<const T>(t), value_count(FunctorValueTraits<T, WorkTag>::value_count(t))
+  {}
+
+  using reference_type = typename FunctorValueTraits<T, WorkTag>::reference_type;
+  using value_type = std::conditional_t<FunctorDeclaresValueType<T, WorkTag>::value, typename FunctorDeclaresValueType<T, WorkTag>::value_type, std::remove_reference_t<reference_type>>;
+
+  template <typename Dummy = T>
+  std::enable_if_t<std::is_same_v<Dummy, T> &&
+                   ReduceFunctorHasInit<Dummy>::value>
+  init(reference_type value) const {
+    this->get().init(value);
+  }
+
+  template <typename Dummy = T>
+  std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy, WorkTag>::value> join(
+      volatile reference_type dest, const volatile reference_type src) const {
+    return this->get().join(dest, src);
+  }
+
+  static_assert(std::is_same<typename FunctorValueTraits<T, WorkTag>::reference_type, typename FunctorValueTraits<T, WorkTag>::value_type&>::value, "");
+
+  template <typename Dummy = T>
+  std::enable_if_t<std::is_same_v<Dummy, T> &&
+                   ReduceFunctorHasFinal<Dummy>::value>
+  final(reference_type value) const {
+    return this->get().final(value);
+  }
+
+  const unsigned int value_count;
+};
 
 template <class FunctorType, class ReducerType, class... Traits>
 class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
@@ -436,79 +458,16 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
         m_result_ptr(reducer.view().data()) {}
 
  private:
-  template <typename T>
-  struct HasJoin {
-    template <typename U>
-    static constexpr decltype(
-        std::declval<U>().join(
-            std::declval<
-                typename FunctorValueTraits<T, WorkTag>::value_type&>(),
-            std::declval<
-                const typename FunctorValueTraits<T, WorkTag>::value_type&>()),
-        bool())
-    test_join(int) {
-      return true;
-    }
-
-    template <typename U>
-    static constexpr bool test_join(...) {
-      return false;
-    }
-
-    static constexpr bool value = test_join<T>(int());
-  };
-
-  /*template <typename T>
-  struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
-    using std::reference_wrapper<T>::reference_wrapper;
-
-    using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
-
-    template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasInit<Dummy>::value>
-    init(reference_type value) const {
-      this->get().init(value);
-    }
-
-     using scalar_type = double;
-  //using value_type  = scalar_type[];
-  const unsigned value_count=1;
-
-  static_assert(std::is_same<scalar_type*, reference_type>::value, "");
-  static_assert(std::is_same<value_type,typename T::value_type>::value, "");
-*/
-  /*KOKKOS_INLINE_FUNCTION
-  void init(scalar_type* dst) const {
-    for (unsigned i = 0; i < 1; ++i) {
-      dst[i] = 0.0;
-    }
-  }*/
-
-    /*template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy>::value> join(
-        volatile value_type& dest, const volatile value_type& src) const {
-      this->get().join(dest, src);
-    }
-
-    template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasFinal<Dummy>::value>
-    final(value_type& value) const {
-      this->get().final(value);
-    }*/
-  //};
-
   template <typename PolicyType, typename Functor, typename Reducer>
-  void sycl_direct_launch(const PolicyType& /*policy*/, const Functor& functor,
+  void sycl_direct_launch(const PolicyType& policy, const Functor& functor,
                           const Reducer& reducer) const {
     static_assert(ReduceFunctorHasInit<Functor>::value ==
                   ReduceFunctorHasInit<FunctorType>::value);
     static_assert(ReduceFunctorHasFinal<Functor>::value ==
                   ReduceFunctorHasFinal<FunctorType>::value);
-    static_assert(HasJoin<Functor>::value == HasJoin<FunctorType>::value);
+    static_assert(HasJoin<Functor, WorkTag>::value == HasJoin<FunctorType, WorkTag>::value);
     if constexpr (!std::is_same<Reducer, InvalidType>::value)
-      static_assert(HasJoin<Reducer>::value == HasJoin<ReducerType>::value);
+      static_assert(HasJoin<Reducer, WorkTag>::value == HasJoin<ReducerType, WorkTag>::value);
 
     using ReducerConditional =
         Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value, Functor,
@@ -519,9 +478,9 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                            void>;
     using ValueInit =
         Kokkos::Impl::FunctorValueInit<ReducerTypeFwd, WorkTagFwd>;
-    /*using ValueJoin =
+    using ValueJoin =
         Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
-    using ValueOps = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;*/
+    using ValueOps = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
 
     auto selected_reducer = ReducerConditional::select(functor, reducer);
 
@@ -551,16 +510,10 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     const auto results_ptr = static_cast<pointer_type>(sycl::malloc_shared(
         sizeof(value_type) * std::max(value_count, 1u) * init_size, q));
 
-//    static_assert(std::is_same<decltype(ValueInit::init(selected_reducer, results_ptr)), double>::value, "");
-
-reference_type update =
-              ValueInit::init(selected_reducer, results_ptr);
-(void) update;
-
     // If size<=1 we only call init(), the functor and possibly final once
     // working with the global scratch memory but don't copy back to
     // m_result_ptr yet.
-    /*if (size <= 1) {
+    if (size <= 1) {
       q.submit([&](sycl::handler& cgh) {
         cgh.single_task([=]() {
           reference_type update = ValueInit::init(selected_reducer, results_ptr);
@@ -574,13 +527,13 @@ reference_type update =
         });
       });
       m_space.fence();
-    }*/
+    }
 
     // Otherwise, we perform a reduction on the values in all workgroups
     // separately, write the workgroup results back to global memory and recurse
     // until only one workgroup does the reduction and thus gets the final
     // value.
-    /*bool first_run = true;
+    bool first_run = true;
     while (size > 1) {
       auto n_wgroups = (size + wgroup_size - 1) /
                        wgroup_size;
@@ -680,7 +633,7 @@ reference_type update =
 
       first_run = false;
       size      = n_wgroups;
-    }*/
+    }
 
     // At this point, the reduced value is written to the entry in results_ptr
     // and all that is left is to copy it back to the given result pointer if
