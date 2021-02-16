@@ -342,6 +342,43 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   pointer_type m_result_ptr;
 };
 
+ template <typename T, typename WorkTag>
+  struct ExtendedReferenceWrapper : std::reference_wrapper<const T> {
+    ExtendedReferenceWrapper(const T& t) : std::reference_wrapper<const T>(t), value_count(FunctorValueTraits<T, WorkTag>::value_count(t))
+    {}
+
+    using reference_type = typename FunctorValueTraits<T, WorkTag>::reference_type;
+    using value_type = std::conditional_t<FunctorDeclaresValueType<T, WorkTag>::value, typename T::value_type, std::remove_reference_t<reference_type>>;
+    //using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
+
+    template <typename Dummy = T>
+    std::enable_if_t<std::is_same_v<Dummy, T> &&
+                     ReduceFunctorHasInit<Dummy>::value>
+    init(reference_type value) const {
+      this->get().init(value);
+    }
+
+     using scalar_type = double;
+  //using value_type  = scalar_type[];
+  const unsigned value_count;
+
+  static_assert(std::is_same<scalar_type*, reference_type>::value, "");
+  static_assert(std::is_same<value_type,typename T::value_type>::value, "");
+
+    /*template <typename Dummy = T>
+    std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy>::value> join(
+        volatile value_type& dest, const volatile value_type& src) const {
+      this->get().join(dest, src);
+    }
+
+    template <typename Dummy = T>
+    std::enable_if_t<std::is_same_v<Dummy, T> &&
+                     ReduceFunctorHasFinal<Dummy>::value>
+    final(value_type& value) const {
+      this->get().final(value);
+    }*/
+  };
+
 template <class FunctorType, class ReducerType, class... Traits>
 class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                      Kokkos::Experimental::SYCL> {
@@ -421,25 +458,26 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     static constexpr bool value = test_join<T>(int());
   };
 
-  template <typename T>
+  /*template <typename T>
   struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
     using std::reference_wrapper<T>::reference_wrapper;
 
-  //  using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
+    using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
 
     template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T>/* &&
-                     ReduceFunctorHasInit<Dummy>::value*/>
+    std::enable_if_t<std::is_same_v<Dummy, T> &&
+                     ReduceFunctorHasInit<Dummy>::value>
     init(reference_type value) const {
       this->get().init(value);
     }
 
      using scalar_type = double;
-  using value_type  = scalar_type[];
+  //using value_type  = scalar_type[];
   const unsigned value_count=1;
 
   static_assert(std::is_same<scalar_type*, reference_type>::value, "");
-
+  static_assert(std::is_same<value_type,typename T::value_type>::value, "");
+*/
   /*KOKKOS_INLINE_FUNCTION
   void init(scalar_type* dst) const {
     for (unsigned i = 0; i < 1; ++i) {
@@ -459,7 +497,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     final(value_type& value) const {
       this->get().final(value);
     }*/
-  };
+  //};
 
   template <typename PolicyType, typename Functor, typename Reducer>
   void sycl_direct_launch(const PolicyType& /*policy*/, const Functor& functor,
@@ -668,9 +706,9 @@ reference_type update =
     IndirectKernelMem& indirectReducerMem = instance.m_indirectReducerMem;
 
     const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper<
-        ExtendedReferenceWrapper<FunctorType>>(m_functor, indirectKernelMem);
+        ExtendedReferenceWrapper<FunctorType, WorkTag>>(m_functor, indirectKernelMem);
     const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper<
-        ExtendedReferenceWrapper<ReducerType>>(m_reducer, indirectReducerMem);
+        ExtendedReferenceWrapper<ReducerType, WorkTag>>(m_reducer, indirectReducerMem);
 
     (void) functor_wrapper;
     sycl_direct_launch(m_policy, /*m_functor*/functor_wrapper.get_functor(),
