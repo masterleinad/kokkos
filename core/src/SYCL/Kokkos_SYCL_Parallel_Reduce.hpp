@@ -142,8 +142,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             else
               functor(WorkTag(), begin, update);
           }
-          if constexpr (ReduceFunctorHasFinal<Functor>::value)
-            FunctorFinal<Functor, WorkTag>::final(functor, results_ptr);
+          if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+            FunctorFinal<FunctorType, WorkTag>::final(
+                static_cast<const FunctorType&>(functor), results_ptr);
         });
       });
       space.fence();
@@ -238,11 +239,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                     functor,
                     &results_ptr[(item.get_group_linear_id()) * value_count],
                     &local_mem[0]);
-                if constexpr (ReduceFunctorHasFinal<Functor>::value)
+                if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
                   if (n_wgroups <= 1)
-                    FunctorFinal<Functor, WorkTag>::final(
-                        functor, &results_ptr[(item.get_group_linear_id()) *
-                                              value_count]);
+                    FunctorFinal<FunctorType, WorkTag>::final(
+                        static_cast<const FunctorType&>(functor),
+                        &results_ptr[(item.get_group_linear_id()) *
+                                     value_count]);
               }
             });
       });
@@ -406,8 +408,9 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                                 {0, 0, 0})
                 .exec_range();
           }
-          if constexpr (ReduceFunctorHasFinal<Functor>::value)
-            FunctorFinal<Functor, WorkTag>::final(functor, results_ptr);
+          if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+            FunctorFinal<FunctorType, WorkTag>::final(
+                static_cast<const FunctorType&>(functor), results_ptr);
         });
       });
       m_space.fence();
@@ -507,10 +510,10 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                 functor,
                 &results_ptr[(item.get_group_linear_id()) * value_count],
                 &local_mem[0]);
-            if constexpr (ReduceFunctorHasFinal<Functor>::value)
+            if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
               if (n_wgroups <= 1)
-                FunctorFinal<Functor, WorkTag>::final(
-                    functor,
+                FunctorFinal<FunctorType, WorkTag>::final(
+                    static_cast<const FunctorType&>(functor),
                     &results_ptr[(item.get_group_linear_id()) * value_count]);
           }
         });
