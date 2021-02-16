@@ -86,78 +86,21 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         m_result_ptr(reducer.view().data()) {}
 
  private:
-  template <typename T>
-  struct HasJoin {
-    template <typename U>
-    static constexpr decltype(
-        std::declval<U>().join(
-            std::declval<
-                typename FunctorValueTraits<T, WorkTag>::value_type&>(),
-            std::declval<
-                const typename FunctorValueTraits<T, WorkTag>::value_type&>()),
-        bool())
-    test_join(int) {
-      return true;
-    }
-
-    template <typename U>
-    static constexpr bool test_join(...) {
-      return false;
-    }
-
-    static constexpr bool value = test_join<T>(int());
-  };
-
-  template <typename T>
-  struct ExtendedReferenceWrapper : std::reference_wrapper<T> {
-    using std::reference_wrapper<T>::reference_wrapper;
-
-    using value_type = typename FunctorValueTraits<T, WorkTag>::value_type;
-
-    template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasInit<Dummy>::value>
-    init(value_type& value) const {
-      return this->get().init(value);
-    }
-
-    template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy>::value> join(
-        volatile value_type& dest, const volatile value_type& src) const {
-      return this->get().join(dest, src);
-    }
-
-    template <typename Dummy = T>
-    std::enable_if_t<std::is_same_v<Dummy, T> &&
-                     ReduceFunctorHasFinal<Dummy>::value>
-    final(value_type& value) const {
-      return this->get().final(value);
-    }
-  };
-
   template <typename PolicyType, typename Functor, typename Reducer>
   void sycl_direct_launch(const PolicyType& policy, const Functor& functor,
                           const Reducer& reducer) const {
-    static_assert(ReduceFunctorHasInit<Functor>::value ==
-                  ReduceFunctorHasInit<FunctorType>::value);
-    static_assert(ReduceFunctorHasFinal<Functor>::value ==
-                  ReduceFunctorHasFinal<FunctorType>::value);
-    static_assert(HasJoin<Functor>::value == HasJoin<FunctorType>::value);
-    if constexpr (!std::is_same<Reducer, InvalidType>::value)
-      static_assert(HasJoin<Reducer>::value == HasJoin<ReducerType>::value);
-
     using ReducerConditional =
-        Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value, Functor,
-                           Reducer>;
+        Kokkos::Impl::if_c<std::is_same<InvalidType, ReducerType>::value, FunctorType,
+                           ReducerType>;
     using ReducerTypeFwd = typename ReducerConditional::type;
     using WorkTagFwd =
-        std::conditional_t<std::is_same<InvalidType, Reducer>::value, WorkTag,
+        std::conditional_t<std::is_same<InvalidType, ReducerType>::value, WorkTag,
                            void>;
     using ValueInit =
         Kokkos::Impl::FunctorValueInit<ReducerTypeFwd, WorkTagFwd>;
     using ValueJoin =
         Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
-    using ValueOps = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
+    using ValueOps = Kokkos::Impl::FunctorValueOps<FunctorType, WorkTag>;
 
     auto selected_reducer = ReducerConditional::select(functor, reducer);
 
@@ -188,6 +131,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       q.submit([&](sycl::handler& cgh) {
         const auto begin = policy.begin();
         cgh.single_task([=]() {
+          const auto& selected_reducer = ReducerConditional::select(static_cast<const FunctorType&>(functor), static_cast<const ReducerType&>(reducer));
           reference_type update =
               ValueInit::init(selected_reducer, results_ptr);
           if (size == 1) {
@@ -226,6 +170,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               const auto global_id =
                   wgroup_size * item.get_group_linear_id() * values_per_thread +
                   local_id;
+              const auto& selected_reducer = ReducerConditional::select(static_cast<const FunctorType&>(functor), static_cast<const ReducerType&>(reducer));
 
               // In the first iteration, we call functor to initialize the local
               // memory. Otherwise, the local memory is initialized with the
@@ -327,9 +272,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     IndirectKernelMem& indirectReducerMem = instance.m_indirectReducerMem;
 
     const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper<
-        ExtendedReferenceWrapper<FunctorType>>(m_functor, indirectKernelMem);
+        std::reference_wrapper<FunctorType>>(m_functor, indirectKernelMem);
     const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper<
-        ExtendedReferenceWrapper<ReducerType>>(m_reducer, indirectReducerMem);
+        std::reference_wrapper<ReducerType>>(m_reducer, indirectReducerMem);
 
     sycl_direct_launch(m_policy, functor_wrapper.get_functor(),
                        reducer_wrapper.get_functor());
@@ -340,119 +285,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   Policy m_policy;
   ReducerType m_reducer;
   pointer_type m_result_ptr;
-};
-
-template <typename T, typename WorkTag>
-struct HasJoin {
-    template <typename U>
-    static constexpr decltype(
-        std::declval<U>().join(
-		WorkTag{},
-            std::declval<
-                  typename FunctorValueTraits<T, WorkTag>::reference_type &>(),
-            std::declval<
-                const typename FunctorValueTraits<T, WorkTag>::reference_type&>())
-                ,
-        bool())
-    test_join(int) {
-      return true;
-    }
-
-    template <typename U>
-    static constexpr bool test_join(...) {
-      return false;
-    }
-
-    static constexpr bool value = test_join<T>(int());
-};
-
-template <typename T>
-struct HasJoin<T, void> {
-    template <typename U>
-    static constexpr decltype(
-        std::declval<U>().join(
-            std::declval<
-                  typename FunctorValueTraits<T, void>::reference_type &>(),
-            std::declval<
-                const typename FunctorValueTraits<T, void>::reference_type&>())
-                ,
-        bool())
-    test_join(int) {
-      return true;
-    }
-
-    template <typename U>
-    static constexpr bool test_join(...) {
-      return false;
-    }
-
-    static constexpr bool value = test_join<T>(int());
-};
-
-template <typename T, typename WorkTag>
-struct ExtendedReferenceWrapper : std::reference_wrapper<const T> {
-  ExtendedReferenceWrapper(const T& t) : std::reference_wrapper<const T>(t), value_count(FunctorValueTraits<T, WorkTag>::value_count(t))
-  {}
-
-  using reference_type = typename FunctorValueTraits<T, WorkTag>::reference_type;
-  using value_type = std::conditional_t<FunctorDeclaresValueType<T, WorkTag>::value, typename FunctorDeclaresValueType<T, WorkTag>::value_type, std::remove_reference_t<reference_type>>;
-
-  //static_assert(std::is_same<typename FunctorValueTraits<T, WorkTag>::reference_type, typename FunctorValueTraits<T, WorkTag>::value_type&>::value, "");
-
-  template <typename Dummy = T>
-  std::enable_if_t<std::is_same_v<Dummy, T> &&
-                   ReduceFunctorHasInit<Dummy>::value>
-  init(const WorkTag& tag, reference_type value) const {
-    this->get().init(tag, value);
-  }
-
-  template <typename Dummy = T>
-  std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy, WorkTag>::value> join(
-      const WorkTag& tag, volatile reference_type dest, const volatile reference_type src) const {
-    return this->get().join(tag, dest, src);
-  }
-
-  template <typename Dummy = T>
-  std::enable_if_t<std::is_same_v<Dummy, T> && !std::is_same_v<WorkTag, void> &&
-                   ReduceFunctorHasFinal<Dummy>::value>
-  final(const WorkTag& tag, reference_type value) const {
-    return this->get().final(tag, value);
-  }
-
-  const unsigned int value_count;
-};
-
-template <typename T>
-struct ExtendedReferenceWrapper<T, void> : std::reference_wrapper<const T> {
-  ExtendedReferenceWrapper(const T& t) : std::reference_wrapper<const T>(t), value_count(FunctorValueTraits<T, void>::value_count(t))
-  {}
-
-  using reference_type = typename FunctorValueTraits<T, void>::reference_type;
-  using value_type = std::conditional_t<FunctorDeclaresValueType<T, void>::value, typename FunctorDeclaresValueType<T, void>::value_type, std::remove_reference_t<reference_type>>;
-
-  //static_assert(std::is_same<typename FunctorValueTraits<T, WorkTag>::reference_type, typename FunctorValueTraits<T, WorkTag>::value_type&>::value, "");
-
-  template <typename Dummy = T>
-  std::enable_if_t<std::is_same_v<Dummy, T> &&
-                   ReduceFunctorHasInit<Dummy>::value>
-  init(reference_type value) const {
-    this->get().init(value);
-  }
-
-  template <typename Dummy = T>
-  std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy, void>::value> join(
-      volatile reference_type dest, const volatile reference_type src) const {
-    return this->get().join(dest, src);
-  }
-
-  template <typename Dummy = T>
-  std::enable_if_t<std::is_same_v<Dummy, T> &&
-                   ReduceFunctorHasFinal<Dummy>::value>
-  final(reference_type value) const {
-    return this->get().final(value);
-  }
-
-  const unsigned int value_count;
 };
 
 template <class FunctorType, class ReducerType, class... Traits>
@@ -515,28 +347,18 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
   template <typename PolicyType, typename Functor, typename Reducer>
   void sycl_direct_launch(const PolicyType& policy, const Functor& functor,
                           const Reducer& reducer) const {
-    static_assert(ReduceFunctorHasInit<Functor>::value ==
-                  ReduceFunctorHasInit<FunctorType>::value);
-    static_assert(ReduceFunctorHasFinal<Functor>::value ==
-                  ReduceFunctorHasFinal<FunctorType>::value);
-    static_assert(HasJoin<Functor, WorkTag>::value == HasJoin<FunctorType, WorkTag>::value);
-    if constexpr (!std::is_same<Reducer, InvalidType>::value)
-      static_assert(HasJoin<Reducer, WorkTag>::value == HasJoin<ReducerType, WorkTag>::value);
-
     using ReducerConditional =
-        Kokkos::Impl::if_c<std::is_same<InvalidType, Reducer>::value, Functor,
-                           Reducer>;
+        Kokkos::Impl::if_c<std::is_same<InvalidType, ReducerType>::value, FunctorType,
+                           ReducerType>;
     using ReducerTypeFwd = typename ReducerConditional::type;
     using WorkTagFwd =
-        std::conditional_t<std::is_same<InvalidType, Reducer>::value, WorkTag,
+        std::conditional_t<std::is_same<InvalidType, ReducerType>::value, WorkTag,
                            void>;
     using ValueInit =
         Kokkos::Impl::FunctorValueInit<ReducerTypeFwd, WorkTagFwd>;
     using ValueJoin =
         Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
-    using ValueOps = Kokkos::Impl::FunctorValueOps<Functor, WorkTag>;
-
-    auto selected_reducer = ReducerConditional::select(functor, reducer);
+    using ValueOps = Kokkos::Impl::FunctorValueOps<FunctorType, WorkTag>;
 
     // Convenience references
     Kokkos::Experimental::Impl::SYCLInternal& instance =
@@ -550,7 +372,6 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     // REMEMBER swap local x<->y to be conforming with Cuda/HIP implementation
     const sycl::range<3> global_range (nwork * block_size,1 ,1);
     const sycl::nd_range<3> range {global_range, local_range};
-    std::cout << "block_size: " << block_size << std::endl;
 
     const size_t wgroup_size       = range.get_local_range().size();
     size_t size                   = range.get_global_range().size();
@@ -558,6 +379,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
         (size + wgroup_size - 1) /
             wgroup_size,
         1);
+    const auto& selected_reducer = ReducerConditional::select(functor, reducer);
     const unsigned int value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
@@ -570,6 +392,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     if (size <= 1) {
       q.submit([&](sycl::handler& cgh) {
         cgh.single_task([=]() {
+          const auto& selected_reducer = ReducerConditional::select(static_cast<const FunctorType&>(functor), static_cast<const ReducerType&>(reducer));
           reference_type update = ValueInit::init(selected_reducer, results_ptr);
           if (size == 1) {
  Kokkos::Impl::Reduce::DeviceIterateTile<Policy::rank, BarePolicy, Functor,
@@ -605,6 +428,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
               const auto global_id =
                   wgroup_size * item.get_group_linear_id() +
                   local_id;
+              const auto& selected_reducer = ReducerConditional::select(static_cast<const FunctorType&>(functor), static_cast<const ReducerType&>(reducer));
 
               // In the first iteration, we call functor to initialize the local
               // memory. Otherwise, the local memory is initialized with the
@@ -713,12 +537,12 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     IndirectKernelMem& indirectReducerMem = instance.m_indirectReducerMem;
 
     const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper<
-        ExtendedReferenceWrapper<FunctorType, WorkTag>>(m_functor, indirectKernelMem);
+        std::reference_wrapper<FunctorType>>(m_functor, indirectKernelMem);
     const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper<
-        ExtendedReferenceWrapper<ReducerType, WorkTag>>(m_reducer, indirectReducerMem);
+        std::reference_wrapper<ReducerType>>(m_reducer, indirectReducerMem);
 
     (void) functor_wrapper;
-    sycl_direct_launch(m_policy, /*m_functor*/functor_wrapper.get_functor(),
+    sycl_direct_launch(m_policy, functor_wrapper.get_functor(),
                        reducer_wrapper.get_functor());
   }
 
