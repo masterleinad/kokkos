@@ -347,14 +347,35 @@ struct HasJoin {
     template <typename U>
     static constexpr decltype(
         std::declval<U>().join(
+		WorkTag{},
             std::declval<
-                /*typename FunctorValueTraits<T, WorkTag>::reference_type*/
-	          typename FunctorValueTraits<T, WorkTag>::value_type &>(),
+                  typename FunctorValueTraits<T, WorkTag>::reference_type &>(),
             std::declval<
-	    /*
-                const typename FunctorValueTraits<T, WorkTag>::reference_type*/
-	        const typename FunctorValueTraits<T, WorkTag>::value_type&>())
-		,
+                const typename FunctorValueTraits<T, WorkTag>::reference_type&>())
+                ,
+        bool())
+    test_join(int) {
+      return true;
+    }
+
+    template <typename U>
+    static constexpr bool test_join(...) {
+      return false;
+    }
+
+    static constexpr bool value = test_join<T>(int());
+};
+
+template <typename T>
+struct HasJoin<T, void> {
+    template <typename U>
+    static constexpr decltype(
+        std::declval<U>().join(
+            std::declval<
+                  typename FunctorValueTraits<T, void>::reference_type &>(),
+            std::declval<
+                const typename FunctorValueTraits<T, void>::reference_type&>())
+                ,
         bool())
     test_join(int) {
       return true;
@@ -376,6 +397,41 @@ struct ExtendedReferenceWrapper : std::reference_wrapper<const T> {
   using reference_type = typename FunctorValueTraits<T, WorkTag>::reference_type;
   using value_type = std::conditional_t<FunctorDeclaresValueType<T, WorkTag>::value, typename FunctorDeclaresValueType<T, WorkTag>::value_type, std::remove_reference_t<reference_type>>;
 
+  //static_assert(std::is_same<typename FunctorValueTraits<T, WorkTag>::reference_type, typename FunctorValueTraits<T, WorkTag>::value_type&>::value, "");
+
+  template <typename Dummy = T>
+  std::enable_if_t<std::is_same_v<Dummy, T> &&
+                   ReduceFunctorHasInit<Dummy>::value>
+  init(const WorkTag& tag, reference_type value) const {
+    this->get().init(tag, value);
+  }
+
+  template <typename Dummy = T>
+  std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy, WorkTag>::value> join(
+      const WorkTag& tag, volatile reference_type dest, const volatile reference_type src) const {
+    return this->get().join(tag, dest, src);
+  }
+
+  template <typename Dummy = T>
+  std::enable_if_t<std::is_same_v<Dummy, T> && !std::is_same_v<WorkTag, void> &&
+                   ReduceFunctorHasFinal<Dummy>::value>
+  final(const WorkTag& tag, reference_type value) const {
+    return this->get().final(tag, value);
+  }
+
+  const unsigned int value_count;
+};
+
+template <typename T>
+struct ExtendedReferenceWrapper<T, void> : std::reference_wrapper<const T> {
+  ExtendedReferenceWrapper(const T& t) : std::reference_wrapper<const T>(t), value_count(FunctorValueTraits<T, void>::value_count(t))
+  {}
+
+  using reference_type = typename FunctorValueTraits<T, void>::reference_type;
+  using value_type = std::conditional_t<FunctorDeclaresValueType<T, void>::value, typename FunctorDeclaresValueType<T, void>::value_type, std::remove_reference_t<reference_type>>;
+
+  //static_assert(std::is_same<typename FunctorValueTraits<T, WorkTag>::reference_type, typename FunctorValueTraits<T, WorkTag>::value_type&>::value, "");
+
   template <typename Dummy = T>
   std::enable_if_t<std::is_same_v<Dummy, T> &&
                    ReduceFunctorHasInit<Dummy>::value>
@@ -384,12 +440,10 @@ struct ExtendedReferenceWrapper : std::reference_wrapper<const T> {
   }
 
   template <typename Dummy = T>
-  std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy, WorkTag>::value> join(
+  std::enable_if_t<std::is_same_v<Dummy, T> && HasJoin<Dummy, void>::value> join(
       volatile reference_type dest, const volatile reference_type src) const {
     return this->get().join(dest, src);
   }
-
-  static_assert(std::is_same<typename FunctorValueTraits<T, WorkTag>::reference_type, typename FunctorValueTraits<T, WorkTag>::value_type&>::value, "");
 
   template <typename Dummy = T>
   std::enable_if_t<std::is_same_v<Dummy, T> &&
