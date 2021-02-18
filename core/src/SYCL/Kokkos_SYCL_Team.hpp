@@ -137,24 +137,49 @@ class SYCLTeamMember {
       typename std::enable_if<is_reducer<ReducerType>::value>::type
       team_reduce(ReducerType const& reducer,
                   typename ReducerType::value_type& value) const noexcept {
+	            /*KOKKOS_IMPL_DO_NOT_USE_PRINTF("allocated %d, requested %lu\n", m_team_reduce_size, sizeof(typename ReducerType::value_type)*team_size());
 #ifdef KOKKOS_ENABLE_DEBUG
     if (m_team_reduce_size < static_cast<int>(sizeof(typename ReducerType::value_type)*team_size())) {
       KOKKOS_IMPL_DO_NOT_USE_PRINTF("allocated %d, requested %lu\n", m_team_reduce_size, sizeof(typename ReducerType::value_type)*team_size());
       Kokkos::abort("Didn't allocate enough local memory!");
     }
-#endif
-    const unsigned int idx = team_rank();
+#endif*/
+    const int  maximum_work_range = std::min<int>(m_team_reduce_size/sizeof(typename ReducerType::value_type), team_size());
+
+    int smaller_power_of_two = 1;
+    while (smaller_power_of_two*2<maximum_work_range)
+	    smaller_power_of_two *=2;
+
+    typename ReducerType::value_type tmp = value;
+
+    const int idx = team_rank();
     auto reduction_array =
         reinterpret_cast<typename ReducerType::value_type*>(m_team_reduce);
-    reduction_array[idx] = value;
-    m_item.barrier(sycl::access::fence_space::local_space);
-    for (unsigned int stride = team_size() / 2; stride > 0; stride >>= 1) {
-      if (idx < stride)
-        reducer.join(reduction_array[idx], reduction_array[idx + stride]);
-      m_item.barrier(sycl::access::fence_space::local_space);
-    }
 
-    reducer.reference() = *reduction_array;
+    for (int start=0; start<team_size(); start+=maximum_work_range)
+    {
+      if (idx>=start && idx<start+maximum_work_range)
+      {
+        reduction_array[idx-start] = tmp;
+//	KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Initializing %d: %lld\n", idx, idx-start, reduction_array[idx-start]);
+      }
+      m_item.barrier(sycl::access::fence_space::local_space);
+      for (int stride = smaller_power_of_two; stride > 0; stride >>= 1) {
+        if (idx < stride && idx+stride < maximum_work_range && idx+stride+start<team_size())
+	{
+  //        KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Before join: %lld\n", idx, stride, reduction_array[idx]);
+          reducer.join(reduction_array[idx], reduction_array[idx + stride]);
+    //      KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): After join: %lld\n", idx, stride, reduction_array[idx]);
+	}
+        m_item.barrier(sycl::access::fence_space::local_space);
+      }
+      if (start>0)
+        reducer.reference() += *reduction_array;
+      else
+	reducer.reference() = *reduction_array;      
+      //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: After reduction: %lld\n", idx, reducer.reference());
+    }
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Final: %lld\n", idx, reducer.reference());
     // make sure the reduction_array can be used again
     m_item.barrier(sycl::access::fence_space::local_space);
   }
