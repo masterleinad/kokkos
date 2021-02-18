@@ -148,7 +148,6 @@ class SYCLTeamMember {
         reinterpret_cast<typename ReducerType::value_type*>(m_team_reduce);
     reduction_array[idx] = value;
     m_item.barrier(sycl::access::fence_space::local_space);
-    KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Initialize: %f %f\n", team_rank(), league_rank(), value.re, value.im);
     for (unsigned int stride = team_size() / 2; stride > 0; stride >>= 1) {
       if (idx < stride)
         reducer.join(reduction_array[idx], reduction_array[idx + stride]);
@@ -156,7 +155,6 @@ class SYCLTeamMember {
     }
 
     reducer.reference() = *reduction_array;
-    KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Result: %f %f\n", team_rank(), league_rank(), reduction_array[0].re, reduction_array[0].im);
     // make sure the reduction_array can be used again
     m_item.barrier(sycl::access::fence_space::local_space);
   }

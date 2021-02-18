@@ -358,7 +358,7 @@ struct functor_teamvector_reduce {
       if (test != shared_value(0)) {
         if (team.league_rank() == 0) {
           KOKKOS_IMPL_DO_NOT_USE_PRINTF(
-              "FAILED teamvector_parallel_reduce with shared result league_rank: %i team_rank: %i should be %lf "
+              "FAILED teamvector_parallel_reduce with shared result %i %i %lf "
               "is %lf %lu\n",
               static_cast<int>(team.league_rank()),
               static_cast<int>(team.team_rank()), static_cast<double>(test),
@@ -483,7 +483,7 @@ bool Test(int test) {
   passed = passed && test_scalar<float, ExecutionSpace>(317, team_size, test);
   passed = passed && test_scalar<double, ExecutionSpace>(317, team_size, test);*/
   passed =
-      passed && test_scalar<my_complex, ExecutionSpace>(1, team_size, test);
+      passed && test_scalar<my_complex, ExecutionSpace>(317, team_size, test);
 
   return passed;
 }
