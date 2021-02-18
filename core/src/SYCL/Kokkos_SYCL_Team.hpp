@@ -137,11 +137,18 @@ class SYCLTeamMember {
       typename std::enable_if<is_reducer<ReducerType>::value>::type
       team_reduce(ReducerType const& reducer,
                   typename ReducerType::value_type& value) const noexcept {
+#ifdef KOKKOS_ENABLE_DEBUG
+    if (m_team_reduce_size < static_cast<int>(sizeof(typename ReducerType::value_type)*team_size())) {
+      KOKKOS_IMPL_DO_NOT_USE_PRINTF("allocated %d, requested %lu\n", m_team_reduce_size, sizeof(typename ReducerType::value_type)*team_size());
+      Kokkos::abort("Didn't allocate enough local memory!");
+    }
+#endif
     const unsigned int idx = team_rank();
     auto reduction_array =
         reinterpret_cast<typename ReducerType::value_type*>(m_team_reduce);
     reduction_array[idx] = value;
     m_item.barrier(sycl::access::fence_space::local_space);
+    KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Initialize: %f %f\n", team_rank(), league_rank(), value.re, value.im);
     for (unsigned int stride = team_size() / 2; stride > 0; stride >>= 1) {
       if (idx < stride)
         reducer.join(reduction_array[idx], reduction_array[idx + stride]);
@@ -149,6 +156,7 @@ class SYCLTeamMember {
     }
 
     reducer.reference() = *reduction_array;
+    KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Result: %f %f\n", team_rank(), league_rank(), reduction_array[0].re, reduction_array[0].im);
     // make sure the reduction_array can be used again
     m_item.barrier(sycl::access::fence_space::local_space);
   }

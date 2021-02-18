@@ -358,8 +358,8 @@ struct functor_teamvector_reduce {
       if (test != shared_value(0)) {
         if (team.league_rank() == 0) {
           KOKKOS_IMPL_DO_NOT_USE_PRINTF(
-              "FAILED teamvector_parallel_reduce with shared result %i %i %lf "
-              "%lf %lu\n",
+              "FAILED teamvector_parallel_reduce with shared result league_rank: %i team_rank: %i should be %lf "
+              "is %lf %lu\n",
               static_cast<int>(team.league_rank()),
               static_cast<int>(team.team_rank()), static_cast<double>(test),
               static_cast<double>(shared_value(0)),
@@ -476,13 +476,14 @@ bool Test(int test) {
   int team_size = 33;
   if (team_size > int(ExecutionSpace::concurrency()))
     team_size = int(ExecutionSpace::concurrency());
-  passed = passed && test_scalar<int, ExecutionSpace>(317, team_size, test);
+  std::cout << "team_size: " << team_size << std::endl;
+  /*passed = passed && test_scalar<int, ExecutionSpace>(317, team_size, test);
   passed = passed &&
            test_scalar<long long int, ExecutionSpace>(317, team_size, test);
   passed = passed && test_scalar<float, ExecutionSpace>(317, team_size, test);
-  passed = passed && test_scalar<double, ExecutionSpace>(317, team_size, test);
+  passed = passed && test_scalar<double, ExecutionSpace>(317, team_size, test);*/
   passed =
-      passed && test_scalar<my_complex, ExecutionSpace>(317, team_size, test);
+      passed && test_scalar<my_complex, ExecutionSpace>(1, team_size, test);
 
   return passed;
 }
@@ -492,8 +493,8 @@ bool Test(int test) {
 namespace Test {
 
 TEST(TEST_CATEGORY, team_teamvector_range) {
-  ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(0)));
+  //ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(0)));
   ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(1)));
-  ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(2)));
+  //ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(2)));
 }
 }  // namespace Test
