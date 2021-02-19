@@ -143,7 +143,6 @@ class SYCLTeamMember {
     while (smaller_power_of_two*2<maximum_work_range)
 	    smaller_power_of_two *=2;
 
-    typename ReducerType::value_type tmp = value;
     typename ReducerType::value_type intermediate;
 
     const int idx = team_rank();
@@ -152,9 +151,10 @@ class SYCLTeamMember {
 
     for (int start=0; start<team_size(); start+=maximum_work_range)
     {
+      m_item.barrier(sycl::access::fence_space::local_space);
       if (idx>=start && idx<start+maximum_work_range)
       {
-        reduction_array[idx-start] = tmp;
+        reduction_array[idx-start] = value;
 	//KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Initializing %d: %f\n", idx, idx-start, double(reduction_array[idx-start]));
       }
       m_item.barrier(sycl::access::fence_space::local_space);
@@ -172,11 +172,11 @@ class SYCLTeamMember {
         intermediate += *reduction_array;
       else
 	intermediate = *reduction_array;
-      reducer.reference() = intermediate;
-      m_item.barrier(sycl::access::fence_space::local_space);
 
       //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: After reduction: %f\n", idx, double(reducer.reference()));
     }
+    reducer.reference() = intermediate;
+    m_item.barrier(sycl::access::fence_space::local_space);
     //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Final: %f\n", idx, double(reducer.reference()));
   }
 
