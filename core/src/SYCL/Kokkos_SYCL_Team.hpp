@@ -137,11 +137,13 @@ class SYCLTeamMember {
       typename std::enable_if<is_reducer<ReducerType>::value>::type
       team_reduce(ReducerType const& reducer,
                   typename ReducerType::value_type& value) const noexcept {
-    const int  maximum_work_range = std::min<int>(m_team_reduce_size/sizeof(typename ReducerType::value_type), team_size());
+    const int maximum_work_range = std::min<int>(
+        m_team_reduce_size / sizeof(typename ReducerType::value_type),
+        team_size());
 
     int smaller_power_of_two = 1;
-    while (smaller_power_of_two*2<maximum_work_range)
-	    smaller_power_of_two *=2;
+    while (smaller_power_of_two * 2 < maximum_work_range)
+      smaller_power_of_two *= 2;
 
     typename ReducerType::value_type intermediate;
 
@@ -149,35 +151,39 @@ class SYCLTeamMember {
     auto reduction_array =
         reinterpret_cast<typename ReducerType::value_type*>(m_team_reduce);
 
-    for (int start=0; start<team_size(); start+=maximum_work_range)
-    {
+    for (int start = 0; start < team_size(); start += maximum_work_range) {
       m_item.barrier(sycl::access::fence_space::local_space);
-      if (idx>=start && idx<start+maximum_work_range)
-      {
-        reduction_array[idx-start] = value;
-	//KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Initializing %d: %f\n", idx, idx-start, double(reduction_array[idx-start]));
+      if (idx >= start && idx < start + maximum_work_range) {
+        reduction_array[idx - start] = value;
+        // KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Initializing %d: %f\n", idx,
+        // idx-start, double(reduction_array[idx-start]));
       }
       m_item.barrier(sycl::access::fence_space::local_space);
       for (int stride = smaller_power_of_two; stride > 0; stride >>= 1) {
-        if (idx < stride && idx+stride < maximum_work_range && idx+stride+start<team_size())
-	{
-          //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Before join: %f\n", idx, stride, double(reduction_array[idx]));
+        if (idx < stride && idx + stride < maximum_work_range &&
+            idx + stride + start < team_size()) {
+          // KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Before join: %f\n", idx,
+          // stride, double(reduction_array[idx]));
           reducer.join(reduction_array[idx], reduction_array[idx + stride]);
-          //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): After join: %f\n", idx, stride, double(reduction_array[idx]));
-	}
+          // KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): After join: %f\n", idx,
+          // stride, double(reduction_array[idx]));
+        }
         m_item.barrier(sycl::access::fence_space::local_space);
       }
-      //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Before adding: %f\n", idx, double(reducer.reference()));
-      if (start>0)
+      // KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Before adding: %f\n", idx,
+      // double(reducer.reference()));
+      if (start > 0)
         intermediate += *reduction_array;
       else
-	intermediate = *reduction_array;
+        intermediate = *reduction_array;
 
-      //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: After reduction: %f\n", idx, double(reducer.reference()));
+      // KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: After reduction: %f\n", idx,
+      // double(reducer.reference()));
     }
     reducer.reference() = intermediate;
     m_item.barrier(sycl::access::fence_space::local_space);
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Final: %f\n", idx, double(reducer.reference()));
+    // KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Final: %f\n", idx,
+    // double(reducer.reference()));
   }
 
   //--------------------------------------------------------------------------

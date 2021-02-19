@@ -472,8 +472,8 @@ bool test_scalar(int nteams, int team_size, int test) {
 template <class ExecutionSpace>
 void Test(int test) {
   int team_size = 33;
-/*  if (team_size > int(ExecutionSpace::concurrency()))
-    team_size = int(ExecutionSpace::concurrency());*/
+  /*  if (team_size > int(ExecutionSpace::concurrency()))
+      team_size = int(ExecutionSpace::concurrency());*/
   ASSERT_TRUE((test_scalar<int, ExecutionSpace>(1, team_size, test)));
   ASSERT_TRUE((test_scalar<long long int, ExecutionSpace>(1, team_size, test)));
   ASSERT_TRUE((test_scalar<float, ExecutionSpace>(1, team_size, test)));
