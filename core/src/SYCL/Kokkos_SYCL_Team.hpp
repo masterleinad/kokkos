@@ -137,19 +137,46 @@ class SYCLTeamMember {
       typename std::enable_if<is_reducer<ReducerType>::value>::type
       team_reduce(ReducerType const& reducer,
                   typename ReducerType::value_type& value) const noexcept {
-    const unsigned int idx = team_rank();
-    auto reduction_array =
-        reinterpret_cast<typename ReducerType::value_type*>(m_team_reduce);
-    reduction_array[idx] = value;
-    m_item.barrier(sycl::access::fence_space::local_space);
-    for (unsigned int stride = team_size() / 2; stride > 0; stride >>= 1) {
-      if (idx < stride)
-        reducer.join(reduction_array[idx], reduction_array[idx + stride]);
-      m_item.barrier(sycl::access::fence_space::local_space);
-    }
+    using value_type = typename ReducerType::value_type;
 
-    reducer.reference() = *reduction_array;
-    // make sure the reduction_array can be used again
+    // We need to chunk up the whole reduction because we might not have
+    // allocated enough memory.
+    const int maximum_work_range =
+        std::min<int>(m_team_reduce_size / sizeof(value_type), team_size());
+
+    int smaller_power_of_two = 1;
+    while ((smaller_power_of_two << 1) < maximum_work_range)
+      smaller_power_of_two <<= 1;
+
+    // We need an intermediate array since value might be identical to
+    // reducer.reference and might be shared.
+    value_type intermediate;
+
+    const int idx        = team_rank();
+    auto reduction_array = static_cast<value_type*>(m_team_reduce);
+
+    // Load values into the first maximum_work_range values of the reduction
+    // array in chunks. This means that only threads with an id in the
+    // corresponding chunk load values and the reduction is always done by the
+    // first smaller_power_of_two threads.
+    for (int start = 0; start < team_size(); start += maximum_work_range) {
+      m_item.barrier(sycl::access::fence_space::local_space);
+      if (idx >= start && idx < start + maximum_work_range) {
+        reduction_array[idx - start] = value;
+      }
+      m_item.barrier(sycl::access::fence_space::local_space);
+      for (int stride = smaller_power_of_two; stride > 0; stride >>= 1) {
+        if (idx < stride && idx + stride < maximum_work_range &&
+            idx + stride + start < team_size())
+          reducer.join(reduction_array[idx], reduction_array[idx + stride]);
+        m_item.barrier(sycl::access::fence_space::local_space);
+      }
+      if (start > 0)
+        reducer.join(intermediate, *reduction_array);
+      else
+        intermediate = *reduction_array;
+    }
+    reducer.reference() = intermediate;
     m_item.barrier(sycl::access::fence_space::local_space);
   }
 
