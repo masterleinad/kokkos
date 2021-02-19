@@ -470,21 +470,15 @@ bool test_scalar(int nteams, int team_size, int test) {
 }
 
 template <class ExecutionSpace>
-bool Test(int test) {
-  bool passed = true;
-
-  int team_size = 4;
+void Test(int test) {
+  int team_size = 33;
 /*  if (team_size > int(ExecutionSpace::concurrency()))
     team_size = int(ExecutionSpace::concurrency());*/
- // passed = passed && test_scalar<int, ExecutionSpace>(1, team_size, test);
-  passed = passed &&
-           test_scalar<long long int, ExecutionSpace>(1, team_size, test);
-  /*passed = passed && test_scalar<float, ExecutionSpace>(317, team_size, test);
-  passed = passed && test_scalar<double, ExecutionSpace>(317, team_size, test);
-  passed =
-      passed && test_scalar<my_complex, ExecutionSpace>(317, team_size, test);*/
-
-  return passed;
+  ASSERT_TRUE((test_scalar<int, ExecutionSpace>(1, team_size, test)));
+  ASSERT_TRUE((test_scalar<long long int, ExecutionSpace>(1, team_size, test)));
+  ASSERT_TRUE((test_scalar<float, ExecutionSpace>(1, team_size, test)));
+  ASSERT_TRUE((test_scalar<double, ExecutionSpace>(1, team_size, test)));
+  ASSERT_TRUE((test_scalar<my_complex, ExecutionSpace>(1, team_size, test)));
 }
 
 }  // namespace TestTeamVectorRange
@@ -492,8 +486,8 @@ bool Test(int test) {
 namespace Test {
 
 TEST(TEST_CATEGORY, team_teamvector_range) {
-//  ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(0)));
-  ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(1)));
- // ASSERT_TRUE((TestTeamVectorRange::Test<TEST_EXECSPACE>(2)));
+  TestTeamVectorRange::Test<TEST_EXECSPACE>(0);
+  TestTeamVectorRange::Test<TEST_EXECSPACE>(1);
+  TestTeamVectorRange::Test<TEST_EXECSPACE>(2);
 }
 }  // namespace Test

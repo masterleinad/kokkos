@@ -459,7 +459,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
         ((m_team_size + m_vector_size - 1) / m_vector_size) * m_vector_size;
 
     // FIXME_SYCL modify for reduce etc.
-    m_shmem_begin = (sizeof(double)/2 * (m_team_size + 2));
+    m_shmem_begin = (sizeof(double) * (m_team_size + 2));
     m_shmem_size =
         (m_policy.scratch_size(0, m_team_size) +
          FunctorTeamShmemSize<FunctorType>::value(m_functor, m_team_size));
