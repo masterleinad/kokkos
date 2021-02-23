@@ -148,21 +148,6 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
       TeamScratch
       TeamTeamSize
       TeamVectorRange
-      UniqueToken
-      ViewAPI_a
-      ViewAPI_b
-      ViewAPI_c
-      ViewAPI_d
-      ViewAPI_e
-      ViewCopy_a
-      ViewCopy_b
-      ViewLayoutStrideAssignment
-      ViewMapping_b
-      ViewMapping_subview
-      ViewOfClass
-      ViewResize
-      View_64bit
-      WorkGraph
       )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -486,10 +471,6 @@ if(Kokkos_ENABLE_SYCL)
   )
 
   list(REMOVE_ITEM SYCL_SOURCES2A
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamReductionScan.cpp
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamScan.cpp
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamScratch.cpp
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamTeamSize.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_UniqueToken.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_WorkGraph.cpp
   )

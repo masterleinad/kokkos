@@ -109,10 +109,16 @@ class SYCLTeamMember {
   //--------------------------------------------------------------------------
 
   template <class ValueType>
-  KOKKOS_INLINE_FUNCTION void team_broadcast(ValueType& /*val*/,
-                                             const int& /*thread_id*/) const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
+  KOKKOS_INLINE_FUNCTION void team_broadcast(ValueType& val,
+                                             const int& thread_id) const {
+    // Wait for shared data write until all threads arrive here
+    m_item.barrier(sycl::access::fence_space::local_space);
+    if (m_item.get_local_id(1) == 0 && static_cast<int>(m_item.get_local_id(0)) == thread_id) {
+      *static_cast<ValueType*>(m_team_reduce) = val;
+    }
+    // Wait for shared data read until root thread writes
+    m_item.barrier(sycl::access::fence_space::local_space);
+    val = *static_cast<ValueType*>(m_team_reduce);
   }
 
   template <class Closure, class ValueType>
@@ -153,6 +159,51 @@ class SYCLTeamMember {
     m_item.barrier(sycl::access::fence_space::local_space);
   }
 
+  template <typename Type>
+  static void prescan(sycl::nd_item<2> m_item, Type *temp, int n)
+  { 
+    int thid = m_item.get_local_id(0); 
+    int offset = 1;    
+
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Input %d\n", thid, n, temp[thid]);
+
+    for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
+    {        
+      //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Intermediate(%d) %d\n", thid, n, d, temp[thid]); 
+      m_item.barrier(sycl::access::fence_space::local_space);
+
+      if (thid < d)      
+      { 
+        int ai = offset*(2*thid+1)-1; 
+        int bi = offset*(2*thid+2)-1;      
+
+        temp[bi] += temp[ai];   
+      }
+      offset *= 2;     
+    } 
+
+    if (thid == 0) { temp[n - 1] = 0; } // clear the last element
+
+    for (int d = 1; d < n; d *= 2) // traverse down tree & build scan
+    { 
+      offset >>= 1;
+      m_item.barrier(sycl::access::fence_space::local_space);
+
+      if (thid < d)         
+      { 
+        int ai = offset*(2*thid+1)-1; 
+        int bi = offset*(2*thid+2)-1; 
+
+        float t   = temp[ai];
+        temp[ai]  = temp[bi];           
+        temp[bi] += t;         
+      }     
+    }     
+
+    m_item.barrier(sycl::access::fence_space::local_space);
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Output %d\n", thid, temp[thid]);
+  }
+
   //--------------------------------------------------------------------------
   /** \brief  Intra-team exclusive prefix sum with team_rank() ordering
    *          with intra-team non-deterministic ordering accumulation.
@@ -165,10 +216,38 @@ class SYCLTeamMember {
    */
   template <typename Type>
   KOKKOS_INLINE_FUNCTION Type team_scan(const Type& value,
-                                        Type* const /*global_accum*/) const {
-    // FIXME_SYCL
-    Kokkos::abort("Not implemented!");
-    return value;
+                                        Type* const global_accum) const {
+    const auto base_data = static_cast<Type*>(m_team_reduce);
+
+    if (std::size_t(m_team_reduce_size) < sizeof(Type)*m_item.get_local_range(0))
+    {
+      KOKKOS_IMPL_DO_NOT_USE_PRINTF("required: %lu, allocated: %d\n", sizeof(Type)*m_item.get_local_range(0), m_team_reduce_size);
+      Kokkos::abort("Not enough local memory preallocated!");
+    }
+
+    // Don't write in to shared data until all threads have entered this function
+    m_item.barrier(sycl::access::fence_space::local_space);
+
+    const auto thread_id = m_item.get_local_id(0);
+
+    base_data[thread_id] = value;
+
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("league_size: %d, league_rank: %d, team_size: %d, team_rank: %d\n", league_size(), league_rank(), team_size(), team_rank());
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%lu: Outer Input %d\n", thread_id, base_data[thread_id]);
+
+    prescan(m_item, base_data, m_item.get_local_range(0));
+
+    if (global_accum) {
+      if (m_item.get_local_range(0) == thread_id + 1) {
+        base_data[m_item.get_local_range(0)] =
+            atomic_fetch_add(global_accum, base_data[m_item.get_local_range(0)]);
+      }
+      m_item.barrier(); // Wait for atomic
+      base_data[thread_id] += base_data[m_item.get_local_range(0)];
+    }
+
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%lu: Outer Output %d\n", thread_id, base_data[thread_id]);
+    return base_data[thread_id];
   }
 
   /** \brief  Intra-team exclusive prefix sum with team_rank() ordering.
@@ -344,13 +423,15 @@ KOKKOS_INLINE_FUNCTION
       thread, count);
 }
 
-template <typename iType>
+template <typename iType1, typename iType2>
 KOKKOS_INLINE_FUNCTION
-    Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>
-    ThreadVectorRange(const Impl::SYCLTeamMember& thread, iType arg_begin,
-                      iType arg_end) {
+    Impl::ThreadVectorRangeBoundariesStruct<typename std::common_type<iType1, iType2>::type,
+                                            Impl::SYCLTeamMember>
+    ThreadVectorRange(const Impl::SYCLTeamMember& thread, iType1 arg_begin,
+                      iType2 arg_end) {
+	    using iType = typename std::common_type<iType1, iType2>::type;
   return Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>(
-      thread, arg_begin, arg_end);
+      thread, iType(arg_begin), iType(arg_end));
 }
 
 KOKKOS_INLINE_FUNCTION

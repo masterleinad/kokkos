@@ -142,8 +142,8 @@ KOKKOS_FUNCTION void SYCL::cleanup() noexcept {
 }
 
 int SYCL::concurrency() {
-  // FIXME_SYCL We need a value larger than 1 here for some tests to pass,
-  // clearly this is true but not the roght value
+  // FIXME_SYCL We need a value larger than 10000 here for some tests to be executed properly,
+  // this is likely not the correct value but sufficient for now.
   return 2;
 }
 

@@ -48,6 +48,7 @@
 
 namespace Test {
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_shared_request) {
   TestSharedTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >();
   TestSharedTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >();
@@ -75,8 +76,10 @@ TEST(TEST_CATEGORY, team_lambda_shared_request) {
 TEST(TEST_CATEGORY, scratch_align) { TestScratchAlignment<TEST_EXECSPACE>(); }
 #endif
 
+#endif
 TEST(TEST_CATEGORY, shmem_size) { TestShmemSize<TEST_EXECSPACE>(); }
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, multi_level_scratch) {
   // FIXME_HIP the parallel_for and the parallel_reduce in this test requires a
   // team size larger than 256. Fixed In ROCm 3.9
@@ -95,6 +98,7 @@ TEST(TEST_CATEGORY, multi_level_scratch) {
   }
 #endif
 }
+#endif
 
 }  // namespace Test
 #endif
