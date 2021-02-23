@@ -149,6 +149,7 @@ void test_team_policy_max_recommended(int scratch_size) {
       scratch_size);
 }
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_policy_max_recommended) {
   int max_scratch_size = policy_type::scratch_size_max(0);
   test_team_policy_max_recommended<double, 2, policy_type>(0);
@@ -181,6 +182,7 @@ TEST(TEST_CATEGORY, team_policy_max_recommended) {
   test_team_policy_max_recommended<double, 16, policy_type_1024_2>(
       max_scratch_size / 2);
 }
+#endif
 
 template <typename TeamHandleType, typename ReducerValueType>
 struct PrintFunctor1 {
@@ -199,6 +201,7 @@ struct PrintFunctor2 {
   }
 };
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_policy_max_scalar_without_plus_equal_k) {
   using ExecSpace           = TEST_EXECSPACE;
   using ReducerType         = Kokkos::MinMax<double, Kokkos::HostSpace>;
@@ -228,5 +231,5 @@ TEST(TEST_CATEGORY, team_policy_max_scalar_without_plus_equal_k) {
                           PrintFunctor2<TeamHandleType, double>{}, sum);
   printf("Sum: %lf\n", sum);
 }
-
+#endif
 }  // namespace Test

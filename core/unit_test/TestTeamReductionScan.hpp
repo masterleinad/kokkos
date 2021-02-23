@@ -48,6 +48,7 @@
 
 namespace Test {
 
+#ifndef KOKKOS_ENABLE_SYCL
 TEST(TEST_CATEGORY, team_reduction_scan) {
   TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(0);
   TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(0);
@@ -102,6 +103,6 @@ TEST(TEST_CATEGORY, team_double_reduce) {
         100000);
   }
 }
-
+#endif
 }  // namespace Test
 #endif
