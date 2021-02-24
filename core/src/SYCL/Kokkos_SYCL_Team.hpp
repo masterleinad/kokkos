@@ -160,16 +160,16 @@ class SYCLTeamMember {
   }
 
   template <typename Type>
-  static void prescan(sycl::nd_item<2> m_item, Type *temp, int n)
+  static Type prescan(sycl::nd_item<2> m_item, Type *temp, int n)
   { 
     int thid = m_item.get_local_id(0); 
     int offset = 1;    
 
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Input %d\n", thid, n, temp[thid]);
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Input %ld\n", thid, n, temp[thid]);
 
     for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
     {        
-      //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Intermediate(%d) %d\n", thid, n, d, temp[thid]); 
+      //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Intermediate(%d) %ld\n", thid, n, d, temp[thid]); 
       m_item.barrier(sycl::access::fence_space::local_space);
 
       if (thid < d)      
@@ -182,6 +182,7 @@ class SYCLTeamMember {
       offset *= 2;     
     } 
 
+    Type total_sum = temp[n-1];
     if (thid == 0) { temp[n - 1] = 0; } // clear the last element
 
     for (int d = 1; d < n; d *= 2) // traverse down tree & build scan
@@ -201,7 +202,8 @@ class SYCLTeamMember {
     }     
 
     m_item.barrier(sycl::access::fence_space::local_space);
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Output %d\n", thid, temp[thid]);
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Output %ld\n", thid, temp[thid]);
+    return total_sum;
   }
 
   //--------------------------------------------------------------------------
@@ -217,37 +219,56 @@ class SYCLTeamMember {
   template <typename Type>
   KOKKOS_INLINE_FUNCTION Type team_scan(const Type& value,
                                         Type* const global_accum) const {
+    // We need to chunk up the whole reduction because we might not have
+    // allocated enough memory.
+    const int maximum_work_range =
+        std::min<int>(m_team_reduce_size / sizeof(Type), team_size());
+
+    int not_smaller_power_of_two = 1;
+    while (not_smaller_power_of_two < maximum_work_range)
+      not_smaller_power_of_two <<= 1;
+
+    Type intermediate;
+    Type total;
+
+    const int idx        = team_rank();
     const auto base_data = static_cast<Type*>(m_team_reduce);
 
-    if (std::size_t(m_team_reduce_size) < sizeof(Type)*m_item.get_local_range(0))
-    {
-      KOKKOS_IMPL_DO_NOT_USE_PRINTF("required: %lu, allocated: %d\n", sizeof(Type)*m_item.get_local_range(0), m_team_reduce_size);
-      Kokkos::abort("Not enough local memory preallocated!");
-    }
+    // Load values into the first not_smaller_power_of_two values of the reduction
+    // array in chunks. This means that only threads with an id in the
+    // corresponding chunk load values and the reduction is always done by the
+    // first smaller_power_of_two threads.
+    for (int start = 0; start < team_size(); start += not_smaller_power_of_two) {
+      m_item.barrier(sycl::access::fence_space::local_space);
+      if (idx >= start && idx < start + not_smaller_power_of_two)
+	      base_data[idx-start] = value;
 
-    // Don't write in to shared data until all threads have entered this function
-    m_item.barrier(sycl::access::fence_space::local_space);
-
-    const auto thread_id = m_item.get_local_id(0);
-
-    base_data[thread_id] = value;
+       m_item.barrier(sycl::access::fence_space::local_space);
 
     //KOKKOS_IMPL_DO_NOT_USE_PRINTF("league_size: %d, league_rank: %d, team_size: %d, team_rank: %d\n", league_size(), league_rank(), team_size(), team_rank());
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%lu: Outer Input %d\n", thread_id, base_data[thread_id]);
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Outer Input %ld\n", idx, base_data[idx]);
 
-    prescan(m_item, base_data, m_item.get_local_range(0));
-
-    if (global_accum) {
-      if (m_item.get_local_range(0) == thread_id + 1) {
-        base_data[m_item.get_local_range(0)] =
-            atomic_fetch_add(global_accum, base_data[m_item.get_local_range(0)]);
-      }
-      m_item.barrier(); // Wait for atomic
-      base_data[thread_id] += base_data[m_item.get_local_range(0)];
+    const Type partial_total = prescan(m_item, base_data, not_smaller_power_of_two);
+    if (idx >=start && idx < start + not_smaller_power_of_two)
+	    intermediate = base_data[idx-start]+total;
+    if (start ==0)
+            total = partial_total;
+    else
+            total += partial_total;
     }
 
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%lu: Outer Output %d\n", thread_id, base_data[thread_id]);
-    return base_data[thread_id];
+    if (global_accum) {
+      if (team_size() == idx + 1) {
+        base_data[0] =
+            atomic_fetch_add(global_accum, base_data[0]);
+      }
+      m_item.barrier(); // Wait for atomic
+      intermediate += base_data[0];
+    }
+
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Outer Output %ld\n", idx, base_data[idx]);
+    
+    return intermediate;
   }
 
   /** \brief  Intra-team exclusive prefix sum with team_rank() ordering.
