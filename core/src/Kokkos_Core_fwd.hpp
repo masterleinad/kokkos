@@ -196,6 +196,25 @@ using ActiveExecutionMemorySpace = Kokkos::HostSpace;
 using ActiveExecutionMemorySpace = void;
 #endif
 
+  void throw_runtime_exception(const std::string &);
+
+  template <typename DstMemorySpace, typename SrcMemorySpace>
+  struct MemorySpaceAccess;
+
+  template <typename DstMemorySpace, typename SrcMemorySpace, bool = Kokkos::Impl::MemorySpaceAccess<
+                             DstMemorySpace, SrcMemorySpace>::accessible>
+  struct verify_space {
+    KOKKOS_FORCEINLINE_FUNCTION static void check() {}
+  };
+
+  template <typename DstMemorySpace, typename SrcMemorySpace>
+  struct verify_space<DstMemorySpace, SrcMemorySpace, false> {
+    KOKKOS_FORCEINLINE_FUNCTION static void check() {
+      Kokkos::Impl::throw_runtime_exception(
+          "Kokkos::View ERROR: attempt to access inaccessible memory space");
+    };
+  };
+
 // Base class for exec space initializer factories
 class ExecSpaceInitializerBase;
 
@@ -209,18 +228,12 @@ class LogicalMemorySpace;
 }  // namespace Kokkos
 
 #define KOKKOS_RESTRICT_EXECUTION_TO_DATA(DATA_SPACE, DATA_PTR)              \
-  if (!Kokkos::Impl::MemorySpaceAccess<                                      \
-          Kokkos::Impl::ActiveExecutionMemorySpace, DATA_SPACE>::accessible) \
-    Kokkos::Impl::throw_runtime_exception(                                   \
-        "Kokkos::access_error: accessing device function from incompatible " \
-        "memory space!");
+	Kokkos::Impl::verify_space<                     \
+          Kokkos::Impl::ActiveExecutionMemorySpace, DATA_SPACE>::check();    \
 
 #define KOKKOS_RESTRICT_EXECUTION_TO_(DATA_SPACE)                            \
-  if (!Kokkos::Impl::MemorySpaceAccess<                                      \
-          Kokkos::Impl::ActiveExecutionMemorySpace, DATA_SPACE>::accessible) \
-    Kokkos::Impl::throw_runtime_exception(                                   \
-        "Kokkos::access_error: accessing device function from incompatible " \
-        "memory space!");
+        Kokkos::Impl::verify_space<                     \
+          Kokkos::Impl::ActiveExecutionMemorySpace, DATA_SPACE>::check();    \
 
 //----------------------------------------------------------------------------
 
