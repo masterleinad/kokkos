@@ -50,6 +50,7 @@
 // and compiler environment then sets a collection of #define macros.
 
 #include <Kokkos_Macros.hpp>
+#include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Utilities.hpp>
 
 #include <Kokkos_MasterLock.hpp>
@@ -180,7 +181,6 @@ using DefaultHostExecutionSpace KOKKOS_IMPL_DEFAULT_HOST_EXEC_SPACE_ANNOTATION =
 // a given memory space.
 
 namespace Kokkos {
-
 namespace Impl {
 
 #if defined(KOKKOS_ACTIVE_EXECUTION_MEMORY_SPACE_CUDA) && \
@@ -196,8 +196,6 @@ using ActiveExecutionMemorySpace = Kokkos::HostSpace;
 using ActiveExecutionMemorySpace = void;
 #endif
 
-  void throw_runtime_exception(const std::string &);
-
   template <typename DstMemorySpace, typename SrcMemorySpace>
   struct MemorySpaceAccess;
 
@@ -210,7 +208,7 @@ using ActiveExecutionMemorySpace = void;
   template <typename DstMemorySpace, typename SrcMemorySpace>
   struct verify_space<DstMemorySpace, SrcMemorySpace, false> {
     KOKKOS_FORCEINLINE_FUNCTION static void check() {
-      Kokkos::Impl::throw_runtime_exception(
+      Kokkos::abort(
           "Kokkos::View ERROR: attempt to access inaccessible memory space");
     };
   };
