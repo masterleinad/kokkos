@@ -454,7 +454,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
         m_vector_size(arg_policy.impl_vector_length()) {
     // FIXME_SYCL optimize
     if (m_team_size < 0) m_team_size = 32;
-    // choose team_size as the next multiple to m_vector_size
+    // choose team_size as the next multiple of m_vector_size
     m_team_size =
         ((m_team_size + m_vector_size - 1) / m_vector_size) * m_vector_size;
 

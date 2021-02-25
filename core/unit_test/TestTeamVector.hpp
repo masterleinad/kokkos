@@ -881,7 +881,7 @@ TEST(TEST_CATEGORY, team_vector) {
 }
 #endif
 
-// FIXME_SYCL requires team reduce
+// FIXME_SYCL requires outer TeamPolicy parallel_reduce
 #ifndef KOKKOS_ENABLE_SYCL
 #if !defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
 TEST(TEST_CATEGORY, triple_nested_parallelism) {

@@ -92,14 +92,14 @@ class SYCLTeamMember {
     return m_item.get_group_linear_id();
   }
   KOKKOS_INLINE_FUNCTION int league_size() const {
-    // FIXME
+    // FIXME_SYCL needs to be revised for vector_length>1.
     return m_item.get_group_range(0);
   }
   KOKKOS_INLINE_FUNCTION int team_rank() const {
     return m_item.get_local_linear_id();
   }
   KOKKOS_INLINE_FUNCTION int team_size() const {
-    // FIXME
+    // FIXME_SYCL needs to be revised for vector_length>1.
     return m_item.get_local_range(0);
   }
   KOKKOS_INLINE_FUNCTION void team_barrier() const { m_item.barrier(); }

@@ -218,18 +218,11 @@ void SYCLSharedUSMSpace::deallocate(const char* arg_label,
 void SYCLDeviceUSMSpace::access_error() {
   const std::string msg(
       "Kokkos::Experimental::SYCLDeviceUSMSpace::access_error attempt to "
-      "execute device function from "
-      "non-device space");
+      "execute device function from non-device space");
   Kokkos::Impl::throw_runtime_exception(msg);
 }
 
-void SYCLDeviceUSMSpace::access_error(const void* const) {
-  const std::string msg(
-      "Kokkos::Experimental::SYCLDeviceUSMSpace::access_error attempt to "
-      "execute device function from "
-      "non-device space");
-  Kokkos::Impl::throw_runtime_exception(msg);
-}
+void SYCLDeviceUSMSpace::access_error(const void* const) { access_error(); }
 
 }  // namespace Experimental
 }  // namespace Kokkos
