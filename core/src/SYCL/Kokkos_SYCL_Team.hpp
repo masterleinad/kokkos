@@ -229,10 +229,14 @@ class SYCLTeamMember {
       not_smaller_power_of_two <<= 1;
 
     Type intermediate;
-    Type total;
+    Type total{};
 
     const int idx        = team_rank();
     const auto base_data = static_cast<Type*>(m_team_reduce);
+
+   /* if (team_rank() == 0)
+      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Chunk size: %d Total size: %d\n",
+                                    not_smaller_power_of_two, team_size());*/
 
     // Load values into the first not_smaller_power_of_two values of the reduction
     // array in chunks. This means that only threads with an id in the
@@ -240,17 +244,18 @@ class SYCLTeamMember {
     // first smaller_power_of_two threads.
     for (int start = 0; start < team_size(); start += not_smaller_power_of_two) {
       m_item.barrier(sycl::access::fence_space::local_space);
-      if (idx >= start && idx < start + not_smaller_power_of_two)
-	      base_data[idx-start] = value;
+      if (idx >= start && idx < start + not_smaller_power_of_two) {
+        base_data[idx-start] = value;
+          //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Outer Input %ld\n", idx, base_data[idx-start]);
+      }
+      m_item.barrier(sycl::access::fence_space::local_space);
 
-       m_item.barrier(sycl::access::fence_space::local_space);
-
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("league_size: %d, league_rank: %d, team_size: %d, team_rank: %d\n", league_size(), league_rank(), team_size(), team_rank());
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Outer Input %ld\n", idx, base_data[idx]);
-
+//      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling prescan with start %d\n", start);
+      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling prescan with start %d and n %d (max %d)\n",
+		                  start, not_smaller_power_of_two, team_size());
     const Type partial_total = prescan(m_item, base_data, not_smaller_power_of_two);
     if (idx >=start && idx < start + not_smaller_power_of_two)
-	    intermediate = base_data[idx-start]+total;
+        intermediate = base_data[idx-start]+total;
     if (start ==0)
             total = partial_total;
     else
@@ -266,7 +271,7 @@ class SYCLTeamMember {
       intermediate += base_data[0];
     }
 
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Outer Output %ld\n", idx, base_data[idx]);
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Outer Output %ld\n", idx, intermediate);
     
     return intermediate;
   }
@@ -450,7 +455,7 @@ KOKKOS_INLINE_FUNCTION
                                             Impl::SYCLTeamMember>
     ThreadVectorRange(const Impl::SYCLTeamMember& thread, iType1 arg_begin,
                       iType2 arg_end) {
-	    using iType = typename std::common_type<iType1, iType2>::type;
+  using iType = typename std::common_type<iType1, iType2>::type;
   return Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>(
       thread, iType(arg_begin), iType(arg_end));
 }
