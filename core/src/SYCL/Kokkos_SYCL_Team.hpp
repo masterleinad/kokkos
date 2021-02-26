@@ -165,13 +165,12 @@ class SYCLTeamMember {
     int thid = m_item.get_local_id(0); 
     int offset = 1;    
 
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Input %ld\n", thid, n, temp[thid]);
+    //if (thid < n)
+    //  KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Input %ld\n", thid, n, temp[thid]);
 
     for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
     {        
       //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): Intermediate(%d) %ld\n", thid, n, d, temp[thid]); 
-      m_item.barrier(sycl::access::fence_space::local_space);
-
       if (thid < d)      
       { 
         int ai = offset*(2*thid+1)-1; 
@@ -179,10 +178,13 @@ class SYCLTeamMember {
 
         temp[bi] += temp[ai];   
       }
+      m_item.barrier(sycl::access::fence_space::local_space);
+
       offset *= 2;     
     } 
 
     Type total_sum = temp[n-1];
+    m_item.barrier(sycl::access::fence_space::local_space);
     if (thid == 0) { temp[n - 1] = 0; } // clear the last element
 
     for (int d = 1; d < n; d *= 2) // traverse down tree & build scan
@@ -202,7 +204,8 @@ class SYCLTeamMember {
     }     
 
     m_item.barrier(sycl::access::fence_space::local_space);
-    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Output %ld\n", thid, temp[thid]);
+/*    if (thid < n)
+      KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Output %ld, %ld\n", thid, temp[thid], total_sum);*/
     return total_sum;
   }
 
@@ -224,9 +227,9 @@ class SYCLTeamMember {
     const int maximum_work_range =
         std::min<int>(m_team_reduce_size / sizeof(Type), team_size());
 
-    int not_smaller_power_of_two = 1;
-    while (not_smaller_power_of_two < maximum_work_range)
-      not_smaller_power_of_two <<= 1;
+    int not_greater_power_of_two = 1;
+    while ((not_greater_power_of_two << 1) < maximum_work_range+1)
+      not_greater_power_of_two <<= 1;
 
     Type intermediate;
     Type total{};
@@ -234,27 +237,27 @@ class SYCLTeamMember {
     const int idx        = team_rank();
     const auto base_data = static_cast<Type*>(m_team_reduce);
 
-   /* if (team_rank() == 0)
-      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Chunk size: %d Total size: %d\n",
-                                    not_smaller_power_of_two, team_size());*/
+    //if (team_rank() == 0)
+    //  KOKKOS_IMPL_DO_NOT_USE_PRINTF("Chunk size: %d Total size: %d\n",
+    //                                not_greater_power_of_two, team_size());
 
-    // Load values into the first not_smaller_power_of_two values of the reduction
+    // Load values into the first not_greater_power_of_two values of the reduction
     // array in chunks. This means that only threads with an id in the
     // corresponding chunk load values and the reduction is always done by the
     // first smaller_power_of_two threads.
-    for (int start = 0; start < team_size(); start += not_smaller_power_of_two) {
+    for (int start = 0; start < team_size(); start += not_greater_power_of_two) {
       m_item.barrier(sycl::access::fence_space::local_space);
-      if (idx >= start && idx < start + not_smaller_power_of_two) {
+      if (idx >= start && idx < start + not_greater_power_of_two) {
         base_data[idx-start] = value;
           //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d: Outer Input %ld\n", idx, base_data[idx-start]);
       }
       m_item.barrier(sycl::access::fence_space::local_space);
 
 //      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling prescan with start %d\n", start);
-      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling prescan with start %d and n %d (max %d)\n",
-		                  start, not_smaller_power_of_two, team_size());
-    const Type partial_total = prescan(m_item, base_data, not_smaller_power_of_two);
-    if (idx >=start && idx < start + not_smaller_power_of_two)
+//      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling prescan with start %d and n %d (max %d)\n",
+//		                  start, not_greater_power_of_two, team_size());
+    const Type partial_total = prescan(m_item, base_data, not_greater_power_of_two);
+    if (idx >=start && idx < start + not_greater_power_of_two)
         intermediate = base_data[idx-start]+total;
     if (start ==0)
             total = partial_total;
