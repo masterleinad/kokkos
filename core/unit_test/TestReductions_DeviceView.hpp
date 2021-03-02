@@ -131,8 +131,6 @@ TEST(TEST_CATEGORY, reduce_device_view_mdrange_policy) {
 }
 #endif
 
-// FIXME_SYCL requires TeamPolicy parallel_reduce
-#ifndef KOKKOS_ENABLE_SYCL
 // FIXME_HIP
 #ifndef KOKKOS_ENABLE_HIP
 TEST(TEST_CATEGORY, reduce_device_view_team_policy) {
@@ -141,6 +139,5 @@ TEST(TEST_CATEGORY, reduce_device_view_team_policy) {
       N, Kokkos::TeamPolicy<TEST_EXECSPACE>(1000 * 1024, Kokkos::AUTO),
       TeamPolicyFunctor(1024));
 }
-#endif
 #endif
 }  // namespace Test
