@@ -112,7 +112,22 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
 
     set(${Tag}_SOURCES1B)
     foreach(Name
+        MDRange_d
+        MDRange_e
+        MDRange_f
+        NumericTraits
+        Other
+        RangePolicy
+        RangePolicyRequire
+        Reductions
+        Reducers_a
+        Reducers_b
+        Reducers_c
+        Reducers_d
         Reductions_DeviceView
+        Scan
+        SharedAlloc
+        ViewMapping_a
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -127,7 +142,27 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
 
     SET(${Tag}_SOURCES2A)
     foreach(Name
+      TeamBasic
+      TeamReductionScan
+      TeamScan
+      TeamScratch
       TeamTeamSize
+      TeamVectorRange
+      UniqueToken
+      ViewAPI_a
+      ViewAPI_b
+      ViewAPI_c
+      ViewAPI_d
+      ViewAPI_e
+      ViewCopy_a
+      ViewCopy_b
+      ViewLayoutStrideAssignment
+      ViewMapping_b
+      ViewMapping_subview
+      ViewOfClass
+      ViewResize
+      View_64bit
+      WorkGraph
       )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
