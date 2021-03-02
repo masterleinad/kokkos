@@ -130,10 +130,6 @@ void test_team_policy_max_recommended_static_size(int scratch_size) {
     n_leagues = 500;
 #endif
 
-// FIXME_SYCL for some reason the maximum value for the CUDA backend is 24560 resulting in allocating 33792 bytes.  
-#ifdef KOKKOS_ENABLE_SYCL
-  scratch_size = std::min(scratch_size, 24560);
-#endif
   Kokkos::parallel_reduce(
       PolicyType(n_leagues, team_size_max_reduce, 4)
           .set_scratch_size(0, Kokkos::PerTeam(scratch_size)),
