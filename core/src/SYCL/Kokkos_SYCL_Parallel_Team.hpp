@@ -636,6 +636,8 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
     while (size > 1) {
       auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
       if (n_wgroups == size) std::abort();
+      std::cout << "size: " << size << ", n_wgroups: " << n_wgroups << ", wgroup_size " << wgroup_size << std::endl;
+      std::cout << "allocating " << wgroup_size * std::max(value_count, 1u) << "+" << m_scratch_size[0] << "+" << m_shmem_begin << "=" << wgroup_size * std::max(value_count, 1u)+m_scratch_size[0]+m_shmem_begin  << std::endl;
       q.submit([&](sycl::handler& cgh) {
         sycl::accessor<value_type, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
@@ -780,14 +782,17 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
  private:
   void initialize() {
     // FIXME_SYCL optimize
-    if (m_team_size < -1) m_team_size = 32;
+	  std::cout << "initial team_size: " << m_team_size << std::endl;
+    if (m_team_size < 0) m_team_size = 32;
     // Must be a power of two greater than two, get the one not bigger than the
     // requested one.
+    std::cout << "before team_size: " << m_team_size << std::endl;
     if ((m_team_size & m_team_size - 1) || m_team_size < 2) {
       int temp_team_size = 2;
       while ((temp_team_size << 1) < m_team_size) temp_team_size <<= 1;
       m_team_size = temp_team_size;
     }
+    std::cout << "final team_size: " << m_team_size << std::endl;
 
     m_shmem_begin = (sizeof(double) * (m_team_size + 2));
     m_shmem_size =
