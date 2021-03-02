@@ -162,7 +162,7 @@ void test_team_policy_max_recommended(int scratch_size) {
 
 TEST(TEST_CATEGORY, team_policy_max_recommended) {
   int max_scratch_size = policy_type::scratch_size_max(0);
-  test_team_policy_max_recommended<double, 2, policy_type>(0);
+/*  test_team_policy_max_recommended<double, 2, policy_type>(0);
   test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size /
                                                            3);
   test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size);
@@ -176,12 +176,12 @@ TEST(TEST_CATEGORY, team_policy_max_recommended) {
       max_scratch_size / 3 / 2);
   test_team_policy_max_recommended<double, 2, policy_type_1024_2>(
       max_scratch_size / 2);
-/*
+
   test_team_policy_max_recommended<double, 16, policy_type>(0);
   test_team_policy_max_recommended<double, 16, policy_type>(max_scratch_size /
-                                                            3);
+                                                            3);*/
   test_team_policy_max_recommended<double, 16, policy_type>(max_scratch_size);
-  test_team_policy_max_recommended<double, 16, policy_type_128_8>(0);
+  /*test_team_policy_max_recommended<double, 16, policy_type_128_8>(0);
   test_team_policy_max_recommended<double, 16, policy_type_128_8>(
       max_scratch_size / 3 / 8);
   test_team_policy_max_recommended<double, 16, policy_type_128_8>(
