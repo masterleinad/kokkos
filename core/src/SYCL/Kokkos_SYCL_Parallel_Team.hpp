@@ -111,9 +111,8 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
   }
 
   template <typename FunctorType>
-  int team_size_recommended(FunctorType const& f,
-                            ParallelForTag const&) const {
-	  return internal_team_size_max_for(f);
+  int team_size_recommended(FunctorType const& f, ParallelForTag const&) const {
+    return internal_team_size_max_for(f);
   }
 
   template <typename FunctorType>
@@ -302,12 +301,15 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
  protected:
   template <class FunctorType>
   int internal_team_size_max_for(const FunctorType& /*f*/) const {
-     // nested_reducer_memsize = (sizeof(double) * (m_team_size + 2)
-     // custom: m_team_scratch_size[0] + m_thread_scratch_size[0] * m_team_size
-     // total:
-     // 2*sizeof(double)+m_team_scratch_size[0]
-     // + m_team_size(sizeof(double)+m_thread_scratch_size[0])
-     const int max_threads_for_memory = (space().impl_internal_space_instance()->m_maxShmemPerBlock - 2*sizeof(double)-m_team_scratch_size[0])/(sizeof(double)+m_thread_scratch_size[0]);
+    // nested_reducer_memsize = (sizeof(double) * (m_team_size + 2)
+    // custom: m_team_scratch_size[0] + m_thread_scratch_size[0] * m_team_size
+    // total:
+    // 2*sizeof(double)+m_team_scratch_size[0]
+    // + m_team_size(sizeof(double)+m_thread_scratch_size[0])
+    const int max_threads_for_memory =
+        (space().impl_internal_space_instance()->m_maxShmemPerBlock -
+         2 * sizeof(double) - m_team_scratch_size[0]) /
+        (sizeof(double) + m_thread_scratch_size[0]);
     return std::min<int>(
         m_space.impl_internal_space_instance()->m_maxThreadsPerSM,
         max_threads_for_memory);
@@ -315,19 +317,23 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
 
   template <class FunctorType>
   int internal_team_size_max_reduce(const FunctorType& f) const {
-  using Analysis =
-      FunctorAnalysis<FunctorPatternInterface::REDUCE, TeamPolicyInternal, FunctorType>;
-  using value_type     = typename Analysis::value_type;
-  const int value_count = Analysis::value_count(f);
+    using Analysis        = FunctorAnalysis<FunctorPatternInterface::REDUCE,
+                                     TeamPolicyInternal, FunctorType>;
+    using value_type      = typename Analysis::value_type;
+    const int value_count = Analysis::value_count(f);
 
-     // nested_reducer_memsize = (sizeof(double) * (m_team_size + 2)
-     // reducer_memsize = sizeof(value_type) * m_team_size * value_count  
-     // custom: m_team_scratch_size[0] + m_thread_scratch_size[0] * m_team_size
-     // total:
-     // 2*sizeof(double)+m_team_scratch_size[0]
-     // + m_team_size(sizeof(double)+sizeof(value_type)*value_count
-     //               +m_thread_scratch_size[0])
-     const int max_threads_for_memory = (space().impl_internal_space_instance()->m_maxShmemPerBlock - 2*sizeof(double)-m_team_scratch_size[0])/(sizeof(double)+sizeof(value_type) * value_count+m_thread_scratch_size[0]);
+    // nested_reducer_memsize = (sizeof(double) * (m_team_size + 2)
+    // reducer_memsize = sizeof(value_type) * m_team_size * value_count
+    // custom: m_team_scratch_size[0] + m_thread_scratch_size[0] * m_team_size
+    // total:
+    // 2*sizeof(double)+m_team_scratch_size[0]
+    // + m_team_size(sizeof(double)+sizeof(value_type)*value_count
+    //               +m_thread_scratch_size[0])
+    const int max_threads_for_memory =
+        (space().impl_internal_space_instance()->m_maxShmemPerBlock -
+         2 * sizeof(double) - m_team_scratch_size[0]) /
+        (sizeof(double) + sizeof(value_type) * value_count +
+         m_thread_scratch_size[0]);
     return std::min<int>(
         m_space.impl_internal_space_instance()->m_maxThreadsPerSM,
         max_threads_for_memory);
