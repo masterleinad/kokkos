@@ -331,26 +331,21 @@ struct is_space {
   // Kokkos::Impl::HostMirror<S>::host_mirror_space
 
   using host_memory_space = typename std::conditional<
-      std::is_same<memory_space, Kokkos::HostSpace>::value
-#if defined(KOKKOS_ENABLE_CUDA)
-          || std::is_same<memory_space, Kokkos::CudaUVMSpace>::value ||
-          std::is_same<memory_space, Kokkos::CudaHostPinnedSpace>::value
-#endif /* #if defined( KOKKOS_ENABLE_CUDA ) */
-      ,
+      std::is_same<memory_space, Kokkos::HostSpace>::value ||
+          std::is_same<memory_space, Kokkos::CudaUVMSpace>::value ||
+          std::is_same<memory_space, Kokkos::CudaHostPinnedSpace>::value,
       memory_space, Kokkos::HostSpace>::type;
 
 #if defined(KOKKOS_ENABLE_CUDA)
   using host_execution_space = typename std::conditional<
       std::is_same<execution_space, Kokkos::Cuda>::value,
       Kokkos::DefaultHostExecutionSpace, execution_space>::type;
-#else
-#if defined(KOKKOS_ENABLE_OPENMPTARGET)
+#elif defined(KOKKOS_ENABLE_OPENMPTARGET)
   using host_execution_space = typename std::conditional<
       std::is_same<execution_space, Kokkos::Experimental::OpenMPTarget>::value,
       Kokkos::DefaultHostExecutionSpace, execution_space>::type;
 #else
   using host_execution_space = execution_space;
-#endif
 #endif
 
   using host_mirror_space = typename std::conditional<
