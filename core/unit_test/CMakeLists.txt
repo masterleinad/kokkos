@@ -491,7 +491,6 @@ if(Kokkos_ENABLE_SYCL)
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamScan.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamScratch.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_TeamTeamSize.cpp
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_UniqueToken.cpp
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_WorkGraph.cpp
   )
 
