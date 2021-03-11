@@ -432,6 +432,7 @@ class ScanTeamFunctor {
     const int64_t thread_rank =
         ind.team_rank() + ind.team_size() * ind.league_rank();
     ind.team_scan(1 + thread_rank, accum.data());
+    KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Scanned values are %ld\n", ind.team_rank(), ind.league_rank(), *accum.data());
   }
 };
 
@@ -464,7 +465,8 @@ class TestScanTeam {
     team_exec = policy_type(
         nteam, team_exec.team_size_max(functor, Kokkos::ParallelReduceTag()));
 
-    for (unsigned i = 0; i < Repeat; ++i) {
+    (void) Repeat;
+    for (unsigned i = 0; i < 1; ++i) {
       int64_t accum = 0;
       int64_t total = 0;
       int64_t error = 0;
@@ -475,6 +477,8 @@ class TestScanTeam {
 
       Kokkos::deep_copy(accum, functor.accum);
       Kokkos::deep_copy(total, functor.total);
+
+      std::cout << "total: " << total << " accum: " << accum << std::endl;
 
       ASSERT_EQ(error, 0);
       ASSERT_EQ(total, accum);

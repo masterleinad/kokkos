@@ -348,7 +348,7 @@ class TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>
   template <class FunctorType>
   int internal_team_size_recommended_reduce(const FunctorType& f) const {
     // FIXME_SYCL improve
-    return internal_team_size_max<ClosureType>(f);
+    return internal_team_size_max_reduce(f);
   }
 };
 
@@ -676,6 +676,8 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
                 }
               }
               item.barrier(sycl::access::fence_space::local_space);
+	      
+//	      KOKKOS_IMPL_DO_NOT_USE_PRINTF("%lu,%lu: Loaded %ld\n", local_id, global_id, local_mem[local_id * value_count]);
 
               // Perform the actual workgroup reduction. To achieve a better
               // memory access pattern, we use sequential addressing and a
@@ -703,6 +705,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
                     functor,
                     &results_ptr2[(item.get_group_linear_id()) * value_count],
                     &local_mem[0]);
+
                 if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
                   if (n_wgroups <= 1 && item.get_group_linear_id() == 0) {
                     FunctorFinal<FunctorType, WorkTag>::final(
@@ -725,6 +728,8 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
       first_run = false;
       size      = n_wgroups;
     }
+
+    std::cout << "Final reduced value is: " << *results_ptr << std::endl;
 
     // At this point, the reduced value is written to the entry in results_ptr
     // and all that is left is to copy it back to the given result pointer if

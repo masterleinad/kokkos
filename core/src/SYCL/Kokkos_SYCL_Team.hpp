@@ -242,6 +242,8 @@ class SYCLTeamMember {
   template <typename Type>
   KOKKOS_INLINE_FUNCTION Type team_scan(const Type& value,
                                         Type* const global_accum) const {
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Initial %ld\n", team_rank(), league_rank(), value);
+
     // We need to chunk up the whole reduction because we might not have
     // allocated enough memory.
     const int maximum_work_range =
@@ -281,12 +283,17 @@ class SYCLTeamMember {
 
     if (global_accum) {
       if (team_size() == idx + 1) {
-        base_data[0] = atomic_fetch_add(global_accum, base_data[0]);
+	      base_data[team_size()] = total;
+        //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Update global_accum with %ld\n", team_rank(), league_rank(), base_data[team_size()]);
+
+        base_data[team_size()] = atomic_fetch_add(global_accum, base_data[team_size()]);
       }
       m_item.barrier();  // Wait for atomic
-      intermediate += base_data[0];
+      intermediate += base_data[team_size()];
+      //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: global_accum %ld\n", team_rank(), league_rank(), *global_accum);
     }
 
+    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d, %d: Final %ld\n", team_rank(), league_rank(), intermediate);
     return intermediate;
   }
 
