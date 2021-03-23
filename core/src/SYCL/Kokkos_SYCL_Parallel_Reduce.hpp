@@ -67,7 +67,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   using value_type      = typename Analysis::value_type;
   using pointer_type    = typename Analysis::pointer_type;
   using reference_type  = typename Analysis::reference_type;
-  using size_type       = typename Experimental::SYCL::size_type;
 
   using WorkTag = typename Policy::work_tag;
 
@@ -130,17 +129,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     // If size<=1 we only call init(), the functor and possibly final once
     // working with the global scratch memory but don't copy back to
     // m_result_ptr yet.
-    const auto value_count =
-        FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
-            selected_reducer);
-    const auto results_ptr = reinterpret_cast<pointer_type>(
-          ::Kokkos::Experimental::Impl::sycl_internal_scratch_space(
-              sizeof(*m_result_ptr) * std::max(value_count, 1u) * init_size));
-    const auto finished_workgroups_ptr =
-        Kokkos::Experimental::Impl::sycl_internal_scratch_flags(
-          sizeof(size_type) * 1);
-
-    // Initialize global memory
     if (size <= 1) {
       q.submit([&](sycl::handler& cgh) {
         const auto begin = policy.begin();
