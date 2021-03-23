@@ -66,8 +66,8 @@ class SYCLInternal {
   SYCLInternal& operator=(SYCLInternal&&) = delete;
   SYCLInternal(SYCLInternal&&)            = delete;
 
-  size_type* scratch_space(const size_type size);
-  size_type* scratch_flags(const size_type size);
+  void* scratch_space(const size_type size);
+  void* scratch_flags(const size_type size);
 
   int m_syclDev = -1;
 

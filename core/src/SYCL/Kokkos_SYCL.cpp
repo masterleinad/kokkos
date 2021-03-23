@@ -288,16 +288,6 @@ void SYCLSpaceInitializer::print_configuration(std::ostream& msg,
   // Experimental::SYCL::print_configuration(msg, detail);
 }
 
-Kokkos::Experimental::SYCL::size_type *sycl_internal_scratch_space(
-    const Kokkos::Experimental::SYCL::size_type size) {
-  return SYCLInternal::singleton().scratch_space(size);
-}
-
-Kokkos::Experimental::SYCL::size_type *sycl_internal_scratch_flags(
-    const Kokkos::Experimental::SYCL::size_type size) {
-  return SYCLInternal::singleton().scratch_flags(size);
-}
-
 }  // namespace Impl
 }  // namespace Experimental
 }  // namespace Kokkos

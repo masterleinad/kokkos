@@ -122,7 +122,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
     // FIXME_SYCL only use the first half
-    const auto results_ptr = static_cast<pointer_type>(::Kokkos::Experimental::Impl::sycl_internal_scratch_space(sizeof(value_type) * std::max(value_count, 1u) * init_size * 2, q));
+    const auto results_ptr = static_cast<pointer_type>(instance.scratch_space(sizeof(value_type) * std::max(value_count, 1u) * init_size * 2));
     // FIXME_SYCL without this we are running into a race condition
     const auto results_ptr2 = results_ptr + std::max(value_count, 1u) * init_size;
 

@@ -171,9 +171,6 @@ class SYCLSpaceInitializer : public Kokkos::Impl::ExecSpaceInitializerBase {
   void print_configuration(std::ostream& msg, const bool detail) final;
 };
 
-SYCL::size_type *sycl_internal_scratch_space(const SYCL::size_type size);
-SYCL::size_type *sycl_internal_scratch_flags(const SYCL::size_type size);
-
 }  // namespace Impl
 }  // namespace Experimental
 
