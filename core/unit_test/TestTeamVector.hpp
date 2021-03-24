@@ -868,47 +868,6 @@ namespace VectorScanReducer
 {
 enum class ScanType :bool { Inclusive, Exclusive};
 
-template <typename ExecutionSpace, typename Reducer, typename ViewType, ScanType scan_type>
-struct ThreadVectorFunctor{
-  using size_type       = typename ExecutionSpace::size_type;
-  using value_type       = typename Reducer::value_type;
-
-  KOKKOS_FUNCTION
-  ThreadVectorFunctor(const Reducer& reducer,
-                      const size_type& team_offset,
-                      const size_type& thread_offset,
-                      const ViewType& outputs,
-                      const ViewType& inputs)
-    : m_reducer(reducer),
-      m_team_offset(team_offset),
-      m_thread_offset(thread_offset),
-      m_outputs(outputs),
-      m_inputs(inputs)
-{}
-
-KOKKOS_FUNCTION void operator()(const size_type j, value_type &update, const bool final) const {
-                    const size_type element = j + m_team_offset + m_thread_offset;
-                    const auto tmp     = m_inputs(element);
-                    if (scan_type==ScanType::Inclusive) {
-                      m_reducer.join(update, tmp);
-                      if (final) {
-                        m_outputs(element) = update;
-                      }
-                    } else {
-                      if (final) {
-                        m_outputs(element) = update;
-                      }
-                      m_reducer.join(update, tmp);
-                    }
-                  }
-                private:
-const Reducer& m_reducer;
-const size_type& m_team_offset;
-const size_type& m_thread_offset;
-const ViewType& m_outputs;
-const ViewType& m_inputs;
-        };
-
 template <typename ExecutionSpace, ScanType scan_type, class Reducer>
 struct checkScan {
 
@@ -927,12 +886,36 @@ view_type outputs = view_type{"outputs"};
 value_type result;
 Reducer reducer = {result};
 
+struct ThreadVectorFunctor{
+KOKKOS_FUNCTION void operator()(const size_type j, value_type &update, const bool final) const {
+                    const size_type element = j + m_team_offset + m_thread_offset;
+                    const auto tmp     = m_inputs(element);
+                    if (scan_type==ScanType::Inclusive) {
+                      m_reducer.join(update, tmp);
+                      if (final) {
+                        m_outputs(element) = update;
+                      }
+                    } else {
+                      if (final) {
+                        m_outputs(element) = update;
+                      }
+                      m_reducer.join(update, tmp);
+                    }
+                  }
+
+const Reducer& m_reducer;
+const size_type& m_team_offset;
+const size_type& m_thread_offset;
+const view_type& m_outputs;
+const view_type& m_inputs;
+        };
+
 struct TeamThreadRangeFunctor
 {
 KOKKOS_FUNCTION void operator()(const size_type i) const {
               const size_type thread_offset = i * nThreadVectorRange;
               Kokkos::parallel_scan(
-                  Kokkos::ThreadVectorRange(m_team, nThreadVectorRange), ThreadVectorFunctor<ExecutionSpace, Reducer, view_type, scan_type>{m_reducer, m_team_offset, thread_offset, m_outputs, m_inputs},
+                  Kokkos::ThreadVectorRange(m_team, nThreadVectorRange), ThreadVectorFunctor{m_reducer, m_team_offset, thread_offset, m_outputs, m_inputs},
                   m_reducer);
 }
 
