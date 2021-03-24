@@ -948,7 +948,7 @@ void run() {
   Kokkos::TeamPolicy<ExecutionSpace> policy(n_teams, Kokkos::AUTO, Kokkos::AUTO);
   const std::string label =
       (scan_type==ScanType::Inclusive ? std::string("inclusive") : std::string("exclusive")) +
-      std::string("Scan") + std::string(typeid(Reducer).name());
+      "Scan" + typeid(Reducer).name();
   Kokkos::parallel_for(label, policy, *this);
   Kokkos::fence();
 
