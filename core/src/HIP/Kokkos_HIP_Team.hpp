@@ -1005,7 +1005,7 @@ KOKKOS_INLINE_FUNCTION
     // exclusive scan -- the final accumulation
     // of i's val will be included in the second
     // closure call later.
-    if (i < loop_boundaries.end && i > 0) closure(i - 1, val, false);
+    if (i < loop_boundaries.end && threadIdx.x > 0) closure(i - 1, val, false);
 
     // Bottom up exclusive scan in triangular pattern
     // where each HIP thread is the root of a reduction tree
