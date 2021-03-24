@@ -967,9 +967,7 @@ KOKKOS_FUNCTION void operator()(const typename Kokkos::TeamPolicy<ExecutionSpace
 {team, reducer, iTeamOffset, outputs, inputs});
 }
 
-struct InitTag{};
-
-KOKKOS_FUNCTION void operator() (const InitTag&, size_type i) const {inputs(i) = i*1./n;}
+KOKKOS_FUNCTION void operator() (size_type i) const {inputs(i) = i*1./n;}
 
 void run() {
   static constexpr int nTeams   = n / nPerTeam;
@@ -977,7 +975,7 @@ void run() {
   using size_type        = typename TEST_EXECSPACE::size_type;
 
   Kokkos::parallel_for(
-      Kokkos::RangePolicy<TEST_EXECSPACE, InitTag>(0, n), *this);
+      Kokkos::RangePolicy<TEST_EXECSPACE>(0, n), *this);
 
   // run ThreadVectorRange parallel_scan
   Kokkos::TeamPolicy<ExecutionSpace> policy(nTeams, Kokkos::AUTO, Kokkos::AUTO);
