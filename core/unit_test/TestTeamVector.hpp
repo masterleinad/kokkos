@@ -909,37 +909,6 @@ const ViewType& m_outputs;
 const ViewType& m_inputs;
         };
 
-template <typename ExecutionSpace, typename Reducer, typename ViewType, ScanType scan_type>
-struct TeamThreadRangeFunctor
-{
-  static constexpr int nThreadVectorRange = 1e2;
-
-  using size_type        = typename ExecutionSpace::size_type;
-
-  KOKKOS_FUNCTION
-  TeamThreadRangeFunctor(const typename Kokkos::TeamPolicy<ExecutionSpace>::member_type& team,
-                         const Reducer& reducer,
-                         const size_type& team_offset,
-                         const ViewType& outputs,
-                         const ViewType& inputs)
-  : m_team(team), m_reducer(reducer), m_team_offset(team_offset), m_outputs(outputs), m_inputs(inputs)
-{}
-
-KOKKOS_FUNCTION void operator()(const size_type i) const {
-              const size_type thread_offset = i * nThreadVectorRange;
-              Kokkos::parallel_scan(
-                  Kokkos::ThreadVectorRange(m_team, nThreadVectorRange), ThreadVectorFunctor<ExecutionSpace, Reducer, ViewType, scan_type>{m_reducer, m_team_offset, thread_offset, m_outputs, m_inputs},
-                  m_reducer);
-}
-
-private:
-const typename Kokkos::TeamPolicy<ExecutionSpace>::member_type& m_team;
-const Reducer& m_reducer;
-const size_type& m_team_offset;
-const ViewType& m_outputs;
-const ViewType& m_inputs;
-};
-
 template <typename ExecutionSpace, ScanType scan_type, class Reducer>
 struct checkScan {
 
@@ -958,13 +927,40 @@ view_type outputs = view_type{"outputs"};
 value_type result;
 Reducer reducer = {result};
 
+struct TeamThreadRangeFunctor
+{
+  using size_type        = typename ExecutionSpace::size_type;
+
+  KOKKOS_FUNCTION
+  TeamThreadRangeFunctor(const typename Kokkos::TeamPolicy<ExecutionSpace>::member_type& team,
+                         const Reducer& reducer,
+                         const size_type& team_offset,
+                         const view_type& outputs,
+                         const view_type& inputs)
+  : m_team(team), m_reducer(reducer), m_team_offset(team_offset), m_outputs(outputs), m_inputs(inputs)
+{}
+
+KOKKOS_FUNCTION void operator()(const size_type i) const {
+              const size_type thread_offset = i * nThreadVectorRange;
+              Kokkos::parallel_scan(
+                  Kokkos::ThreadVectorRange(m_team, nThreadVectorRange), ThreadVectorFunctor<ExecutionSpace, Reducer, view_type, scan_type>{m_reducer, m_team_offset, thread_offset, m_outputs, m_inputs},
+                  m_reducer);
+}
+
+private:
+const typename Kokkos::TeamPolicy<ExecutionSpace>::member_type& m_team;
+const Reducer& m_reducer;
+const size_type& m_team_offset;
+const view_type& m_outputs;
+const view_type& m_inputs;
+};
+
 KOKKOS_FUNCTION void operator()(const typename Kokkos::TeamPolicy<ExecutionSpace>::member_type
               &team) const {
         const size_type iTeam       = team.league_rank();
         const size_type iTeamOffset = iTeam * nPerTeam;
         Kokkos::parallel_for(
-            Kokkos::TeamThreadRange(team, nTeamThreadRange), TeamThreadRangeFunctor<ExecutionSpace, Reducer, view_type, scan_type>
-{team, reducer, iTeamOffset, outputs, inputs});
+            Kokkos::TeamThreadRange(team, nTeamThreadRange), TeamThreadRangeFunctor{team, reducer, iTeamOffset, outputs, inputs});
 }
 
 KOKKOS_FUNCTION void operator() (size_type i) const {inputs(i) = i*1./n;}
