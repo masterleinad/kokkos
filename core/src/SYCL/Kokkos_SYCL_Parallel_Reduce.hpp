@@ -152,6 +152,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       space.fence();
     }
 
+    std::cout << "results_ptr: " << results_ptr << " results_ptr2: " << results_ptr2 
+	      << " end: " << results_ptr2+std::max(value_count, 1u) * init_size << std::endl;
+
     // Otherwise, we perform a reduction on the values in all workgroups
     // separately, write the workgroup results back to global memory and recurse
     // until only one workgroup does the reduction and thus gets the final

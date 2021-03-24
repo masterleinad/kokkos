@@ -138,7 +138,7 @@ void SYCLInternal::initialize(const sycl::queue& q) {
       using Record = Kokkos::Impl::SharedAllocationRecord<
           Kokkos::Experimental::SYCLDeviceUSMSpace, void>;
       Record* const r =
-          Record::allocate(Kokkos::Experimental::SYCLDeviceUSMSpace(),
+          Record::allocate(Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue),
                            "Kokkos::SYCL::InternalScratchBitset",
                            sizeof(uint32_t) * buffer_bound);
       Record::increment(r);
@@ -194,8 +194,11 @@ void SYCLInternal::finalize() {
 void *SYCLInternal::scratch_space (
     const Kokkos::Experimental::SYCL::size_type size) {
   const size_type sizeScratchGrain = sizeof(Kokkos::Experimental::SYCL::size_type);
+  std::cout << "Requesting scratch size: " << size
+	    << " current size: " << m_scratchSpaceCount * sizeScratchGrain << std::endl;
   if (verify_is_initialized("scratch_space") &&
       m_scratchSpaceCount * sizeScratchGrain < size) {
+	  std::cout << "after check" << std::endl;
     m_scratchSpaceCount = (size + sizeScratchGrain - 1) / sizeScratchGrain;
 
     using Record =
