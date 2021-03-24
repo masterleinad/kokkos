@@ -864,38 +864,27 @@ class TestTripleNestedReduce {
 
 #endif
 
-template <typename ExecutionSpace, bool bInclusive, class Reducer>
-void checkScan() {
-  static constexpr int n = 1000000;
-  using size_type        = typename TEST_EXECSPACE::size_type;
-  using value_type       = typename Reducer::value_type;
+enum class ScanType :bool { Inclusive, Exclusive};
 
-  Kokkos::View<value_type[n], TEST_EXECSPACE> inputs("inputs");
-  Kokkos::parallel_for(
-      Kokkos::RangePolicy<TEST_EXECSPACE>(0, n),
-      KOKKOS_LAMBDA(size_type i) { inputs(i) = i * 1. / n; });
+template <typename ExecutionSpace, ScanType scan_type, class Reducer>
+struct checkScan {
 
-  static constexpr int nTeamThreadRange   = 1e3;
-  static constexpr int nThreadVectorRange = 1e2;
-  static constexpr int nPerTeam = nTeamThreadRange * nThreadVectorRange;
-  static constexpr int nTeams   = n / nPerTeam;
+static constexpr int n = 1000000;
+static constexpr int nThreadVectorRange = 1e2;
+static constexpr int nTeamThreadRange   = 1e3;
+static constexpr int nPerTeam = nTeamThreadRange * nThreadVectorRange;
 
-  value_type result;
-  Reducer reducer(result);
+using value_type       = typename Reducer::value_type;
+using view_type = Kokkos::View<value_type[n], ExecutionSpace>;
 
-  Kokkos::View<typename Reducer::value_type[n], ExecutionSpace> outputs(
-      "outputs");
+view_type inputs = view_type{"inputs"};
+view_type outputs = view_type{"outputs"};
 
-  // run ThreadVectorRange parallel_scan
-  Kokkos::TeamPolicy<ExecutionSpace> policy(nTeams, Kokkos::AUTO, Kokkos::AUTO);
-  const std::string label =
-      (bInclusive ? std::string("inclusive") : std::string("exclusive")) +
-      std::string("Scan") + std::string(typeid(Reducer).name());
-  Kokkos::parallel_for(
-      label, policy,
-      KOKKOS_LAMBDA(
-          const typename Kokkos::TeamPolicy<ExecutionSpace>::member_type
-              &team) {
+value_type result;
+Reducer reducer = {result};
+
+void operator()(const typename Kokkos::TeamPolicy<ExecutionSpace>::member_type
+              &team) const {
         const int iTeam       = team.league_rank();
         const int iTeamOffset = iTeam * nPerTeam;
         Kokkos::parallel_for(
@@ -906,7 +895,7 @@ void checkScan() {
                   [&](const int j, value_type &update, const bool bFinal) {
                     const int iElement = j + iTeamOffset + iThreadOffset;
                     const auto tmp     = inputs(iElement);
-                    if (bInclusive) {
+                    if (scan_type==ScanType::Inclusive) {
                       reducer.join(update, tmp);
                       if (bFinal) {
                         outputs(iElement) = update;
@@ -920,7 +909,24 @@ void checkScan() {
                   },
                   reducer);
             });
-      });
+}
+
+void run() {
+  static constexpr int nTeams   = n / nPerTeam;
+
+  using size_type        = typename TEST_EXECSPACE::size_type;
+
+  Kokkos::View<value_type[n], TEST_EXECSPACE> inputs("inputs");
+  Kokkos::parallel_for(
+      Kokkos::RangePolicy<TEST_EXECSPACE>(0, n),
+      KOKKOS_LAMBDA(size_type i) { inputs(i) = i * 1. / n; });
+
+  // run ThreadVectorRange parallel_scan
+  Kokkos::TeamPolicy<ExecutionSpace> policy(nTeams, Kokkos::AUTO, Kokkos::AUTO);
+  const std::string label =
+      (scan_type==ScanType::Inclusive ? std::string("inclusive") : std::string("exclusive")) +
+      std::string("Scan") + std::string(typeid(Reducer).name());
+  Kokkos::parallel_for(label, policy, *this);
   Kokkos::fence();
 
   auto host_outputs =
@@ -936,7 +942,7 @@ void checkScan() {
       const int iVector      = i % nThreadVectorRange;
       const value_type accum = iVector == 0 ? identity : expected(i - 1);
       const value_type val =
-          bInclusive ? host_inputs(i)
+          scan_type==ScanType::Inclusive ? host_inputs(i)
                      : (iVector == 0 ? identity : host_inputs(i - 1));
       expected(i) = accum;
       reducer.join(expected(i), val);
@@ -945,6 +951,7 @@ void checkScan() {
   for (int i = 0; i < host_outputs.extent_int(0); ++i)
     ASSERT_EQ(host_outputs(i), expected(i));
 }
+};
 
 #if !(defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND) || defined(KOKKOS_ENABLE_HIP))
 TEST(TEST_CATEGORY, team_vector) {
@@ -987,14 +994,14 @@ TEST(TEST_CATEGORY, triple_nested_parallelism) {
 TEST(TEST_CATEGORY, parallel_scan_with_reducers) {
   using T = double;
 
-  checkScan<TEST_EXECSPACE, false, Kokkos::Prod<T, TEST_EXECSPACE>>();
-  checkScan<TEST_EXECSPACE, true, Kokkos::Prod<T, TEST_EXECSPACE>>();
+  checkScan<TEST_EXECSPACE, ScanType::Exclusive, Kokkos::Prod<T, TEST_EXECSPACE>>().run();
+  checkScan<TEST_EXECSPACE, ScanType::Inclusive, Kokkos::Prod<T, TEST_EXECSPACE>>().run();
 
-  checkScan<TEST_EXECSPACE, false, Kokkos::Max<T, TEST_EXECSPACE>>();
-  checkScan<TEST_EXECSPACE, true, Kokkos::Max<T, TEST_EXECSPACE>>();
+  checkScan<TEST_EXECSPACE, ScanType::Exclusive, Kokkos::Max<T, TEST_EXECSPACE>>().run();
+  checkScan<TEST_EXECSPACE, ScanType::Inclusive, Kokkos::Max<T, TEST_EXECSPACE>>().run();
 
-  checkScan<TEST_EXECSPACE, false, Kokkos::Min<T, TEST_EXECSPACE>>();
-  checkScan<TEST_EXECSPACE, true, Kokkos::Min<T, TEST_EXECSPACE>>();
+  checkScan<TEST_EXECSPACE, ScanType::Exclusive, Kokkos::Min<T, TEST_EXECSPACE>>().run();
+  checkScan<TEST_EXECSPACE, ScanType::Inclusive, Kokkos::Min<T, TEST_EXECSPACE>>().run();
 }
 #endif
 
