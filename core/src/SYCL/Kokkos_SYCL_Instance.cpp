@@ -202,10 +202,8 @@ void *SYCLInternal::scratch_space (
         Kokkos::Impl::SharedAllocationRecord<Kokkos::Experimental::SYCLDeviceUSMSpace,
                                              void>;
 
-    // FIXME_SYCL combine
-    using RecordSYCL = Kokkos::Impl::SharedAllocationRecord<SYCLDeviceUSMSpace>;
     if (nullptr != m_scratchSpace)
-      RecordSYCL::decrement(RecordSYCL::get_record(m_scratchSpace));
+      Record::decrement(Record::get_record(m_scratchSpace));
 
     Record *const r = Record::allocate(
         Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue), "InternalScratchSpace",
@@ -230,10 +228,8 @@ void *SYCLInternal::scratch_flags (
         Kokkos::Impl::SharedAllocationRecord<Kokkos::Experimental::SYCLDeviceUSMSpace,
                                              void>;
 
-    // FIXME_SYCL combine
-    using RecordSYCL = Kokkos::Impl::SharedAllocationRecord<SYCLDeviceUSMSpace>;
     if (nullptr != m_scratchFlags)
-      RecordSYCL::decrement(RecordSYCL::get_record(m_scratchFlags));
+      Record::decrement(Record::get_record(m_scratchFlags));
 
     Record *const r = Record::allocate(
         Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue), "InternalScratchFlags",
