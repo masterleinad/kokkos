@@ -125,18 +125,19 @@ DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace, Kokkos::HostSpace,
 namespace Kokkos {
 namespace Experimental {
 
-SYCLDeviceUSMSpace::SYCLDeviceUSMSpace() : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+SYCLDeviceUSMSpace::SYCLDeviceUSMSpace()
+    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
 SYCLDeviceUSMSpace::SYCLDeviceUSMSpace(sycl::queue queue) : m_queue(queue) {}
- 
-SYCLSharedUSMSpace::SYCLSharedUSMSpace() : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+
+SYCLSharedUSMSpace::SYCLSharedUSMSpace()
+    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
 SYCLSharedUSMSpace::SYCLSharedUSMSpace(sycl::queue queue) : m_queue(queue) {}
 
 void* allocate_sycl(
     const char* arg_label, const size_t arg_alloc_size,
     const size_t arg_logical_size, const Kokkos::Tools::SpaceHandle arg_handle,
     const RawMemoryAllocationFailure::AllocationMechanism failure_tag,
-    const sycl::usm::alloc allocation_kind,
-    const sycl::queue& queue) {
+    const sycl::usm::alloc allocation_kind, const sycl::queue& queue) {
   void* const hostPtr = sycl::malloc(arg_alloc_size, queue, allocation_kind);
 
   if (hostPtr == nullptr)
@@ -165,8 +166,7 @@ void* SYCLDeviceUSMSpace::allocate(const char* arg_label,
       arg_label, arg_alloc_size, arg_logical_size,
       Kokkos::Tools::make_space_handle(name()),
       RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocDevice,
-      sycl::usm::alloc::device,
-      m_queue);
+      sycl::usm::alloc::device, m_queue);
 }
 
 void* SYCLSharedUSMSpace::allocate(const size_t arg_alloc_size) const {
@@ -179,14 +179,13 @@ void* SYCLSharedUSMSpace::allocate(const char* arg_label,
       arg_label, arg_alloc_size, arg_logical_size,
       Kokkos::Tools::make_space_handle(name()),
       RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocShared,
-      sycl::usm::alloc::shared,
-      m_queue);
+      sycl::usm::alloc::shared, m_queue);
 }
 
 void sycl_deallocate(const char* arg_label, void* const arg_alloc_ptr,
                      const size_t arg_alloc_size, const size_t arg_logical_size,
                      const Kokkos::Tools::SpaceHandle arg_handle,
-		     const sycl::queue& queue) {
+                     const sycl::queue& queue) {
   if (Kokkos::Profiling::profileLibraryLoaded()) {
     const size_t reported_size =
         (arg_logical_size > 0) ? arg_logical_size : arg_alloc_size;

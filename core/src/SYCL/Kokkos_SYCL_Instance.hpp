@@ -76,9 +76,9 @@ class SYCLInternal {
   uint64_t m_maxShmemPerBlock = 0;
 
   uint32_t* m_scratchConcurrentBitset = nullptr;
-  size_type  m_scratchSpaceCount      = 0;
+  size_type m_scratchSpaceCount       = 0;
   size_type* m_scratchSpace           = nullptr;
-  size_type  m_scratchFlagsCount      = 0;
+  size_type m_scratchFlagsCount       = 0;
   size_type* m_scratchFlags           = nullptr;
 
   std::optional<sycl::queue> m_queue;

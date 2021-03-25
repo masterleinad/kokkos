@@ -170,13 +170,13 @@ void SYCLInternal::finalize() {
   using RecordSYCL = Kokkos::Impl::SharedAllocationRecord<SYCLDeviceUSMSpace>;
   if (nullptr != m_scratchSpace)
     RecordSYCL::decrement(RecordSYCL::get_record(m_scratchSpace));
-  if(nullptr != m_scratchFlags)
+  if (nullptr != m_scratchFlags)
     RecordSYCL::decrement(RecordSYCL::get_record(m_scratchFlags));
-  m_syclDev                   = -1;
-  m_scratchSpaceCount         = 0;
-  m_scratchSpace              = nullptr;
-  m_scratchFlagsCount         = 0; 
-  m_scratchFlags              = nullptr;
+  m_syclDev           = -1;
+  m_scratchSpaceCount = 0;
+  m_scratchSpace      = nullptr;
+  m_scratchFlagsCount = 0;
+  m_scratchFlags      = nullptr;
 
   RecordSYCL::decrement(RecordSYCL::get_record(m_scratchConcurrentBitset));
   m_scratchConcurrentBitset = nullptr;
@@ -191,53 +191,53 @@ void SYCLInternal::finalize() {
   m_queue.reset();
 }
 
-void *SYCLInternal::scratch_space (
+void* SYCLInternal::scratch_space(
     const Kokkos::Experimental::SYCL::size_type size) {
-  const size_type sizeScratchGrain = sizeof(Kokkos::Experimental::SYCL::size_type);
+  const size_type sizeScratchGrain =
+      sizeof(Kokkos::Experimental::SYCL::size_type);
   if (verify_is_initialized("scratch_space") &&
       m_scratchSpaceCount * sizeScratchGrain < size) {
     m_scratchSpaceCount = (size + sizeScratchGrain - 1) / sizeScratchGrain;
 
-    using Record =
-        Kokkos::Impl::SharedAllocationRecord<Kokkos::Experimental::SYCLDeviceUSMSpace,
-                                             void>;
+    using Record = Kokkos::Impl::SharedAllocationRecord<
+        Kokkos::Experimental::SYCLDeviceUSMSpace, void>;
 
     if (nullptr != m_scratchSpace)
       Record::decrement(Record::get_record(m_scratchSpace));
 
-    Record *const r = Record::allocate(
-        Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue), "InternalScratchSpace",
-        (sizeScratchGrain * m_scratchSpaceCount));
+    Record* const r = Record::allocate(
+        Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue),
+        "InternalScratchSpace", (sizeScratchGrain * m_scratchSpaceCount));
 
     Record::increment(r);
 
-    m_scratchSpace = reinterpret_cast<size_type *>(r->data());
+    m_scratchSpace = reinterpret_cast<size_type*>(r->data());
   }
 
   return m_scratchSpace;
 }
 
-void *SYCLInternal::scratch_flags (
+void* SYCLInternal::scratch_flags(
     const Kokkos::Experimental::SYCL::size_type size) {
-	  const size_type sizeScratchGrain = sizeof(Kokkos::Experimental::SYCL::size_type);
+  const size_type sizeScratchGrain =
+      sizeof(Kokkos::Experimental::SYCL::size_type);
   if (verify_is_initialized("scratch_flags") &&
       m_scratchFlagsCount * sizeScratchGrain < size) {
     m_scratchFlagsCount = (size + sizeScratchGrain - 1) / sizeScratchGrain;
 
-    using Record =
-        Kokkos::Impl::SharedAllocationRecord<Kokkos::Experimental::SYCLDeviceUSMSpace,
-                                             void>;
+    using Record = Kokkos::Impl::SharedAllocationRecord<
+        Kokkos::Experimental::SYCLDeviceUSMSpace, void>;
 
     if (nullptr != m_scratchFlags)
       Record::decrement(Record::get_record(m_scratchFlags));
 
-    Record *const r = Record::allocate(
-        Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue), "InternalScratchFlags",
-        (sizeScratchGrain * m_scratchFlagsCount));
+    Record* const r = Record::allocate(
+        Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue),
+        "InternalScratchFlags", (sizeScratchGrain * m_scratchFlagsCount));
 
     Record::increment(r);
 
-    m_scratchFlags = reinterpret_cast<size_type *>(r->data());
+    m_scratchFlags = reinterpret_cast<size_type*>(r->data());
   }
   m_queue->memset(m_scratchFlags, 0, m_scratchFlagsCount * sizeScratchGrain);
   fence(*m_queue);
