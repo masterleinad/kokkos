@@ -205,7 +205,11 @@ void *SYCLInternal::scratch_space (
         Kokkos::Impl::SharedAllocationRecord<Kokkos::Experimental::SYCLDeviceUSMSpace,
                                              void>;
 
-    static Record *const r = Record::allocate(
+    using RecordSYCL = Kokkos::Impl::SharedAllocationRecord<SYCLDeviceUSMSpace>;
+    if (nullptr != m_scratchSpace)
+      RecordSYCL::decrement(RecordSYCL::get_record(m_scratchSpace));
+
+    Record *const r = Record::allocate(
         Kokkos::Experimental::SYCLDeviceUSMSpace(*m_queue), "InternalScratchSpace",
         (sizeScratchGrain * m_scratchSpaceCount));
 

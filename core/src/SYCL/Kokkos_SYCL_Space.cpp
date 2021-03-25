@@ -196,6 +196,8 @@ void sycl_deallocate(const char* arg_label, void* const arg_alloc_ptr,
     Kokkos::Profiling::deallocateData(arg_handle, arg_label, arg_alloc_ptr,
                                       reported_size);
   }
+  std::cout << "Deallocating: " << arg_label << " start: " << arg_alloc_ptr << " end: " << (void*)(((char*)arg_alloc_ptr)+arg_alloc_size) << " size: " << arg_alloc_size << std::endl;
+
   sycl::free(arg_alloc_ptr, queue);
 }
 
