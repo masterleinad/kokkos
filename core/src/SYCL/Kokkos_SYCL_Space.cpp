@@ -138,7 +138,6 @@ void* allocate_sycl(
     const sycl::usm::alloc allocation_kind,
     const sycl::queue& queue) {
   void* const hostPtr = sycl::malloc(arg_alloc_size, queue, allocation_kind);
-  std::cout << "Allocating: " << arg_label << " start: " << hostPtr << " end: " << (void*)(((char*)hostPtr)+arg_alloc_size) << " size: " << arg_alloc_size << std::endl;
 
   if (hostPtr == nullptr)
     throw RawMemoryAllocationFailure(
@@ -162,7 +161,6 @@ void* SYCLDeviceUSMSpace::allocate(const size_t arg_alloc_size) const {
 void* SYCLDeviceUSMSpace::allocate(const char* arg_label,
                                    const size_t arg_alloc_size,
                                    const size_t arg_logical_size) const {
-  std::cout << "AllocatingDevice: " << arg_label << " size: " << arg_alloc_size << std::endl;
   return allocate_sycl(
       arg_label, arg_alloc_size, arg_logical_size,
       Kokkos::Tools::make_space_handle(name()),
@@ -177,7 +175,6 @@ void* SYCLSharedUSMSpace::allocate(const size_t arg_alloc_size) const {
 void* SYCLSharedUSMSpace::allocate(const char* arg_label,
                                    const size_t arg_alloc_size,
                                    const size_t arg_logical_size) const {
-  std::cout << "AllocatingShared: " << arg_label << " size: " << arg_alloc_size << std::endl;
   return allocate_sycl(
       arg_label, arg_alloc_size, arg_logical_size,
       Kokkos::Tools::make_space_handle(name()),
@@ -196,7 +193,6 @@ void sycl_deallocate(const char* arg_label, void* const arg_alloc_ptr,
     Kokkos::Profiling::deallocateData(arg_handle, arg_label, arg_alloc_ptr,
                                       reported_size);
   }
-  std::cout << "Deallocating: " << arg_label << " start: " << arg_alloc_ptr << " end: " << (void*)(((char*)arg_alloc_ptr)+arg_alloc_size) << " size: " << arg_alloc_size << std::endl;
 
   sycl::free(arg_alloc_ptr, queue);
 }

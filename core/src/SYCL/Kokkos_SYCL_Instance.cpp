@@ -194,11 +194,8 @@ void SYCLInternal::finalize() {
 void *SYCLInternal::scratch_space (
     const Kokkos::Experimental::SYCL::size_type size) {
   const size_type sizeScratchGrain = sizeof(Kokkos::Experimental::SYCL::size_type);
-  std::cout << "Requesting scratch size: " << size
-	    << " current size: " << m_scratchSpaceCount * sizeScratchGrain << std::endl;
   if (verify_is_initialized("scratch_space") &&
       m_scratchSpaceCount * sizeScratchGrain < size) {
-	  std::cout << "after check" << std::endl;
     m_scratchSpaceCount = (size + sizeScratchGrain - 1) / sizeScratchGrain;
 
     using Record =
