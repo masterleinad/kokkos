@@ -709,7 +709,8 @@ void CudaInternal::finalize() {
   if (this == &singleton()) {
     cudaFreeHost(constantMemHostStaging);
     cudaEventDestroy(constantMemReusable);
-    Kokkos::Impl::get_cuda_space().impl_internal_space_instance()->finalize();
+    auto& deep_copy_space = Kokkos::Impl::cuda_get_deep_copy_space(/*initialize*/ false);
+    if (deep_copy_space) deep_copy_space->impl_internal_space_instance()->finalize();
     cudaStreamDestroy(cuda_get_deep_copy_stream());
   }
 }

@@ -53,6 +53,7 @@
 #include <iosfwd>
 #include <typeinfo>
 #include <string>
+#include <memory>
 
 #include <Kokkos_HostSpace.hpp>
 #include <impl/Kokkos_SharedAlloc.hpp>
@@ -280,7 +281,7 @@ namespace Impl {
 
 cudaStream_t cuda_get_deep_copy_stream();
 
-const Kokkos::Cuda& cuda_get_deep_copy_space();
+const std::unique_ptr<Kokkos::Cuda>& cuda_get_deep_copy_space(bool initialize=true);
 
 static_assert(Kokkos::Impl::MemorySpaceAccess<Kokkos::CudaSpace,
                                               Kokkos::CudaSpace>::assignable,
