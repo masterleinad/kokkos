@@ -73,6 +73,11 @@ cudaStream_t Kokkos::Impl::cuda_get_deep_copy_stream() {
   return s;
 }
 
+const Kokkos::Cuda &Kokkos::Impl::cuda_get_deep_copy_space() {
+  static Cuda space(Kokkos::Impl::cuda_get_deep_copy_stream());
+  return space;
+}
+
 namespace Kokkos {
 namespace Impl {
 

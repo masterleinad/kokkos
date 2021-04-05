@@ -280,6 +280,8 @@ namespace Impl {
 
 cudaStream_t cuda_get_deep_copy_stream();
 
+const Kokkos::Cuda& cuda_get_deep_copy_space();
+
 static_assert(Kokkos::Impl::MemorySpaceAccess<Kokkos::CudaSpace,
                                               Kokkos::CudaSpace>::assignable,
               "");
