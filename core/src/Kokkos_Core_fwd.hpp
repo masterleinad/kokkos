@@ -55,7 +55,7 @@
 
 #include <Kokkos_MasterLock.hpp>
 
-#include <type_traits> // std::true_type, std::false_type
+#include <type_traits>  // std::true_type, std::false_type
 
 //----------------------------------------------------------------------------
 // Have assumed a 64bit build (8byte pointers) throughout the code base.
@@ -341,19 +341,22 @@ struct IsSpaceAvailable : std::true_type {};
 //--------------------------------------------------------------------------------------//
 //  declare any spaces that might not be available and mark them as unavailable
 //
-#if !defined(KOKKOS_ENABLE_SERIAL)
 class Serial;
-template<> struct IsSpaceAvailable<Serial> : std::false_type {};
+#if !defined(KOKKOS_ENABLE_SERIAL)
+template <>
+struct IsSpaceAvailable<Serial> : std::false_type {};
 #endif
 
 class Threads;
 #if !defined(KOKKOS_ENABLE_THREADS)
-template<> struct IsSpaceAvailable<Threads> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Threads> : std::false_type {};
 #endif
 
 class OpenMP;
 #if !defined(KOKKOS_ENABLE_OPENMP)
-template<> struct IsSpaceAvailable<OpenMP> : std::false_type {};
+template <>
+struct IsSpaceAvailable<OpenMP> : std::false_type {};
 #endif
 
 class Cuda;
@@ -361,17 +364,22 @@ class CudaSpace;
 class CudaHostPinnedSpace;
 class CudaUVMSpace;
 #if !defined(KOKKOS_ENABLE_CUDA)
-template<> struct IsSpaceAvailable<Cuda> : std::false_type {};
-template<> struct IsSpaceAvailable<CudaSpace> : std::false_type {};
-template<> struct IsSpaceAvailable<CudaHostPinnedSpace> : std::false_type {};
-template<> struct IsSpaceAvailable<CudaUVMSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Cuda> : std::false_type {};
+template <>
+struct IsSpaceAvailable<CudaSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<CudaHostPinnedSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<CudaUVMSpace> : std::false_type {};
 #endif
 
 namespace Experimental {
 class HBWSpace;
 }  // namespace Experimental
 #if !defined(KOKKOS_ENABLE_HBWSPACE)
-template<> struct IsSpaceAvailable<Experimental::HBWSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::HBWSpace> : std::false_type {};
 #endif
 
 namespace Experimental {
@@ -379,8 +387,10 @@ class OpenMPTarget;
 class OpenMPTargetSpace;
 }  // namespace Experimental
 #if !defined(KOKKOS_ENABLE_OPENMPTARGET)
-template<> struct IsSpaceAvailable<Experimental::OpenMPTarget> : std::false_type {};
-template<> struct IsSpaceAvailable<Experimental::OpenMPTargetSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::OpenMPTarget> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::OpenMPTargetSpace> : std::false_type {};
 #endif
 
 namespace Experimental {
@@ -389,9 +399,12 @@ class HIPSpace;
 class HIPHostPinnedSpace;
 }  // namespace Experimental
 #if !defined(KOKKOS_ENABLE_HIP)
-template<> struct IsSpaceAvailable<Experimental::HIP> : std::false_type {};
-template<> struct IsSpaceAvailable<Experimental::HIPSpace> : std::false_type {};
-template<> struct IsSpaceAvailable<Experimental::HIPHostPinnedSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::HIP> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::HIPSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::HIPHostPinnedSpace> : std::false_type {};
 #endif
 
 namespace Experimental {
@@ -400,45 +413,48 @@ class SYCLDeviceUSMSpace;
 class SYCLSharedUSMSpace;
 }  // namespace Experimental
 #if !defined(KOKKOS_ENABLE_SYCL)
-template<> struct IsSpaceAvailable<Experimental::SYCL> : std::false_type {};
-template<> struct IsSpaceAvailable<Experimental::SYCLDeviceUSMSpace> : std::false_type {};
-template<> struct IsSpaceAvailable<Experimental::SYCLSharedUSMSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::SYCL> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::SYCLDeviceUSMSpace> : std::false_type {};
+template <>
+struct IsSpaceAvailable<Experimental::SYCLSharedUSMSpace> : std::false_type {};
 #endif
 
-namespace Impl
-{
+namespace Impl {
+// default definition
 template <typename... T>
-struct GatherActiveSpaces;
-
-template <class, class>
-struct Concatenate;
-template <class... First, class... Second>
-struct Concatenate<type_list<First...>, type_list<Second...>> {
-    using type = type_list<First..., Second...>;
+struct Concatenate {
+  using type = type_list<T...>;
 };
+
+// append to type_list
+template <typename... T, typename... Tail>
+struct Concatenate<type_list<T...>, Tail...> : Concatenate<T..., Tail...> {};
+
+// combine consecutive type_lists
+template <typename... T, typename... U, typename... Tail>
+struct Concatenate<type_list<T...>, type_list<U...>, Tail...>
+    : Concatenate<type_list<T..., U...>, Tail...> {};
 
 template <typename... T>
-struct GatherActiveSpaces;
-template <>
-struct GatherActiveSpaces<> {
-  using type = type_list<>;
+struct GatherActiveSpaces {
+  // using Concatenate<T> in true part of conditional improves handling of
+  // nested type-lists (not really expected here)
+  using type = typename Concatenate<std::conditional_t<
+      IsSpaceAvailable<T>{}, type_list<T>, type_list<>>...>::type;
 };
-template <typename T,  typename... Ts>
-struct GatherActiveSpaces<T, Ts...> {
-  using other_types = typename GatherActiveSpaces<Ts...>::type;
-  using type = typename std::conditional<IsSpaceAvailable<T>{}, 
-	                        typename Concatenate<type_list<T>, other_types>::type, 
-				other_types>::type;
-};
-}
+}  // namespace Impl
 
-using ActiveExecutionSpaces = Impl::GatherActiveSpaces<Serial, Threads, OpenMP, Cuda, Experimental::OpenMPTarget, Experimental::HIP, Experimental::SYCL>::type;
-using ActiveMemorySpaces = Impl::GatherActiveSpaces<HostSpace, Experimental::HBWSpace, CudaSpace, CudaHostPinnedSpace, CudaUVMSpace, Experimental::OpenMPTargetSpace, 
-Experimental::HIPSpace,
-Experimental::HIPHostPinnedSpace,
-Experimental::SYCLDeviceUSMSpace,
-Experimental::SYCLSharedUSMSpace
->::type;
+using ActiveExecutionSpaces = typename Impl::GatherActiveSpaces<
+    Serial, Threads, OpenMP, Cuda, Experimental::OpenMPTarget,
+    Experimental::HIP, Experimental::SYCL>::type;
+
+using ActiveMemorySpaces = typename Impl::GatherActiveSpaces<
+    HostSpace, Experimental::HBWSpace, CudaSpace, CudaHostPinnedSpace,
+    CudaUVMSpace, Experimental::OpenMPTargetSpace, Experimental::HIPSpace,
+    Experimental::HIPHostPinnedSpace, Experimental::SYCLDeviceUSMSpace,
+    Experimental::SYCLSharedUSMSpace>::type;
 
 }  // namespace Kokkos
 

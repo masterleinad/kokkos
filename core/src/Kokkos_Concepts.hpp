@@ -337,7 +337,9 @@ struct is_space {
       memory_space, Kokkos::HostSpace>::type;
 
   using host_execution_space = typename std::conditional<
-      std::is_same<execution_space, Kokkos::Cuda>::value || std::is_same<execution_space, Kokkos::Experimental::OpenMPTarget>::value,
+      std::is_same<execution_space, Kokkos::Cuda>::value ||
+          std::is_same<execution_space,
+                       Kokkos::Experimental::OpenMPTarget>::value,
       Kokkos::DefaultHostExecutionSpace, execution_space>::type;
 
   using host_mirror_space = typename std::conditional<
