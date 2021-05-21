@@ -46,8 +46,12 @@ jobs:
         if: ${{ matrix.distro == 'fedora:rawhide' }}
         run: echo "GTEST_FILTER=-*DeathTest*" >> $GITHUB_ENV
       - name: enable_precise_fp_mode
-        if: ${{ matrix.cxx == 'icpx' }} || ${{ matrix.cxx == 'icpc' }}
-        run: echo 'EXTRA_CXX_FLAGS="-fp-model precise"' >> $GITHUB_ENV
+        run: | 
+          if ${{ matrix.cxx == 'icpx' }}; then
+            echo 'EXTRA_CXX_FLAGS="-fp-model precise"' >> $GITHUB_ENV
+          else
+            echo 'EXTRA_CXX_FLAGS=' >> $GITHUB_ENV
+          fi  
       - name: build-and-test
         run: |
           ccache -z
