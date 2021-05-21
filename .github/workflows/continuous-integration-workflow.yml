@@ -45,6 +45,9 @@ jobs:
       - name: maybe_disable_death_tests
         if: ${{ matrix.distro == 'fedora:rawhide' }}
         run: echo "GTEST_FILTER=-*DeathTest*" >> $GITHUB_ENV
+      - name: enable_precise_fp_mode
+        if: ${{ matrix.cxx == 'icpx' }} || ${{ matrix.cxx == 'icpc' }}
+        run: echo "EXTRA_CXX_FLAGS=-fp-model precise" >> $GITHUB_ENV
       - name: build-and-test
         run: |
           ccache -z
@@ -56,6 +59,7 @@ jobs:
             -DKokkos_ENABLE_EXAMPLES=ON \
             -DKokkos_ENABLE_DEPRECATED_CODE_3=ON \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DCMAKE_CXX_FLAGS=${EXTRA_CXX_FLAGS} \
             -DCMAKE_BUILD_TYPE=${{ matrix.cmake_build_type }} \
             -DBUILD_NAME=${{ matrix.distro }}-${{ matrix.cxx }} \
             -DBUILD_JOBS=2 -DBINARY_DIR=builddir -DSITE=GitHub-Linux \
