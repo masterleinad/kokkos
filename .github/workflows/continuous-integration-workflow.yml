@@ -48,9 +48,9 @@ jobs:
       - name: enable_precise_fp_mode
         run: | 
           if ${{ matrix.cxx == 'icpx' }}; then
-            echo 'EXTRA_CXX_FLAGS="-fp-model precise"' >> $GITHUB_ENV
+            echo "EXTRA_CXX_FLAGS=-fp-model=precise" >> $GITHUB_ENV
           else
-            echo 'EXTRA_CXX_FLAGS=' >> $GITHUB_ENV
+            echo "EXTRA_CXX_FLAGS=" >> $GITHUB_ENV
           fi  
       - name: build-and-test
         run: |
