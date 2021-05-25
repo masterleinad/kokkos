@@ -116,7 +116,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     std::size_t size                   = policy.end() - policy.begin();
     const auto init_size               = std::max<std::size_t>(
         ((size + values_per_thread - 1) / values_per_thread + wgroup_size - 1) /
-            wgroup_size,
+            wgroup_size * wgroup_size,
         1);
     const unsigned int value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
@@ -154,11 +154,53 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       space.fence();
     }
 
+    // Initialize global memory by calling the provided functor
+    q.submit([&](sycl::handler& cgh) {
+      sycl::accessor<value_type, 1, sycl::access::mode::read_write,
+                     sycl::access::target::local>
+          local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
+                    cgh);
+      const auto begin = policy.begin();
+
+      auto n_wgroups = ((size + values_per_thread - 1) / values_per_thread +
+                        wgroup_size - 1) /
+                       wgroup_size;
+      cgh.parallel_for(
+            sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+            [=](sycl::nd_item<1> item) {
+              const auto local_id = item.get_local_linear_id();
+              const auto global_id =
+                  wgroup_size * item.get_group_linear_id() * values_per_thread +
+                  local_id;
+              const auto& selected_reducer = ReducerConditional::select(
+                  static_cast<const FunctorType&>(functor),
+                  static_cast<const ReducerType&>(reducer));
+
+              // In the first iteration, we call functor to initialize the local
+              // memory. Otherwise, the local memory is initialized with the
+              // results from the previous iteration that are stored in global
+              // memory. Note that we load values_per_thread values per thread
+              // and immediately combine them to avoid too many threads being
+              // idle in the actual workgroup reduction.
+              using index_type       = typename Policy::index_type;
+              const auto upper_bound = std::min<index_type>(
+                  global_id + values_per_thread * wgroup_size, size);
+              reference_type update = ValueInit::init(
+                  selected_reducer, &results_ptr[global_id * value_count]);
+              for (index_type id = global_id; id < upper_bound;
+                   id += wgroup_size) {
+                if constexpr (std::is_same<WorkTag, void>::value)
+                  functor(id + begin, update);
+                else
+                  functor(WorkTag(), id + begin, update);
+              }
+            });
+    });    
+
     // Otherwise, we perform a reduction on the values in all workgroups
     // separately, write the workgroup results back to global memory and recurse
     // until only one workgroup does the reduction and thus gets the final
     // value.
-    bool first_run = true;
     while (size > 1) {
       auto n_wgroups = ((size + values_per_thread - 1) / values_per_thread +
                         wgroup_size - 1) /
@@ -190,17 +232,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               using index_type       = typename Policy::index_type;
               const auto upper_bound = std::min<index_type>(
                   global_id + values_per_thread * wgroup_size, size);
-              if (first_run) {
-                reference_type update = ValueInit::init(
-                    selected_reducer, &local_mem[local_id * value_count]);
-                for (index_type id = global_id; id < upper_bound;
-                     id += wgroup_size) {
-                  if constexpr (std::is_same<WorkTag, void>::value)
-                    functor(id + begin, update);
-                  else
-                    functor(WorkTag(), id + begin, update);
-                }
-              } else {
+	      {
                 if (global_id >= size)
                   ValueInit::init(selected_reducer,
                                   &local_mem[local_id * value_count]);
@@ -261,7 +293,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
           sizeof(*m_result_ptr) * value_count * n_wgroups);
       space.fence();
 
-      first_run = false;
       size      = n_wgroups;
     }
 
