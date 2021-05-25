@@ -1736,7 +1736,7 @@ template <class TeamType, class DT, class... DP, class ST, class... SP>
 void KOKKOS_INLINE_FUNCTION
 local_deep_copy_contiguous(const TeamType& team, const View<DT, DP...>& dst,
                            const View<ST, SP...>& src) {
-  Kokkos::parallel_for(Kokkos::TeamThreadRange(team, src.span()),
+  Kokkos::parallel_for(Kokkos::TeamVectorRange(team, src.span()),
                        [&](const int& i) { dst.data()[i] = src.data()[i]; });
 }
 //----------------------------------------------------------------------------
@@ -1762,7 +1762,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
   const size_t N = dst.extent(0);
 
   team.team_barrier();
-  Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N),
+  Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N),
                        [&](const int& i) { dst(i) = src(i); });
   team.team_barrier();
 }
@@ -1786,7 +1786,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0      = i % dst.extent(0);
       int i1      = i / dst.extent(0);
       dst(i0, i1) = src(i0, i1);
@@ -1814,7 +1814,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0          = i % dst.extent(0);
       int itmp        = i / dst.extent(0);
       int i1          = itmp % dst.extent(1);
@@ -1845,7 +1845,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0              = i % dst.extent(0);
       int itmp            = i / dst.extent(0);
       int i1              = itmp % dst.extent(1);
@@ -1878,7 +1878,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0                  = i % dst.extent(0);
       int itmp                = i / dst.extent(0);
       int i1                  = itmp % dst.extent(1);
@@ -1913,7 +1913,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0                      = i % dst.extent(0);
       int itmp                    = i / dst.extent(0);
       int i1                      = itmp % dst.extent(1);
@@ -1951,7 +1951,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0                          = i % dst.extent(0);
       int itmp                        = i / dst.extent(0);
       int i1                          = itmp % dst.extent(1);
@@ -2122,7 +2122,7 @@ template <class TeamType, class DT, class... DP>
 void KOKKOS_INLINE_FUNCTION local_deep_copy_contiguous(
     const TeamType& team, const View<DT, DP...>& dst,
     typename ViewTraits<DT, DP...>::const_value_type& value) {
-  Kokkos::parallel_for(Kokkos::TeamThreadRange(team, dst.span()),
+  Kokkos::parallel_for(Kokkos::TeamVectorRange(team, dst.span()),
                        [&](const int& i) { dst.data()[i] = value; });
 }
 //----------------------------------------------------------------------------
@@ -2148,7 +2148,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
   const size_t N = dst.extent(0);
 
   team.team_barrier();
-  Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N),
+  Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N),
                        [&](const int& i) { dst(i) = value; });
   team.team_barrier();
 }
@@ -2171,7 +2171,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0      = i % dst.extent(0);
       int i1      = i / dst.extent(0);
       dst(i0, i1) = value;
@@ -2198,7 +2198,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0          = i % dst.extent(0);
       int itmp        = i / dst.extent(0);
       int i1          = itmp % dst.extent(1);
@@ -2228,7 +2228,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0              = i % dst.extent(0);
       int itmp            = i / dst.extent(0);
       int i1              = itmp % dst.extent(1);
@@ -2260,7 +2260,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0                  = i % dst.extent(0);
       int itmp                = i / dst.extent(0);
       int i1                  = itmp % dst.extent(1);
@@ -2294,7 +2294,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0                      = i % dst.extent(0);
       int itmp                    = i / dst.extent(0);
       int i1                      = itmp % dst.extent(1);
@@ -2331,7 +2331,7 @@ void KOKKOS_INLINE_FUNCTION local_deep_copy(
     team.team_barrier();
   } else {
     team.team_barrier();
-    Kokkos::parallel_for(Kokkos::TeamThreadRange(team, N), [&](const int& i) {
+    Kokkos::parallel_for(Kokkos::TeamVectorRange(team, N), [&](const int& i) {
       int i0                          = i % dst.extent(0);
       int itmp                        = i / dst.extent(0);
       int i1                          = itmp % dst.extent(1);
