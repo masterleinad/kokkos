@@ -112,12 +112,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     // FIXME_SYCL optimize
     constexpr size_t wgroup_size       = 128;
-    constexpr size_t values_per_thread = 2;
     std::size_t size                   = policy.end() - policy.begin();
     const auto init_size               = std::max<std::size_t>(
-        ((size + values_per_thread - 1) / values_per_thread + wgroup_size - 1) /
-            wgroup_size * wgroup_size,
-        1);
+        (size + wgroup_size - 1) / wgroup_size * wgroup_size, 1);
     const unsigned int value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
@@ -162,16 +159,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                     cgh);
       const auto begin = policy.begin();
 
-      auto n_wgroups = ((size + values_per_thread - 1) / values_per_thread +
-                        wgroup_size - 1) /
-                       wgroup_size;
+      auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
       cgh.parallel_for(
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
             [=](sycl::nd_item<1> item) {
               const auto local_id = item.get_local_linear_id();
-              const auto global_id =
-                  wgroup_size * item.get_group_linear_id() * values_per_thread +
-                  local_id;
+	      const auto global_id = item.get_global_linear_id();
               const auto& selected_reducer = ReducerConditional::select(
                   static_cast<const FunctorType&>(functor),
                   static_cast<const ReducerType&>(reducer));
@@ -183,20 +176,26 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               // and immediately combine them to avoid too many threads being
               // idle in the actual workgroup reduction.
               using index_type       = typename Policy::index_type;
-              const auto upper_bound = std::min<index_type>(
-                  global_id + values_per_thread * wgroup_size, size);
               reference_type update = ValueInit::init(
                   selected_reducer, &results_ptr[global_id * value_count]);
-              for (index_type id = global_id; id < upper_bound;
-                   id += wgroup_size) {
+	      if (global_id < size) {
                 if constexpr (std::is_same<WorkTag, void>::value)
-                  functor(id + begin, update);
+                  functor(global_id + begin, update);
                 else
-                  functor(WorkTag(), id + begin, update);
-              }
+                  functor(WorkTag(), global_id + begin, update);
+	      }
             });
-    });    
+    });   
+    space.fence();
 
+    // FIXME_SYCL this is likely not necessary, see above
+/*      Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
+                             Kokkos::Experimental::SYCLDeviceUSMSpace>(
+          space, results_ptr, results_ptr2,
+          sizeof(*m_result_ptr) * value_count * init_size);
+      space.fence(); */
+
+    constexpr size_t values_per_thread = 2;
     // Otherwise, we perform a reduction on the values in all workgroups
     // separately, write the workgroup results back to global memory and recurse
     // until only one workgroup does the reduction and thus gets the final
