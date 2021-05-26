@@ -143,9 +143,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             else
               functor(WorkTag(), begin, update);
           }
-          if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
-            FunctorFinal<FunctorType, WorkTag>::final(
-                static_cast<const FunctorType&>(functor), results_ptr);
         });
       });
       space.fence();
@@ -187,13 +184,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             });
     });   
     space.fence();
-
-    // FIXME_SYCL this is likely not necessary, see above
-/*      Kokkos::Impl::DeepCopy<Kokkos::Experimental::SYCLDeviceUSMSpace,
-                             Kokkos::Experimental::SYCLDeviceUSMSpace>(
-          space, results_ptr, results_ptr2,
-          sizeof(*m_result_ptr) * value_count * init_size);
-      space.fence(); */
 
     constexpr size_t values_per_thread = 2;
     // Otherwise, we perform a reduction on the values in all workgroups
@@ -274,12 +264,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                     functor,
                     &results_ptr2[(item.get_group_linear_id()) * value_count],
                     &local_mem[0]);
-                if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
-                  if (n_wgroups <= 1)
-                    FunctorFinal<FunctorType, WorkTag>::final(
-                        static_cast<const FunctorType&>(functor),
-                        &results_ptr2[(item.get_group_linear_id()) *
-                                      value_count]);
               }
             });
       });
@@ -293,6 +277,18 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       space.fence();
 
       size      = n_wgroups;
+    }
+
+    if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+    {
+      q.submit([&](sycl::handler& cgh) {
+        const auto begin = policy.begin();
+        cgh.single_task([=]() {
+          FunctorFinal<FunctorType, WorkTag>::final(
+                static_cast<const FunctorType&>(functor), results_ptr);
+        });
+      });
+      space.fence();
     }
 
     // At this point, the reduced value is written to the entry in results_ptr
