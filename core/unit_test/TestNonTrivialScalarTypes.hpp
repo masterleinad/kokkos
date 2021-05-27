@@ -215,24 +215,8 @@ struct array_reduce {
     for (int i = 0; i < N; i++) data[i] = scalar_t();
   }
   KOKKOS_INLINE_FUNCTION
-  array_reduce(const array_reduce &rhs) {
-    for (int i = 0; i < N; i++) data[i] = rhs.data[i];
-  }
-  KOKKOS_INLINE_FUNCTION
   array_reduce(const scalar_t value) {
     for (int i = 0; i < N; i++) data[i] = scalar_t(value);
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  array_reduce &operator=(const array_reduce &src) {
-    for (int i = 0; i < N; i++) data[i] = src.data[i];
-    return *this;
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  array_reduce &operator=(const volatile array_reduce &src) {
-    for (int i = 0; i < N; i++) data[i] = src.data[i];
-    return *this;
   }
 
   KOKKOS_INLINE_FUNCTION  // add operator
