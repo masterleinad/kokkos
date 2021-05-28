@@ -110,9 +110,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     sycl::queue& q = *instance.m_queue;
 
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size       = 128;
-    std::size_t size                   = policy.end() - policy.begin();
-    const auto init_size               = std::max<std::size_t>(
+    constexpr size_t wgroup_size = 128;
+    std::size_t size             = policy.end() - policy.begin();
+    const auto init_size         = std::max<std::size_t>(
         (size + wgroup_size - 1) / wgroup_size * wgroup_size, 1);
     const unsigned int value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
@@ -145,53 +145,51 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         });
       });
       space.fence();
-    }
-    else
-    {
-    const auto& selected_reducer_ = ReducerConditional::select(
+    } else {
+      const auto& selected_reducer_ =
+          ReducerConditional::select(static_cast<const FunctorType&>(functor),
+                                     static_cast<const ReducerType&>(reducer));
+      ValueInit::init(selected_reducer_, results_ptr2);
+
+      auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
+      q.submit([&](sycl::handler& cgh) {
+        auto sycl_reduction = sycl::ONEAPI::reduction(
+            results_ptr2, *results_ptr2,
+            [functor, reducer](value_type& lhs, const value_type& rhs) {
+              const auto& selected_reducer = ReducerConditional::select(
                   static_cast<const FunctorType&>(functor),
                   static_cast<const ReducerType&>(reducer));
-    ValueInit::init(selected_reducer_, results_ptr2);
-
-    auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
-    q.submit([&](sycl::handler& cgh) {
-      auto sycl_reduction = 
-        sycl::ONEAPI::reduction(results_ptr2, *results_ptr2, [functor, reducer](value_type& lhs, const value_type& rhs) {
-          const auto& selected_reducer = ReducerConditional::select(
-            static_cast<const FunctorType&>(functor),
-            static_cast<const ReducerType&>(reducer));
-          ValueJoin::join(selected_reducer, &lhs, &rhs);
-          return lhs;
-      });
-      const auto begin = policy.begin();
-      cgh.parallel_for(
-           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size), sycl_reduction,
-           [=](sycl::nd_item<1> item, auto& sycl_reducer) {
+              ValueJoin::join(selected_reducer, &lhs, &rhs);
+              return lhs;
+            });
+        const auto begin = policy.begin();
+        cgh.parallel_for(
+            sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+            sycl_reduction, [=](sycl::nd_item<1> item, auto& sycl_reducer) {
               const auto global_id = item.get_global_linear_id();
-	      if (global_id >= size)
-	        return;
+              if (global_id >= size) return;
               const auto& selected_reducer = ReducerConditional::select(
                   static_cast<const FunctorType&>(functor),
                   static_cast<const ReducerType&>(reducer));
 
-             value_type partial;
-	     reference_type update = ValueInit::init(selected_reducer, &partial);
+              value_type partial;
+              reference_type update =
+                  ValueInit::init(selected_reducer, &partial);
               if constexpr (std::is_same<WorkTag, void>::value)
                 functor(global_id + begin, update);
               else
                 functor(WorkTag(), global_id + begin, update);
-             sycl_reducer.combine(partial);
+              sycl_reducer.combine(partial);
+            });
       });
-    });
-    space.fence();
+      space.fence();
     }
 
-    if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
-    {
+    if constexpr (ReduceFunctorHasFinal<FunctorType>::value) {
       q.submit([&](sycl::handler& cgh) {
         cgh.single_task([=]() {
           FunctorFinal<FunctorType, WorkTag>::final(
-                static_cast<const FunctorType&>(functor), results_ptr2);
+              static_cast<const FunctorType&>(functor), results_ptr2);
         });
       });
       space.fence();
