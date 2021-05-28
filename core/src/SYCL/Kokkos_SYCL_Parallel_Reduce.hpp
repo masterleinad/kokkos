@@ -100,7 +100,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         Kokkos::Impl::FunctorValueInit<ReducerTypeFwd, WorkTagFwd>;
     using ValueJoin =
         Kokkos::Impl::FunctorValueJoin<ReducerTypeFwd, WorkTagFwd>;
-    using ValueOps = Kokkos::Impl::FunctorValueOps<FunctorType, WorkTag>;
 
     auto selected_reducer = ReducerConditional::select(functor, reducer);
 
@@ -149,47 +148,15 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     }
     else
     {
-    // Initialize global memory by calling the provided functor
-    q.submit([&](sycl::handler& cgh) {
-      sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                     sycl::access::target::local>
-          local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
-                    cgh);
-      const auto begin = policy.begin();
-
-      auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
-      cgh.parallel_for(
-            sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
-            [=](sycl::nd_item<1> item) {
-              const auto local_id = item.get_local_linear_id();
-	      const auto global_id = item.get_global_linear_id();
-              const auto& selected_reducer = ReducerConditional::select(
+    const auto& selected_reducer_ = ReducerConditional::select(
                   static_cast<const FunctorType&>(functor),
                   static_cast<const ReducerType&>(reducer));
-
-              // In the first iteration, we call functor to initialize the local
-              // memory. Otherwise, the local memory is initialized with the
-              // results from the previous iteration that are stored in global
-              // memory. Note that we load values_per_thread values per thread
-              // and immediately combine them to avoid too many threads being
-              // idle in the actual workgroup reduction.
-              using index_type       = typename Policy::index_type;
-              reference_type update = ValueInit::init(
-                  selected_reducer, &results_ptr[global_id * value_count]);
-	      if (global_id < size) {
-                if constexpr (std::is_same<WorkTag, void>::value)
-                  functor(global_id + begin, update);
-                else
-                  functor(WorkTag(), global_id + begin, update);
-	      }
-            });
-    });   
-    space.fence();
+    ValueInit::init(selected_reducer_, results_ptr2);
 
     auto n_wgroups = (size + wgroup_size - 1) / wgroup_size;
     q.submit([&](sycl::handler& cgh) {
       auto sycl_reduction = 
-        sycl::ONEAPI::reduction(results_ptr2, value_type{}, [functor, reducer](value_type& lhs, const value_type& rhs) {
+        sycl::ONEAPI::reduction(results_ptr2, *results_ptr2, [functor, reducer](value_type& lhs, const value_type& rhs) {
           const auto& selected_reducer = ReducerConditional::select(
             static_cast<const FunctorType&>(functor),
             static_cast<const ReducerType&>(reducer));
@@ -199,8 +166,21 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
       const auto begin = policy.begin();
       cgh.parallel_for(
            sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size), sycl_reduction,
-           [=](sycl::nd_item<1> item, auto& reducer) {
-             reducer.combine(results_ptr[(item.get_global_linear_id()+begin)*value_count]);
+           [=](sycl::nd_item<1> item, auto& sycl_reducer) {
+              const auto global_id = item.get_global_linear_id();
+	      if (global_id >= size)
+	        return;
+              const auto& selected_reducer = ReducerConditional::select(
+                  static_cast<const FunctorType&>(functor),
+                  static_cast<const ReducerType&>(reducer));
+
+             value_type partial;
+	     reference_type update = ValueInit::init(selected_reducer, &partial);
+              if constexpr (std::is_same<WorkTag, void>::value)
+                functor(global_id + begin, update);
+              else
+                functor(WorkTag(), global_id + begin, update);
+             sycl_reducer.combine(partial);
       });
     });
     space.fence();
@@ -209,7 +189,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
     {
       q.submit([&](sycl::handler& cgh) {
-        const auto begin = policy.begin();
         cgh.single_task([=]() {
           FunctorFinal<FunctorType, WorkTag>::final(
                 static_cast<const FunctorType&>(functor), results_ptr2);
@@ -241,11 +220,11 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 
     const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper(
         m_functor, indirectKernelMem);
-    const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper(
+    const auto reducerwrapper = Experimental::Impl::make_sycl_function_wrapper(
         m_reducer, indirectReducerMem);
 
     sycl_direct_launch(m_policy, functor_wrapper.get_functor(),
-                       reducer_wrapper.get_functor());
+                       reducerwrapper.get_functor());
   }
 
  private:
@@ -525,11 +504,11 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
 
     const auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper(
         m_functor, indirectKernelMem);
-    const auto reducer_wrapper = Experimental::Impl::make_sycl_function_wrapper(
+    const auto reducerwrapper = Experimental::Impl::make_sycl_function_wrapper(
         m_reducer, indirectReducerMem);
 
     sycl_direct_launch(m_policy, functor_wrapper.get_functor(),
-                       reducer_wrapper.get_functor());
+                       reducerwrapper.get_functor());
   }
 
  private:
