@@ -317,6 +317,16 @@ class SYCLFunctionWrapper<Functor, Storage, true> {
   const Functor& get_functor() const { return m_functor; }
 };
 
+#ifdef SYCL_DEVICE_COPYABLE
+template <typename Functor, typename Storage>
+class SYCLFunctionWrapper<Functor, Storage, false> : public Functor {
+ public:
+  SYCLFunctionWrapper(const Functor& functor, Storage&)
+      : Functor(functor) {}
+
+  const SYCLFunctionWrapper& get_functor() const { return *this; }
+};
+#else
 template <typename Functor, typename Storage>
 class SYCLFunctionWrapper<Functor, Storage, false> {
   std::unique_ptr<Functor,
@@ -331,6 +341,7 @@ class SYCLFunctionWrapper<Functor, Storage, false> {
     return {*m_kernelFunctorPtr};
   }
 };
+#endif
 
 template <typename Functor, typename Storage>
 auto make_sycl_function_wrapper(const Functor& functor, Storage& storage) {
@@ -339,4 +350,8 @@ auto make_sycl_function_wrapper(const Functor& functor, Storage& storage) {
 }  // namespace Impl
 }  // namespace Experimental
 }  // namespace Kokkos
+
+template <typename Functor, typename Storage>
+struct sycl::is_device_copyable<
+ Kokkos::Experimental::Impl::SYCLFunctionWrapper<Functor, Storage, false>> : std::true_type{};
 #endif
