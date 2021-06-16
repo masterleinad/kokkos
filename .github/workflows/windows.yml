@@ -17,7 +17,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake -DKokkos_ENABLE_TESTS=ON -DCMAKE_CXX_FLAGS="/W0 /EHsc" -DKokkos_ENABLE_DEPRECATED_CODE_3=ON -T host=x64 ..
+        cmake -DKokkos_ENABLE_TESTS=ON -DCMAKE_CXX_FLAGS="/W0 /EHsc" -DKokkos_ENABLE_DEPRECATED_CODE_3=ON -A x64 ..
     - name: build library
       run: |
         cmake --build build  --target install -- -m
