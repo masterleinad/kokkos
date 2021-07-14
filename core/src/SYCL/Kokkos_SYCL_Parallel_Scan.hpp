@@ -173,7 +173,7 @@ class ParallelScanSYCLBase {
                              &global_mem[global_id]);
             else
               ValueInit::init(functor, &local_mem[local_id]);
-            item.barrier(sycl::access::fence_space::local_space);
+            sycl::group_barrier(item.get_group());
 
             // Perform workgroup reduction
             for (size_t stride = 1; 2 * stride < wgroup_size + 1; stride *= 2) {
@@ -181,7 +181,7 @@ class ParallelScanSYCLBase {
               if (idx < wgroup_size)
                 ValueJoin::join(functor, &local_mem[idx],
                                 &local_mem[idx - stride]);
-              item.barrier(sycl::access::fence_space::local_space);
+              sycl::group_barrier(item.get_group());
             }
 
             if (local_id == 0) {
@@ -205,7 +205,7 @@ class ParallelScanSYCLBase {
                                &local_mem[idx]);
                 ValueJoin::join(functor, &local_mem[idx], &dummy);
               }
-              item.barrier(sycl::access::fence_space::local_space);
+              sycl::group_barrier(item.get_group());
             }
 
             // Write results to global memory
