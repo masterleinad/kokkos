@@ -480,7 +480,6 @@ KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::TeamThreadRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
         loop_boundaries,
     const Closure& closure) {
-  // FIXME_SYCL Fix for vector_length>1.
   for (iType i = loop_boundaries.start +
                  loop_boundaries.member.item().get_local_id(0);
        i < loop_boundaries.end;
@@ -507,7 +506,6 @@ KOKKOS_INLINE_FUNCTION
   typename ReducerType::value_type value;
   reducer.init(value);
 
-  // FIXME_SYCL Fix for vector_length>1.
   for (iType i = loop_boundaries.start +
                  loop_boundaries.member.item().get_local_id(0);
        i < loop_boundaries.end;
@@ -537,7 +535,6 @@ KOKKOS_INLINE_FUNCTION
 
   reducer.init(reducer.reference());
 
-  // FIXME_SYCL Fix for vector_length>1.
   for (iType i = loop_boundaries.start +
                  loop_boundaries.member.item().get_local_id(0);
        i < loop_boundaries.end;
