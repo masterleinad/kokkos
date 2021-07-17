@@ -656,8 +656,8 @@ KOKKOS_INLINE_FUNCTION
        i < loop_boundaries.end; i += grange0 * grange1)
     closure(i, val);
 
-  loop_boundaries.member.vector_reduce(reducer, val);
-  loop_boundaries.member.team_reduce(reducer, val);
+  loop_boundaries.member.vector_reduce(reducer);
+  loop_boundaries.member.team_reduce(reducer);
   result = reducer.reference();
 }
 
@@ -674,9 +674,13 @@ KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
         loop_boundaries,
     const Closure& closure) {
-  // FIXME_SYC: adapt for vector_length!=1
-  for (auto i = loop_boundaries.start; i != loop_boundaries.end; ++i)
+  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+
+  for (auto i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
     closure(i);
+
+  loop_boundaries.member.item().get_sub_group.barrier();
 }
 
 //----------------------------------------------------------------------------
@@ -698,12 +702,15 @@ KOKKOS_INLINE_FUNCTION
     parallel_reduce(Impl::ThreadVectorRangeBoundariesStruct<
                         iType, Impl::SYCLTeamMember> const& loop_boundaries,
                     Closure const& closure, ReducerType const& reducer) {
-  // FIXME_SYCL adapt for vector_length != 1
   reducer.init(reducer.reference());
 
-  for (iType i = loop_boundaries.start; i < loop_boundaries.end; ++i) {
+  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+
+  for (auto i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
     closure(i, reducer.reference());
-  }
+
+  loop_boundaries.member.team_vector_reduce(reducer);
 }
 
 /** \brief  Intra-thread vector parallel_reduce.
@@ -723,12 +730,15 @@ KOKKOS_INLINE_FUNCTION
     parallel_reduce(Impl::ThreadVectorRangeBoundariesStruct<
                         iType, Impl::SYCLTeamMember> const& loop_boundaries,
                     Closure const& closure, ValueType& result) {
-  // FIXME_SYCL adapt for vector_length != 1
   result = ValueType();
 
-  for (iType i = loop_boundaries.start; i < loop_boundaries.end; ++i) {
+  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+
+  for (auto i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
     closure(i, result);
-  }
+
+  loop_boundaries.member.team_vector_reduce(Kokkos::Sum<VablueType>(result));
 }
 
 //----------------------------------------------------------------------------
