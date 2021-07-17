@@ -723,7 +723,12 @@ template <class ExecutionSpace>
 bool Test(int test) {
   bool passed = true;
 
+// With SYCL 33*8 exceeds the maximum work group size
+#ifdef KOKKOS_ENABLE_SYCL
+  int team_size = 31;
+#else
   int team_size = 33;
+#endif
   if (team_size > int(ExecutionSpace::concurrency()))
     team_size = int(ExecutionSpace::concurrency());
   passed = passed && test_scalar<int, ExecutionSpace>(317, team_size, test);
@@ -856,7 +861,7 @@ template <typename ScalarType, class DeviceType>
 class TestTripleNestedReduce {
  public:
   using execution_space = DeviceType;
-  using size_type       = typename execution_space::size_type;
+  using size_type = typename execution_space::size_type;
 
   TestTripleNestedReduce(const size_type &, const size_type, const size_type &,
                          const size_type) {}
@@ -1000,48 +1005,53 @@ TEST(TEST_CATEGORY, triple_nested_parallelism) {
 // With KOKKOS_ENABLE_DEBUG enabled, the functor uses too many registers to run
 // with a team size of 32 on GPUs, 16 is the max possible (at least on a K80
 // GPU) See https://github.com/kokkos/kokkos/issues/1513
-#if defined(KOKKOS_ENABLE_DEBUG) && defined(KOKKOS_ENABLE_CUDA)
-  if (!std::is_same<TEST_EXECSPACE, Kokkos::Cuda>::value) {
+// For Intel GPUs, the requested workgroup size is just too large here.
+#if defined(KOKKOS_ENABLE_SYCL)
+  if (!std::is_same<TEST_EXECSPACE, Kokkos::Experimental::SYCL>::value) {
+    TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 33);
+    TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 19);
 #endif
-    TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 32, 32);
-    TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 32, 16);
 #if defined(KOKKOS_ENABLE_DEBUG) && defined(KOKKOS_ENABLE_CUDA)
+    if (!std::is_same<TEST_EXECSPACE, Kokkos::Cuda>::value) {
+#endif
+      TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 32, 32);
+      TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 32, 16);
+#if (defined(KOKKOS_ENABLE_DEBUG) && defined(KOKKOS_ENABLE_CUDA)) || \
+    defined(KOKKOS_ENABLE_SYCL)
+    }
+#endif
+    TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 16);
+    TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 7, 16);
   }
 #endif
-  TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 16);
-  TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 33);
-  TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 19);
-  TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 7, 16);
-}
-#endif
 
-TEST(TEST_CATEGORY, parallel_scan_with_reducers) {
-  using T = double;
-  using namespace VectorScanReducer;
+  TEST(TEST_CATEGORY, parallel_scan_with_reducers) {
+    using T = double;
+    using namespace VectorScanReducer;
 
-  static constexpr int n              = 1000000;
-  static constexpr int n_vector_range = 100;
+    static constexpr int n              = 1000000;
+    static constexpr int n_vector_range = 100;
 
-  checkScan<TEST_EXECSPACE, ScanType::Exclusive, n, n_vector_range,
-            Kokkos::Prod<T, TEST_EXECSPACE>>()
-      .run();
-  checkScan<TEST_EXECSPACE, ScanType::Inclusive, n, n_vector_range,
-            Kokkos::Prod<T, TEST_EXECSPACE>>()
-      .run();
+    checkScan<TEST_EXECSPACE, ScanType::Exclusive, n, n_vector_range,
+              Kokkos::Prod<T, TEST_EXECSPACE>>()
+        .run();
+    checkScan<TEST_EXECSPACE, ScanType::Inclusive, n, n_vector_range,
+              Kokkos::Prod<T, TEST_EXECSPACE>>()
+        .run();
 
-  checkScan<TEST_EXECSPACE, ScanType::Exclusive, n, n_vector_range,
-            Kokkos::Max<T, TEST_EXECSPACE>>()
-      .run();
-  checkScan<TEST_EXECSPACE, ScanType::Inclusive, n, n_vector_range,
-            Kokkos::Max<T, TEST_EXECSPACE>>()
-      .run();
+    checkScan<TEST_EXECSPACE, ScanType::Exclusive, n, n_vector_range,
+              Kokkos::Max<T, TEST_EXECSPACE>>()
+        .run();
+    checkScan<TEST_EXECSPACE, ScanType::Inclusive, n, n_vector_range,
+              Kokkos::Max<T, TEST_EXECSPACE>>()
+        .run();
 
-  checkScan<TEST_EXECSPACE, ScanType::Exclusive, n, n_vector_range,
-            Kokkos::Min<T, TEST_EXECSPACE>>()
-      .run();
-  checkScan<TEST_EXECSPACE, ScanType::Inclusive, n, n_vector_range,
-            Kokkos::Min<T, TEST_EXECSPACE>>()
-      .run();
-}
+    checkScan<TEST_EXECSPACE, ScanType::Exclusive, n, n_vector_range,
+              Kokkos::Min<T, TEST_EXECSPACE>>()
+        .run();
+    checkScan<TEST_EXECSPACE, ScanType::Inclusive, n, n_vector_range,
+              Kokkos::Min<T, TEST_EXECSPACE>>()
+        .run();
+  }
 
 }  // namespace Test
