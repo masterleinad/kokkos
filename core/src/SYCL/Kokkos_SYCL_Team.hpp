@@ -760,9 +760,59 @@ KOKKOS_INLINE_FUNCTION
 
   value_type accum;
   reducer.init(accum);
+   const value_type identity = accum;
 
-  for (iType i = loop_boundaries.start; i < loop_boundaries.end; ++i) {
-    closure(i, accum, true);
+  // Loop through boundaries by vector-length chunks
+  // must scan at each iteration
+
+  // All thread "lanes" must loop the same number of times.
+  // Determine an loop end for all thread "lanes."
+  // Requires:
+  //   blockDim.x is power of two and thus
+  //     ( end % blockDim.x ) == ( end & ( blockDim.x - 1 ) )
+  //   1 <= blockDim.x <= HIPTraits::WarpSize
+
+  const int mask = blockDim.x - 1;
+  const int rem  = loop_boundaries.end & mask;  // == end % blockDim.x
+  const int end  = loop_boundaries.end + (rem ? blockDim.x - rem : 0);
+
+  for (int i = threadIdx.x; i < end; i += blockDim.x) {
+    value_type val = identity;
+
+    // First acquire per-lane contributions.
+    // This sets i's val to i-1's contribution
+    // to make the latter in_place_shfl_up an
+    // exclusive scan -- the final accumulation
+    // of i's val will be included in the second
+    // closure call later.
+    if (i < loop_boundaries.end && threadIdx.x > 0) closure(i - 1, val, false);
+
+    // Bottom up exclusive scan in triangular pattern
+    // where each HIP thread is the root of a reduction tree
+    // from the zeroth "lane" to itself.
+    //  [t] += [t-1] if t >= 1
+    //  [t] += [t-2] if t >= 2
+    //  [t] += [t-4] if t >= 4
+    //  ...
+    //  This differs from the non-reducer overload, where an inclusive scan was
+    //  implemented, because in general the binary operator cannot be inverted
+    //  and we would not be able to remove the inclusive contribution by
+    //  inversion.
+    for (int j = 1; j < static_cast<int>(blockDim.x); j <<= 1) {
+      value_type tmp = identity;
+      ::Kokkos::Experimental::Impl::in_place_shfl_up(tmp, val, j, blockDim.x);
+      if (j <= static_cast<int>(threadIdx.x)) {
+        reducer.join(val, tmp);
+      }
+    }
+
+    // Include accumulation
+    reducer.join(val, accum);
+
+    // Update i's contribution into the val
+    // and add it to accum for next round
+    if (i < loop_boundaries.end) closure(i, val, true);
+    accum = sg.shuffle_down(val, blockDim.x-1);
   }
 }
 
