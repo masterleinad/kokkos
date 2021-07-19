@@ -100,7 +100,7 @@ class SYCLTeamMember {
   KOKKOS_INLINE_FUNCTION int team_size() const {
     return m_item.get_local_range(0);
   }
-  KOKKOS_INLINE_FUNCTION void team_barrier() const { m_item.barrier(); }
+  KOKKOS_INLINE_FUNCTION void team_barrier() const { sycl::group_barrier(m_item.get_group()); }
 
   KOKKOS_INLINE_FUNCTION const sycl::nd_item<2>& item() const { return m_item; }
 
@@ -154,23 +154,23 @@ class SYCLTeamMember {
     // corresponding chunk load values and the reduction is always done by the
     // first smaller_power_of_two threads.
     if (idx < maximum_work_range) reduction_array[idx] = value;
-    m_item.barrier(sycl::access::fence_space::local_space);
+    sycl::group_barrier(m_item.get_group());
 
     for (int start = maximum_work_range; start < team_size();
          start += maximum_work_range) {
       if (idx >= start &&
           idx < std::min(start + maximum_work_range, team_size()))
         reducer.join(reduction_array[idx - start], value);
-      m_item.barrier(sycl::access::fence_space::local_space);
+      sycl::group_barrier(m_item.get_group());
     }
 
     for (int stride = smaller_power_of_two; stride > 0; stride >>= 1) {
       if (idx < stride && idx + stride < maximum_work_range)
         reducer.join(reduction_array[idx], reduction_array[idx + stride]);
-      m_item.barrier(sycl::access::fence_space::local_space);
+      sycl::group_barrier(m_item.get_group());
     }
     reducer.reference() = reduction_array[0];
-    m_item.barrier(sycl::access::fence_space::local_space);
+    sycl::group_barrier(m_item.get_group());
   }
 
   // FIXME_SYCL move somewhere else and combine with other places that do
@@ -187,15 +187,15 @@ class SYCLTeamMember {
     for (int stride = 1; stride < n; stride <<= 1) {
       auto idx = 2 * stride * (thid + 1) - 1;
       if (idx < n) temp[idx] += temp[idx - stride];
-      m_item.barrier(sycl::access::fence_space::local_space);
+      sycl::group_barrier(m_item.get_group());
     }
 
     Type total_sum = temp[n - 1];
-    m_item.barrier(sycl::access::fence_space::local_space);
+    sycl::group_barrier(m_item.get_group());
 
     // clear the last element so we get an exclusive scan
     if (thid == 0) temp[n - 1] = Type{};
-    m_item.barrier(sycl::access::fence_space::local_space);
+    sycl::group_barrier(m_item.get_group());
 
     // Now add the intermediate results to the remaining items again
     for (int stride = n / 2; stride > 0; stride >>= 1) {
@@ -205,7 +205,7 @@ class SYCLTeamMember {
         temp[idx - stride] = temp[idx];
         temp[idx] += dummy;
       }
-      m_item.barrier(sycl::access::fence_space::local_space);
+      sycl::group_barrier(m_item.get_group());
     }
 
     return total_sum;
@@ -245,11 +245,11 @@ class SYCLTeamMember {
     // first not_greater_power_of_two threads.
     for (int start = 0; start < team_size();
          start += not_greater_power_of_two) {
-      m_item.barrier(sycl::access::fence_space::local_space);
+      sycl::group_barrier(m_item.get_group());
       if (idx >= start && idx < start + not_greater_power_of_two) {
         base_data[idx - start] = value;
       }
-      m_item.barrier(sycl::access::fence_space::local_space);
+      sycl::group_barrier(m_item.get_group());
 
       const Type partial_total =
           prescan(m_item, base_data, not_greater_power_of_two);
@@ -265,7 +265,7 @@ class SYCLTeamMember {
       if (team_size() == idx + 1) {
         base_data[team_size()] = atomic_fetch_add(global_accum, total);
       }
-      m_item.barrier();  // Wait for atomic
+      sycl::group_barrier(m_item.get_group());  // Wait for atomic
       intermediate += base_data[team_size()];
     }
 
@@ -598,11 +598,11 @@ KOKKOS_INLINE_FUNCTION void parallel_for(
         loop_boundaries,
     const Closure& closure) {
 
-  const auto tidx0 = loop_boundaries.member.item().get_local_id(0);
-  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const iType tidx0 = loop_boundaries.member.item().get_local_id(0);
+  const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
 
-  const auto grange0 = loop_boundaries.member.item().get_local_rnage(0);
-  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+  const iType grange0 = loop_boundaries.member.item().get_local_range(0);
+  const iType grange1 = loop_boundaries.member.item().get_local_range(1);
 
   for (iType i = loop_boundaries.start + tidx0 * grange1 + tidx1;
        i < loop_boundaries.end; i += grange0 * grange1)
@@ -618,17 +618,17 @@ KOKKOS_INLINE_FUNCTION
   typename ReducerType::value_type value;
   reducer.init(value);
 
-    const auto tidx0 = loop_boundaries.member.item().get_local_id(0);
-  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
+    const iType tidx0 = loop_boundaries.member.item().get_local_id(0);
+  const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
 
-  const auto grange0 = loop_boundaries.member.item().get_local_rnage(0);
-  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+  const iType grange0 = loop_boundaries.member.item().get_local_range(0);
+  const iType grange1 = loop_boundaries.member.item().get_local_range(1);
 
   for (iType i = loop_boundaries.start + tidx0 * grange1 + tidx1;
        i < loop_boundaries.end; i += grange0 * grange1)
     closure(i, value);
 
-  loop_boundaries.member.team_vector_reduce(reducer, value);
+  loop_boundaries.member.vector_reduce(reducer, value);
   loop_boundaries.member.team_reduce(reducer, value);
 }
 
@@ -643,11 +643,11 @@ KOKKOS_INLINE_FUNCTION
 
   reducer.init(reducer.reference());
 
-  const auto tidx0 = loop_boundaries.member.item().get_local_id(0);
-  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const iType tidx0 = loop_boundaries.member.item().get_local_id(0);
+  const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
   
-  const auto grange0 = loop_boundaries.member.item().get_local_rnage(0);
-  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+  const iType grange0 = loop_boundaries.member.item().get_local_range(0);
+  const iType grange1 = loop_boundaries.member.item().get_local_range(1);
   
   for (iType i = loop_boundaries.start + tidx0 * grange1 + tidx1;
        i < loop_boundaries.end; i += grange0 * grange1)
@@ -671,13 +671,13 @@ KOKKOS_INLINE_FUNCTION void parallel_for(
     const Impl::ThreadVectorRangeBoundariesStruct<iType, Impl::SYCLTeamMember>&
         loop_boundaries,
     const Closure& closure) {
-  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
-  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+  const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const iType grange1 = loop_boundaries.member.item().get_local_range(1);
 
-  for (auto i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
+  for (iType i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
     closure(i);
 
-  loop_boundaries.member.item().get_sub_group.barrier();
+  loop_boundaries.member.item().get_sub_group().barrier();
 }
 
 //----------------------------------------------------------------------------
@@ -701,13 +701,13 @@ KOKKOS_INLINE_FUNCTION
                     Closure const& closure, ReducerType const& reducer) {
   reducer.init(reducer.reference());
 
-  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
-  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+  const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const iType grange1 = loop_boundaries.member.item().get_local_range(1);
 
-  for (auto i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
+  for (iType i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
     closure(i, reducer.reference());
 
-  loop_boundaries.member.team_vector_reduce(reducer);
+  loop_boundaries.member.vector_reduce(reducer);
 }
 
 /** \brief  Intra-thread vector parallel_reduce.
@@ -729,13 +729,13 @@ KOKKOS_INLINE_FUNCTION
                     Closure const& closure, ValueType& result) {
   result = ValueType();
 
-  const auto tidx1 = loop_boundaries.member.item().get_local_id(1);
-  const auto grange1 = loop_boundaries.member.item().get_local_range(1);
+  const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const int grange1 = loop_boundaries.member.item().get_local_range(1);
 
-  for (auto i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
+  for (iType i = loop_boundaries.start + tidx1; i != loop_boundaries.end; i+=grange1)
     closure(i, result);
 
-  loop_boundaries.member.team_vector_reduce(Kokkos::Sum<VablueType>(result));
+  loop_boundaries.member.vector_reduce(Kokkos::Sum<ValueType>(result));
 }
 
 //----------------------------------------------------------------------------
@@ -768,15 +768,18 @@ KOKKOS_INLINE_FUNCTION
   // All thread "lanes" must loop the same number of times.
   // Determine an loop end for all thread "lanes."
   // Requires:
-  //   blockDim.x is power of two and thus
-  //     ( end % blockDim.x ) == ( end & ( blockDim.x - 1 ) )
-  //   1 <= blockDim.x <= HIPTraits::WarpSize
+  //   grange1 is power of two and thus
+  //     ( end % grange1 ) == ( end & ( grange1 - 1 ) )
+  //   1 <= grange1 <= HIPTraits::WarpSize
 
-  const int mask = blockDim.x - 1;
-  const int rem  = loop_boundaries.end & mask;  // == end % blockDim.x
-  const int end  = loop_boundaries.end + (rem ? blockDim.x - rem : 0);
+  const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
+  const iType grange1 = loop_boundaries.member.item().get_local_range(1);
+  
+  const int mask = grange1 - 1;
+  const int rem  = loop_boundaries.end & mask;  // == end % grange1
+  const int end  = loop_boundaries.end + (rem ? grange1 - rem : 0);
 
-  for (int i = threadIdx.x; i < end; i += blockDim.x) {
+  for (int i = tidx1; i < end; i += grange1) {
     value_type val = identity;
 
     // First acquire per-lane contributions.
@@ -785,7 +788,7 @@ KOKKOS_INLINE_FUNCTION
     // exclusive scan -- the final accumulation
     // of i's val will be included in the second
     // closure call later.
-    if (i < loop_boundaries.end && threadIdx.x > 0) closure(i - 1, val, false);
+    if (i < loop_boundaries.end && tidx1 > 0) closure(i - 1, val, false);
 
     // Bottom up exclusive scan in triangular pattern
     // where each HIP thread is the root of a reduction tree
@@ -798,10 +801,10 @@ KOKKOS_INLINE_FUNCTION
     //  implemented, because in general the binary operator cannot be inverted
     //  and we would not be able to remove the inclusive contribution by
     //  inversion.
-    for (int j = 1; j < static_cast<int>(blockDim.x); j <<= 1) {
-      value_type tmp = identity;
-      ::Kokkos::Experimental::Impl::in_place_shfl_up(tmp, val, j, blockDim.x);
-      if (j <= static_cast<int>(threadIdx.x)) {
+    auto sg = loop_boundaries.member.item().get_sub_group();
+    for (int j = 1; j < static_cast<int>(grange1); j <<= 1) {
+      value_type tmp = sg.shuffle_up(val, j);
+      if (j <= static_cast<int>(tidx1)) {
         reducer.join(val, tmp);
       }
     }
@@ -812,7 +815,7 @@ KOKKOS_INLINE_FUNCTION
     // Update i's contribution into the val
     // and add it to accum for next round
     if (i < loop_boundaries.end) closure(i, val, true);
-    accum = sg.shuffle_down(val, blockDim.x-1);
+    accum = sg.shuffle(val, grange1-1);
   }
 }
 
