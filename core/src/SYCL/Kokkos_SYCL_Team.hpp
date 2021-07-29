@@ -166,7 +166,7 @@ class SYCLTeamMember {
     const int id_in_sg = sg.get_local_id()[0];
     Kokkos::Impl::SYCLReduction::workgroup_reduction<
         Kokkos::Impl::FunctorValueJoin<ReducerType, void>,
-        Kokkos::Impl::FunctorValueOps<ReducerType, void>>(
+        Kokkos::Impl::FunctorValueOps<ReducerType, void>, void>(
         m_item, reduction_array, 1,
         std::min<int>(sg.get_local_range()[0],
                       maximum_work_range - idx + id_in_sg),
