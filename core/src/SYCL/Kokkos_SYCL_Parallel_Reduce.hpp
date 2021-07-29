@@ -68,21 +68,22 @@ inline int lower_power_of_two(int n) {
 // local_mem points to the memory used for each subgroup item,
 // max_index is the number of items with valid data (less than the local range)
 template <class ValueJoin, typename WorkTag, int dim, typename ValueType, class ReducerType>
-std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize!=0>
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0>
 subgroup_reduction(const sycl::nd_item<dim>& item,
                         ValueType* const local_mem, const int max_index,
                         const ReducerType& selected_reducer) {
   auto sg            = item.get_sub_group();
   const int id_in_sg = sg.get_local_id()[0];
   for (int stride = lower_power_of_two(max_index); stride > 0; stride >>= 1) {
+    auto* tmp = sg.shuffle_down(local_mem, stride);
     if (id_in_sg < std::min(stride, max_index - stride))
-      ValueJoin::join(selected_reducer, local_mem, local_mem+stride);
+      ValueJoin::join(selected_reducer, local_mem, tmp);
     sg.barrier();
   }
 }
 
 template <class ValueJoin, typename WorkTag, int dim, typename ValueType, class ReducerType>
-std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0>
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize!=0>
 subgroup_reduction(const sycl::nd_item<dim>& item,
                         ValueType* const local_mem, const int max_index,
                         const ReducerType& selected_reducer) {
