@@ -467,17 +467,20 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
         *m_space.impl_internal_space_instance();
     sycl::queue& q = *instance.m_queue;
 
-    const int nwork = m_policy.m_num_tiles;
-    const int block_size =
+    const size_t nwork = m_policy.m_num_tiles;
+    const size_t block_size =
         std::pow(2, std::ceil(std::log2(m_policy.m_prod_tile_dims)));
 
     const sycl::range<1> local_range(block_size);
     // REMEMBER swap local x<->y to be conforming with Cuda/HIP implementation
     const sycl::range<1> global_range(nwork * block_size);
     const sycl::nd_range<1> range{global_range, local_range};
+    std::cout << "nwork: " << nwork << std::endl;
+    std::cout << "block_size: " << block_size << std::endl;
 
     const size_t wgroup_size = range.get_local_range().size();
     size_t size              = range.get_global_range().size();
+    std::cout << "size: " << size << std::endl;
     const auto init_size =
         std::max<std::size_t>((size + wgroup_size - 1) / wgroup_size, 1);
     const auto& selected_reducer = ReducerConditional::select(functor, reducer);
