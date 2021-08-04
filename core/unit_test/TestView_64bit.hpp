@@ -49,7 +49,7 @@ namespace Test {
 template <class Device>
 void test_64bit() {
 #if defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA)
-  int64_t N = 5000000000;
+  int64_t N = 4000000000;
   int64_t sum = 0;
   {
     Kokkos::parallel_reduce(
@@ -58,8 +58,8 @@ void test_64bit() {
         KOKKOS_LAMBDA(const int64_t& , int64_t& lsum) { lsum += 1; }, sum);
     ASSERT_EQ(N, sum);
   }
-  {
-    Kokkos::View<char*, Device> a("A", N);
+  /*{
+    Kokkos::View<char*, Device> a("A0", N);
     Kokkos::deep_copy(a, char(1));
     Kokkos::parallel_reduce(
         Kokkos::RangePolicy<typename Device::execution_space,
@@ -104,11 +104,11 @@ void test_64bit() {
         },
         sum);
     ASSERT_EQ(N0 * N1, sum);
-  }
+  }*/
   {
-    int N0    = 1024 * 1024 * 1500;
+    int64_t N0 = 1024 * 1024 * 900;
     int64_t P = 1713091;
-    Kokkos::View<int*, Device> a("A", N0);
+    Kokkos::View<int*, Device> a("A1", N0);
     Kokkos::parallel_for(
         "FillA",
         Kokkos::RangePolicy<typename Device::execution_space,

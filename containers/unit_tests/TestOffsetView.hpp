@@ -102,13 +102,19 @@ void test_offsetview_construction() {
     Kokkos::RangePolicy<Device, int> rangePolicy1(offsetV1.begin(0),
                                                   offsetV1.end(0));
     Kokkos::parallel_for(
-        rangePolicy1, KOKKOS_LAMBDA(const int i) { offsetV1(i) = 1; });
+        rangePolicy1, KOKKOS_LAMBDA(const int i) { 
+	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling for with %d\n", i);
+	  offsetV1(i) = 1; 
+	});
     Kokkos::fence();
 
     int OVResult = 0;
     Kokkos::parallel_reduce(
         rangePolicy1,
-        KOKKOS_LAMBDA(const int i, int& updateMe) { updateMe += offsetV1(i); },
+        KOKKOS_LAMBDA(const int i, int& updateMe) { 
+          KOKKOS_IMPL_DO_NOT_USE_PRINTF("Calling reduce with %d\n", i);
+	  updateMe += offsetV1(i); 
+	},
         OVResult);
 
     Kokkos::fence();

@@ -72,8 +72,11 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
 
     // FIXME_SYCL Large ranges are not handled properly, so we run them in batches
     sycl::event parallel_for_event;
-    for (size_t begin = policy.begin(); begin < static_cast<size_t>(policy.end()); begin+=INT_MAX)
+    std::cout << "begin: " << policy.begin() << " end: " << policy.end() << std::endl;
+    for (typename Policy::index_type begin = policy.begin(); begin < policy.end(); begin+=INT_MAX)
     {
+      std::cout << "start: " << begin << std::endl;
+
       sycl::range<1> range(std::min<size_t>(policy.end() - begin, INT_MAX));
       parallel_for_event = q.submit([&](sycl::handler& cgh) {
         cgh.parallel_for(range, [=](sycl::item<1> item) {
