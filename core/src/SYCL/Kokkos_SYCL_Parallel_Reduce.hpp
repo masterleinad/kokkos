@@ -467,8 +467,8 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
         *m_space.impl_internal_space_instance();
     sycl::queue& q = *instance.m_queue;
 
-    const int nwork = m_policy.m_num_tiles;
-    const int block_size =
+    const size_t nwork = m_policy.m_num_tiles;
+    const size_t block_size =
         std::pow(2, std::ceil(std::log2(m_policy.m_prod_tile_dims)));
 
     const sycl::range<1> local_range(block_size);
