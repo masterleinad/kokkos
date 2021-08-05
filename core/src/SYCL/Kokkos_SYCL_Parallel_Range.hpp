@@ -69,14 +69,35 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
     sycl::queue& q = *instance.m_queue;
+/*
+    auto parallel_for_event = q.submit([functor, policy](sycl::handler& cgh) {
+      sycl::range<1> range(policy.end() - policy.begin());
+      const auto begin = policy.begin();
+
+      cgh.parallel_for(range, [=](sycl::item<1> item) {
+        const typename Policy::index_type id = item.get_linear_id() + begin;
+        if constexpr (std::is_same<WorkTag, void>::value)
+          functor(id);
+        else
+          functor(WorkTag(), id);
+      });
+    });
+    // FIXME_SYCL remove guard once implemented for SYCL+CUDA
+#ifdef KOKKOS_ARCH_INTEL_GEN
+    q.submit_barrier(sycl::vector_class<sycl::event>{parallel_for_event});
+#else
+    space.fence();
+#endif*/
 
     // FIXME_SYCL Large ranges are not handled properly, so we run them in
     // batches
-    sycl::event parallel_for_event;
-    for (typename Policy::index_type begin = policy.begin();
-         begin < policy.end(); begin += INT_MAX) {
+    std::vector<sycl::event> events;
+    const size_t length = policy.end()-policy.begin();
+    const size_t n_batches = (length+INT_MAX-1)/INT_MAX;
+    for (size_t batch = 0; batch<n_batches; ++batch) {
+      typename Policy::index_type begin = policy.begin()+batch*INT_MAX;
       sycl::range<1> range(std::min<size_t>(policy.end() - begin, INT_MAX));
-      parallel_for_event = q.submit([&](sycl::handler& cgh) {
+      sycl::event batch_event = q.submit([&](sycl::handler& cgh) {
         cgh.parallel_for(range, [=](sycl::item<1> item) {
           const typename Policy::index_type id = item.get_linear_id() + begin;
           if constexpr (std::is_same<WorkTag, void>::value)
@@ -85,13 +106,16 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
             functor(WorkTag(), id);
         });
       });
-      // FIXME_SYCL remove guard once implemented for SYCL+CUDA
-#ifdef KOKKOS_ARCH_INTEL_GEN
-      q.submit_barrier(sycl::vector_class<sycl::event>{parallel_for_event});
-#else
-      space.fence();
-#endif
+      events.push_back(batch_event);
     }
+
+    sycl::event parallel_for_event;
+    // FIXME_SYCL remove guard once implemented for SYCL+CUDA
+//#ifdef KOKOS_ARCH_INTEL_GEN
+//    parallel_for_event = q.submit_barrier(events);
+//#else
+    space.fence();
+//#endif*/
 
     return parallel_for_event;
   }
