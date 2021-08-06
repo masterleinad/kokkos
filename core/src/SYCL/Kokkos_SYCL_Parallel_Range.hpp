@@ -93,10 +93,11 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
     // batches
     std::vector<sycl::event> events;
     const size_t length = policy.end()-policy.begin();
-    const size_t n_batches = (length+INT_MAX-1)/INT_MAX;
+    const size_t max_range = 1000; //INT_MAX
+    const size_t n_batches = (length+max_range-1)/max_range;
     for (size_t batch = 0; batch<n_batches; ++batch) {
-      typename Policy::index_type begin = policy.begin()+batch*INT_MAX;
-      sycl::range<1> range(std::min<size_t>(policy.end() - begin, INT_MAX));
+      typename Policy::index_type begin = policy.begin()+batch*max_range;
+      sycl::range<1> range(std::min<size_t>(policy.end() - begin, max_range));
       sycl::event batch_event = q.submit([&](sycl::handler& cgh) {
         cgh.parallel_for(range, [=](sycl::item<1> item) {
           const typename Policy::index_type id = item.get_linear_id() + begin;
@@ -111,11 +112,18 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
 
     sycl::event parallel_for_event;
     // FIXME_SYCL remove guard once implemented for SYCL+CUDA
-//#ifdef KOKOS_ARCH_INTEL_GEN
-//    parallel_for_event = q.submit_barrier(events);
-//#else
+#ifdef KOKOS_ARCH_INTEL_GEN
+    parallel_for_event = q.submit_barrier(events);
+#else
     space.fence();
-//#endif*/
+#endif
+
+//    Experimental::Impl::SYCLInternal::fence(parallel_for_event);
+/*    for (auto &event : events)
+    {
+      if(event.get_info<sycl::info::event::command_execution_status>() != sycl::info::event_command_status::complete)
+        Kokkos::abort("bla");
+    }*/
 
     return parallel_for_event;
   }

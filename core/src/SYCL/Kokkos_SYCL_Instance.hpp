@@ -221,9 +221,9 @@ class SYCLInternal {
     }
 
     void register_event(sycl::event event) {
-      assert(m_last_event
-                 .get_info<sycl::info::event::command_execution_status>() ==
-             sycl::info::event_command_status::complete);
+      if(m_last_event.get_info<sycl::info::event::command_execution_status>() != sycl::info::event_command_status::complete)
+        Kokkos::abort("blabla");
+
       m_last_event = event;
     }
 
