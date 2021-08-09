@@ -93,7 +93,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
     // batches
     std::vector<sycl::event> events;
     const size_t length = policy.end()-policy.begin();
-    const size_t max_range = 1000; //INT_MAX
+    const size_t max_range = INT_MAX;
     const size_t n_batches = (length+max_range-1)/max_range;
     for (size_t batch = 0; batch<n_batches; ++batch) {
       typename Policy::index_type begin = policy.begin()+batch*max_range;
