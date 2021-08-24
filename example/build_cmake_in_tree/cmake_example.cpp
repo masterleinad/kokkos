@@ -1,88 +1,80 @@
-/*
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
-//@HEADER
-*/
+#include<Kokkos_Core.hpp>
 
-#include <Kokkos_Core.hpp>
-#include <cstdio>
+template<int V>
+struct TestFunctor {
+  double values[V];
+  Kokkos::View<double*> a;
+  int R;
+  TestFunctor(Kokkos::View<double*> a_, int R_):a(a_),R(R_) {}
+
+  KOKKOS_INLINE_FUNCTION
+  void operator()(const int i) const {
+    for(int j=0; j<R;j++)
+      a(i) += 1.0*i*values[j];
+  }
+};
+
+
+void test_fence() {
+  Kokkos::fence();
+  //Kokkos::DefaultExecutionSpace().fence();
+  //hipDeviceSynchronize();
+}
+template<int V>
+void run(int N, int M, int R) {
+
+  double result;
+  Kokkos::View<double*> a("A",N);
+  Kokkos::View<double> v_result("result");
+  TestFunctor<V> f(a,R);
+
+  // WarmUp
+  for(int i=0; i<1000; i++) {
+    Kokkos::parallel_for("WarmUp",N,f);
+    test_fence();
+  }
+
+
+  // Timing batched
+  Kokkos::Timer timer;
+  for(int i=0; i<M; i++) {
+    Kokkos::parallel_for("Test1",N,f);
+  }
+  double time_batched = timer.seconds();
+  timer.reset();
+  test_fence();
+  double time_fence = timer.seconds();
+  timer.reset();
+
+  // Timing single
+  for(int i=0; i<M; i++) {
+    Kokkos::parallel_for("Test2",N,f);
+    test_fence();
+  }
+  double time_single = timer.seconds();
+
+  double x = 1.e6/M;
+  printf("N %i M %i R %i V %i parallel_for: batched: %lf single: %lf fence: %e\n",
+      N,M,R,V,
+      x*time_batched,x*time_single,time_fence
+      );
+}
 
 int main(int argc, char* argv[]) {
-  Kokkos::initialize(argc, argv);
-  Kokkos::DefaultExecutionSpace::print_configuration(std::cout);
+  Kokkos::initialize(argc,argv);
+  {
+     // Loop Length
+     int N = (argc>1) ? atoi(argv[1]) : 10000;
+     // Number of batched kernel launches
+     int M = (argc>2) ? atoi(argv[2]) : 10000;
+     // Internal copy length (work per workitem)
+     int R = (argc>3) ? atoi(argv[3]) : 10;
 
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s [<kokkos_options>] <size>\n", argv[0]);
-    Kokkos::finalize();
-    exit(1);
+     run<1>(N,M,R<=1?R:1);
+     run<16>(N,M,R<=16?R:16);
+     run<200>(N,M,R<=200?R:200);
+     run<3000>(N,M,R<=3000?R:3000);
+     run<30000>(N,M,R<=30000?R:30000);
   }
-
-  const long n = strtol(argv[1], nullptr, 10);
-
-  printf("Number of even integers from 0 to %ld\n", n - 1);
-
-  Kokkos::Timer timer;
-  timer.reset();
-
-  // Compute the number of even integers from 0 to n-1, in parallel.
-  long count = 0;
-  Kokkos::parallel_reduce(
-      n, KOKKOS_LAMBDA(const long i, long& lcount) { lcount += (i % 2) == 0; },
-      count);
-
-  double count_time = timer.seconds();
-  printf("  Parallel: %ld    %10.6f\n", count, count_time);
-
-  timer.reset();
-
-  // Compare to a sequential loop.
-  long seq_count = 0;
-  for (long i = 0; i < n; ++i) {
-    seq_count += (i % 2) == 0;
-  }
-
-  count_time = timer.seconds();
-  printf("Sequential: %ld    %10.6f\n", seq_count, count_time);
-
   Kokkos::finalize();
-
-  return (count == seq_count) ? 0 : -1;
 }
