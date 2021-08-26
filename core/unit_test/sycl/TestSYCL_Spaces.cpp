@@ -212,6 +212,11 @@ TEST(sycl, space_access) {
                                   Kokkos::Experimental::SYCLSharedUSMSpace>>::value,
       "");
 
+
+  static_assert(Kokkos::Impl::MemorySpaceAccess<Kokkos::Experimental::SYCLHostUSMSpace, Kokkos::HostSpace>::accessible, "");
+
+  static_assert(Kokkos::Impl::MemorySpaceAccess<Kokkos::HostSpace, Kokkos::Experimental::SYCLHostUSMSpace>::accessible, "");
+
   static_assert(
       std::is_same<Kokkos::Impl::HostMirror<Kokkos::Experimental::SYCLHostUSMSpace>::Space,
                    Kokkos::Experimental::SYCLHostUSMSpace>::value,
@@ -246,7 +251,6 @@ TEST(sycl, space_access) {
 }
 
 TEST(sycl, uvm) {
-  if (Kokkos::Experimental::SYCLSharedUSMSpace::available()) {
     int *uvm_ptr = static_cast<int *>(
         Kokkos::kokkos_malloc<Kokkos::Experimental::SYCLSharedUSMSpace>("uvm_ptr", sizeof(int)));
 
@@ -263,7 +267,6 @@ TEST(sycl, uvm) {
     EXPECT_EQ(*uvm_ptr, int(2 * 42));
 
     Kokkos::kokkos_free<Kokkos::Experimental::SYCLSharedUSMSpace>(uvm_ptr);
-  }
 }
 
 template <class MemSpace, class ExecSpace>

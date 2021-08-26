@@ -49,6 +49,7 @@
 
 #ifdef KOKKOS_ENABLE_SYCL
 #include <Kokkos_Concepts.hpp>
+#include <Kokkos_HostSpace.hpp>
 #include <Kokkos_ScratchSpace.hpp>
 #include <SYCL/Kokkos_SYCL_Instance.hpp>
 #include <impl/Kokkos_SharedAlloc.hpp>
@@ -127,7 +128,7 @@ class SYCLSharedUSMSpace {
 
 class SYCLHostUSMSpace {
  public:
-  using execution_space = SYCL;
+  using execution_space = HostSpace::execution_space;
   using memory_space    = SYCLHostUSMSpace;
   using device_type     = Kokkos::Device<execution_space, memory_space>;
   using size_type       = Impl::SYCLInternal::size_type;
@@ -182,6 +183,11 @@ static_assert(Kokkos::Impl::MemorySpaceAccess<
                   Kokkos::Experimental::SYCLSharedUSMSpace>::assignable,
               "");
 
+static_assert(Kokkos::Impl::MemorySpaceAccess<
+                  Kokkos::Experimental::SYCLDeviceUSMSpace,
+                  Kokkos::Experimental::SYCLDeviceUSMSpace>::assignable,
+              "");
+
 template <>
 struct MemorySpaceAccess<Kokkos::HostSpace,
                          Kokkos::Experimental::SYCLDeviceUSMSpace> {
@@ -200,6 +206,14 @@ struct MemorySpaceAccess<Kokkos::HostSpace,
 };
 
 template <>
+struct MemorySpaceAccess<Kokkos::HostSpace, Kokkos::Experimental::SYCLHostUSMSpace> {
+  // HostSpace::execution_space == Experimental::SYCLHostUSMSpace::execution_space
+  enum : bool { assignable = true };
+  enum : bool { accessible = true };
+  enum : bool { deepcopy = true };
+};
+
+template <>
 struct MemorySpaceAccess<Kokkos::Experimental::SYCLDeviceUSMSpace,
                          Kokkos::HostSpace> {
   enum : bool { assignable = false };
@@ -213,6 +227,14 @@ struct MemorySpaceAccess<Kokkos::Experimental::SYCLDeviceUSMSpace,
   // SYCLDeviceUSMSpace::execution_space == SYCLSharedUSMSpace::execution_space
   enum : bool { assignable = true };
   enum : bool { accessible = true };
+  enum : bool { deepcopy = true };
+};
+
+template <>
+struct MemorySpaceAccess<Kokkos::Experimental::SYCLDeviceUSMSpace, Kokkos::Experimental::SYCLHostUSMSpace> {
+  // Experimental::SYCLDeviceUSMSpace::execution_space != Experimental::SYCLHostUSMSpace::execution_space
+  enum : bool { assignable = false };
+  enum : bool { accessible = true };  // Experimental::SYCLDeviceUSMSpace::execution_space
   enum : bool { deepcopy = true };
 };
 
@@ -242,17 +264,37 @@ struct MemorySpaceAccess<Kokkos::Experimental::SYCLSharedUSMSpace,
 };
 
 template <>
-struct MemorySpaceAccess<
-    Kokkos::Experimental::SYCLDeviceUSMSpace,
-    Kokkos::ScratchMemorySpace<Kokkos::Experimental::SYCL>> {
+struct MemorySpaceAccess<Kokkos::Experimental::SYCLSharedUSMSpace, Kokkos::Experimental::SYCLHostUSMSpace> {
+  // Experimental::SYCLSharedUSMSpace::execution_space != Experimental::SYCLHostUSMSpace::execution_space
   enum : bool { assignable = false };
-  enum : bool { accessible = true };
-  enum : bool { deepcopy = false };
+  enum : bool { accessible = true };  // Experimental::SYCLSharedUSMSpace::execution_space
+  enum : bool { deepcopy = true };
+};
+
+template <>
+struct MemorySpaceAccess<Kokkos::Experimental::SYCLHostUSMSpace, Kokkos::HostSpace> {
+  enum : bool { assignable = false };  // Cannot access from SYCL
+  enum : bool { accessible = true };   // Experimental::SYCLHostUSMSpace::execution_space
+  enum : bool { deepcopy = true };
+};
+
+template <>
+struct MemorySpaceAccess<Kokkos::Experimental::SYCLHostUSMSpace, Kokkos::Experimental::SYCLDeviceUSMSpace> {
+  enum : bool { assignable = false };  // Cannot access from Host
+  enum : bool { accessible = false };
+  enum : bool { deepcopy = true };
+};
+
+template <>
+struct MemorySpaceAccess<Kokkos::Experimental::SYCLHostUSMSpace, Kokkos::Experimental::SYCLSharedUSMSpace> {
+  enum : bool { assignable = false };  // different execution_space
+  enum : bool { accessible = true };   // same accessibility
+  enum : bool { deepcopy = true };
 };
 
 template <>
 struct MemorySpaceAccess<
-    Kokkos::Experimental::SYCLSharedUSMSpace,
+    Kokkos::Experimental::SYCLDeviceUSMSpace,
     Kokkos::ScratchMemorySpace<Kokkos::Experimental::SYCL>> {
   enum : bool { assignable = false };
   enum : bool { accessible = true };
