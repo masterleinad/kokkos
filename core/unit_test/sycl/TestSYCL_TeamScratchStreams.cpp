@@ -50,14 +50,17 @@ namespace Test {
 namespace Impl {
 
 struct SYCLQueueScratchTestFunctor {
-  using team_t    = Kokkos::TeamPolicy<Kokkos::Experimental::SYCL>::member_type;
-  using scratch_t = Kokkos::View<int64_t*, Kokkos::Experimental::SYCL::scratch_memory_space>;
+  using team_t = Kokkos::TeamPolicy<Kokkos::Experimental::SYCL>::member_type;
+  using scratch_t =
+      Kokkos::View<int64_t*, Kokkos::Experimental::SYCL::scratch_memory_space>;
 
-  Kokkos::View<int64_t, Kokkos::Experimental::SYCLDeviceUSMSpace, Kokkos::MemoryTraits<Kokkos::Atomic>>
+  Kokkos::View<int64_t, Kokkos::Experimental::SYCLDeviceUSMSpace,
+               Kokkos::MemoryTraits<Kokkos::Atomic>>
       counter;
   int N, M;
   SYCLQueueScratchTestFunctor(
-      Kokkos::View<int64_t, Kokkos::Experimental::SYCLDeviceUSMSpace> counter_, int N_, int M_)
+      Kokkos::View<int64_t, Kokkos::Experimental::SYCLDeviceUSMSpace> counter_,
+      int N_, int M_)
       : counter(counter_), N(N_), M(M_) {}
 
   KOKKOS_FUNCTION
@@ -78,11 +81,13 @@ struct SYCLQueueScratchTestFunctor {
 };
 
 void sycl_queue_scratch_test_one(
-    int N, int T, int M_base, Kokkos::View<int64_t, Kokkos::Experimental::SYCLDeviceUSMSpace> counter,
+    int N, int T, int M_base,
+    Kokkos::View<int64_t, Kokkos::Experimental::SYCLDeviceUSMSpace> counter,
     Kokkos::Experimental::SYCL sycl, int tid) {
   int M = M_base + tid * 5;
   Kokkos::TeamPolicy<Kokkos::Experimental::SYCL> p(sycl, T, 64);
-  using scratch_t = Kokkos::View<int64_t*, Kokkos::Experimental::SYCL::scratch_memory_space>;
+  using scratch_t =
+      Kokkos::View<int64_t*, Kokkos::Experimental::SYCL::scratch_memory_space>;
 
   int bytes = scratch_t::shmem_size(M);
 
