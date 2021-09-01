@@ -189,6 +189,8 @@ void finalize_all();
 void fence();
 void fence(const std::string&);
 
+void fence_host(const std::string&);
+
 /** \brief Print "Bill of Materials" */
 void print_configuration(std::ostream&, const bool detail = false);
 
