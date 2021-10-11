@@ -239,6 +239,52 @@ class SYCLInternal {
   }
 };
 
+// see implementation at
+// https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper
+namespace detail {
+template <class T>
+constexpr T& FUN(T& t) noexcept {
+  return t;
+}
+template <class T>
+void FUN(T&&) = delete;
+}  // namespace detail
+
+template <class T>
+class sycl_reference_wrapper {
+ public:
+  // types
+  typedef T type;
+
+  // construct/copy/destroy
+  template <class U, class = decltype(
+                         detail::FUN<T>(std::declval<U>()),
+                         std::enable_if_t<!std::is_same_v<
+                             sycl_reference_wrapper,
+                             std::remove_cv_t<std::remove_reference_t<U>>>>())>
+  constexpr sycl_reference_wrapper(U&& u) noexcept(
+      noexcept(detail::FUN<T>(std::forward<U>(u))))
+      : _ptr(std::addressof(detail::FUN<T>(std::forward<U>(u)))) {}
+  sycl_reference_wrapper(const sycl_reference_wrapper&) noexcept = default;
+
+  // assignment
+  sycl_reference_wrapper& operator=(const sycl_reference_wrapper& x) noexcept =
+      default;
+
+  // access
+  constexpr operator T&() const noexcept { return *_ptr; }
+  constexpr T& get() const noexcept { return *_ptr; }
+
+  template <class... ArgTypes>
+  constexpr std::invoke_result_t<T&, ArgTypes...> operator()(
+      ArgTypes&&... args) const {
+    return std::invoke(get(), std::forward<ArgTypes>(args)...);
+  }
+
+ private:
+  sycl::multi_ptr<T, sycl::access::address_space::global_space> _ptr;
+};
+
 template <typename Functor, typename Storage,
           bool is_memcpyable = std::is_trivially_copyable_v<Functor>>
 class SYCLFunctionWrapper;
@@ -263,7 +309,7 @@ class SYCLFunctionWrapper<Functor, Storage, false> {
   SYCLFunctionWrapper(const Functor& functor, Storage& storage)
       : m_kernelFunctor(storage.copy_from(functor)) {}
 
-  std::reference_wrapper<const Functor> get_functor() const {
+  sycl_reference_wrapper<const Functor> get_functor() const {
     return {m_kernelFunctor};
   }
 
