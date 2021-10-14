@@ -59,6 +59,28 @@ namespace Kokkos {
 namespace Impl {
 
 namespace SYCLReduction {
+
+template <class ValueJoin, typename ValueType, typename ReducerType, int dim>	
+void subgroup_reduction(sycl::nd_item<dim>& item, ValueType* local_result, size_t reduction_range, const unsigned int value_count, const ReducerType& reducer)
+{
+    auto sg                = item.get_sub_group();
+    const auto id_in_sg    = sg.get_local_id()[0];
+    const auto local_range = std::min(sg.get_local_range()[0], reduction_range);
+    // In case the reduction_range is larger than the range of the subgroup, we first combine the items with a higher index.
+    for (unsigned int offset = local_range; offset < reduction_range;
+         offset += local_range)
+      if (id_in_sg + offset < reduction_range)
+        ValueJoin::join(reducer, local_result,
+                        local_result+offset * value_count);
+    // Then, we proceed as before.
+    for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
+      if (id_in_sg + stride < reduction_range)
+        ValueJoin::join(reducer, local_result, local_result+stride*value_count);
+      sg.barrier();
+    }
+}
+
+
 template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
 void workgroup_reduction(sycl::nd_item<dim>& item,
@@ -79,19 +101,14 @@ void workgroup_reduction(sycl::nd_item<dim>& item,
   // size is 8, the first element contains all the values with
   // index%4==0, after the second one the values with index%2==0 and
   // after the third one index%1==0, i.e., all values.
-  auto sg                = item.get_sub_group();
   auto* result           = &local_mem[local_id * value_count];
-  const auto id_in_sg    = sg.get_local_id()[0];
-  const auto local_range = std::min(sg.get_local_range()[0], wgroup_size);
-  for (unsigned int stride = local_range / 2; stride > 0; stride >>= 1) {
-    auto* tmp = sg.shuffle_down(result, stride);
-    if (id_in_sg + stride < local_range)
-      ValueJoin::join(selected_reducer, result, tmp);
-  }
+  auto sg                = item.get_sub_group();
+  subgroup_reduction<ValueJoin>(item, result, std::min(sg.get_local_range()[0], wgroup_size), value_count, selected_reducer);
   item.barrier(sycl::access::fence_space::local_space);
 
   // Copy the subgroup results into the first positions of the
   // reduction array.
+  const auto id_in_sg    = sg.get_local_id()[0];
   if (id_in_sg == 0)
     ValueOps::copy(functor, &local_mem[sg.get_group_id()[0] * value_count],
                    result);
@@ -101,20 +118,7 @@ void workgroup_reduction(sycl::nd_item<dim>& item,
   if (sg.get_group_id()[0] == 0) {
     const auto n_subgroups = sg.get_group_range()[0];
     auto* result_          = &local_mem[id_in_sg * value_count];
-    // In case the number of subgroups is larger than the range of
-    // the first subgroup, we first combine the items with a higher
-    // index.
-    for (unsigned int offset = local_range; offset < n_subgroups;
-         offset += local_range)
-      if (id_in_sg + offset < n_subgroups)
-        ValueJoin::join(selected_reducer, result_,
-                        &local_mem[(id_in_sg + offset) * value_count]);
-    // Then, we proceed as before.
-    for (unsigned int stride = local_range / 2; stride > 0; stride >>= 1) {
-      auto* tmp = sg.shuffle_down(result_, stride);
-      if (id_in_sg + stride < n_subgroups)
-        ValueJoin::join(selected_reducer, result_, tmp);
-    }
+    subgroup_reduction<ValueJoin>(item, result_, n_subgroups, value_count, selected_reducer);
 
     // Finally, we copy the workgroup results back to global memory
     // to be used in the next iteration. If this is the last
