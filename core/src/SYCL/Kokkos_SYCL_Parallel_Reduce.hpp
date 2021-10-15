@@ -60,8 +60,33 @@ namespace Impl {
 
 namespace SYCLReduction {
 
-template <class ValueJoin, typename ValueType, typename ReducerType, int dim>	
-void subgroup_reduction(sycl::nd_item<dim>& item, ValueType* local_result, size_t reduction_range, const unsigned int value_count, const ReducerType& reducer)
+template <class ValueJoin, typename WorkTag, typename ValueType, typename ReducerType, int dim>
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize!=0>
+subgroup_reduction(sycl::nd_item<dim>& item, ValueType* local_result, size_t reduction_range, const unsigned int value_count, const ReducerType& reducer)
+{
+    auto sg                = item.get_sub_group();
+    const auto id_in_sg    = sg.get_local_id()[0];
+    const auto local_range = std::min(sg.get_local_range()[0], reduction_range);
+    // In case the reduction_range is larger than the range of the subgroup, we first combine the items with a higher index.
+    for (unsigned int offset = local_range; offset < reduction_range;
+         offset += local_range) {
+      if (id_in_sg + offset < reduction_range)
+        ValueJoin::join(reducer, local_result,
+                        local_result+offset * value_count);
+    }
+    // Then, we proceed as before.
+    auto value = *local_result;
+    for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
+      auto tmp = sg.shuffle_down(value, stride);
+      if (id_in_sg + stride < local_range)
+        ValueJoin::join(reducer, &value, &tmp);
+    }
+    *local_result = value;
+}
+
+template <class ValueJoin, typename WorkTag, typename ValueType, typename ReducerType, int dim>	
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize ==0>
+subgroup_reduction(sycl::nd_item<dim>& item, ValueType* local_result, size_t reduction_range, const unsigned int value_count, const ReducerType& reducer)
 {
     auto sg                = item.get_sub_group();
     const auto id_in_sg    = sg.get_local_id()[0];
@@ -103,7 +128,7 @@ void workgroup_reduction(sycl::nd_item<dim>& item,
   // after the third one index%1==0, i.e., all values.
   auto* result           = &local_mem[local_id * value_count];
   auto sg                = item.get_sub_group();
-  subgroup_reduction<ValueJoin>(item, result, std::min(sg.get_local_range()[0], wgroup_size), value_count, selected_reducer);
+  subgroup_reduction<ValueJoin, WorkTag>(item, result, std::min(sg.get_local_range()[0], wgroup_size), value_count, selected_reducer);
   item.barrier(sycl::access::fence_space::local_space);
 
   // Copy the subgroup results into the first positions of the
@@ -118,7 +143,7 @@ void workgroup_reduction(sycl::nd_item<dim>& item,
   if (sg.get_group_id()[0] == 0) {
     const auto n_subgroups = sg.get_group_range()[0];
     auto* result_          = &local_mem[id_in_sg * value_count];
-    subgroup_reduction<ValueJoin>(item, result_, n_subgroups, value_count, selected_reducer);
+    subgroup_reduction<ValueJoin, WorkTag>(item, result_, n_subgroups, value_count, selected_reducer);
 
     // Finally, we copy the workgroup results back to global memory
     // to be used in the next iteration. If this is the last
