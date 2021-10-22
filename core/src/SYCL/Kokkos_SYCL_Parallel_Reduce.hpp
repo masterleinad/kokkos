@@ -61,13 +61,12 @@ namespace Impl {
 namespace SYCLReduction {
 template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
-void workgroup_reduction(sycl::nd_item<dim>& item,
-                         sycl::local_ptr<ValueType> local_mem,
-                         ValueType* results_ptr,
-                         ValueType* device_accessible_result_ptr,
-                         const unsigned int value_count,
-                         const ReducerType& selected_reducer,
-                         const FunctorType& functor, bool final) {
+void workgroup_reduction(
+    sycl::nd_item<dim>& item, sycl::local_ptr<ValueType> local_mem,
+    sycl::global_ptr<ValueType> results_ptr,
+    sycl::global_ptr<ValueType> device_accessible_result_ptr,
+    const unsigned int value_count, const ReducerType& selected_reducer,
+    const FunctorType& functor, bool final) {
   const auto local_id = item.get_local_linear_id();
   // FIXME_SYCL should be item.get_group().get_local_linear_range();
   size_t wgroup_size = 1;
@@ -220,9 +219,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     const unsigned int value_count =
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
-    const auto results_ptr = static_cast<pointer_type>(instance.scratch_space(
-        sizeof(value_type) * std::max(value_count, 1u) * init_size));
-    value_type* device_accessible_result_ptr =
+    sycl::global_ptr<value_type> results_ptr = static_cast<value_type*>(
+        instance
+            .scratch_space(sizeof(value_type) * std::max(value_count, 1u) *
+                           init_size)
+            .get());
+    sycl::global_ptr<value_type> device_accessible_result_ptr =
         m_result_ptr_device_accessible ? m_result_ptr : nullptr;
 
     sycl::event last_reduction_event;
@@ -249,8 +251,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
             FunctorFinal<FunctorType, WorkTag>::final(
                 static_cast<const FunctorType&>(functor), results_ptr);
           if (device_accessible_result_ptr != nullptr)
-            ValueOps::copy(functor, &device_accessible_result_ptr[0],
-                           &results_ptr[0]);
+            ValueOps::copy(functor, device_accessible_result_ptr.get(),
+                           results_ptr.get());
         });
       });
       q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
@@ -374,7 +376,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
   const FunctorType m_functor;
   const Policy m_policy;
   const ReducerType m_reducer;
-  const pointer_type m_result_ptr;
+  const sycl::global_ptr<value_type> m_result_ptr;
   const bool m_result_ptr_device_accessible;
 
   // Only let one Parallel/Scan modify the shared memory. The
@@ -492,12 +494,15 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
         FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::value_count(
             selected_reducer);
     // FIXME_SYCL only use the first half
-    const auto results_ptr = static_cast<pointer_type>(instance.scratch_space(
-        sizeof(value_type) * std::max(value_count, 1u) * init_size * 2));
+    sycl::global_ptr<value_type> results_ptr = static_cast<pointer_type>(
+        instance
+            .scratch_space(sizeof(value_type) * std::max(value_count, 1u) *
+                           init_size * 2)
+            .get());
     // FIXME_SYCL without this we are running into a race condition
-    const auto results_ptr2 =
+    sycl::global_ptr<value_type> results_ptr2 =
         results_ptr + std::max(value_count, 1u) * init_size;
-    value_type* device_accessible_result_ptr =
+    sycl::global_ptr<value_type> device_accessible_result_ptr =
         m_result_ptr_device_accessible ? m_result_ptr : nullptr;
 
     sycl::event last_reduction_event;
@@ -524,8 +529,8 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
             FunctorFinal<FunctorType, WorkTag>::final(
                 static_cast<const FunctorType&>(functor), results_ptr);
           if (device_accessible_result_ptr)
-            ValueOps::copy(functor, &device_accessible_result_ptr[0],
-                           &results_ptr[0]);
+            ValueOps::copy(functor, device_accessible_result_ptr.get(),
+                           results_ptr.get());
         });
       });
       q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
@@ -667,7 +672,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
   const BarePolicy m_policy;
   const Kokkos::Experimental::SYCL& m_space;
   const ReducerType m_reducer;
-  const pointer_type m_result_ptr;
+  const sycl::global_ptr<value_type> m_result_ptr;
   const bool m_result_ptr_device_accessible;
 
   // Only let one Parallel/Scan modify the shared memory. The

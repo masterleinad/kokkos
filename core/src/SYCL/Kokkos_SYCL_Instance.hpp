@@ -66,10 +66,10 @@ class SYCLInternal {
   SYCLInternal& operator=(SYCLInternal&&) = delete;
   SYCLInternal(SYCLInternal&&)            = delete;
 
-  void* scratch_space(const size_type size);
-  void* scratch_flags(const size_type size);
-  void* resize_team_scratch_space(std::int64_t bytes,
-                                  bool force_shrink = false);
+  sycl::global_ptr<void> scratch_space(const size_type size);
+  sycl::global_ptr<void> scratch_flags(const size_type size);
+  sycl::global_ptr<void> resize_team_scratch_space(std::int64_t bytes,
+                                                   bool force_shrink = false);
 
   uint32_t impl_get_instance_id() const;
   int m_syclDev = -1;
@@ -78,16 +78,16 @@ class SYCLInternal {
   uint32_t m_maxConcurrency   = 0;
   uint64_t m_maxShmemPerBlock = 0;
 
-  uint32_t* m_scratchConcurrentBitset = nullptr;
-  size_type m_scratchSpaceCount       = 0;
-  size_type* m_scratchSpace           = nullptr;
-  size_type m_scratchFlagsCount       = 0;
-  size_type* m_scratchFlags           = nullptr;
+  sycl::global_ptr<uint32_t> m_scratchConcurrentBitset = nullptr;
+  size_type m_scratchSpaceCount                        = 0;
+  sycl::global_ptr<size_type> m_scratchSpace           = nullptr;
+  size_type m_scratchFlagsCount                        = 0;
+  sycl::global_ptr<size_type> m_scratchFlags           = nullptr;
   // mutex to access shared memory
   mutable std::mutex m_mutexScratchSpace;
 
-  int64_t m_team_scratch_current_size = 0;
-  void* m_team_scratch_ptr            = nullptr;
+  int64_t m_team_scratch_current_size       = 0;
+  sycl::global_ptr<void> m_team_scratch_ptr = nullptr;
   mutable std::mutex m_team_scratch_mutex;
 
   uint32_t m_instance_id = Kokkos::Tools::Experimental::Impl::idForInstance<
@@ -282,7 +282,7 @@ class sycl_reference_wrapper {
   }
 
  private:
-  sycl::multi_ptr<T, sycl::access::address_space::global_space> _ptr;
+  sycl::global_ptr<T> _ptr;
 };
 
 template <typename Functor, typename Storage,
