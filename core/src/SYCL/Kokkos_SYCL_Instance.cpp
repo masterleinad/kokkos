@@ -224,7 +224,7 @@ void SYCLInternal::finalize() {
 }
 
 void* SYCLInternal::scratch_space(
-    const Kokkos::Experimental::SYCL::size_type size) {
+    const std::size_t size) {
   const size_type sizeScratchGrain =
       sizeof(Kokkos::Experimental::SYCL::size_type);
   if (verify_is_initialized("scratch_space") &&
@@ -251,7 +251,7 @@ void* SYCLInternal::scratch_space(
 }
 
 void* SYCLInternal::scratch_flags(
-    const Kokkos::Experimental::SYCL::size_type size) {
+    const std::size_t size) {
   const size_type sizeScratchGrain =
       sizeof(Kokkos::Experimental::SYCL::size_type);
   if (verify_is_initialized("scratch_flags") &&
