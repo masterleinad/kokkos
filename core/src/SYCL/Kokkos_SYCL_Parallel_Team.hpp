@@ -723,10 +723,8 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
               item.barrier(sycl::access::fence_space::local_space);
 
               SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-                  item, local_mem.get_pointer(), results_ptr,
-                  device_accessible_result_ptr, value_count, selected_reducer,
-                  static_cast<const FunctorType&>(functor),
-                  n_wgroups <= 1 && item.get_group_linear_id() == 0);
+                  item, local_mem.get_pointer(), value_count, selected_reducer,
+                  static_cast<const FunctorType&>(functor));
 
               // Finally, we copy the workgroup results back to global memory
               // to be used in the next iteration. If this is the last

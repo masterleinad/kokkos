@@ -63,11 +63,9 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
 void workgroup_reduction(sycl::nd_item<dim>& item,
                          sycl::local_ptr<ValueType> local_mem,
-                         ValueType* results_ptr,
-                         ValueType* device_accessible_result_ptr,
                          const unsigned int value_count,
                          const ReducerType& selected_reducer,
-                         const FunctorType& functor, bool final) {
+                         const FunctorType& functor) {
   const auto local_id = item.get_local_linear_id();
   // FIXME_SYCL should be item.get_group().get_local_linear_range();
   size_t wgroup_size = 1;
@@ -302,9 +300,8 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               item.barrier(sycl::access::fence_space::local_space);
 
               SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-                  item, local_mem.get_pointer(), results_ptr,
-                  device_accessible_result_ptr, value_count, selected_reducer,
-                  static_cast<const FunctorType&>(functor), n_wgroups <= 1);
+                  item, local_mem.get_pointer(), value_count, selected_reducer,
+                  static_cast<const FunctorType&>(functor));
 
               // Finally, we copy the workgroup results back to global memory
               // to be used in the next iteration. If this is the last
@@ -605,10 +602,9 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
           item.barrier(sycl::access::fence_space::local_space);
 
           SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-              item, local_mem.get_pointer(), results_ptr2,
-              device_accessible_result_ptr, value_count, selected_reducer,
-              static_cast<const FunctorType&>(functor),
-              n_wgroups <= 1 && item.get_group_linear_id() == 0);
+              item, local_mem.get_pointer(),
+              value_count, selected_reducer,
+              static_cast<const FunctorType&>(functor));
 
           // Finally, we copy the workgroup results back to global memory
           // to be used in the next iteration. If this is the last
