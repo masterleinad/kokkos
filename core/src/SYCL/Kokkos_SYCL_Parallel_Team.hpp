@@ -728,6 +728,28 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
                   static_cast<const FunctorType&>(functor),
                   n_wgroups <= 1 && item.get_group_linear_id() == 0);
 
+              // Finally, we copy the workgroup results back to global memory
+              // to be used in the next iteration. If this is the last
+              // iteration, i.e., there is only one workgroup also call
+              // final() if necessary.
+              auto sg = item.get_sub_group();
+              const auto id_in_sg    = sg.get_local_id()[0];
+              bool final = (n_wgroups <= 1 && item.get_group_linear_id() == 0);
+              if (sg.get_group_id()[0] == 0 && id_in_sg == 0) {
+                if (final) {
+                  if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+                    FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
+                  if (device_accessible_result_ptr != nullptr)
+                    ValueOps::copy(functor, &device_accessible_result_ptr[0],
+                                   &local_mem[0]);
+                  else
+                    ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
+                } else
+                  ValueOps::copy(functor,
+                                 &results_ptr[(item.get_group_linear_id()) * value_count],
+                                 &local_mem[0]);
+              }
+
               // FIXME_SYCL not quite sure why this is necessary
               item.barrier(sycl::access::fence_space::global_space);
             });
