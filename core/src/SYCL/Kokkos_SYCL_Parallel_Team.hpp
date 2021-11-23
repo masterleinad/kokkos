@@ -448,7 +448,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
               functor(work_tag(), team_member);
           });
     });
-    q.submit_barrier(std::vector<sycl::event>{parallel_for_event});
+    q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_for_event});
     return parallel_for_event;
   }
 
@@ -645,7 +645,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
                                &results_ptr[0]);
             });
       });
-      q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
       last_reduction_event = parallel_reduce_event;
     }
 
@@ -754,7 +754,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
               item.barrier(sycl::access::fence_space::global_space);
             });
       });
-      q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
       last_reduction_event = parallel_reduce_event;
 
       first_run = false;

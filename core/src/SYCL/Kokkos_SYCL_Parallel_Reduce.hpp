@@ -234,7 +234,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                            &results_ptr[0]);
         });
       });
-      q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
       last_reduction_event = parallel_reduce_event;
     }
 
@@ -329,7 +329,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               }
             });
       });
-      q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
 
       last_reduction_event = parallel_reduce_event;
 
@@ -531,7 +531,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                            &results_ptr[0]);
         });
       });
-      q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
       last_reduction_event = parallel_reduce_event;
     }
 
@@ -633,13 +633,13 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
           }
         });
       });
-      q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
 
       // FIXME_SYCL this is likely not necessary, see above
       auto deep_copy_event =
           q.memcpy(results_ptr, results_ptr2,
                    sizeof(*m_result_ptr) * value_count * n_wgroups);
-      q.submit_barrier(std::vector<sycl::event>{deep_copy_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{deep_copy_event});
       last_reduction_event = deep_copy_event;
 
       first_run = false;

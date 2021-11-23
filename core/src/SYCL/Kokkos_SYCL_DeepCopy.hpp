@@ -63,7 +63,7 @@ struct ZeroMemset<Kokkos::Experimental::SYCL, DT, DP...> {
     auto event = exec_space.impl_internal_space_instance()->m_queue->memset(
         dst.data(), 0,
         dst.size() * sizeof(typename View<DT, DP...>::value_type));
-    exec_space.impl_internal_space_instance()->m_queue->submit_barrier(
+    exec_space.impl_internal_space_instance()->m_queue->ext_oneapi_submit_barrier(
         std::vector<sycl::event>{event});
   }
 
