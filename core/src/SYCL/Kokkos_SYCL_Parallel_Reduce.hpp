@@ -61,7 +61,83 @@ namespace Impl {
 namespace SYCLReduction {
 template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
-void workgroup_reduction(sycl::nd_item<dim>& item,
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0> workgroup_reduction(sycl::nd_item<dim>& item,
+                         sycl::local_ptr<ValueType> local_mem,
+                         ValueType* results_ptr,
+                         ValueType* device_accessible_result_ptr,
+                         const unsigned int value_count,
+                         const ReducerType& selected_reducer,
+                         const FunctorType& functor, bool final, unsigned int max_size) {
+  const auto local_id = item.get_local_linear_id();
+
+  // Perform the actual workgroup reduction in each subgroup
+  // separately.
+  auto sg                = item.get_sub_group();
+  auto* result           = &local_mem[local_id * value_count];
+  const auto id_in_sg    = sg.get_local_id()[0];
+  const auto local_range = std::min<unsigned int>(sg.get_local_range()[0], max_size);
+  const auto upper_stride_bound = std::min(local_range - id_in_sg, max_size - local_id);
+  for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
+    if (stride < upper_stride_bound)
+      ValueJoin::join(selected_reducer, result,
+                      &local_mem[(local_id + stride) * value_count]);
+    sg.barrier();
+  }
+  item.barrier(sycl::access::fence_space::local_space);
+
+  // Copy the subgroup results into the first positions of the
+  // reduction array.
+  if (id_in_sg == 0)
+    ValueOps::copy(functor, &local_mem[sg.get_group_id()[0] * value_count],
+                   result);
+  item.barrier(sycl::access::fence_space::local_space);
+
+  // Do the final reduction only using the first subgroup.
+  if (sg.get_group_id()[0] == 0) {
+    const auto n_subgroups = sg.get_group_range()[0];
+    auto* result_          = &local_mem[id_in_sg * value_count];
+    // In case the number of subgroups is larger than the range of
+    // the first subgroup, we first combine the items with a higher
+    // index.
+    for (unsigned int offset = local_range; offset < n_subgroups;
+         offset += local_range)
+      if (id_in_sg + offset < n_subgroups)
+        ValueJoin::join(selected_reducer, result_,
+                        &local_mem[(id_in_sg + offset) * value_count]);
+    sg.barrier();
+
+      // Then, we proceed as before.
+    for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
+      if (id_in_sg + stride < n_subgroups)
+        ValueJoin::join(selected_reducer, result_,
+                        &local_mem[(id_in_sg + stride) * value_count]);
+      sg.barrier();
+    }
+
+    // Finally, we copy the workgroup results back to global memory
+    // to be used in the next iteration. If this is the last
+    // iteration, i.e., there is only one workgroup also call
+    // final() if necessary.
+    if (id_in_sg == 0) {
+      if (final) {
+        if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+          FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
+        if (device_accessible_result_ptr != nullptr)
+          ValueOps::copy(functor, &device_accessible_result_ptr[0],
+                         &local_mem[0]);
+        else
+          ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
+      } else
+        ValueOps::copy(functor,
+                       &results_ptr[(item.get_group_linear_id()) * value_count],
+                       &local_mem[0]);
+    }
+  }
+}
+
+template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
+          typename ReducerType, typename FunctorType, int dim>
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0> workgroup_reduction(sycl::nd_item<dim>& item,
                          sycl::local_ptr<ValueType> local_mem,
                          ValueType* results_ptr,
                          ValueType* device_accessible_result_ptr,
