@@ -63,9 +63,11 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
 void workgroup_reduction(sycl::nd_item<dim>& item,
                          sycl::local_ptr<ValueType> local_mem,
+                         ValueType* results_ptr,
+                         ValueType* device_accessible_result_ptr,
                          const unsigned int value_count,
                          const ReducerType& selected_reducer,
-                         const FunctorType& functor, unsigned int max_size) {
+                         const FunctorType& functor, bool final, unsigned int max_size) {
   const auto local_id = item.get_local_linear_id();
 
   // Perform the actual workgroup reduction in each subgroup
@@ -110,6 +112,25 @@ void workgroup_reduction(sycl::nd_item<dim>& item,
         ValueJoin::join(selected_reducer, result_,
                         &local_mem[(id_in_sg + stride) * value_count]);
       sg.barrier();
+    }
+
+    // Finally, we copy the workgroup results back to global memory
+    // to be used in the next iteration. If this is the last
+    // iteration, i.e., there is only one workgroup also call
+    // final() if necessary.
+    if (id_in_sg == 0) {
+      if (final) {
+        if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
+          FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
+        if (device_accessible_result_ptr != nullptr)
+          ValueOps::copy(functor, &device_accessible_result_ptr[0],
+                         &local_mem[0]);
+        else
+          ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
+      } else
+        ValueOps::copy(functor,
+                       &results_ptr[(item.get_group_linear_id()) * value_count],
+                       &local_mem[0]);
     }
   }
 }
@@ -298,30 +319,9 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               item.barrier(sycl::access::fence_space::local_space);
 
               SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-                  item, local_mem.get_pointer(), value_count, selected_reducer,
-                  static_cast<const FunctorType&>(functor), wgroup_size);
-
-              // Finally, we copy the workgroup results back to global memory
-              // to be used in the next iteration. If this is the last
-              // iteration, i.e., there is only one workgroup also call
-              // final() if necessary.
-              auto sg = item.get_sub_group();
-              const auto id_in_sg    = sg.get_local_id()[0];
-              bool final = (n_wgroups <= 1);
-              if (sg.get_group_id()[0] == 0 && id_in_sg == 0) {
-                if (final) {
-                  if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
-                    FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
-                  if (device_accessible_result_ptr != nullptr)
-                    ValueOps::copy(functor, &device_accessible_result_ptr[0],
-                                   &local_mem[0]);
-                  else
-                    ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
-                } else
-                  ValueOps::copy(functor,
-                                 &results_ptr[(item.get_group_linear_id()) * value_count],
-                                 &local_mem[0]);
-              }
+                  item, local_mem.get_pointer(), results_ptr,
+                  device_accessible_result_ptr, value_count, selected_reducer,
+                  static_cast<const FunctorType&>(functor), n_wgroups <= 1, wgroup_size);
             });
       });
       q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
@@ -581,24 +581,15 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
           item.barrier(sycl::access::fence_space::local_space);
 
           SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-              item, local_mem.get_pointer(),
+              item, local_mem.get_pointer(), results_ptr,
+              device_accessible_result_ptr,
               value_count, selected_reducer,
-              static_cast<const FunctorType&>(functor), item.get_local_range()[0]);
-
-          auto sg = item.get_sub_group();
-          const auto id_in_sg    = sg.get_local_id()[0];
-          if (sg.get_group_id()[0] == 0 && id_in_sg == 0)
-            ValueOps::copy(functor,
-                           &results_ptr[(item.get_group_linear_id()) * value_count],
-                           &local_mem[0]);
+              static_cast<const FunctorType&>(functor), false, item.get_local_range()[0]);
 
 	  if (local_id == 0)
             num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
           item.barrier(sycl::access::fence_space::local_space);
 	  if (num_teams_done[0] == n_wgroups) {
-            //auto sg = item.get_sub_group();
-            //const auto id_in_sg    = sg.get_local_id()[0];
-
             if (local_id >= n_wgroups)
               ValueInit::init(selected_reducer,
                               &local_mem[local_id * value_count]);
@@ -614,19 +605,10 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
             }
 
             SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-              item, local_mem.get_pointer(),
+              item, local_mem.get_pointer(), results_ptr,
+              device_accessible_result_ptr,
               value_count, selected_reducer,
-              static_cast<const FunctorType&>(functor), n_wgroups);
-
-            if (sg.get_group_id()[0] == 0 && id_in_sg == 0) {
-              if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
-                FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
-              if (device_accessible_result_ptr != nullptr)
-                ValueOps::copy(functor, &device_accessible_result_ptr[0],
-                               &local_mem[0]);
-              else
-                ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
-            }
+              static_cast<const FunctorType&>(functor), true, n_wgroups);
 	  }
         });
       });
