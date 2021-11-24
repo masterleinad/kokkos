@@ -222,6 +222,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
         sizeof(value_type) * std::max(value_count, 1u) * init_size));
     value_type* device_accessible_result_ptr =
         m_result_ptr_device_accessible ? m_result_ptr : nullptr;
+    auto scratch_flags = static_cast<unsigned int*>(instance.scratch_flags(sizeof(unsigned int)));
 
     sycl::event last_reduction_event;
 
@@ -259,8 +260,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
     // separately, write the workgroup results back to global memory and recurse
     // until only one workgroup does the reduction and thus gets the final
     // value.
-    bool first_run = true;
-    while (size > 1) {
+    if (size > 1) {
       auto n_wgroups = ((size + values_per_thread - 1) / values_per_thread +
                         wgroup_size - 1) /
                        wgroup_size;
@@ -269,6 +269,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                        sycl::access::target::local>
             local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
                       cgh);
+        sycl::accessor<unsigned int, 1, sycl::access::mode::read_write,
+                       sycl::access::target::local>
+            num_teams_done(1, cgh);
+
         const auto begin = policy.begin();
 
         cgh.parallel_for(
@@ -291,45 +295,50 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
               using index_type       = typename Policy::index_type;
               const auto upper_bound = std::min<index_type>(
                   global_id + values_per_thread * wgroup_size, size);
-              if (first_run) {
                 reference_type update = ValueInit::init(
                     selected_reducer, &local_mem[local_id * value_count]);
-                for (index_type id = global_id; id < upper_bound;
-                     id += wgroup_size) {
-                  if constexpr (std::is_same<WorkTag, void>::value)
-                    functor(id + begin, update);
-                  else
-                    functor(WorkTag(), id + begin, update);
-                }
-              } else {
-                if (global_id >= size)
+              for (index_type id = global_id; id < upper_bound;
+                   id += wgroup_size) {
+                if constexpr (std::is_same<WorkTag, void>::value)
+                  functor(id + begin, update);
+                else
+                  functor(WorkTag(), id + begin, update);
+              }
+              item.barrier(sycl::access::fence_space::local_space);
+
+	      SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
+              item, local_mem.get_pointer(), results_ptr,
+              device_accessible_result_ptr,
+              value_count, selected_reducer,
+              static_cast<const FunctorType&>(functor), false, item.get_local_range()[0]);
+
+              if (local_id == 0)
+                num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
+              item.barrier(sycl::access::fence_space::local_space);
+              if (num_teams_done[0] == n_wgroups) {
+                if (local_id >= n_wgroups)
                   ValueInit::init(selected_reducer,
                                   &local_mem[local_id * value_count]);
                 else {
                   ValueOps::copy(functor, &local_mem[local_id * value_count],
-                                 &results_ptr[global_id * value_count]);
-                  for (index_type id = global_id + wgroup_size;
-                       id < upper_bound; id += wgroup_size) {
+                                 &results_ptr[local_id * value_count]);
+                  for (unsigned int id = local_id + wgroup_size; id < n_wgroups;
+                       id += wgroup_size) {
                     ValueJoin::join(selected_reducer,
                                     &local_mem[local_id * value_count],
                                     &results_ptr[id * value_count]);
                   }
                 }
-              }
-              item.barrier(sycl::access::fence_space::local_space);
 
-              SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
+                SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
                   item, local_mem.get_pointer(), results_ptr,
-                  device_accessible_result_ptr, value_count, selected_reducer,
-                  static_cast<const FunctorType&>(functor), n_wgroups <= 1, wgroup_size);
+                  device_accessible_result_ptr,
+                  value_count, selected_reducer,
+                  static_cast<const FunctorType&>(functor), true, n_wgroups);
+	      }
             });
       });
-      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
-
-      last_reduction_event = parallel_reduce_event;
-
-      first_run = false;
-      size      = n_wgroups;
+      last_reduction_event = q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
     }
 
     // At this point, the reduced value is written to the entry in results_ptr
@@ -494,7 +503,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
         sizeof(value_type) * std::max(value_count, 1u) * init_size));
     value_type* device_accessible_result_ptr =
         m_result_ptr_device_accessible ? m_result_ptr : nullptr;
-    m_scratch_flags = static_cast<unsigned int*>(instance.scratch_flags(sizeof(unsigned int)));
+    auto scratch_flags = static_cast<unsigned int*>(instance.scratch_flags(sizeof(unsigned int)));
 
     sycl::event last_reduction_event;
 
@@ -544,7 +553,6 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
             num_teams_done(1, cgh);
 
         const BarePolicy bare_policy = m_policy;
-	unsigned int* scratch_flags = m_scratch_flags;
 
         cgh.parallel_for(range, [=](sycl::nd_item<1> item) {
           const auto local_id = item.get_local_linear_id();
@@ -663,7 +671,6 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
   const ReducerType m_reducer;
   const pointer_type m_result_ptr;
   const bool m_result_ptr_device_accessible;
-  mutable unsigned int* m_scratch_flags = nullptr;
 
   // Only let one Parallel/Scan modify the shared memory. The
   // constructor acquires the mutex which is released in the destructor.
