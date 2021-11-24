@@ -491,10 +491,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
             selected_reducer);
     // FIXME_SYCL only use the first half
     const auto results_ptr = static_cast<pointer_type>(instance.scratch_space(
-        sizeof(value_type) * std::max(value_count, 1u) * init_size * 2));
-    // FIXME_SYCL without this we are running into a race condition
-    const auto results_ptr2 =
-        results_ptr + std::max(value_count, 1u) * init_size;
+        sizeof(value_type) * std::max(value_count, 1u) * init_size));
     value_type* device_accessible_result_ptr =
         m_result_ptr_device_accessible ? m_result_ptr : nullptr;
     m_scratch_flags = static_cast<unsigned int*>(instance.scratch_flags(sizeof(unsigned int)));
@@ -535,7 +532,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     // separately, write the workgroup results back to global memory and recurse
     // until only one workgroup does the reduction and thus gets the final
     // value.
-    while (size > 1) {
+    if (size > 1) {
       auto n_wgroups             = (size + wgroup_size - 1) / wgroup_size;
       auto parallel_reduce_event = q.submit([&](sycl::handler& cgh) {
         sycl::accessor<value_type, 1, sycl::access::mode::read_write,
@@ -592,7 +589,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
           const auto id_in_sg    = sg.get_local_id()[0];
           if (sg.get_group_id()[0] == 0 && id_in_sg == 0)
             ValueOps::copy(functor,
-                           &results_ptr2[(item.get_group_linear_id()) * value_count],
+                           &results_ptr[(item.get_group_linear_id()) * value_count],
                            &local_mem[0]);
 
 	  if (local_id == 0)
@@ -628,21 +625,12 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                 ValueOps::copy(functor, &device_accessible_result_ptr[0],
                                &local_mem[0]);
               else
-                ValueOps::copy(functor, &results_ptr2[0], &local_mem[0]);
+                ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
             }
 	  }
         });
       });
-      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
-
-      // FIXME_SYCL this is likely not necessary, see above
-      auto deep_copy_event =
-          q.memcpy(results_ptr, results_ptr2,
-                   sizeof(*m_result_ptr) * value_count * n_wgroups);
-      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{deep_copy_event});
-      last_reduction_event = deep_copy_event;
-
-      size      = n_wgroups;
+      last_reduction_event = q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
     }
 
     // At this point, the reduced value is written to the entry in results_ptr
