@@ -136,27 +136,28 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
           "#include <Test${Name}.hpp>\n"
       )
       configure_file(${dir}/dummy.cpp ${file})
-      list(APPEND ${Tag}_SOURCES1A ${file})
+      #list(APPEND ${Tag}_SOURCES1A ${file})
     endforeach()
 
     set(${Tag}_SOURCES1B)
     foreach(Name
-        MDRange_d
-        MDRange_e
-        MDRange_f
-        NumericTraits
-        Other
-        RangePolicy
-        RangePolicyRequire
-        Reductions
-        Reducers_a
-        Reducers_b
-        Reducers_c
-        Reducers_d
-        Reductions_DeviceView
-        Scan
-        SharedAlloc
-        ViewMapping_a
+        #MDRange_d
+	#MDRange_e
+	#MDRange_f
+	MDRange_g
+	#NumericTraits
+	#Other
+	#RangePolicy
+	#RangePolicyRequire
+	#Reductions
+	#Reducers_a
+	#Reducers_b
+	#Reducers_c
+	#Reducers_d
+	#Reductions_DeviceView
+	#Scan
+	#SharedAlloc
+	#ViewMapping_a
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
