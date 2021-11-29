@@ -135,7 +135,7 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
   }
 }
 
-template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
+template <class ValueJoin, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
 /*std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0>*/
 	  void
@@ -201,14 +201,11 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
         if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
           FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
         if (device_accessible_result_ptr != nullptr)
-          ValueOps::copy(functor, &device_accessible_result_ptr[0],
-                         &sg_value);
+          device_accessible_result_ptr[0] = sg_value;
         else
-          ValueOps::copy(functor, &results_ptr[0], &sg_value);
+          results_ptr[0] = sg_value;
       } else
-        ValueOps::copy(functor,
-                       &results_ptr[(item.get_group_linear_id())],
-                       &sg_value);
+        results_ptr[(item.get_group_linear_id())] = sg_value;
     }
   }
 }
@@ -432,7 +429,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 	        ValueOps::copy(functor, &local_mem[local_id * value_count], &local_value);
 		item.barrier(sycl::access::fence_space::local_space);
 
-	        SYCLReduction::workgroup_reduction_special<ValueJoin, ValueOps, WorkTag>(
+	        SYCLReduction::workgroup_reduction_special<ValueJoin, WorkTag>(
                   item, local_mem.get_pointer(), local_value, results_ptr,
                   device_accessible_result_ptr,
                   selected_reducer,
@@ -456,7 +453,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   ValueOps::copy(functor, &local_mem[local_id * value_count], &local_value);
                   item.barrier(sycl::access::fence_space::local_space);
 
-                  SYCLReduction::workgroup_reduction_special<ValueJoin, ValueOps, WorkTag>(
+                  SYCLReduction::workgroup_reduction_special<ValueJoin, WorkTag>(
                     item, local_mem.get_pointer(), local_value, results_ptr,
                     device_accessible_result_ptr,
                     selected_reducer,
