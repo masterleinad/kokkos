@@ -61,7 +61,7 @@ namespace Impl {
 namespace SYCLReduction {
 template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
-/*std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0>*/ void workgroup_reduction(sycl::nd_item<dim>& item,
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0> workgroup_reduction(sycl::nd_item<dim>& item,
                          sycl::local_ptr<ValueType> local_mem,
                          ValueType* results_ptr,
                          ValueType* device_accessible_result_ptr,
@@ -137,9 +137,8 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
 
 template <class ValueJoin, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
-/*std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0>*/
-	  void
-	  workgroup_reduction_special(sycl::nd_item<dim>& item,
+std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0>
+	  workgroup_reduction(sycl::nd_item<dim>& item,
                          sycl::local_ptr<ValueType> local_mem,
                          ValueType local_value,
                          ValueType* results_ptr,
@@ -172,6 +171,7 @@ template <class ValueJoin, typename WorkTag, typename ValueType,
     const auto n_active_subgroups = (max_size + max_subgroup_size - 1) / max_subgroup_size;
 
     auto sg_value          = local_mem[id_in_sg<n_active_subgroups?id_in_sg:0];
+
     // In case the number of subgroups is larger than the range of
     // the first subgroup, we first combine the items with a higher
     // index.
@@ -186,7 +186,7 @@ template <class ValueJoin, typename WorkTag, typename ValueType,
 
     // Then, we proceed as before.
     for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
-      auto tmp = sg.shuffle_down(local_value, stride);
+      auto tmp = sg.shuffle_down(sg_value, stride);
       if (id_in_sg + stride < n_active_subgroups)
         ValueJoin::join(selected_reducer, &sg_value, &tmp);
     }
@@ -360,17 +360,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   static_cast<const FunctorType&>(functor),
                   static_cast<const ReducerType&>(reducer));
 
+              using index_type       = typename Policy::index_type;
+	       const auto upper_bound = std::min<index_type>(
+                   global_id + values_per_thread * wgroup_size, size);
+
 	      if constexpr (FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::StaticValueSize==0) {
-                // In the first iteration, we call functor to initialize the local
-                // memory. Otherwise, the local memory is initialized with the
-                // results from the previous iteration that are stored in global
-                // memory. Note that we load values_per_thread values per thread
-                // and immediately combine them to avoid too many threads being
-                // idle in the actual workgroup reduction.
-                using index_type       = typename Policy::index_type;
-                const auto upper_bound = std::min<index_type>(
-                    global_id + values_per_thread * wgroup_size, size);
-                  reference_type update = ValueInit::init(
+                reference_type update = ValueInit::init(
                       selected_reducer, &local_mem[local_id * value_count]);
                 for (index_type id = global_id; id < upper_bound;
                      id += wgroup_size) {
@@ -413,10 +408,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 		}
 	      } else {
                 value_type local_value;
-                using index_type       = typename Policy::index_type;
-                const auto upper_bound = std::min<index_type>(
-                    global_id + values_per_thread * wgroup_size, size);
-                  reference_type update = ValueInit::init(
+                reference_type update = ValueInit::init(
                       selected_reducer, &local_value);
                 for (index_type id = global_id; id < upper_bound;
                      id += wgroup_size) {
@@ -426,7 +418,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                     functor(WorkTag(), id + begin, update);
                 }
 
-	        SYCLReduction::workgroup_reduction_special<ValueJoin, WorkTag>(
+	        SYCLReduction::workgroup_reduction<ValueJoin, WorkTag>(
                   item, local_mem.get_pointer(), local_value, results_ptr,
                   device_accessible_result_ptr,
                   selected_reducer,
@@ -447,7 +439,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                     }
                   } 
 
-                  SYCLReduction::workgroup_reduction_special<ValueJoin, WorkTag>(
+                  SYCLReduction::workgroup_reduction<ValueJoin, WorkTag>(
                     item, local_mem.get_pointer(), local_value, results_ptr,
                     device_accessible_result_ptr,
                     selected_reducer,

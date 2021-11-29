@@ -694,10 +694,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
                   static_cast<const FunctorType&>(functor),
                   static_cast<const ReducerType&>(reducer));
 
-              // In the first iteration, we call functor to initialize the local
-              // memory. Otherwise, the local memory is initialized with the
-              // results from the previous iteration that are stored in global
-              // memory.
+              if constexpr (FunctorValueTraits<ReducerTypeFwd, WorkTagFwd>::StaticValueSize==0) {
               reference_type update = ValueInit::init(
                   selected_reducer, &local_mem[local_id * value_count]);
               const member_type team_member(
@@ -716,7 +713,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
               item, local_mem.get_pointer(), results_ptr,
               device_accessible_result_ptr,
               value_count, selected_reducer,
-              static_cast<const FunctorType&>(functor), false, item.get_local_range()[0]);
+              static_cast<const FunctorType&>(functor), false, size);
 
               if (local_id == 0)
                 num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
@@ -742,6 +739,49 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
                   value_count, selected_reducer,
                   static_cast<const FunctorType&>(functor), true, n_wgroups);
               }
+	    } else {
+              value_type local_value;
+              reference_type update = ValueInit::init(
+                  selected_reducer, &local_value);
+              const member_type team_member(
+                  team_scratch_memory_L0.get_pointer(), shmem_begin,
+                  scratch_size[0],
+                  static_cast<char*>(scratch_ptr[1]) +
+                      item.get_group(1) * scratch_size[1],
+                  scratch_size[1], item);
+              if constexpr (std::is_same<WorkTag, void>::value)
+                functor(team_member, update);
+              else
+                functor(WorkTag(), team_member, update);
+
+                SYCLReduction::workgroup_reduction<ValueJoin, WorkTag>(
+                  item, local_mem.get_pointer(), local_value, results_ptr,
+                  device_accessible_result_ptr,
+                  selected_reducer,
+                  static_cast<const FunctorType&>(functor), false, size);
+
+                if (local_id == 0)
+                  num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
+                item.barrier(sycl::access::fence_space::local_space);
+                if (num_teams_done[0] == n_wgroups) {
+                  if (local_id >= n_wgroups)
+                    ValueInit::init(selected_reducer, &local_value);
+                  else {
+                    local_value = results_ptr[local_id];
+                    for (unsigned int id = local_id + wgroup_size; id < n_wgroups;
+                         id += wgroup_size) {
+                      ValueJoin::join(selected_reducer, &local_value,
+                                      &results_ptr[id]);
+                    }
+                  }
+
+                  SYCLReduction::workgroup_reduction<ValueJoin, WorkTag>(
+                    item, local_mem.get_pointer(), local_value, results_ptr,
+                    device_accessible_result_ptr,
+                    selected_reducer,
+                    static_cast<const FunctorType&>(functor), true, n_wgroups);
+                }
+	    }
             });
       });
       last_reduction_event = q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
