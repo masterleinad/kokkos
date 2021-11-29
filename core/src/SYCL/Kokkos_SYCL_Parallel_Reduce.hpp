@@ -196,7 +196,6 @@ template <class ValueJoin, typename WorkTag, typename ValueType,
     // iteration, i.e., there is only one workgroup also call
     // final() if necessary.
     if (id_in_sg == 0) {
-
       if (final) {
         if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
           FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
@@ -386,7 +385,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   item, local_mem.get_pointer(), results_ptr,
                   device_accessible_result_ptr,
                   value_count, selected_reducer,
-                  static_cast<const FunctorType&>(functor), false, item.get_local_range()[0]);
+                  static_cast<const FunctorType&>(functor), false, size);
 
                 if (local_id == 0)
                   num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
@@ -426,14 +425,12 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   else
                     functor(WorkTag(), id + begin, update);
                 }
-	        ValueOps::copy(functor, &local_mem[local_id * value_count], &local_value);
-		item.barrier(sycl::access::fence_space::local_space);
 
 	        SYCLReduction::workgroup_reduction_special<ValueJoin, WorkTag>(
                   item, local_mem.get_pointer(), local_value, results_ptr,
                   device_accessible_result_ptr,
                   selected_reducer,
-                  static_cast<const FunctorType&>(functor), false, size/*item.get_local_range()[0]*/);
+                  static_cast<const FunctorType&>(functor), false, size);
 
                 if (local_id == 0)
                   num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
@@ -442,16 +439,13 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   if (local_id >= n_wgroups)
                     ValueInit::init(selected_reducer, &local_value);
                   else {
-                    ValueOps::copy(functor, &local_value,
-                                   &results_ptr[local_id * value_count]);
+                    local_value = results_ptr[local_id];
                     for (unsigned int id = local_id + wgroup_size; id < n_wgroups;
                          id += wgroup_size) {
                       ValueJoin::join(selected_reducer, &local_value,
-                                      &results_ptr[id * value_count]);
+                                      &results_ptr[id]);
                     }
                   } 
-                  ValueOps::copy(functor, &local_mem[local_id * value_count], &local_value);
-                  item.barrier(sycl::access::fence_space::local_space);
 
                   SYCLReduction::workgroup_reduction_special<ValueJoin, WorkTag>(
                     item, local_mem.get_pointer(), local_value, results_ptr,
@@ -716,7 +710,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
               item, local_mem.get_pointer(), results_ptr,
               device_accessible_result_ptr,
               value_count, selected_reducer,
-              static_cast<const FunctorType&>(functor), false, item.get_local_range()[0]);
+              static_cast<const FunctorType&>(functor), false, size);
 
 	  if (local_id == 0)
             num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
