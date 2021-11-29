@@ -61,7 +61,7 @@ namespace Impl {
 namespace SYCLReduction {
 template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
-std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0> workgroup_reduction(sycl::nd_item<dim>& item,
+/*std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0>*/ void workgroup_reduction(sycl::nd_item<dim>& item,
                          sycl::local_ptr<ValueType> local_mem,
                          ValueType* results_ptr,
                          ValueType* device_accessible_result_ptr,
@@ -137,57 +137,64 @@ std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize==0> w
 
 template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
           typename ReducerType, typename FunctorType, int dim>
-std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0> workgroup_reduction(sycl::nd_item<dim>& item,
+/*std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0>*/
+	  void
+	  workgroup_reduction_special(sycl::nd_item<dim>& item,
                          sycl::local_ptr<ValueType> local_mem,
+                         ValueType local_value,
                          ValueType* results_ptr,
                          ValueType* device_accessible_result_ptr,
-                         const unsigned int value_count,
                          const ReducerType& selected_reducer,
                          const FunctorType& functor, bool final, unsigned int max_size) {
   const auto local_id = item.get_local_linear_id();
+  if (local_id<max_size)
+    KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): %f %f\n", local_id, max_size, local_value._re, local_value._im);
 
   // Perform the actual workgroup reduction in each subgroup
   // separately.
   auto sg                = item.get_sub_group();
-  auto* result           = &local_mem[local_id * value_count];
   const auto id_in_sg    = sg.get_local_id()[0];
   const auto local_range = std::min<unsigned int>(sg.get_local_range()[0], max_size);
   const auto upper_stride_bound = std::min(local_range - id_in_sg, max_size - local_id);
   for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
+    auto tmp = sg.shuffle_down(local_value, stride);
     if (stride < upper_stride_bound)
-      ValueJoin::join(selected_reducer, result,
-                      &local_mem[(local_id + stride) * value_count]);
-    sg.barrier();
+      ValueJoin::join(selected_reducer, &local_value, &tmp);
   }
-  item.barrier(sycl::access::fence_space::local_space);
 
   // Copy the subgroup results into the first positions of the
   // reduction array.
   if (id_in_sg == 0)
-    ValueOps::copy(functor, &local_mem[sg.get_group_id()[0] * value_count],
-                   result);
+  {
+    local_mem[sg.get_group_id()[0]] = local_value;
+    KOKKOS_IMPL_DO_NOT_USE_PRINTF("Copy %d(%d): %f %f\n", local_id, max_size, local_value._re, local_value._im);
+  }
   item.barrier(sycl::access::fence_space::local_space);
 
   // Do the final reduction only using the first subgroup.
   if (sg.get_group_id()[0] == 0) {
-    const auto n_subgroups = sg.get_group_range()[0];
-    auto* result_          = &local_mem[id_in_sg * value_count];
+    const auto max_subgroup_size = sg.get_max_local_range()[0];
+    const auto n_active_subgroups = (max_size + max_subgroup_size - 1) / max_subgroup_size;
+
+    auto sg_value          = local_mem[id_in_sg<n_active_subgroups?id_in_sg:0];
     // In case the number of subgroups is larger than the range of
     // the first subgroup, we first combine the items with a higher
     // index.
-    for (unsigned int offset = local_range; offset < n_subgroups;
-         offset += local_range)
-      if (id_in_sg + offset < n_subgroups)
-        ValueJoin::join(selected_reducer, result_,
-                        &local_mem[(id_in_sg + offset) * value_count]);
-    sg.barrier();
+    if (n_active_subgroups > local_range) {
+      for (unsigned int offset = local_range; offset < n_active_subgroups;
+           offset += local_range)
+        if (id_in_sg + offset < n_active_subgroups)
+          ValueJoin::join(selected_reducer, &sg_value,
+                          &local_mem[(id_in_sg + offset)]);
+      sg.barrier();
+    }
+    KOKKOS_IMPL_DO_NOT_USE_PRINTF("Before Reduced %d(%d): %f %f\n", local_id, max_size, sg_value._re, sg_value._im);
 
     // Then, we proceed as before.
     for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
-      if (id_in_sg + stride < n_subgroups)
-        ValueJoin::join(selected_reducer, result_,
-                        &local_mem[(id_in_sg + stride) * value_count]);
-      sg.barrier();
+      auto tmp = sg.shuffle_down(local_value, stride);
+      if (id_in_sg + stride < n_active_subgroups)
+        ValueJoin::join(selected_reducer, &sg_value, &tmp);
     }
 
     // Finally, we copy the workgroup results back to global memory
@@ -195,18 +202,20 @@ std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0>
     // iteration, i.e., there is only one workgroup also call
     // final() if necessary.
     if (id_in_sg == 0) {
+      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Reduced %d(%d): %f %f\n", local_id, max_size, sg_value._re, sg_value._im);
+
       if (final) {
         if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
           FunctorFinal<FunctorType, WorkTag>::final(functor, &local_mem[0]);
         if (device_accessible_result_ptr != nullptr)
           ValueOps::copy(functor, &device_accessible_result_ptr[0],
-                         &local_mem[0]);
+                         &sg_value);
         else
-          ValueOps::copy(functor, &results_ptr[0], &local_mem[0]);
+          ValueOps::copy(functor, &results_ptr[0], &sg_value);
       } else
         ValueOps::copy(functor,
-                       &results_ptr[(item.get_group_linear_id()) * value_count],
-                       &local_mem[0]);
+                       &results_ptr[(item.get_group_linear_id())],
+                       &sg_value);
     }
   }
 }
@@ -430,11 +439,14 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
 	        ValueOps::copy(functor, &local_mem[local_id * value_count], &local_value);
 		item.barrier(sycl::access::fence_space::local_space);
 
-	        SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-                  item, local_mem.get_pointer(), results_ptr,
+		if (local_id < size)
+                  KOKKOS_IMPL_DO_NOT_USE_PRINTF("Before %d(%d): %f %f\n", local_id, size, local_value._re, local_value._im);
+
+	        SYCLReduction::workgroup_reduction_special<ValueJoin, ValueOps, WorkTag>(
+                  item, local_mem.get_pointer(), local_value, results_ptr,
                   device_accessible_result_ptr,
-                  value_count, selected_reducer,
-                  static_cast<const FunctorType&>(functor), false, item.get_local_range()[0]);
+                  selected_reducer,
+                  static_cast<const FunctorType&>(functor), false, size/*item.get_local_range()[0]*/);
 
                 if (local_id == 0)
                   num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
@@ -454,10 +466,10 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   ValueOps::copy(functor, &local_mem[local_id * value_count], &local_value);
                   item.barrier(sycl::access::fence_space::local_space);
 
-                  SYCLReduction::workgroup_reduction<ValueJoin, ValueOps, WorkTag>(
-                    item, local_mem.get_pointer(), results_ptr,
+                  SYCLReduction::workgroup_reduction_special<ValueJoin, ValueOps, WorkTag>(
+                    item, local_mem.get_pointer(), local_value, results_ptr,
                     device_accessible_result_ptr,
-                    value_count, selected_reducer,
+                    selected_reducer,
                     static_cast<const FunctorType&>(functor), true, n_wgroups);
 	        }
 	      }
