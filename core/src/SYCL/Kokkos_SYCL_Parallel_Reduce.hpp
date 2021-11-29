@@ -147,8 +147,6 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
                          const ReducerType& selected_reducer,
                          const FunctorType& functor, bool final, unsigned int max_size) {
   const auto local_id = item.get_local_linear_id();
-  if (local_id<max_size)
-    KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d(%d): %f %f\n", local_id, max_size, local_value._re, local_value._im);
 
   // Perform the actual workgroup reduction in each subgroup
   // separately.
@@ -165,10 +163,7 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
   // Copy the subgroup results into the first positions of the
   // reduction array.
   if (id_in_sg == 0)
-  {
     local_mem[sg.get_group_id()[0]] = local_value;
-    KOKKOS_IMPL_DO_NOT_USE_PRINTF("Copy %d(%d): %f %f\n", local_id, max_size, local_value._re, local_value._im);
-  }
   item.barrier(sycl::access::fence_space::local_space);
 
   // Do the final reduction only using the first subgroup.
@@ -188,7 +183,6 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
                           &local_mem[(id_in_sg + offset)]);
       sg.barrier();
     }
-    KOKKOS_IMPL_DO_NOT_USE_PRINTF("Before Reduced %d(%d): %f %f\n", local_id, max_size, sg_value._re, sg_value._im);
 
     // Then, we proceed as before.
     for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
@@ -202,7 +196,6 @@ template <class ValueJoin, class ValueOps, typename WorkTag, typename ValueType,
     // iteration, i.e., there is only one workgroup also call
     // final() if necessary.
     if (id_in_sg == 0) {
-      KOKKOS_IMPL_DO_NOT_USE_PRINTF("Reduced %d(%d): %f %f\n", local_id, max_size, sg_value._re, sg_value._im);
 
       if (final) {
         if constexpr (ReduceFunctorHasFinal<FunctorType>::value)
@@ -438,9 +431,6 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                 }
 	        ValueOps::copy(functor, &local_mem[local_id * value_count], &local_value);
 		item.barrier(sycl::access::fence_space::local_space);
-
-		if (local_id < size)
-                  KOKKOS_IMPL_DO_NOT_USE_PRINTF("Before %d(%d): %f %f\n", local_id, size, local_value._re, local_value._im);
 
 	        SYCLReduction::workgroup_reduction_special<ValueJoin, ValueOps, WorkTag>(
                   item, local_mem.get_pointer(), local_value, results_ptr,
