@@ -1,88 +1,65 @@
-/*
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
-//@HEADER
-*/
-
 #include <Kokkos_Core.hpp>
-#include <cstdio>
+#include<iostream>
+using ExecutionSpace = Kokkos::DefaultExecutionSpace;
+using MemorySpace = ExecutionSpace::memory_space;
+using Device = Kokkos::Device<ExecutionSpace,MemorySpace>;
+using HostExecutionSpace = Kokkos::DefaultHostExecutionSpace;
+using HostMemorySpace = HostExecutionSpace::memory_space;
+using HostDevice = Kokkos::Device<HostExecutionSpace, HostMemorySpace>;
+using Real = float;
+
+template < class ... VS >
+Real sumView2d(const Kokkos::View<Real**, VS...> m) {
+  using ViewInput = std::decay_t<decltype(m)>;
+  using D = typename ViewInput::device_type;
+  using E = typename D::execution_space;
+  Real s;
+  Kokkos::parallel_reduce(
+    Kokkos::MDRangePolicy<E, Kokkos::Rank<2>>(
+      {0,0}, {m.extent(0), m.extent(1)}),
+    KOKKOS_LAMBDA (const int i, const int j, Real& update) {
+      update += m(i, j); 
+    }, s);
+  E{}.fence();
+  return s;
+}
 
 int main(int argc, char* argv[]) {
-  Kokkos::initialize(argc, argv);
-  Kokkos::DefaultExecutionSpace::print_configuration(std::cout);
-
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s [<kokkos_options>] <size>\n", argv[0]);
-    Kokkos::finalize();
-    exit(1);
+  Kokkos::initialize(argc,argv); {
+  const int s = 45;
+  const int stepSizes[2] = {1, 10000};
+  Kokkos::View<Real**, Device> v("v", s, (s + 1) * stepSizes[1]);
+  std::cout << "original range: " << s << " " << (s+1)*stepSizes[1] << std::endl;
+  Kokkos::deep_copy(ExecutionSpace{}, v, 1);
+  for(int iStep = 40; iStep < v.extent_int(0); ++iStep) {
+    auto vSub = Kokkos::subview(v,
+      std::make_pair(0, (iStep + 1) * stepSizes[0]),
+      std::make_pair(0, (iStep + 2) * stepSizes[1]));
+    std::cout << "subview range: " << (iStep+1)*stepSizes[0] << " " << (iStep+2)*stepSizes[1] << std::endl;
+    Kokkos::View<Real**, Device> vSubCopy("vSubCopy", vSub.extent(0), vSub.extent(1));
+    Kokkos::deep_copy(ExecutionSpace{}, vSubCopy, vSub);
+    ExecutionSpace{}.fence();
+    auto vSubCopyHost = Kokkos::create_mirror_view_and_copy(HostExecutionSpace{}, vSubCopy);
+    auto vSubCopyHostCopy = Kokkos::create_mirror_view_and_copy(Kokkos::CudaUVMSpace{}, vSubCopyHost);
+    auto sum_vSub = sumView2d(vSub);
+    auto sum_vSubCopy = sumView2d(vSubCopy);
+    auto sum_vSubCopyHost = sumView2d(vSubCopyHost);
+    auto sum_vSubCopyHostCopy = sumView2d(vSubCopyHostCopy);
+    std::cout << iStep << ": " << sum_vSub << " " << sum_vSub - sum_vSubCopy << " " << sum_vSub - sum_vSubCopyHost << " " << sum_vSubCopyHostCopy - sum_vSubCopyHost << " " << sum_vSub - sum_vSubCopyHostCopy << "\n";
+    std::cout << "range " << vSub.extent(0) << ' ' << vSub.extent(1) << std::endl;
+    Kokkos::parallel_for(
+    Kokkos::MDRangePolicy<ExecutionSpace, Kokkos::Rank<2>>(
+      {0,0}, {vSub.extent(0), vSub.extent(1)}),
+    KOKKOS_LAMBDA (const int i, const int j) {
+      if (vSub(i,j) != vSubCopyHostCopy(i,j))
+        KOKKOS_IMPL_DO_NOT_USE_PRINTF("%d,%d: %f %f\n", i, j, vSub(i,j), vSubCopyHostCopy(i,j));
+    });
   }
 
-  const long n = strtol(argv[1], nullptr, 10);
 
-  printf("Number of even integers from 0 to %ld\n", n - 1);
+  } Kokkos::finalize();
 
-  Kokkos::Timer timer;
-  timer.reset();
-
-  // Compute the number of even integers from 0 to n-1, in parallel.
-  long count = 0;
-  Kokkos::parallel_reduce(
-      n, KOKKOS_LAMBDA(const long i, long& lcount) { lcount += (i % 2) == 0; },
-      count);
-
-  double count_time = timer.seconds();
-  printf("  Parallel: %ld    %10.6f\n", count, count_time);
-
-  timer.reset();
-
-  // Compare to a sequential loop.
-  long seq_count = 0;
-  for (long i = 0; i < n; ++i) {
-    seq_count += (i % 2) == 0;
-  }
-
-  count_time = timer.seconds();
-  printf("Sequential: %ld    %10.6f\n", seq_count, count_time);
-
-  Kokkos::finalize();
-
-  return (count == seq_count) ? 0 : -1;
 }
+
+
+

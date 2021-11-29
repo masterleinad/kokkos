@@ -432,7 +432,7 @@ void CudaInternal::initialize(int cuda_device_id, cudaStream_t stream,
     //----------------------------------
     // Maximum number of blocks:
 
-    m_maxBlock = cudaProp.maxGridSize[0];
+    m_maxBlock = cudaProp.maxGridSize[1];
 
     m_shmemPerSM       = cudaProp.sharedMemPerMultiprocessor;
     m_maxShmemPerBlock = cudaProp.sharedMemPerBlock;

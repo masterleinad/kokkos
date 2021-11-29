@@ -85,7 +85,7 @@ class ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
         ParallelFor<FunctorType, Policy, Kokkos::Experimental::HIP>;
     if (m_policy.m_num_tiles == 0) return;
     array_index_type const maxblocks = static_cast<array_index_type>(
-        m_policy.space().impl_internal_space_instance()->m_maxBlock);
+        cuda_internal_maximum_grid_count());
     if (Policy::rank == 2) {
       dim3 const block(m_policy.m_tile[0], m_policy.m_tile[1], 1);
       dim3 const grid(
