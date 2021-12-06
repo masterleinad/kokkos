@@ -72,16 +72,24 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
         *space.impl_internal_space_instance();
     sycl::queue& q = *instance.m_queue;
 
-    auto parallel_for_event = q.submit([functor, policy](sycl::handler& cgh) {
-      sycl::range<1> range(policy.end() - policy.begin());
+    auto parallel_for_event = q.submit([&](sycl::handler& cgh) {
       const auto begin = policy.begin();
+      const auto end   = policy.end();
 
-      cgh.parallel_for(range, [=](sycl::item<1> item) {
+      // FIXME_SYCL Optimize. We use this here since the work group size is
+      // chosen as a divisor of the range by default.
+      const int minimal_wg_size_multiple = 128;
+      sycl::range<1> rounded_range(
+          (end - begin + minimal_wg_size_multiple - 1) /
+          minimal_wg_size_multiple * minimal_wg_size_multiple);
+      cgh.parallel_for(rounded_range, [=](sycl::item<1> item) {
         const typename Policy::index_type id = item.get_linear_id() + begin;
-        if constexpr (std::is_same<WorkTag, void>::value)
-          functor(id);
-        else
-          functor(WorkTag(), id);
+        if (id < end) {
+          if constexpr (std::is_same<WorkTag, void>::value)
+            functor(id);
+          else
+            functor(WorkTag(), id);
+        }
       });
     });
     q.submit_barrier(std::vector<sycl::event>{parallel_for_event});
