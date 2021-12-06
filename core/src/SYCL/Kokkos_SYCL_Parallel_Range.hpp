@@ -49,6 +49,28 @@
 
 #include <vector>
 
+template <typename Functor, typename WorkTag>
+struct ParallelForDummy
+{
+   ParallelForDummy(const Functor& functor, int begin, int end): m_functor(functor), m_end(end), m_begin(begin) {}
+
+	void operator()
+	(sycl::item<1> item) const {
+        const int id = item.get_linear_id() + m_begin;
+        if (id < m_end) {
+          if constexpr (std::is_same<WorkTag, void>::value)
+            m_functor(id);
+          else
+            m_functor(WorkTag(), id);
+        }
+	}
+
+	Functor m_functor;
+	int m_end;
+	int m_begin;
+};
+
+
 template <class FunctorType, class... Traits>
 class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
                                 Kokkos::Experimental::SYCL> {
@@ -78,11 +100,14 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
 
       // FIXME_SYCL Optimize. We use this here since the work group size is
       // chosen as a divisor of the range by default.
-      const int minimal_wg_size_multiple = 128;
+      /*const int minimal_wg_size_multiple = 128;
       sycl::range<1> rounded_range(
           (end - begin + minimal_wg_size_multiple - 1) /
-          minimal_wg_size_multiple * minimal_wg_size_multiple);
-      cgh.parallel_for(rounded_range, [=](sycl::item<1> item) {
+          minimal_wg_size_multiple * minimal_wg_size_multiple);*/
+      sycl::range<1> rounded_range(end-begin);
+
+      ParallelForDummy<Functor, WorkTag> dummy(functor, begin, end);
+      cgh.parallel_for<ParallelForDummy<Functor, WorkTag>>(rounded_range, dummy);/*[=](sycl::item<1> item) {
         const typename Policy::index_type id = item.get_linear_id() + begin;
         if (id < end) {
           if constexpr (std::is_same<WorkTag, void>::value)
@@ -90,7 +115,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
           else
             functor(WorkTag(), id);
         }
-      });
+      });*/
     });
     q.submit_barrier(std::vector<sycl::event>{parallel_for_event});
 
