@@ -91,8 +91,12 @@ void SYCLInternal::initialize(const sycl::device& d) {
   // FIXME_SYCL using an in-order queue here should not be necessary since we
   // are using submit_barrier for managing kernel dependencies but this seems to
   // be required as a hot fix for now.
+#ifdef KOKKOS_ARCH_VOLTA
+  initialize(sycl::queue{d, exception_handler);
+#else
   initialize(
       sycl::queue{d, exception_handler, sycl::property::queue::in_order()});
+#endif
 }
 
 // FIXME_SYCL

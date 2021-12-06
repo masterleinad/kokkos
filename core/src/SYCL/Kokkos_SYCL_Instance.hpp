@@ -144,19 +144,17 @@ class SYCLInternal {
     // Performs either sycl::memcpy (for USM device memory) or std::memcpy
     // (otherwise) and returns a reference to the copied object.
     template <typename T>
-    T& copy_from(const T& t) {
+    T& copy_from(const T& t, sycl::event& memcopied) {
       m_mutex.lock();
       fence();
       reserve(sizeof(T));
       if constexpr (sycl::usm::alloc::device == Kind) {
-        sycl::event memcopied =
+        memcopied =
             m_q->memcpy(m_data, std::addressof(t), sizeof(T));
-        SYCLInternal::fence(
-            memcopied,
-            "Kokkos::Experimental::SYCLInternal::USMObject fence after copy",
-            m_instance_id);
-      } else
+      } else {
         std::memcpy(m_data, std::addressof(t), sizeof(T));
+	memcopied = sycl::event{};
+      }
       return *reinterpret_cast<T*>(m_data);
     }
 
@@ -257,11 +255,12 @@ class SYCLFunctionWrapper<Functor, Storage, true> {
 
 template <typename Functor, typename Storage>
 class SYCLFunctionWrapper<Functor, Storage, false> {
+  sycl::event memcopied;
   const Functor& m_kernelFunctor;
 
  public:
   SYCLFunctionWrapper(const Functor& functor, Storage& storage)
-      : m_kernelFunctor(storage.copy_from(functor)) {}
+      : m_kernelFunctor(storage.copy_from(functor, memcopied)) {}
 
   std::reference_wrapper<const Functor> get_functor() const {
     return {m_kernelFunctor};
