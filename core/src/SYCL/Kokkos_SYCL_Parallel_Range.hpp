@@ -49,27 +49,23 @@
 
 #include <vector>
 
-template <typename Functor, typename WorkTag>
-struct ParallelForDummy
-{
-   ParallelForDummy(const Functor& functor, int begin, int end): m_functor(functor), m_end(end), m_begin(begin) {}
+namespace Kokkos::Impl {
+template <typename Functor, typename Policy>
+struct FunctorWrapperRangePolicyParallelFor {
+  using WorkTag = typename Policy::work_tag;
 
-	void operator()
-	(sycl::item<1> item) const {
-        const int id = item.get_linear_id() + m_begin;
-        if (id < m_end) {
-          if constexpr (std::is_same<WorkTag, void>::value)
-            m_functor(id);
-          else
-            m_functor(WorkTag(), id);
-        }
-	}
+  void operator()(sycl::item<1> item) const {
+    const typename Policy::index_type id = item.get_linear_id() + m_begin;
+    if constexpr (std::is_same<WorkTag, void>::value)
+      m_functor(id);
+    else
+      m_functor(WorkTag(), id);
+  }
 
-	Functor m_functor;
-	int m_end;
-	int m_begin;
+  typename Policy::index_type m_begin;
+  Functor m_functor;
 };
-
+}  // namespace Kokkos::Impl
 
 template <class FunctorType, class... Traits>
 class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
@@ -95,27 +91,10 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
     sycl::queue& q = *instance.m_queue;
 
     auto parallel_for_event = q.submit([&](sycl::handler& cgh) {
-      const auto begin = policy.begin();
-      const auto end   = policy.end();
-
-      // FIXME_SYCL Optimize. We use this here since the work group size is
-      // chosen as a divisor of the range by default.
-      /*const int minimal_wg_size_multiple = 128;
-      sycl::range<1> rounded_range(
-          (end - begin + minimal_wg_size_multiple - 1) /
-          minimal_wg_size_multiple * minimal_wg_size_multiple);*/
-      sycl::range<1> rounded_range(end-begin);
-
-      ParallelForDummy<Functor, WorkTag> dummy(functor, begin, end);
-      cgh.parallel_for<ParallelForDummy<Functor, WorkTag>>(rounded_range, dummy);/*[=](sycl::item<1> item) {
-        const typename Policy::index_type id = item.get_linear_id() + begin;
-        if (id < end) {
-          if constexpr (std::is_same<WorkTag, void>::value)
-            functor(id);
-          else
-            functor(WorkTag(), id);
-        }
-      });*/
+       FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{policy.begin(),
+                                                            functor};
+      sycl::range<1> range(policy.end()-policy.begin());
+      cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(range, f);
     });
     q.submit_barrier(std::vector<sycl::event>{parallel_for_event});
 
