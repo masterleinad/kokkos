@@ -47,7 +47,7 @@
 #include <TestTeam.hpp>
 
 namespace Test {
-
+/*
 TEST(TEST_CATEGORY, team_for) {
   TestTeamPolicy<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >::test_for(
       0);
@@ -64,25 +64,25 @@ TEST(TEST_CATEGORY, team_for) {
   TestTeamPolicy<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >::test_for(
       1000);
 }
-
+*/
 // FIXME_OPENMPTARGET wrong results
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
 TEST(TEST_CATEGORY, team_reduce) {
-  TestTeamPolicy<TEST_EXECSPACE,
+/*  TestTeamPolicy<TEST_EXECSPACE,
                  Kokkos::Schedule<Kokkos::Static> >::test_reduce(0);
   TestTeamPolicy<TEST_EXECSPACE,
-                 Kokkos::Schedule<Kokkos::Dynamic> >::test_reduce(0);
+                 Kokkos::Schedule<Kokkos::Dynamic> >::test_reduce(0);*/
   TestTeamPolicy<TEST_EXECSPACE,
-                 Kokkos::Schedule<Kokkos::Static> >::test_reduce(2);
-  TestTeamPolicy<TEST_EXECSPACE,
-                 Kokkos::Schedule<Kokkos::Dynamic> >::test_reduce(2);
-  TestTeamPolicy<TEST_EXECSPACE,
+                 Kokkos::Schedule<Kokkos::Static> >::test_reduce(17);
+/*  TestTeamPolicy<TEST_EXECSPACE,
+                 Kokkos::Schedule<Kokkos::Dynamic> >::test_reduce(5);*/
+/*  TestTeamPolicy<TEST_EXECSPACE,
                  Kokkos::Schedule<Kokkos::Static> >::test_reduce(1000);
   TestTeamPolicy<TEST_EXECSPACE,
-                 Kokkos::Schedule<Kokkos::Dynamic> >::test_reduce(1000);
+                 Kokkos::Schedule<Kokkos::Dynamic> >::test_reduce(1000);*/
 }
 #endif
-
+/*
 TEST(TEST_CATEGORY, team_broadcast_long) {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                     long>::test_teambroadcast(0, 1);
@@ -270,10 +270,10 @@ TEST(TEST_CATEGORY, team_broadcast_double) {
 TEST(TEST_CATEGORY, team_handle_by_value) {
   { TestTeamPolicyHandleByValue<TEST_EXECSPACE>(); }
 }
-
+*/
 }  // namespace Test
 
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
-#include <TestTeamVector.hpp>
+//#include <TestTeamVector.hpp>
 #endif
 #endif

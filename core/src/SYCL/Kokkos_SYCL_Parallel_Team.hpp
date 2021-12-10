@@ -448,7 +448,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
               functor(work_tag(), team_member);
           });
     });
-    q.submit_barrier(std::vector<sycl::event>{parallel_for_event});
+    q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_for_event});
     return parallel_for_event;
   }
 
@@ -646,7 +646,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
                                &results_ptr[0]);
             });
       });
-      q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
       last_reduction_event = parallel_reduce_event;
     }
 
@@ -754,37 +754,38 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
               else
                 functor(WorkTag(), team_member, update);
 
+              SYCLReduction::workgroup_reduction<ValueJoin, WorkTag>(
+                item, local_mem.get_pointer(), local_value, results_ptr,
+                device_accessible_result_ptr,
+                selected_reducer,
+                static_cast<const FunctorType&>(functor), false, size);
+
+              if (local_id == 0)
+                num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
+              item.barrier(sycl::access::fence_space::local_space);
+              if (num_teams_done[0] == n_wgroups) {
+                if (local_id >= n_wgroups)
+                  ValueInit::init(selected_reducer, &local_value);
+                else {
+                  local_value = results_ptr[local_id];
+                  for (unsigned int id = local_id + wgroup_size; id < n_wgroups;
+                       id += wgroup_size) {
+                    ValueJoin::join(selected_reducer, &local_value,
+                                    &results_ptr[id]);
+                  }
+                }
+		//KOKKOS_IMPL_DO_NOT_USE_PRINTF("Loaded %lu: %zu\n", local_id, local_value);
+
                 SYCLReduction::workgroup_reduction<ValueJoin, WorkTag>(
                   item, local_mem.get_pointer(), local_value, results_ptr,
                   device_accessible_result_ptr,
                   selected_reducer,
-                  static_cast<const FunctorType&>(functor), false, size);
-
-                if (local_id == 0)
-                  num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
-                item.barrier(sycl::access::fence_space::local_space);
-                if (num_teams_done[0] == n_wgroups) {
-                  if (local_id >= n_wgroups)
-                    ValueInit::init(selected_reducer, &local_value);
-                  else {
-                    local_value = results_ptr[local_id];
-                    for (unsigned int id = local_id + wgroup_size; id < n_wgroups;
-                         id += wgroup_size) {
-                      ValueJoin::join(selected_reducer, &local_value,
-                                      &results_ptr[id]);
-                    }
-                  }
-
-                  SYCLReduction::workgroup_reduction<ValueJoin, WorkTag>(
-                    item, local_mem.get_pointer(), local_value, results_ptr,
-                    device_accessible_result_ptr,
-                    selected_reducer,
-                    static_cast<const FunctorType&>(functor), true, n_wgroups);
-                }
+                  static_cast<const FunctorType&>(functor), true, n_wgroups);
+              }
 	    }
-            });
+          });
       });
-      last_reduction_event = q.submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
+      last_reduction_event = q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_reduce_event});
     }
 
     // At this point, the reduced value is written to the entry in results_ptr
