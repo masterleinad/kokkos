@@ -496,7 +496,7 @@ TEST(TEST_CATEGORY, atomics) {
   const int loop_count = 1e4;
 
   ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 1)));
-  ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 2)));
+  /*ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 2)));
   ASSERT_TRUE((TestAtomic::Loop<int, TEST_EXECSPACE>(loop_count, 3)));
 
   ASSERT_TRUE((TestAtomic::Loop<unsigned int, TEST_EXECSPACE>(loop_count, 1)));
@@ -564,7 +564,7 @@ TEST(TEST_CATEGORY, atomics) {
       (TestAtomic::Loop<TestAtomic::SuperScalar<4>, TEST_EXECSPACE>(100, 3)));
 #endif
 #endif
-#endif
+#endif*/
 }
 
 }  // namespace Test

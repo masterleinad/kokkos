@@ -81,25 +81,23 @@ void check_distinctive(Kokkos::Experimental::SYCL exec1,
 
 void test_partitioning(std::vector<TEST_EXECSPACE>& instances) {
   check_distinctive(instances[0], instances[1]);
-  int sum1 = 0;
+  int sum1, sum2;
   int N = 3910;
   Kokkos::parallel_reduce(
       Kokkos::RangePolicy<TEST_EXECSPACE>(instances[0], 0, N), SumFunctor(),
       sum1);
-  Kokkos::fence();
-  int sum2 =0;
   Kokkos::parallel_reduce(
       Kokkos::RangePolicy<TEST_EXECSPACE>(instances[1], 0, N), SumFunctor(),
       sum2);
-  EXPECT_EQ(sum1, sum2);
-  EXPECT_EQ(sum1, N * (N - 1) / 2);
+  ASSERT_EQ(sum1, sum2);
+  ASSERT_EQ(sum1, N * (N - 1) / 2);
 
 #if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP) || \
     defined(KOKKOS_ENABLE_SYCL)
   // Eliminate unused function warning
   // (i.e. when compiling for Serial and CUDA, during Serial compilation the
   // Cuda overload is unused ...)
-  if (false/*sum1 != sum2*/) {
+  if (sum1 != sum2) {
 #ifdef KOKKOS_ENABLE_CUDA
     check_distinctive(Kokkos::Cuda(), Kokkos::Cuda());
 #endif

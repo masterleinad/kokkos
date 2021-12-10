@@ -208,26 +208,30 @@ struct TestTeamPolicy {
   static void test_reduce(const size_t league_size) {
     TestTeamPolicy functor(league_size);
 
+    using policy_type = Kokkos::TeamPolicy<ScheduleType, ExecSpace>;
+    using policy_type_reduce =
+        Kokkos::TeamPolicy<ScheduleType, ExecSpace, ReduceTag>;
+
     // FIXME_OPENMPTARGET temporary restriction for team size to be at least 32
 #ifdef KOKKOS_ENABLE_OPENMPTARGET
     const int team_size =
         policy_type_reduce(league_size, 32)
             .team_size_max(functor, Kokkos::ParallelReduceTag());
 #else
-    const int team_size = 2;
-/*        policy_type_reduce(league_size, 1)
-            .team_size_max(functor, Kokkos::ParallelReduceTag());*/
+    const int team_size =
+        policy_type_reduce(league_size, 1)
+            .team_size_max(functor, Kokkos::ParallelReduceTag());
 #endif
 
     const int64_t N = team_size * league_size;
 
     int64_t total = 0;
 
-    /*Kokkos::parallel_reduce(Kokkos::TeamPolicy<ScheduleType, ExecSpace>(league_size, team_size), functor,
+    Kokkos::parallel_reduce(policy_type(league_size, team_size), functor,
                             total);
-    ASSERT_EQ(size_t((N - 1) * (N)) / 2, size_t(total));*/
+    ASSERT_EQ(size_t((N - 1) * (N)) / 2, size_t(total));
 
-    Kokkos::parallel_reduce(Kokkos::TeamPolicy<ScheduleType, ExecSpace, ReduceTag>(league_size, team_size), functor,
+    Kokkos::parallel_reduce(policy_type_reduce(league_size, team_size), functor,
                             total);
     ASSERT_EQ((size_t(N) * size_t(N + 1)) / 2, size_t(total));
   }

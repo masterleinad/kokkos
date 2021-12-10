@@ -175,7 +175,7 @@ struct TestMDRangeReduce {
 // Reductions tests for MDRange policy and customized reduction.
 TEST(TEST_CATEGORY, incr_14_MDrangeReduce) {
   TestMDRangeReduce<TEST_EXECSPACE> test;
-//  test.reduce_MDRange();
+  test.reduce_MDRange();
 // FIXME_OPENMPTARGET: custom reductions are not yet supported in the
 // OpenMPTarget backend.
 #if !defined(KOKKOS_ENABLE_OPENMPTARGET)

@@ -178,18 +178,20 @@ std::enable_if_t<FunctorValueTraits<ReducerType, WorkTag>::StaticValueSize != 0>
     if (n_active_subgroups > local_range) {
       for (unsigned int offset = local_range; offset < n_active_subgroups;
            offset += local_range)
-        if (id_in_sg + offset < n_active_subgroups)
+        if (id_in_sg + offset < n_active_subgroups) {
+          KOKKOS_IMPL_DO_NOT_USE_PRINTF("max_size: %u, max_subgroup_size: %lu, id_in_sg: %lu, offset: %d\n\n", max_size, max_subgroup_size, id_in_sg, offset);
           ValueJoin::join(selected_reducer, &sg_value,
                           &local_mem[(id_in_sg + offset)]);
+	}
       sg.barrier();
     }
-
+/*
     // Then, we proceed as before.
     for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
       auto tmp = sg.shuffle_down(sg_value, stride);
       if (id_in_sg + stride < n_active_subgroups)
         ValueJoin::join(selected_reducer, &sg_value, &tmp);
-    }
+    }*/
 
     // Finally, we copy the workgroup results back to global memory
     // to be used in the next iteration. If this is the last
@@ -381,7 +383,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   item, local_mem.get_pointer(), results_ptr,
                   device_accessible_result_ptr,
                   value_count, selected_reducer,
-                  static_cast<const FunctorType&>(functor), false, size);
+                  static_cast<const FunctorType&>(functor), false, wgroup_size);
 
                 if (local_id == 0)
                   num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
@@ -423,7 +425,7 @@ class ParallelReduce<FunctorType, Kokkos::RangePolicy<Traits...>, ReducerType,
                   item, local_mem.get_pointer(), local_value, results_ptr,
                   device_accessible_result_ptr,
                   selected_reducer,
-                  static_cast<const FunctorType&>(functor), false, size);
+                  static_cast<const FunctorType&>(functor), false, wgroup_size);
 
                 if (local_id == 0)
                   num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
@@ -705,7 +707,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
               item, local_mem.get_pointer(), results_ptr,
               device_accessible_result_ptr,
               value_count, selected_reducer,
-              static_cast<const FunctorType&>(functor), false, size);
+              static_cast<const FunctorType&>(functor), false, wgroup_size);
 
 	    if (local_id == 0)
               num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;
@@ -748,7 +750,7 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                   item, local_mem.get_pointer(), local_value, results_ptr,
                   device_accessible_result_ptr,
                   selected_reducer,
-                  static_cast<const FunctorType&>(functor), false, size);
+                  static_cast<const FunctorType&>(functor), false, wgroup_size);
 
                 if (local_id == 0)
                   num_teams_done[0] = Kokkos::atomic_fetch_add(scratch_flags, 1) + 1;

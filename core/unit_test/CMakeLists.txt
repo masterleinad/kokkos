@@ -97,7 +97,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     # file. That then exceeded the shell command line max length.
     set(${Tag}_SOURCES1A)
     foreach(Name
-        ExecSpacePartitioning
+        Atomics
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -115,6 +115,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
         MDRange_d
         MDRange_e
         MDRange_f
+        MDRange_g
         NumericTraits
         Other
         RangePolicy
@@ -143,26 +144,26 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;HIP;SYCL)
     SET(${Tag}_SOURCES2A)
     foreach(Name
       TeamBasic
-      #TeamReductionScan
-      #TeamScan
-      #TeamScratch
-      #TeamTeamSize
-      #TeamVectorRange
-      #UniqueToken
-      #ViewAPI_a
-      #ViewAPI_b
-      #ViewAPI_c
-      #ViewAPI_d
-      #ViewAPI_e
-      #ViewCopy_a
-      #ViewCopy_b
-      #ViewLayoutStrideAssignment
-      #ViewMapping_b
-      #ViewMapping_subview
-      #ViewOfClass
-      #ViewResize
-      #View_64bit
-      #WorkGraph
+      TeamReductionScan
+      TeamScan
+      TeamScratch
+      TeamTeamSize
+      TeamVectorRange
+      UniqueToken
+      ViewAPI_a
+      ViewAPI_b
+      ViewAPI_c
+      ViewAPI_d
+      ViewAPI_e
+      ViewCopy_a
+      ViewCopy_b
+      ViewLayoutStrideAssignment
+      ViewMapping_b
+      ViewMapping_subview
+      ViewOfClass
+      ViewResize
+      View_64bit
+      WorkGraph
       )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -730,7 +731,9 @@ KOKKOS_ADD_ADVANCED_TEST( UnitTest_PushFinalizeHook_terminate
   KOKKOS_ADD_EXECUTABLE_AND_TEST(
     UnitTest_KokkosP
     SOURCES
+    UnitTestMainInit.cpp
     tools/TestEventCorrectness.cpp
+    tools/TestWithoutInitializing.cpp
     tools/TestProfilingSection.cpp
   )
   endif()
