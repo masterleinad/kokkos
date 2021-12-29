@@ -100,6 +100,7 @@ class SYCLInternal {
   // We need a mutex for thread safety when modifying all_queues.
   static std::mutex mutex;
 
+#ifndef SYCL_DEVICE_COPYABLE
   // USMObjectMem is a reusable buffer for a single object
   // in USM memory
   template <sycl::usm::alloc Kind>
@@ -206,6 +207,7 @@ class SYCLInternal {
 
   using IndirectReducerMem = USMObjectMem<sycl::usm::alloc::host>;
   IndirectReducerMem m_indirectReducerMem;
+#endif
 
   bool was_finalized = false;
 
@@ -255,14 +257,13 @@ class SYCLFunctionWrapper<Functor, Storage, true> {
   static void register_event(Storage&, sycl::event){};
 };
 
-
 #ifdef SYCL_DEVICE_COPYABLE
 template <typename Functor, typename Storage>
 class SYCLFunctionWrapper<Functor, Storage, false> {
   union TrivialWrapper{
     TrivialWrapper(){};
 
-    TrivialWrapper(const Functor& f) : m_f{f} {}
+    TrivialWrapper(const Functor& f) {std::memcpy(&m_f, &f, sizeof(m_f));}
 
     TrivialWrapper(const TrivialWrapper& other) {
       std::memcpy(&m_f, &other.m_f, sizeof(m_f));
