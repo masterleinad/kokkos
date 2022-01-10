@@ -47,6 +47,7 @@
 
 #include <cstddef>
 #include <Kokkos_Core_fwd.hpp>
+#include <Kokkos_DetectionIdiom.hpp>
 #include <impl/Kokkos_Traits.hpp>
 
 //----------------------------------------------------------------------------
@@ -1318,6 +1319,16 @@ struct FunctorValueTraits<FunctorType, ArgTag,
       tag_type, void (FunctorType::*)(const tag_type&, const ArgMember&, T&,
                                       const bool&) const) {}
   //----------------------------------------
+
+  template <typename T>
+  using is_not_overloaded = decltype(&T::operator());
+
+  static_assert(
+      Kokkos::is_detected<is_not_overloaded, FunctorType>::value,
+      "The given FunctorType is either not callable or has a overloaded or "
+      "templated call operator. This is not supported for deducing the value "
+      "type. Either make sure that the call operator exists and isn't "
+      "overloaded or templated or specify the value type explicitly!");
 
   using ValueType =
       decltype(deduce_reduce_type(tag_type(), &FunctorType::operator()));
