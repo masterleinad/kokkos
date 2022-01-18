@@ -29,7 +29,7 @@ jobs:
           mkdir -p hpx/{build,install}
           cd hpx/build
           cmake \
-            -DCMAKE_INSTALL_PREFIX_PREFIX=$PWD/../install \
+            -DCMAKE_INSTALL_PREFIX=$PWD/../install \
             -DHPX_WITH_COMPILE_ONLY_TESTS=OFF \
             -DHPX_WITH_EXAMPLES=OFF \
             -DHPX_WITH_FETCH_ASIO=ON \
@@ -46,7 +46,7 @@ jobs:
           mkdir -p kokkos/{build,install}  
           cd kokkos/build
           cmake \
-            -DCMAKE_INSTALL_PREFIX_PREFIX=$PWD/../install \
+            -DCMAKE_INSTALL_PREFIX=$PWD/../install \
             -DCMAKE_CXX_FLAGS="-Werror" \
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
             -DKokkos_ENABLE_EXAMPLES=ON \
