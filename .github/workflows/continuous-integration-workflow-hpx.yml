@@ -52,7 +52,6 @@ jobs:
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
             -DKokkos_ENABLE_EXAMPLES=ON \
             -DKokkos_ENABLE_HPX=ON \
-            -DKokkos_ENABLE_HWLOC=ON \
             -DKokkos_ENABLE_TESTS=ON \
             ..
 
