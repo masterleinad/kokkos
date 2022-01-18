@@ -1,0 +1,64 @@
+name: github-Linux-hpx
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{github.event_name == 'pull_request'}}
+
+jobs:
+  hpx:
+    name: hpx
+    runs-on: [ubuntu-latest]
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2.2.0
+        with:
+          path: kokkos
+      - name: setup hpx dependencies
+        run:  sudo apt update && sudo apt install hwloc libboost-all-dev
+      - name: checkout hpx
+        uses: actions/checkout@v2.2.0
+        with:
+          repository: STELLAR-GROUP/hpx
+          ref: 1.7.1
+          path: hpx
+      - name: configure hpx
+        run: |
+          mkdir -p hpx/{build,install}
+          cd hpx/build
+          cmake \
+            -DCMAKE_INSTALL_PREFIX_PREFIX=$PWD/../install \
+            -DHPX_WITH_COMPILE_ONLY_TESTS=OFF \
+            -DHPX_WITH_EXAMPLES=OFF \
+            -DHPX_WITH_FETCH_ASIO=ON \
+            -DHPX_WITH_MALLOC=system \
+            -DHPX_WITH_EXAMPLES=OFF \
+            -DHPX_WITH_TESTS=OFF \
+            ..
+      - name: build and install hpx
+        working-directory: hpx/build
+        run: make -j2 install
+
+      - name: configure kokkos
+        run: |
+          mkdir -p kokkos/{build,install}  
+          cd kokkos/build
+          cmake \
+            -DCMAKE_INSTALL_PREFIX_PREFIX=$PWD/../install \
+            -DCMAKE_CXX_FLAGS="-Werror" \
+            -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
+            -DKokkos_ENABLE_EXAMPLES=ON \
+            -DKokkos_ENABLE_HPX=ON \
+            -DKokkos_ENABLE_HWLOC=ON \
+            -DKokkos_ENABLE_TESTS=ON \
+            ..
+
+      - name: build_and_install_kokkos
+        working-directory: kokkos/build
+        run: make -j2 install
+
+      - name: test_kokkos
+        working-directory: kokkos/build
+        run: ctest -j2 --output-on-failure
