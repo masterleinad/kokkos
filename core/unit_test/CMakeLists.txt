@@ -318,6 +318,13 @@ foreach(PairDeviceSpace HIP-HostPinned;Cuda-HostPinned;Cuda-UVM;SYCL-HostUSM;SYC
   endif()
 endforeach()
 
+#FIXME HPX - The CI runs out of memory for MathematicalFunctions
+if(Kokkos_ENABLE_HPX)
+  list(REMOVE_ITEM HPX_SOURCES
+    ${CMAKE_CURRENT_BINARY_DIR}/hpx/TestHPX_MathematicalFunctions.cpp
+    )
+endif()
+
 if(Kokkos_ENABLE_OPENMPTARGET)
   list(REMOVE_ITEM OpenMPTarget_SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_AtomicOperations_complexfloat.cpp
