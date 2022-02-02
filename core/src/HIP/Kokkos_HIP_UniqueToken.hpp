@@ -60,7 +60,6 @@ template <>
 class UniqueToken<HIP, UniqueTokenScope::Global> {
  protected:
   View<uint32_t*, HIPSpace> m_locks;
-  uint32_t m_count;
 
  public:
   using execution_space = HIP;
@@ -68,8 +67,7 @@ class UniqueToken<HIP, UniqueTokenScope::Global> {
 
   explicit UniqueToken(execution_space const& = execution_space())
       : m_locks(View<uint32_t*, HIPSpace>("Kokkos::UniqueToken::m_locks",
-                                          HIP().concurrency())),
-        m_count(HIP().concurrency()){};
+                                          HIP().concurrency())) {}
 
   KOKKOS_DEFAULTED_FUNCTION
   UniqueToken(const UniqueToken&) = default;
@@ -85,7 +83,7 @@ class UniqueToken<HIP, UniqueTokenScope::Global> {
 
   /// \brief upper bound for acquired values, i.e. 0 <= value < size()
   KOKKOS_INLINE_FUNCTION
-  size_type size() const noexcept { return m_count; }
+  size_type size() const noexcept { return m_locks.extent(0); }
 
   /// \brief acquire value such that 0 <= value < size()
   KOKKOS_INLINE_FUNCTION
@@ -93,31 +91,35 @@ class UniqueToken<HIP, UniqueTokenScope::Global> {
     KOKKOS_IF_ON_DEVICE(
         int idx = blockIdx.x * (blockDim.x * blockDim.y) +
                   threadIdx.y * blockDim.x + threadIdx.x;
-        idx = idx % m_count; unsigned int active = __ballot(1);
+        idx = idx % size(); unsigned int active = __ballot(1);
         unsigned int done_active = 0; bool done = false;
         while (active != done_active) {
           if (!done) {
-#ifdef KOKKOS_ENABLE_IMPL_DESUL_ATOMICS
-            desul::atomic_thread_fence(desul::MemoryOrderAcquire(),
-                                       desul::MemoryScopeDevice());
-#else
-            Kokkos::memory_fence();
-#endif
             if (Kokkos::atomic_compare_exchange(&m_locks(idx), 0, 1) == 0) {
               done = true;
             } else {
               idx += blockDim.y * blockDim.x + 1;
-              idx = idx % m_count;
+              idx = idx % size();
             }
           }
           done_active = __ballot(done ? 1 : 0);
-        } return idx;)
+        } return idx;
+
+// Make sure that all writes in the previous lock owner are visible to me
+#ifdef KOKKOS_ENABLE_IMPL_DESUL_ATOMICS
+        desul::atomic_thread_fence(desul::MemoryOrderAcquire(),
+                                   desul::MemoryScopeDevice());
+#else
+        Kokkos::memory_fence();
+#endif
+    )
     KOKKOS_IF_ON_HOST(return 0;)
   }
 
   /// \brief release an acquired value
   KOKKOS_INLINE_FUNCTION
   void release(size_type idx) const noexcept {
+// Make sure my writes are visible to the next lock owner
 #ifdef KOKKOS_ENABLE_IMPL_DESUL_ATOMICS
     desul::atomic_thread_fence(desul::MemoryOrderRelease(),
                                desul::MemoryScopeDevice());
@@ -131,9 +133,6 @@ class UniqueToken<HIP, UniqueTokenScope::Global> {
 template <>
 class UniqueToken<HIP, UniqueTokenScope::Instance>
     : public UniqueToken<HIP, UniqueTokenScope::Global> {
- private:
-  View<uint32_t*, HIPSpace> m_buffer_view;
-
  public:
   explicit UniqueToken(execution_space const& arg = execution_space())
       : UniqueToken<HIP, UniqueTokenScope::Global>(arg) {}
@@ -141,7 +140,6 @@ class UniqueToken<HIP, UniqueTokenScope::Instance>
   UniqueToken(size_type max_size, execution_space const& = execution_space()) {
     m_locks =
         View<uint32_t*, HIPSpace>("Kokkos::UniqueToken::m_locks", max_size);
-    m_count = max_size;
   }
 };
 
