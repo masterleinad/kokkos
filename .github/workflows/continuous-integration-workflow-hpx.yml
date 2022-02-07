@@ -17,7 +17,7 @@ jobs:
         with:
           path: kokkos
       - name: setup hpx dependencies
-        run:  sudo apt update && sudo apt install hwloc libboost-all-dev
+        run:  sudo apt update && sudo apt install hwloc libboost-all-dev clang
       - name: checkout hpx
         uses: actions/checkout@v2.2.0
         with:
@@ -37,6 +37,7 @@ jobs:
           cd hpx/build
           cmake \
             -DCMAKE_INSTALL_PREFIX=$PWD/../install \
+            -DCMAKE_CXX_COMPILER=clang++ \
             -DHPX_WITH_COMPILE_ONLY_TESTS=OFF \
             -DHPX_WITH_EXAMPLES=OFF \
             -DHPX_WITH_FETCH_ASIO=ON \
