@@ -56,6 +56,7 @@ jobs:
           cd kokkos/build
           cmake \
             -DCMAKE_INSTALL_PREFIX=$PWD/../install \
+            -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_CXX_FLAGS="-Werror" \
             -DHPX_ROOT=$PWD/../../hpx/install \
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
