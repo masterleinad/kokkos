@@ -210,8 +210,6 @@ class HPX {
   enum class instance_mode { default_, independent };
 
  private:
-  instance_mode m_mode;
-
   static uint32_t m_active_parallel_region_count;
   static hpx::spinlock m_active_parallel_region_count_mutex;
   static hpx::condition_variable_any m_active_parallel_region_count_cond;
@@ -246,7 +244,6 @@ class HPX {
   HPX()
   noexcept
       : m_instance_id(impl_default_instance_id()),
-        m_mode(instance_mode::default_),
         m_buffer(m_default_instance_data.m_buffer),
         m_future(m_default_instance_data.m_future),
         m_future_mutex(m_default_instance_data.m_future_mutex) {}
@@ -255,7 +252,6 @@ class HPX {
       : m_instance_id(mode == instance_mode::independent
                           ? m_next_instance_id++
                           : impl_default_instance_id()),
-        m_mode(mode),
         m_independent_instance_data(mode == instance_mode::independent
                                         ? (new instance_data())
                                         : nullptr),
@@ -271,7 +267,6 @@ class HPX {
 
   HPX(hpx::shared_future<void> future)
       : m_instance_id(m_next_instance_id++),
-        m_mode(instance_mode::independent),
 
         m_independent_instance_data(new instance_data(future)),
         m_buffer(m_independent_instance_data->m_buffer),
