@@ -299,10 +299,10 @@ struct math_function_name;
   struct MathUnaryFunction_##FUNC {                                            \
     template <typename T>                                                      \
     static KOKKOS_FUNCTION auto eval(T x) {                                    \
-      static_assert(std::is_same<decltype(Kokkos::Experimental::FUNC((T)0)),   \
+      static_assert(std::is_same<decltype(Kokkos::FUNC((T)0)),                 \
                                  math_unary_function_return_type_t<T>>::value, \
                     "");                                                       \
-      return Kokkos::Experimental::FUNC(x);                                    \
+      return Kokkos::FUNC(x);                                                  \
     }                                                                          \
     template <typename T>                                                      \
     static auto eval_std(T x) {                                                \
@@ -365,9 +365,12 @@ DEFINE_UNARY_FUNCTION_EVAL(lgamma, 2);
 DEFINE_UNARY_FUNCTION_EVAL(ceil, 2);
 DEFINE_UNARY_FUNCTION_EVAL(floor, 2);
 DEFINE_UNARY_FUNCTION_EVAL(trunc, 2);
+DEFINE_UNARY_FUNCTION_EVAL(round, 1);
 #ifndef KOKKOS_ENABLE_SYCL
 DEFINE_UNARY_FUNCTION_EVAL(nearbyint, 2);
 #endif
+
+DEFINE_UNARY_FUNCTION_EVAL(logb, 2);
 
 #undef DEFINE_UNARY_FUNCTION_EVAL
 
@@ -376,10 +379,10 @@ DEFINE_UNARY_FUNCTION_EVAL(nearbyint, 2);
     template <typename T, typename U>                                    \
     static KOKKOS_FUNCTION auto eval(T x, U y) {                         \
       static_assert(                                                     \
-          std::is_same<decltype(Kokkos::Experimental::FUNC((T)0, (U)0)), \
+          std::is_same<decltype(Kokkos::FUNC((T)0, (U)0)),               \
                        math_binary_function_return_type_t<T, U>>::value, \
           "");                                                           \
-      return Kokkos::Experimental::FUNC(x, y);                           \
+      return Kokkos::FUNC(x, y);                                         \
     }                                                                    \
     template <typename T, typename U>                                    \
     static auto eval_std(T x, U y) {                                     \
@@ -400,6 +403,9 @@ DEFINE_UNARY_FUNCTION_EVAL(nearbyint, 2);
 
 DEFINE_BINARY_FUNCTION_EVAL(pow, 2);
 DEFINE_BINARY_FUNCTION_EVAL(hypot, 2);
+
+DEFINE_BINARY_FUNCTION_EVAL(nextafter, 1);
+DEFINE_BINARY_FUNCTION_EVAL(copysign, 1);
 
 #undef DEFINE_BINARY_FUNCTION_EVAL
 
@@ -874,6 +880,18 @@ TEST(TEST_CATEGORY,
   TEST_MATH_FUNCTION(trunc)({12.3l, 4.56l, 789.l});
 #endif
 
+  TEST_MATH_FUNCTION(round)({-3, -2, -1, 0, 1});
+  TEST_MATH_FUNCTION(round)({-3l, -2l, -1l, 0l, 1l});
+  TEST_MATH_FUNCTION(round)({-3ll, -2ll, -1ll, 0ll, 1ll});
+  TEST_MATH_FUNCTION(round)({2u, 3u, 4u, 5u, 6u});
+  TEST_MATH_FUNCTION(round)({2ul, 3ul, 4ul, 5ul, 6ul});
+  TEST_MATH_FUNCTION(round)({2ull, 3ull, 4ull, 5ull, 6ull});
+  TEST_MATH_FUNCTION(round)({2.3f, 2.5f, 2.7f, -2.3f, -2.5f, -2.7f, -0.0f});
+  TEST_MATH_FUNCTION(round)({2.3, 2.5, 2.7, -2.3, -2.5, -2.7, -0.0});
+#ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
+  TEST_MATH_FUNCTION(round)({2.3l, 2.5l, 2.7l, -2.3l, -2.5l, -2.7l, -0.0l});
+#endif
+
 #ifndef KOKKOS_ENABLE_SYCL
   TEST_MATH_FUNCTION(nearbyint)({-3, -2, -1, 0, 1});
   TEST_MATH_FUNCTION(nearbyint)({-3l, -2l, -1l, 0l, 1l});
@@ -889,6 +907,43 @@ TEST(TEST_CATEGORY,
 #endif
 }
 
+TEST(TEST_CATEGORY,
+     mathematical_functions_floating_point_manipulation_functions) {
+  TEST_MATH_FUNCTION(logb)({2, 3, 4, 56, 789});
+  TEST_MATH_FUNCTION(logb)({2l, 3l, 4l, 56l, 789l});
+  TEST_MATH_FUNCTION(logb)({2ll, 3ll, 4ll, 56ll, 789ll});
+  TEST_MATH_FUNCTION(logb)({2u, 3u, 4u, 5u, 6u});
+  TEST_MATH_FUNCTION(logb)({2ul, 3ul, 4ul, 5ul, 6ul});
+  TEST_MATH_FUNCTION(logb)({2ull, 3ull, 4ull, 5ull, 6ull});
+  TEST_MATH_FUNCTION(logb)({123.45f, 6789.0f});
+  TEST_MATH_FUNCTION(logb)({123.45, 6789.0});
+#ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
+  TEST_MATH_FUNCTION(logb)({123.45l, 6789.0l});
+#endif
+
+  do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(0, 1.f);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(1, 2.f);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(0.1, 0);
+#ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
+  do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(1, 2.l);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(1.l, 2.l);
+#endif
+
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(0, 1.f);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1, 2.f);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(0.1, 0);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1.f, +2.f);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1.f, -2.f);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1., +2.);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1., -2.);
+#ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1, +2.l);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1.l, +2);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1.l, +2.l);
+  do_test_math_binary_function<TEST_EXECSPACE, kk_copysign>(1.l, -2.l);
+#endif
+}
+
 template <class Space>
 struct TestAbsoluteValueFunction {
   TestAbsoluteValueFunction() { run(); }
@@ -898,7 +953,7 @@ struct TestAbsoluteValueFunction {
     ASSERT_EQ(errors, 0);
   }
   KOKKOS_FUNCTION void operator()(int, int& e) const {
-    using Kokkos::Experimental::abs;
+    using Kokkos::abs;
     if (abs(1) != 1 || abs(-1) != 1) {
       ++e;
       KOKKOS_IMPL_DO_NOT_USE_PRINTF("failed abs(int)\n");
@@ -926,8 +981,8 @@ struct TestAbsoluteValueFunction {
     }
 #endif
     // special values
-    using Kokkos::Experimental::isinf;
-    using Kokkos::Experimental::isnan;
+    using Kokkos::isinf;
+    using Kokkos::isnan;
     if (abs(-0.) != 0.
 #ifndef KOKKOS_IMPL_WORKAROUND_INTEL_LLVM_DEFAULT_FLOATING_POINT_MODEL
         || !isinf(abs(-INFINITY)) || !isnan(abs(-NAN))
@@ -962,7 +1017,7 @@ struct TestIsNaN {
     ASSERT_EQ(errors, 0);
   }
   KOKKOS_FUNCTION void operator()(int, int& e) const {
-    using Kokkos::Experimental::isnan;
+    using Kokkos::isnan;
     using Kokkos::Experimental::quiet_NaN;
     using Kokkos::Experimental::signaling_NaN;
     if (isnan(1) || isnan(INT_MAX)) {
