@@ -96,7 +96,7 @@ struct TestTeamScan {
     // Set team size explicitly to check whether non-power-of-two team sizes ca
     // be used.
     if (ExecutionSpace().concurrency() > 10000)
-      Kokkos::parallel_for(policy_type(M, 247), *this);
+      Kokkos::parallel_for(policy_type(M, 127), *this);
     else if (ExecutionSpace().concurrency() > 2)
       Kokkos::parallel_for(policy_type(M, 3), *this);
     else
@@ -141,21 +141,21 @@ struct TestTeamScan {
 };
 
 TEST(TEST_CATEGORY, team_scan) {
-  //TestTeamScan<TEST_EXECSPACE, int32_t>{}(0, 0);
-  //TestTeamScan<TEST_EXECSPACE, int32_t>{}(0, 1);
-  //TestTeamScan<TEST_EXECSPACE, int32_t>{}(1, 0);
-  TestTeamScan<TEST_EXECSPACE, double>{}(1, 247);
-  //TestTeamScan<TEST_EXECSPACE, uint32_t>{}(139, 64);
-  //TestTeamScan<TEST_EXECSPACE, uint32_t>{}(163, 128);
-  //TestTeamScan<TEST_EXECSPACE, int64_t>{}(433, 256);
-  //TestTeamScan<TEST_EXECSPACE, uint64_t>{}(976, 512);
-  //TestTeamScan<TEST_EXECSPACE, uint64_t>{}(1234, 1024);
-  //TestTeamScan<TEST_EXECSPACE, float>{}(2596, 34);
-  //TestTeamScan<TEST_EXECSPACE, double>{}(2596, 59);
-  //TestTeamScan<TEST_EXECSPACE, float>{}(2596, 65);
-  //TestTeamScan<TEST_EXECSPACE, double>{}(2596, 371);
-  //TestTeamScan<TEST_EXECSPACE, int64_t>{}(2596, 987);
-  //TestTeamScan<TEST_EXECSPACE, double>{}(2596, 1311);
+  TestTeamScan<TEST_EXECSPACE, int32_t>{}(0, 0);
+  TestTeamScan<TEST_EXECSPACE, int32_t>{}(0, 1);
+  TestTeamScan<TEST_EXECSPACE, int32_t>{}(1, 0);
+  TestTeamScan<TEST_EXECSPACE, uint32_t>{}(99, 32);
+  TestTeamScan<TEST_EXECSPACE, uint32_t>{}(139, 64);
+  TestTeamScan<TEST_EXECSPACE, uint32_t>{}(163, 128);
+  TestTeamScan<TEST_EXECSPACE, int64_t>{}(433, 256);
+  TestTeamScan<TEST_EXECSPACE, uint64_t>{}(976, 512);
+  TestTeamScan<TEST_EXECSPACE, uint64_t>{}(1234, 1024);
+  TestTeamScan<TEST_EXECSPACE, float>{}(2596, 34);
+  TestTeamScan<TEST_EXECSPACE, double>{}(2596, 59);
+  TestTeamScan<TEST_EXECSPACE, float>{}(2596, 65);
+  TestTeamScan<TEST_EXECSPACE, double>{}(2596, 371);
+  TestTeamScan<TEST_EXECSPACE, int64_t>{}(2596, 987);
+  TestTeamScan<TEST_EXECSPACE, double>{}(2596, 1311);
 }
 
 }  // namespace Test

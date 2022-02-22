@@ -325,7 +325,6 @@ __device__ void hip_intra_block_reduce_scan(
       const auto join_ptr = TD - (value_count << S) + value_count * index_shift;
       if (R > ((1 << S)-1) && join_ptr >= memory_start) {
         ValueJoin::join(functor, TD, join_ptr);
-        printf("%d, %d:Adding %ld(%d), %ld(%d)\n", S, int(threadIdx.y), TD-base_data, R, join_ptr-base_data, R-(value_count << S));
       }
     };
 
@@ -397,10 +396,8 @@ __device__ void hip_intra_block_reduce_scan(
       const int offset_to_previous_warp_total = (threadIdx.y & (~WarpMask)) - 1;
       ValueJoin::join(functor, base_data + value_count * threadIdx.y,
                       base_data + value_count * offset_to_previous_warp_total);
-      printf("%d:Adding %d, %d\n", int(threadIdx.y), int(threadIdx.y),  offset_to_previous_warp_total);
     }
   }
-  printf("Output %d:%f\n", int(threadIdx.y), *(base_data+value_count*threadIdx.y));
 }
 
 //----------------------------------------------------------------------------
