@@ -309,7 +309,7 @@ SharedAllocationRecord<Kokkos::Experimental::HIPSpace, void>::
 
 SharedAllocationRecord<Kokkos::Experimental::HIPSpace, void>::
     SharedAllocationRecord(
-        const Kokkos::Experimental::HIP& exec_space;
+        const Kokkos::Experimental::HIP& exec_space,
         const Kokkos::Experimental::HIPSpace& arg_space,
         const std::string& arg_label, const size_t arg_alloc_size,
         const SharedAllocationRecord<void, void>::function_type arg_dealloc)
