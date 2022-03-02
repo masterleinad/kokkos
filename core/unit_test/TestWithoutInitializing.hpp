@@ -216,6 +216,8 @@ TEST(TEST_CATEGORY, view_alloc_exec_space_int) {
   listen_tool_events(Config::DisableAll());
 }
 
+// FIXME_OPENMPTARGET
+#ifndef KOKKOS_ENABLE_OPENMPTARGET
 TEST(TEST_CATEGORY, view_allocation_int) {
 #ifdef KOKKOS_ENABLE_CUDA
   if (std::is_same<typename TEST_EXECSPACE::memory_space,
@@ -275,4 +277,5 @@ TEST(TEST_CATEGORY, view_allocation_exec_space_int) {
   ASSERT_TRUE(success);
   listen_tool_events(Config::DisableAll());
 }
+#endif
 
