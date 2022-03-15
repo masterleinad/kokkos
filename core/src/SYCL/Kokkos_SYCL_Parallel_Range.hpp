@@ -62,8 +62,19 @@ struct FunctorWrapperRangePolicyParallelFor {
       m_functor_wrapper.get_functor()(WorkTag(), id);
   }
 
+  void operator()(sycl::nd_item<1> item) const {
+    const typename Policy::index_type id = item.get_local_id() + m_begin;
+    if (id < m_range + m_begin) {
+      if constexpr (std::is_same<WorkTag, void>::value)
+        m_functor_wrapper.get_functor()(id);
+      else
+        m_functor_wrapper.get_functor()(WorkTag(), id);
+    }
+  }
+
   typename Policy::index_type m_begin;
   FunctorWrapper m_functor_wrapper;
+  typename Policy::index_type m_range = 0;
 };
 }  // namespace Kokkos::Impl
 
@@ -92,12 +103,24 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
     sycl::queue& q = *instance.m_queue;
 
     auto parallel_for_event = q.submit([&](sycl::handler& cgh) {
-      FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{policy.begin(),
-                                                              functor};
-      sycl::range<1> range(policy.end() - policy.begin());
       cgh.depends_on(memcpy_event);
-      cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(
-          range, f);
+      if constexpr (Policy::launch_bounds::maxTperB == 0) {
+        FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{policy.begin(),
+                                                                functor};
+        sycl::range<1> range(policy.end() - policy.begin());
+        cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(
+            range, f);
+      } else {
+        const auto actual_range = policy.end() - policy.begin();
+        const auto wgroup_size  = Policy::launch_bounds::maxTperB;
+        const auto launch_range =
+            (actual_range + wgroup_size - 1) / wgroup_size * wgroup_size;
+        FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{
+            policy.begin(), functor, actual_range};
+        sycl::nd_range<1> range(launch_range, Policy::launch_bounds::maxTperB);
+        cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(
+            range, f);
+      }
     });
     q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_for_event});
 
