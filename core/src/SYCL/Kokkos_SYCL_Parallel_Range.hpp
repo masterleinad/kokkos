@@ -54,6 +54,7 @@ template <typename FunctorWrapper, typename Policy>
 struct FunctorWrapperRangePolicyParallelFor {
   using WorkTag = typename Policy::work_tag;
 
+  // Called if the SYCL runtime determines the workgroup size.
   void operator()(sycl::item<1> item) const {
     const typename Policy::index_type id = item.get_linear_id() + m_begin;
     if constexpr (std::is_same<WorkTag, void>::value)
@@ -62,9 +63,10 @@ struct FunctorWrapperRangePolicyParallelFor {
       m_functor_wrapper.get_functor()(WorkTag(), id);
   }
 
+  // Called if the workgroup size is set according to launch bounds.
   void operator()(sycl::nd_item<1> item) const {
     const typename Policy::index_type id = item.get_global_id() + m_begin;
-    if (id < m_range + m_begin) {
+    if (id < m_work_size + m_begin) {
       if constexpr (std::is_same<WorkTag, void>::value)
         m_functor_wrapper.get_functor()(id);
       else
@@ -74,7 +76,9 @@ struct FunctorWrapperRangePolicyParallelFor {
 
   typename Policy::index_type m_begin;
   FunctorWrapper m_functor_wrapper;
-  typename Policy::index_type m_range = 0;
+  // Only used if launch bounds are set to restrict execution of the functor to
+  // the actual range.
+  typename Policy::index_type m_work_size = 0;
 };
 }  // namespace Kokkos::Impl
 
@@ -111,6 +115,10 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
         cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(
             range, f);
       } else {
+        // Use the maximum value provided as workgroup size. We need to make
+        // sure that the range the kernel is launched with is a multiple of the
+        // workgroup size. Hence, we need to restrict the execution of the
+        // functor in the kernel to the actual range.
         const auto actual_range = policy.end() - policy.begin();
         const auto wgroup_size  = Policy::launch_bounds::maxTperB;
         const auto launch_range =
