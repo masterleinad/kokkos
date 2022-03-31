@@ -63,7 +63,7 @@ struct FunctorWrapperRangePolicyParallelFor {
       m_functor_wrapper.get_functor()(WorkTag(), id);
   }
 
-  // Called if the workgroup size is set according to launch bounds.
+  // Called if the workgroup size is set according to chunk size.
   void operator()(sycl::nd_item<1> item) const {
     const typename Policy::index_type id = item.get_global_id() + m_begin;
     if (id < m_work_size + m_begin) {
@@ -76,8 +76,8 @@ struct FunctorWrapperRangePolicyParallelFor {
 
   typename Policy::index_type m_begin;
   FunctorWrapper m_functor_wrapper;
-  // Only used if launch bounds are set to restrict execution of the functor to
-  // the actual range.
+  // Only used if chunk size is set to restrict execution of the functor to the
+  // actual range.
   typename Policy::index_type m_work_size = 0;
 };
 }  // namespace Kokkos::Impl
@@ -89,9 +89,8 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
   using Policy = Kokkos::RangePolicy<Traits...>;
 
  private:
-  using Member       = typename Policy::member_type;
-  using WorkTag      = typename Policy::work_tag;
-  using LaunchBounds = typename Policy::launch_bounds;
+  using Member  = typename Policy::member_type;
+  using WorkTag = typename Policy::work_tag;
 
   const FunctorType m_functor;
   const Policy m_policy;
@@ -108,19 +107,19 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
 
     auto parallel_for_event = q.submit([&](sycl::handler& cgh) {
       cgh.depends_on(memcpy_event);
-      if constexpr (Policy::launch_bounds::maxTperB == 0) {
+      if (policy.chunk_size() == 0) {
         FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{policy.begin(),
                                                                 functor};
         sycl::range<1> range(policy.end() - policy.begin());
         cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(
             range, f);
       } else {
-        // Use the maximum value provided as workgroup size. We need to make
-        // sure that the range the kernel is launched with is a multiple of the
-        // workgroup size. Hence, we need to restrict the execution of the
-        // functor in the kernel to the actual range.
+        // Use the chunk size as workgroup size. We need to make sure that the
+        // range the kernel is launched with is a multiple of the workgroup
+        // size. Hence, we need to restrict the execution of the functor in the
+        // kernel to the actual range.
         const auto actual_range = policy.end() - policy.begin();
-        const auto wgroup_size  = Policy::launch_bounds::maxTperB;
+        const auto wgroup_size  = policy.chunk_size();
         const auto launch_range =
             (actual_range + wgroup_size - 1) / wgroup_size * wgroup_size;
         FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{
@@ -173,7 +172,6 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
  private:
   using array_index_type = typename Policy::array_index_type;
   using index_type       = typename Policy::index_type;
-  using LaunchBounds     = typename Policy::launch_bounds;
   using WorkTag          = typename Policy::work_tag;
 
   const FunctorType m_functor;
