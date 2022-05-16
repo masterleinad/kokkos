@@ -1044,7 +1044,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
         Analysis::value_size(ReducerConditional::select(m_functor, m_reducer));
 
     const size_t team_reduce_size  = TEAM_REDUCE_SIZE * m_policy.team_size();
-    const size_t team_shared_size  = m_shmem_size + m_policy.scratch_size(1);
+    const size_t team_shared_size  = m_shmem_size;
     const size_t thread_local_size = 0;  // Never shrinks
 
     m_instance->resize_thread_data(pool_reduce_size, team_reduce_size,
