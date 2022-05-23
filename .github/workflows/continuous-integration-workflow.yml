@@ -51,7 +51,7 @@ jobs:
           mkdir build
           cd build
           cmake -DDESUL_ENABLE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/usr/desul-install ..
-          cmake --build . --parallel 2
+          sudo cmake --build . --target install --parallel 2
       - name: Checkout code
         uses: actions/checkout@v2.2.0
       - uses: actions/cache@v2
