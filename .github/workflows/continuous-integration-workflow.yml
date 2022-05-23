@@ -37,6 +37,21 @@ jobs:
       # see https://github.com/actions/virtual-environments/issues/3812
       options: --security-opt seccomp=unconfined
     steps:
+      - name: Checkout desul
+        uses: actions/checkout@v2.2.0
+        with:
+          repository: desul/desul
+          ref: 7a85900031e382616f84d8e35ff58be5e7ded504
+          path: desul
+      - name: Install desul
+        working-directory: desul
+        run: |
+          git submodule init
+          git submodule update
+          mkdir build
+          cd build
+          cmake -DDESUL_ENABLE_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/usr/desul-install ..
+          cmake --build . --parallel 2
       - name: Checkout code
         uses: actions/checkout@v2.2.0
       - uses: actions/cache@v2
@@ -50,10 +65,11 @@ jobs:
       - name: maybe_use_external_gtest
         if: ${{ matrix.distro == 'ubuntu:latest' }}
         run: sudo apt-get update && sudo apt-get install -y libgtest-dev
-      - name: CMake
+      - name: Configure Kokkos
         run: |
           cmake -B builddir \
             -DCMAKE_INSTALL_PREFIX=/usr \
+            -Ddesul_atomics_ROOT=/usr/desul-install \
             -DKokkos_ARCH_NATIVE=ON \
             -DKokkos_ENABLE_HWLOC=ON \
             -DKokkos_ENABLE_OPENMP=${{ matrix.openmp }} \
