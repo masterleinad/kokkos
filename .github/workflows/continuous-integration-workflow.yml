@@ -10,27 +10,10 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        distro: ['fedora:latest', 'fedora:rawhide', 'ubuntu:latest']
-        cxx: ['g++', 'clang++']
-        cmake_build_type: ['Release', 'Debug']
+        distro: ['ubuntu:latest']
+        cxx: ['clang++']
+        cmake_build_type: ['Debug']
         openmp: ['ON']
-        include:
-          - distro: 'fedora:intel'
-            cxx: 'icpc'
-            cmake_build_type: 'Release'
-            openmp: 'ON'
-          - distro: 'fedora:intel'
-            cxx: 'icpc'
-            cmake_build_type: 'Debug'
-            openmp: 'ON'
-          - distro: 'fedora:intel'
-            cxx: 'icpx'
-            cmake_build_type: 'Release'
-            openmp: 'ON'
-          - distro: 'fedora:intel'
-            cxx: 'icpx'
-            cmake_build_type: 'Debug'
-            openmp: 'ON'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/kokkos/ci-containers/${{ matrix.distro }}
