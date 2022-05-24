@@ -1,7 +1,7 @@
 #I have to leave these here for tribits
 IF (KOKKOS_ENABLE_IMPL_DESUL_ATOMICS)
   IF(KOKKOS_ENABLE_DESUL_ATOMICS_FORCE_EXTERNAL)
-    find_package(desul_atomics REQUIRED QUIET)
+    find_package(desul_atomics REQUIRED)
   ELSE()
     find_package(desul_atomics QUIET)
   ENDIF()
