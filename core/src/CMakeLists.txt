@@ -1,12 +1,3 @@
-#I have to leave these here for tribits
-IF (KOKKOS_ENABLE_IMPL_DESUL_ATOMICS)
-  IF(KOKKOS_ENABLE_DESUL_ATOMICS_FORCE_EXTERNAL)
-    find_package(desul_atomics REQUIRED QUIET)
-  ELSE()
-    find_package(desul_atomics QUIET)
-  ENDIF()
-ENDIF()
-
 KOKKOS_INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
