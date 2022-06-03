@@ -174,6 +174,7 @@ pipeline {
                         }
                     }
                 }
+/*
                 stage('OPENMPTARGET-ROCm-4.5') {
                     agent {
                         dockerfile {
@@ -218,6 +219,7 @@ pipeline {
                         }
                     }
                 }
+*/
                 stage('OPENMPTARGET-Clang') {
                     agent {
                         dockerfile {
@@ -456,6 +458,7 @@ pipeline {
                                 -DKokkos_ENABLE_OPENMP=ON \
                                 -DKokkos_ENABLE_LIBDL=OFF \
                                 -DKokkos_ENABLE_LIBQUADMATH=ON \
+                                -DKokkos_ENABLE_SERIAL=ON \
                                 -DCMAKE_PREFIX_PATH=/usr/lib/gcc/x86_64-linux-gnu/5.3.1 \
                               .. && \
                               make -j8 && ctest --verbose && gcc -I$PWD/../core/src/ ../core/unit_test/tools/TestCInterface.c'''

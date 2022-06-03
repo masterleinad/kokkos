@@ -61,8 +61,8 @@ namespace Impl {
 
 int g_openmp_hardware_max_threads = 1;
 
-__thread int t_openmp_hardware_id                = 0;
-__thread Impl::OpenMPInternal *t_openmp_instance = nullptr;
+thread_local int t_openmp_hardware_id                = 0;
+thread_local Impl::OpenMPInternal *t_openmp_instance = nullptr;
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_3
 void OpenMPInternal::validate_partition_impl(const int nthreads,
@@ -443,9 +443,11 @@ void OpenMP::print_configuration(std::ostream &s, const bool /*verbose*/) {
   }
 }
 
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_3
 std::vector<OpenMP> OpenMP::partition(...) { return std::vector<OpenMP>(1); }
 
 OpenMP OpenMP::create_instance(...) { return OpenMP(); }
+#endif
 
 int OpenMP::concurrency() { return Impl::g_openmp_hardware_max_threads; }
 
