@@ -115,11 +115,6 @@ void expect_fence_events(std::vector<FencePayload>& expected, Lambda lam) {
       [](const char*, const uint32_t, uint64_t*) {});
 }
 
-template <class>
-struct increment {
-  constexpr static const int size = 0;
-};
-int num_instances = 1;
 using index_type  = Kokkos::RangePolicy<>::index_type;
 struct TestFunctor {
   KOKKOS_FUNCTION void operator()(const index_type) const {}
@@ -144,18 +139,15 @@ void test_wrapper(const Lambda& lambda) {
  * event of that name, and the correct device ID
  */
 TEST(kokkosp, test_named_instance_fence) {
+  Kokkos::DefaultExecutionSpace ex;
   test_wrapper([&]() {
-    auto root = Kokkos::Tools::Experimental::device_id_root<
-        Kokkos::DefaultExecutionSpace>();
+    auto root = Kokkos::Tools::Experimental::device_id(ex);
     std::vector<FencePayload> expected{
-
         {"named_instance", FencePayload::distinguishable_devices::no,
-         root + num_instances}};
+	 root}};
     expect_fence_events(expected, [=]() {
-      Kokkos::DefaultExecutionSpace ex;
       ex.fence("named_instance");
     });
-    num_instances += increment<Kokkos::DefaultExecutionSpace>::size;
   });
 }
 /**
@@ -163,18 +155,15 @@ TEST(kokkosp, test_named_instance_fence) {
  * event of a correct name, and the correct device ID
  */
 TEST(kokkosp, test_unnamed_instance_fence) {
+  Kokkos::DefaultExecutionSpace ex;
   test_wrapper([&]() {
-    auto root = Kokkos::Tools::Experimental::device_id_root<
-        Kokkos::DefaultExecutionSpace>();
+    auto root = Kokkos::Tools::Experimental::device_id(ex);
     std::vector<FencePayload> expected{
-
         {"Unnamed Instance Fence", FencePayload::distinguishable_devices::no,
-         root + num_instances}};
+         root}};
     expect_fence_events(expected, [=]() {
-      Kokkos::DefaultExecutionSpace ex;
       ex.fence();
     });
-    num_instances += increment<Kokkos::DefaultExecutionSpace>::size;
   });
 }
 
@@ -186,9 +175,7 @@ TEST(kokkosp, test_named_global_fence) {
   test_wrapper([&]() {
     auto root = Kokkos::Tools::Experimental::device_id_root<
         Kokkos::DefaultExecutionSpace>();
-
     std::vector<FencePayload> expected{
-
         {"test global fence", FencePayload::distinguishable_devices::no, root}};
     expect_fence_events(expected,
                         [=]() { Kokkos::fence("test global fence"); });
@@ -203,13 +190,10 @@ TEST(kokkosp, test_unnamed_global_fence) {
   test_wrapper([&]() {
     auto root = Kokkos::Tools::Experimental::device_id_root<
         Kokkos::DefaultExecutionSpace>();
-
     std::vector<FencePayload> expected{
-
         {"Unnamed Global Fence", FencePayload::distinguishable_devices::no,
          root}};
     expect_fence_events(expected, [=]() { Kokkos::fence(); });
-    num_instances += increment<Kokkos::DefaultExecutionSpace>::size;
   });
 }
 /**
@@ -249,26 +233,22 @@ TEST(kokkosp, test_id_gen) {
  * Test that fencing and kernels yield events on the correct device ID's
  */
 TEST(kokkosp, test_kernel_sequence) {
+  Kokkos::DefaultExecutionSpace ex;
   test_wrapper([&]() {
-    auto root = Kokkos::Tools::Experimental::device_id_root<
-        Kokkos::DefaultExecutionSpace>();
+    auto root = Kokkos::Tools::Experimental::device_id(ex);
     std::vector<FencePayload> expected{
-
         {"named_instance", FencePayload::distinguishable_devices::no,
-         root + num_instances},
+         root},
         {"test_kernel", FencePayload::distinguishable_devices::no,
-         root + num_instances}
-
+         root}
     };
     expect_fence_events(expected, [=]() {
-      Kokkos::DefaultExecutionSpace ex;
       TestFunctor tf;
       ex.fence("named_instance");
       Kokkos::parallel_for(
           "test_kernel",
           Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(ex, 0, 1), tf);
     });
-    num_instances += increment<Kokkos::DefaultExecutionSpace>::size;
   });
 }
 #ifdef KOKKOS_ENABLE_CUDA
@@ -292,7 +272,6 @@ TEST(kokkosp, test_streams) {
       space_s1.fence();
       space_s2.fence();
     });
-    num_instances += increment<Kokkos::DefaultExecutionSpace>::size;
     found_payloads.erase(
         std::remove_if(found_payloads.begin(), found_payloads.end(),
                        [&](const auto& entry) {
