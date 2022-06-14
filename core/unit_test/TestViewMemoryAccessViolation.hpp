@@ -58,7 +58,7 @@ struct TestViewMemoryAccessViolation {
 
   TestViewMemoryAccessViolation(View w, ExecutionSpace const& s,
                                 std::string const& matcher)
-      : v(std::move(w)) {
+      : v(w) {
         {
           Kokkos::parallel_for(Kokkos::RangePolicy<ExecutionSpace>(s, 0, 1),
                                *this);
