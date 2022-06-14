@@ -106,7 +106,7 @@ void test_view_memory_access_violations_from_host() {
   using V8 = Kokkos::View<int********, ExecutionSpace>;
   std::string const prefix = "Kokkos::View ERROR: attempt to access inaccessible memory space";
   std::string const lbl = "my_label";
-  test_view_memory_access_violation(make_view<V0>(lbl), host_exec_space, prefix + ".*" + lbl);
+  //test_view_memory_access_violation(make_view<V0>(lbl), host_exec_space, prefix + ".*" + lbl);
   test_view_memory_access_violation(make_view<V1>(lbl), host_exec_space, prefix + ".*" + lbl);
   // clang-format on
 }
