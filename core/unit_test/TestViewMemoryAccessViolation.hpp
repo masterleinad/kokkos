@@ -52,26 +52,18 @@ struct TestViewMemoryAccessViolation {
   View v;
   static constexpr auto rank = View::rank;
 
-  template <std::size_t... Is>
-  KOKKOS_FUNCTION auto bad_access(std::index_sequence<Is...>) const {
-    return 0;//v(Is...);
-  }
-
   KOKKOS_FUNCTION void operator()(int) const {
 	  v(0);
-//    bad_access(std::make_index_sequence<rank>{});
   }
 
   TestViewMemoryAccessViolation(View w, ExecutionSpace const& s,
                                 std::string const& matcher)
       : v(std::move(w)) {
-   // EXPECT_DEATH(
         {
           Kokkos::parallel_for(Kokkos::RangePolicy<ExecutionSpace>(s, 0, 1),
                                *this);
           Kokkos::fence();
-        }/*,
-        matcher)*/;
+        }
   }
 };
 
