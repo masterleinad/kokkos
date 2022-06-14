@@ -54,11 +54,12 @@ struct TestViewMemoryAccessViolation {
 
   template <std::size_t... Is>
   KOKKOS_FUNCTION auto bad_access(std::index_sequence<Is...>) const {
-    return v(Is...);
+    return 0;//v(Is...);
   }
 
   KOKKOS_FUNCTION void operator()(int) const {
-  //  bad_access(std::make_index_sequence<rank>{});
+	  v(0);
+//    bad_access(std::make_index_sequence<rank>{});
   }
 
   TestViewMemoryAccessViolation(View w, ExecutionSpace const& s,
