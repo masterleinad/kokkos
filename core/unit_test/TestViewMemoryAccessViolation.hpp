@@ -112,61 +112,6 @@ void test_view_memory_access_violations_from_host() {
   std::string const prefix = "Kokkos::View ERROR: attempt to access inaccessible memory space";
   std::string const lbl = "my_label";
   test_view_memory_access_violation(make_view<V0>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V1>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V2>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V3>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V4>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V5>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V6>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V7>(lbl), host_exec_space, prefix + ".*" + lbl);
-  test_view_memory_access_violation(make_view<V8>(lbl), host_exec_space, prefix + ".*" + lbl);
-  auto* const ptr = reinterpret_cast<int*>(0xABADBABE);
-  test_view_memory_access_violation(make_view<V0>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V1>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V2>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V3>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V4>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V5>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V6>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V7>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  test_view_memory_access_violation(make_view<V8>(ptr), host_exec_space, prefix + ".*UNMANAGED");
-  // clang-format on
-}
-
-template <class ExecutionSpace>
-void test_view_memory_access_violations_from_device() {
-  ExecutionSpace const exec_space{};
-  // clang-format off
-  using V0 = Kokkos::View<int,         Kokkos::HostSpace>;
-  using V1 = Kokkos::View<int*,        Kokkos::HostSpace>;
-  using V2 = Kokkos::View<int**,       Kokkos::HostSpace>;
-  using V3 = Kokkos::View<int***,      Kokkos::HostSpace>;
-  using V4 = Kokkos::View<int****,     Kokkos::HostSpace>;
-  using V5 = Kokkos::View<int*****,    Kokkos::HostSpace>;
-  using V6 = Kokkos::View<int******,   Kokkos::HostSpace>;
-  using V7 = Kokkos::View<int*******,  Kokkos::HostSpace>;
-  using V8 = Kokkos::View<int********, Kokkos::HostSpace>;
-  std::string const prefix = "Kokkos::View ERROR: attempt to access inaccessible memory space";
-  std::string const lbl = "my_label";
-  test_view_memory_access_violation(make_view<V0>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V1>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V2>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V3>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V4>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V5>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V6>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V7>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V8>(lbl), exec_space, prefix + ".*UNAVAILABLE");
-  auto* const ptr = reinterpret_cast<int*>(0xABADBABE);
-  test_view_memory_access_violation(make_view<V0>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V1>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V2>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V3>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V4>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V5>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V6>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V7>(ptr), exec_space, prefix + ".*UNAVAILABLE");
-  test_view_memory_access_violation(make_view<V8>(ptr), exec_space, prefix + ".*UNAVAILABLE");
   // clang-format on
 }
 
@@ -182,37 +127,5 @@ TEST(TEST_CATEGORY_DEATH, view_memory_access_violations_from_host) {
   }
 
   test_view_memory_access_violations_from_host<ExecutionSpace>();
-}
-
-TEST(TEST_CATEGORY_DEATH, view_memory_access_violations_from_device) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
-  using ExecutionSpace = TEST_EXECSPACE;
-
-  if (Kokkos::SpaceAccessibility<
-          /*AccessSpace=*/ExecutionSpace,
-          /*MemorySpace=*/Kokkos::HostSpace>::accessible) {
-    GTEST_SKIP() << "skipping since no memory access violation would occur";
-  }
-
-#if defined(KOKKOS_IMPL_HIP_ABORT_DOES_NOT_PRINT_MESSAGE)
-  if (std::is_same<ExecutionSpace, Kokkos::Experimental::HIP>::value) {
-    GTEST_SKIP() << "skipping because not yet supported with HIP toolchain";
-  }
-#endif
-#if defined(KOKKOS_ENABLE_SYCL) && defined(NDEBUG)  // FIXME_SYCL
-  if (std::is_same<ExecutionSpace, Kokkos::Experimental::SYCL>::value) {
-    GTEST_SKIP() << "skipping SYCL device-side abort does not work when NDEBUG "
-                    "is defined";
-  }
-#endif
-#if defined(KOKKOS_ENABLE_OPENMPTARGET)  // FIXME_OPENMPTARGET
-  if (std::is_same<ExecutionSpace, Kokkos::Experimental::OpenMPTarget>::value) {
-    GTEST_SKIP() << "skipping because OpenMPTarget backend is currently not "
-                    "able to abort from the device";
-  }
-#endif
-
-  test_view_memory_access_violations_from_device<ExecutionSpace>();
 }
 #endif
