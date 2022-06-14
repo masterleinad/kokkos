@@ -69,20 +69,20 @@ struct TestViewMemoryAccessViolation {
             /*AccessSpace=*/ExecutionSpace,
             /*MemorySpace=*/typename View::memory_space>::accessible;
     EXPECT_FALSE(view_accessible_from_execution_space);
-    EXPECT_DEATH(
+ /*   EXPECT_DEATH(
         {
           Kokkos::parallel_for(Kokkos::RangePolicy<ExecutionSpace>(s, 0, 1),
                                *this);
           Kokkos::fence();
         },
-        matcher);
+        matcher);*/
   }
 };
 
 template <class View, class ExecutionSpace>
 void test_view_memory_access_violation(View v, ExecutionSpace const& s,
                                        std::string const& m) {
-  //TestViewMemoryAccessViolation<View, ExecutionSpace>(std::move(v), s, m);
+  TestViewMemoryAccessViolation<View, ExecutionSpace>(std::move(v), s, m);
 }
 
 template <class View, class LblOrPtr, std::size_t... Is>
