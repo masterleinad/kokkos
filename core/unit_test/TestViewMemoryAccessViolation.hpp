@@ -73,30 +73,12 @@ void test_view_memory_access_violation(View v, ExecutionSpace const& s,
   TestViewMemoryAccessViolation<View, ExecutionSpace>(std::move(v), s, m);
 }
 
-template <class View, class LblOrPtr, std::size_t... Is>
-auto make_view_impl(LblOrPtr x, std::index_sequence<Is...>) {
-  return View(x, (Is + 1)...);
-}
-
-template <class View, class LblOrPtr>
-auto make_view(LblOrPtr x) {
-  return make_view_impl<View>(std::move(x),
-                              std::make_index_sequence<View::rank>());
-}
-
 template <class ExecutionSpace>
 void test_view_memory_access_violations_from_host() {
   Kokkos::DefaultHostExecutionSpace const host_exec_space{};
   // clang-format off
   using V0 = Kokkos::View<int,         ExecutionSpace>;
   using V1 = Kokkos::View<int*,        ExecutionSpace>;
-  using V2 = Kokkos::View<int**,       ExecutionSpace>;
-  using V3 = Kokkos::View<int***,      ExecutionSpace>;
-  using V4 = Kokkos::View<int****,     ExecutionSpace>;
-  using V5 = Kokkos::View<int*****,    ExecutionSpace>;
-  using V6 = Kokkos::View<int******,   ExecutionSpace>;
-  using V7 = Kokkos::View<int*******,  ExecutionSpace>;
-  using V8 = Kokkos::View<int********, ExecutionSpace>;
   std::string const prefix = "Kokkos::View ERROR: attempt to access inaccessible memory space";
   std::string const lbl = "my_label";
   //test_view_memory_access_violation(make_view<V0>(lbl), host_exec_space, prefix + ".*" + lbl);
