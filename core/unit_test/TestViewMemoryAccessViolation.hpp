@@ -54,11 +54,11 @@ struct TestViewMemoryAccessViolation {
 
   template <std::size_t... Is>
   KOKKOS_FUNCTION auto bad_access(std::index_sequence<Is...>) const {
-    return v();
+    return v(Is...);
   }
 
   KOKKOS_FUNCTION void operator()(int) const {
-    bad_access(std::make_index_sequence<0>{});
+    bad_access(std::make_index_sequence<rank>{});
   }
 
   TestViewMemoryAccessViolation(View w, ExecutionSpace const& s,
@@ -107,6 +107,7 @@ void test_view_memory_access_violations_from_host() {
   std::string const prefix = "Kokkos::View ERROR: attempt to access inaccessible memory space";
   std::string const lbl = "my_label";
   test_view_memory_access_violation(make_view<V0>(lbl), host_exec_space, prefix + ".*" + lbl);
+  test_view_memory_access_violation(make_view<V1>(lbl), host_exec_space, prefix + ".*" + lbl);
   // clang-format on
 }
 
