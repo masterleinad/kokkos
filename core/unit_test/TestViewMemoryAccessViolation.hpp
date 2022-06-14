@@ -58,7 +58,7 @@ struct TestViewMemoryAccessViolation {
   }
 
   KOKKOS_FUNCTION void operator()(int) const {
-    bad_access(std::make_index_sequence<rank>{});
+  //  bad_access(std::make_index_sequence<rank>{});
   }
 
   TestViewMemoryAccessViolation(View w, ExecutionSpace const& s,
