@@ -43,46 +43,51 @@
 */
 
 #include <Kokkos_Core.hpp>
-#include <cstdio>
 
-int main(int argc, char* argv[]) {
-  Kokkos::initialize(argc, argv);
-  Kokkos::DefaultExecutionSpace{}.print_configuration(std::cout);
+#ifndef KOKKOS_COMPILER_NVHPC  // FIXME_NVHPC
+template <class View, class ExecutionSpace>
+struct TestViewMemoryAccessViolation {
+  View v;
+  static constexpr auto rank = View::rank;
 
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s [<kokkos_options>] <size>\n", argv[0]);
-    Kokkos::finalize();
-    exit(1);
+  KOKKOS_FUNCTION void operator()(int) const {
+	  v(0);
   }
 
-  const long n = strtol(argv[1], nullptr, 10);
-
-  printf("Number of even integers from 0 to %ld\n", n - 1);
-
-  Kokkos::Timer timer;
-  timer.reset();
-
-  // Compute the number of even integers from 0 to n-1, in parallel.
-  long count = 0;
-  Kokkos::parallel_reduce(
-      n, KOKKOS_LAMBDA(const long i, long& lcount) { lcount += (i % 2) == 0; },
-      count);
-
-  double count_time = timer.seconds();
-  printf("  Parallel: %ld    %10.6f\n", count, count_time);
-
-  timer.reset();
-
-  // Compare to a sequential loop.
-  long seq_count = 0;
-  for (long i = 0; i < n; ++i) {
-    seq_count += (i % 2) == 0;
+  TestViewMemoryAccessViolation(View w, ExecutionSpace const& s,
+                                std::string const& matcher)
+      : v(w) {
+        {
+          Kokkos::parallel_for(Kokkos::RangePolicy<ExecutionSpace>(s, 0, 1),
+                               *this);
+          Kokkos::fence();
+        }
   }
+};
 
-  count_time = timer.seconds();
-  printf("Sequential: %ld    %10.6f\n", seq_count, count_time);
-
-  Kokkos::finalize();
-
-  return (count == seq_count) ? 0 : -1;
+template <class View, class ExecutionSpace>
+void test_view_memory_access_violation(View v, ExecutionSpace const& s,
+                                       std::string const& m) {
+  TestViewMemoryAccessViolation<View, ExecutionSpace>(std::move(v), s, m);
 }
+
+template <class ExecutionSpace>
+void test_view_memory_access_violations_from_host() {
+  Kokkos::DefaultHostExecutionSpace const host_exec_space{};
+  // clang-format off
+  using V0 = Kokkos::View<int,         ExecutionSpace>;
+  using V1 = Kokkos::View<int*,        ExecutionSpace>;
+  std::string const prefix = "Kokkos::View ERROR: attempt to access inaccessible memory space";
+  std::string const lbl = "my_label";
+  //test_view_memory_access_violation(make_view<V0>(lbl), host_exec_space, prefix + ".*" + lbl);
+  test_view_memory_access_violation(V1(lbl, 1), host_exec_space, prefix + ".*" + lbl);
+  // clang-format on
+}
+
+int main()
+{
+  Kokkos::ScopeGuard scope_guard;
+  using ExecutionSpace = Kokkos::Experimental::SYCL;
+  test_view_memory_access_violations_from_host<ExecutionSpace>();
+}
+#endif
