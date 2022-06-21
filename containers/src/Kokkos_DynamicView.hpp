@@ -217,7 +217,7 @@ struct ChunkedArrayManager {
 
   template <typename Space>
   std::enable_if_t<!IsAccessibleFrom<Space>::value> deep_copy_to(
-      ChunkedArrayManager<Space, ValueType> const& other) {
+      ChunkedArrayManager<Space, ValueType> const& other) const {
     Kokkos::Impl::DeepCopy<Space, MemorySpace>(
         other.m_chunks, m_chunks, sizeof(pointer_type) * (m_chunk_max + 2));
   }
@@ -497,6 +497,16 @@ class DynamicView : public Kokkos::ViewTraits<DataType, P...> {
     }
   }
 
+  KOKKOS_FUNCTION const device_accessor& impl_get_chunks() const
+  {
+    return m_chunks;
+  }
+
+  KOKKOS_FUNCTION device_accessor& impl_get_chunks()
+  {
+    return m_chunks;
+  }
+
   //----------------------------------------------------------------------
 
   ~DynamicView()                  = default;
@@ -746,26 +756,112 @@ inline auto create_mirror_view(
   return Impl::create_mirror_view(space, src, wi);
 }
 
-template <class T, class DstView, class SrcView, class Enable = std::enable_if_t<is_dynamic_view<DstView>::value || is_dynamic_view<SrcView>::value>>
-inline void deep_copy(const DstView& dst,
-                      const SrcView& src) {
-  using dst_execution_space = typename DstView::execution_space;
-  using src_memory_space    = typename SrcView::memory_space;
+template <class T, class... DP, class... SP>
+inline void deep_copy(const Kokkos::Experimental::DynamicView<T, DP...>& dst,
+                      const Kokkos::Experimental::DynamicView<T, SP...>& src) {
+  using dst_type = Kokkos::Experimental::DynamicView<T, DP...>;
+  using src_type = Kokkos::Experimental::DynamicView<T, SP...>;
+
+  using dst_execution_space = typename ViewTraits<T, DP...>::execution_space;
+  using src_execution_space = typename ViewTraits<T, SP...>::execution_space;
+  using dst_memory_space    = typename ViewTraits<T, DP...>::memory_space;
+  using src_memory_space    = typename ViewTraits<T, SP...>::memory_space;
+
+  constexpr bool DstExecCanAccessSrc =
+        Kokkos::SpaceAccessibility<dst_execution_space,
+                                   src_memory_space>::accessible;
+  constexpr bool SrcExecCanAccessDst =
+        Kokkos::SpaceAccessibility<src_execution_space,
+                                   dst_memory_space>::accessible;
+
+  if (DstExecCanAccessSrc) {
+    Kokkos::Impl::ViewRemap<dst_type, src_type, dst_execution_space>(dst, src);
+    Kokkos::fence("Kokkos::deep_copy(DynamicView)");
+  }
+  else
+  if (SrcExecCanAccessDst) {
+    Kokkos::Impl::ViewRemap<dst_type, src_type, src_execution_space>(dst, src);
+    Kokkos::fence("Kokkos::deep_copy(DynamicView)");
+  }
+  else
+    src.impl_get_chunks().deep_copy_to(dst.impl_get_chunks());
+  Kokkos::fence("Kokkos::deep_copy(DynamicView)");
+}
+
+template <class ExecutionSpace, class T, class... DP, class... SP>
+inline void deep_copy(const ExecutionSpace&, const Kokkos::Experimental::DynamicView<T, DP...>& dst,
+                      const Kokkos::Experimental::DynamicView<T, SP...>& src) {
+  using dst_type = Kokkos::Experimental::DynamicView<T, DP...>;
+  using src_type = Kokkos::Experimental::DynamicView<T, SP...>;
+
+  using dst_execution_space = typename ViewTraits<T, DP...>::execution_space;
+  using src_execution_space = typename ViewTraits<T, SP...>::execution_space;
+  using dst_memory_space    = typename ViewTraits<T, DP...>::memory_space;
+  using src_memory_space    = typename ViewTraits<T, SP...>::memory_space;
+
+  constexpr bool DstExecCanAccessSrc =
+        Kokkos::SpaceAccessibility<dst_execution_space,
+                                   src_memory_space>::accessible;
+  constexpr bool SrcExecCanAccessDst =
+        Kokkos::SpaceAccessibility<src_execution_space,
+                                   dst_memory_space>::accessible;
+
+  // FIXME use execution space
+  if (DstExecCanAccessSrc) {
+    Kokkos::Impl::ViewRemap<dst_type, src_type, dst_execution_space>(dst, src);
+    Kokkos::fence("Kokkos::deep_copy(DynamicView)");
+  }
+  else
+  if (SrcExecCanAccessDst) {
+    Kokkos::Impl::ViewRemap<dst_type, src_type, src_execution_space>(dst, src);
+    Kokkos::fence("Kokkos::deep_copy(DynamicView)");
+  }
+  else
+    src.impl_get_chunks().deep_copy_to(dst.impl_get_chunks());
+}
+
+template <class T, class... DP, class... SP>
+inline void deep_copy(const View<T, DP...>& dst,
+                      const Kokkos::Experimental::DynamicView<T, SP...>& src) {
+  using dst_type = View<T, DP...>;
+  using src_type = Kokkos::Experimental::DynamicView<T, SP...>;
+
+  using dst_execution_space = typename dst_type::execution_space;
+  using src_memory_space    = typename src_type::memory_space;
 
   constexpr bool DstExecCanAccessSrc =
         Kokkos::SpaceAccessibility<dst_execution_space,
                                    src_memory_space>::accessible;
   static_assert(DstExecCanAccessSrc, "deep_copy given views that would require a temporary allocation");
 
-  Kokkos::Impl::ViewRemap<DstView, SrcView>(dst, src);
+  Kokkos::Impl::ViewRemap<dst_type, src_type>(dst, src);
   Kokkos::fence("Kokkos::deep_copy(DynamicView)");
 }
 
-template <class ExecutionSpace, class T, class DstView, class SrcView, class Enable = std::enable_if_t<is_dynamic_view<DstView>::value || is_dynamic_view<SrcView>::value>>
-inline void deep_copy(const ExecutionSpace&, const DstView& dst,
-                      const SrcView& src) {
-  // FIXME use execution space
-  Kokkos::Impl::ViewRemap<DstView, SrcView, ExecutionSpace>(dst, src);
+template <class T, class... DP, class... SP>
+inline void deep_copy(const Kokkos::Experimental::DynamicView<T, DP...>& dst,
+                      const View<T, SP...>& src) {
+  using dst_type = Kokkos::Experimental::DynamicView<T, SP...>;
+  using src_type = View<T, DP...>;
+
+  using dst_execution_space = typename ViewTraits<T, DP...>::execution_space;
+  using src_memory_space    = typename ViewTraits<T, SP...>::memory_space;
+
+  enum {
+    DstExecCanAccessSrc =
+        Kokkos::SpaceAccessibility<dst_execution_space,
+                                   src_memory_space>::accessible
+  };
+
+  if (DstExecCanAccessSrc) {
+    // Copying data between views in accessible memory spaces and either
+    // non-contiguous or incompatible shape.
+    Kokkos::Impl::ViewRemap<dst_type, src_type>(dst, src);
+    Kokkos::fence("Kokkos::deep_copy(DynamicView)");
+  } else {
+    Kokkos::Impl::throw_runtime_exception(
+        "deep_copy given views that would require a temporary allocation");
+  }
 }
 
 namespace Impl {
@@ -920,8 +1016,8 @@ auto create_mirror_view_and_copy(
   std::string& label =
       static_cast<Impl::ViewCtorProp<void, std::string>&>(arg_prop_copy).value;
   if (label.empty()) label = src.label();
-  auto mirror = typename Mirror::non_const_type{
-      arg_prop_copy, src.chunk_size(), src.chunk_max() * src.chunk_size()};
+  auto mirror = typename Mirror::non_const_type(
+      arg_prop_copy, src.chunk_size(), src.chunk_max() * src.chunk_size());
   if (alloc_prop_input::has_execution_space) {
     using ExecutionSpace = typename alloc_prop::execution_space;
     deep_copy(
