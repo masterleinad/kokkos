@@ -89,7 +89,7 @@ int HPX::concurrency() {
   }
 }
 
-void HPX::impl_initialize(InitArgs const &args) {
+void HPX::impl_initialize(InitArguments const &args) {
   int thread_count = args.num_threads;
   hpx::runtime *rt = hpx::get_runtime_ptr();
   if (rt == nullptr) {
