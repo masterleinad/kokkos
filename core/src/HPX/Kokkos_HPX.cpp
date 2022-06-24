@@ -150,7 +150,8 @@ void HPX::impl_finalize() {
 
 namespace Impl {
 
-int g_hpx_space_factory_initialized = initialize_space_factory<HPX>("060_HPX");
+int g_hpx_space_factory_initialized =
+    initialize_space_factory<Kokkos::Experimental::HPX>("060_HPX");
 
 }  // namespace Impl
 
