@@ -52,9 +52,9 @@
 #include <Kokkos_SYCL_Space.hpp>
 #include <Kokkos_Layout.hpp>
 #include <Kokkos_ScratchSpace.hpp>
-#include <impl/Kokkos_ExecSpaceInitializer.hpp>
 #include <impl/Kokkos_Profiling_Interface.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>
+#include <impl/Kokkos_InitArguments.hpp>
 
 namespace Kokkos {
 namespace Experimental {
@@ -142,7 +142,7 @@ class SYCL {
     sycl::device m_device;
   };
 
-  static void impl_initialize(SYCLDevice = SYCLDevice());
+  static void impl_initialize(InitArguments const&);
 
   int sycl_device() const;
 
@@ -162,18 +162,6 @@ class SYCL {
   Kokkos::Impl::HostSharedPtr<Impl::SYCLInternal> m_space_instance;
 };
 
-namespace Impl {
-
-class SYCLSpaceInitializer : public Kokkos::Impl::ExecSpaceInitializerBase {
- public:
-  void initialize(const InitArguments& args) final;
-  void finalize(const bool) final;
-  void fence() final;
-  void fence(const std::string&) final;
-  void print_configuration(std::ostream& msg, const bool detail) final;
-};
-
-}  // namespace Impl
 }  // namespace Experimental
 
 namespace Tools {

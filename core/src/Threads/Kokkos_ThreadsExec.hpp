@@ -616,13 +616,18 @@ inline int Threads::impl_is_initialized() {
   return Impl::ThreadsExec::is_initialized();
 }
 
-inline void Threads::impl_initialize(int thread_count) {
-  Impl::ThreadsExec::initialize(thread_count);
+inline void Threads::impl_initialize(InitArguments const &args) {
+  Impl::ThreadsExec::initialize(args.num_threads);
 }
 
 inline void Threads::impl_finalize() { Impl::ThreadsExec::finalize(); }
 
 inline void Threads::print_configuration(std::ostream &s, const bool detail) {
+  s << "Host Parallel Execution Space:" << std::endl;
+  s << "  KOKKOS_ENABLE_THREADS: ";
+  s << "yes" << std::endl;
+
+  s << "\nThreads Runtime Configuration:" << std::endl;
   Impl::ThreadsExec::print_configuration(s, detail);
 }
 

@@ -57,6 +57,7 @@
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_CPUDiscovery.hpp>
 #include <impl/Kokkos_Tools.hpp>
+#include <impl/Kokkos_ExecSpaceManager.hpp>
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -659,7 +660,7 @@ void ThreadsExec::initialize(int thread_count_arg) {
 
     for (unsigned ith = thread_spawn_begin; ith < thread_count; ++ith) {
       // Try to protect against cache coherency failure by casting to volatile.
-      ThreadsExec *const th = ((ThreadsExec * volatile *)s_threads_exec)[ith];
+      ThreadsExec *const th = ((ThreadsExec *volatile *)s_threads_exec)[ith];
       if (th) {
         wait_yield(th->m_pool_state, ThreadsExec::Active);
       } else {
@@ -837,36 +838,7 @@ const char *Threads::name() { return "Threads"; }
 namespace Impl {
 
 int g_threads_space_factory_initialized =
-    initialize_space_factory<ThreadsSpaceInitializer>("050_Threads");
-
-void ThreadsSpaceInitializer::initialize(const InitArguments &args) {
-  Kokkos::Threads::impl_initialize(args.num_threads);
-}
-
-void ThreadsSpaceInitializer::finalize(const bool all_spaces) {
-  if (std::is_same<Kokkos::Threads, Kokkos::DefaultExecutionSpace>::value ||
-      std::is_same<Kokkos::Threads,
-                   Kokkos::HostSpace::execution_space>::value ||
-      all_spaces) {
-    if (Kokkos::Threads::impl_is_initialized())
-      Kokkos::Threads::impl_finalize();
-  }
-}
-
-void ThreadsSpaceInitializer::fence() { Kokkos::Threads::impl_static_fence(); }
-void ThreadsSpaceInitializer::fence(const std::string &name) {
-  Kokkos::Threads::impl_static_fence(name);
-}
-
-void ThreadsSpaceInitializer::print_configuration(std::ostream &msg,
-                                                  const bool detail) {
-  msg << "Host Parallel Execution Space:" << std::endl;
-  msg << "  KOKKOS_ENABLE_THREADS: ";
-  msg << "yes" << std::endl;
-
-  msg << "\nThreads Runtime Configuration:" << std::endl;
-  Kokkos::Threads::print_configuration(msg, detail);
-}
+    initialize_space_factory<Threads>("050_Threads");
 
 }  // namespace Impl
 

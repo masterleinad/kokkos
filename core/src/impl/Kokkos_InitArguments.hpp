@@ -41,27 +41,41 @@
 // ************************************************************************
 //@HEADER
 */
+#ifndef KOKKOS_INIT_ARGUMENTS_HPP
+#define KOKKOS_INIT_ARGUMENTS_HPP
 
-#ifndef KOKKOS_EXEC_SPACE_INITIALIZER_HPP
-#define KOKKOS_EXEC_SPACE_INITIALIZER_HPP
-
-#include <iosfwd>
+#include <string>
 
 namespace Kokkos {
-namespace Impl {
 
-class ExecSpaceInitializerBase {
- public:
-  virtual void initialize(const InitArguments &args)                     = 0;
-  virtual void finalize(const bool all_spaces)                           = 0;
-  virtual void fence()                                                   = 0;
-  virtual void fence(const std::string &)                                = 0;
-  virtual void print_configuration(std::ostream &msg, const bool detail) = 0;
-  ExecSpaceInitializerBase()          = default;
-  virtual ~ExecSpaceInitializerBase() = default;
+namespace Tools {
+struct InitArguments;
+}
+
+struct InitArguments {
+  int num_threads;
+  int num_numa;
+  int device_id;
+  int ndevices;
+  int skip_device;
+  bool disable_warnings;
+  bool tune_internals;
+  bool tool_help        = false;
+  std::string tool_lib  = {};
+  std::string tool_args = {};
+
+  InitArguments(int nt = -1, int nn = -1, int dv = -1, bool dw = false,
+                bool ti = false)
+      : num_threads{nt},
+        num_numa{nn},
+        device_id{dv},
+        ndevices{-1},
+        skip_device{9999},
+        disable_warnings{dw},
+        tune_internals{ti} {}
+
+  Tools::InitArguments impl_get_tools_init_arguments() const;
 };
 
-}  // namespace Impl
-}  // namespace Kokkos
-
-#endif  // KOKKOS_EXEC_SPACE_INITIALIZER_HPP
+}
+#endif

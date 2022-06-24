@@ -267,9 +267,6 @@ struct verify_space<DstMemorySpace, SrcMemorySpace, false> {
 };
 #endif
 
-// Base class for exec space initializer factories
-class ExecSpaceInitializerBase;
-
 }  // namespace Impl
 
 namespace Experimental {

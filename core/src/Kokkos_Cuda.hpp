@@ -62,8 +62,8 @@
 #include <Kokkos_Layout.hpp>
 #include <Kokkos_ScratchSpace.hpp>
 #include <Kokkos_MemoryTraits.hpp>
-#include <impl/Kokkos_ExecSpaceInitializer.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>
+#include <impl/Kokkos_InitArguments.hpp>
 
 /*--------------------------------------------------------------------------*/
 
@@ -204,15 +204,6 @@ class Cuda {
   Cuda(cudaStream_t stream, bool manage_stream = false);
 
   //--------------------------------------------------------------------------
-  //! \name Device-specific functions
-  //@{
-
-  struct SelectDevice {
-    int cuda_device_id;
-    SelectDevice() : cuda_device_id(0) {}
-    explicit SelectDevice(int id) : cuda_device_id(id) {}
-  };
-
   //! Free any resources being consumed by the device.
   static void impl_finalize();
 
@@ -220,8 +211,7 @@ class Cuda {
   static int impl_is_initialized();
 
   //! Initialize, telling the CUDA run-time library which device to use.
-  static void impl_initialize(const SelectDevice         = SelectDevice(),
-                              const size_t num_instances = 1);
+  static void impl_initialize(InitArguments const&);
 
   /// \brief Cuda device architecture of the selected device.
   ///
@@ -266,17 +256,6 @@ struct DeviceTypeTraits<Cuda> {
 }  // namespace Tools
 
 namespace Impl {
-
-class CudaSpaceInitializer : public ExecSpaceInitializerBase {
- public:
-  CudaSpaceInitializer()  = default;
-  ~CudaSpaceInitializer() = default;
-  void initialize(const InitArguments& args) final;
-  void finalize(const bool all_spaces) final;
-  void fence() final;
-  void fence(const std::string&) final;
-  void print_configuration(std::ostream& msg, const bool detail) final;
-};
 
 template <class DT, class... DP>
 struct ZeroMemset<Kokkos::Cuda, DT, DP...> {

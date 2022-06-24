@@ -61,8 +61,8 @@
 #include <HIP/Kokkos_HIP_Error.hpp>  // HIP_SAFE_CALL
 
 #include <impl/Kokkos_Profiling_Interface.hpp>
-#include <impl/Kokkos_ExecSpaceInitializer.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>
+#include <impl/Kokkos_InitArguments.hpp>
 
 #include <hip/hip_runtime_api.h>
 /*--------------------------------------------------------------------------*/
@@ -536,16 +536,10 @@ class HIP {
   /** \brief  Initialize the device.
    *
    */
-  struct SelectDevice {
-    int hip_device_id;
-    SelectDevice() : hip_device_id(0) {}
-    explicit SelectDevice(int id) : hip_device_id(id) {}
-  };
-
   int hip_device() const;
   static hipDeviceProp_t const& hip_device_prop();
 
-  static void impl_initialize(const SelectDevice = SelectDevice());
+  static void impl_initialize(InitArguments const&);
 
   static int impl_is_initialized();
 
@@ -579,18 +573,6 @@ struct DeviceTypeTraits<Kokkos::Experimental::HIP> {
 }  // namespace Tools
 
 namespace Impl {
-
-class HIPSpaceInitializer : public Kokkos::Impl::ExecSpaceInitializerBase {
- public:
-  HIPSpaceInitializer()  = default;
-  ~HIPSpaceInitializer() = default;
-  void initialize(const InitArguments& args) final;
-  void finalize(const bool) final;
-  void fence() final;
-  void fence(const std::string&) final;
-  void print_configuration(std::ostream& msg, const bool detail) final;
-};
-
 template <class DT, class... DP>
 struct ZeroMemset<Kokkos::Experimental::HIP, DT, DP...> {
   ZeroMemset(const Kokkos::Experimental::HIP& exec_space,

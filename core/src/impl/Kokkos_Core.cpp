@@ -44,8 +44,8 @@
 
 #include <Kokkos_Core.hpp>
 #include <impl/Kokkos_Error.hpp>
-#include <impl/Kokkos_ExecSpaceInitializer.hpp>
 #include <impl/Kokkos_Command_Line_Parsing.hpp>
+#include <impl/Kokkos_ExecSpaceManager.hpp>
 #include <cctype>
 #include <cstring>
 #include <iostream>
@@ -106,7 +106,7 @@ ExecSpaceManager& ExecSpaceManager::get_instance() {
 }
 
 void ExecSpaceManager::register_space_factory(
-    const std::string name, std::unique_ptr<ExecSpaceInitializerBase> space) {
+    const std::string name, std::unique_ptr<ExecSpaceFooBase> space) {
   exec_space_factory_list[name] = std::move(space);
 }
 
@@ -122,7 +122,7 @@ void ExecSpaceManager::initialize_spaces(const Kokkos::InitArguments& args) {
 
 void ExecSpaceManager::finalize_spaces() {
   for (auto& to_finalize : exec_space_factory_list) {
-    to_finalize.second->finalize(/*all_spaces=*/true);
+    to_finalize.second->finalize();
   }
 }
 
@@ -1050,5 +1050,22 @@ namespace Impl {
 void _kokkos_pgi_compiler_bug_workaround() {}
 }  // end namespace Impl
 #endif
-
 }  // namespace Kokkos
+
+
+Kokkos::Tools::InitArguments Kokkos::InitArguments::impl_get_tools_init_arguments() const {
+  Tools::InitArguments init_tools;
+  init_tools.tune_internals =
+      tune_internals ? Tools::InitArguments::PossiblyUnsetOption::on
+                     : Tools::InitArguments::PossiblyUnsetOption::unset;
+  init_tools.help = tool_help
+                    ? Tools::InitArguments::PossiblyUnsetOption::on
+                    : Tools::InitArguments::PossiblyUnsetOption::unset;
+  init_tools.lib  = tool_lib.empty()
+                    ? Kokkos::Tools::InitArguments::unset_string_option
+                    : tool_lib;
+  init_tools.args = tool_args.empty()
+                    ? Kokkos::Tools::InitArguments::unset_string_option
+                    : tool_args;
+  return init_tools;
+}
