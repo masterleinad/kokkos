@@ -77,5 +77,5 @@ struct InitArguments {
   Tools::InitArguments impl_get_tools_init_arguments() const;
 };
 
-}
+}  // namespace Kokkos
 #endif

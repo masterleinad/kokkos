@@ -660,7 +660,7 @@ void ThreadsExec::initialize(int thread_count_arg) {
 
     for (unsigned ith = thread_spawn_begin; ith < thread_count; ++ith) {
       // Try to protect against cache coherency failure by casting to volatile.
-      ThreadsExec *const th = ((ThreadsExec *volatile *)s_threads_exec)[ith];
+      ThreadsExec *const th = ((ThreadsExec * volatile *)s_threads_exec)[ith];
       if (th) {
         wait_yield(th->m_pool_state, ThreadsExec::Active);
       } else {
