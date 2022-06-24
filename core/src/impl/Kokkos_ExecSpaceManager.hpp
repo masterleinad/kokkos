@@ -74,7 +74,7 @@ struct ExecSpaceFooDerived : ExecSpaceFooBase {
     ExecutionSpace().fence(std::move(label));
   }
   void print_configuration(std::ostream& msg, bool detail) final {
-    ExecutionSpace::print_configuration(msg, detail);
+    ExecutionSpace().print_configuration(msg, detail);
   }
 };
 

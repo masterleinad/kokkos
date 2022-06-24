@@ -184,14 +184,13 @@ void SYCL::impl_initialize(InitArguments const& args) {
                    Kokkos::DefaultExecutionSpace>::value ||
       0 < use_gpu) {
     if (use_gpu > -1) {
-      Kokkos::Experimental::SYCL::impl_initialize(
-          Kokkos::Experimental::SYCL::SYCLDevice(use_gpu));
+      Impl::SYCLInternal::singleton().initialize(
+          Kokkos::Experimental::SYCL::SYCLDevice(use_gpu).get_device());
     } else {
-      Kokkos::Experimental::SYCL::impl_initialize(
-          Kokkos::Experimental::SYCL::SYCLDevice(sycl::default_selector()));
+      Impl::SYCLInternal::singleton().initialize(
+          Kokkos::Experimental::SYCL::SYCLDevice(sycl::default_selector())
+              .get_device());
     }
-
-    Impl::SYCLInternal::singleton().initialize(d.get_device());
   }
 }
 
