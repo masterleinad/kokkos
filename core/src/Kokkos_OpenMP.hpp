@@ -147,7 +147,7 @@ class OpenMP {
   // use UniqueToken
   static int concurrency();
 
-  static void impl_initialize(int thread_count = -1);
+  static void impl_initialize(InitArguments const& args);
 
   /// \brief is the default execution space initialized for current 'master'
   /// thread
