@@ -135,10 +135,10 @@ const char* OpenMPTarget::name() {
   return Impl::OpenMPTargetInternal::impl_singleton()->name();
 }
 void OpenMPTarget::print_configuration(std::ostream& os, const bool detail) {
-  msg << "OpenMPTarget Execution Space:\n";
-  msg << "  KOKKOS_ENABLE_OPENMPTARGET: yes\n";
+  os << "OpenMPTarget Execution Space:\n";
+  os << "  KOKKOS_ENABLE_OPENMPTARGET: yes\n";
 
-  msg << "\nOpenMPTarget Runtime Configuration:\n";
+  os << "\nOpenMPTarget Runtime Configuration:\n";
 
   m_space_instance->print_configuration(os, detail);
 }
@@ -180,7 +180,7 @@ int OpenMPTarget::impl_is_initialized() {
 
 namespace Impl {
 int g_openmptarget_space_factory_initialized =
-    Kokkos::Impl::initialize_space_factory<OpenMPTarget>("160_OpenMPTarget");
+    Kokkos::Impl::initialize_space_factory<Experimental::OpenMPTarget>("160_OpenMPTarget");
 
 }  // namespace Impl
 }  // Namespace Kokkos
