@@ -158,8 +158,6 @@ class SYCL {
 
   static void impl_initialize(InitializationSettings const&);
 
-  int sycl_device() const;
-
   static bool impl_is_initialized();
 
   static int concurrency();
@@ -184,8 +182,8 @@ template <>
 struct DeviceTypeTraits<Kokkos::Experimental::SYCL> {
   /// \brief An ID to differentiate (for example) Serial from OpenMP in Tooling
   static constexpr DeviceType id = DeviceType::SYCL;
-  static int device_id(const Kokkos::Experimental::SYCL& exec) {
-    return exec.sycl_device();
+  static int device_id(const Kokkos::Experimental::SYCL&) {
+    return 0;  // FIXME_SYCL
   }
 };
 }  // namespace Experimental

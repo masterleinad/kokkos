@@ -209,7 +209,6 @@ void SYCLInternal::finalize() {
     RecordSYCL::decrement(RecordSYCL::get_record(m_scratchSpace));
   if (nullptr != m_scratchFlags)
     RecordSYCL::decrement(RecordSYCL::get_record(m_scratchFlags));
-  m_syclDev           = -1;
   m_scratchSpaceCount = 0;
   m_scratchSpace      = nullptr;
   m_scratchFlagsCount = 0;
