@@ -180,8 +180,9 @@ struct DeviceTypeTraits<Kokkos::Experimental::SYCL> {
   static constexpr DeviceType id = DeviceType::SYCL;
   static int device_id(const Kokkos::Experimental::SYCL& exec) {
     return exec.sycl_queue()
-        .get_device()
-        .get_info<sycl::info::device::vendor_id>();
+               .get_device()
+               .get_info<sycl::info::device::vendor_id>() %
+           (1 << num_device_bits);
   }
 };
 }  // namespace Experimental
