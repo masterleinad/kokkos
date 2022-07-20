@@ -178,8 +178,10 @@ template <>
 struct DeviceTypeTraits<Kokkos::Experimental::SYCL> {
   /// \brief An ID to differentiate (for example) Serial from OpenMP in Tooling
   static constexpr DeviceType id = DeviceType::SYCL;
-  static int device_id(const Kokkos::Experimental::SYCL&) {
-    return 0;  // FIXME_SYCL
+  static int device_id(const Kokkos::Experimental::SYCL& exec) {
+    return exec.sycl_queue()
+        .get_device()
+        .get_info<sycl::info::device::vendor_id>();
   }
 };
 }  // namespace Experimental
