@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v2.2.0
       - name: Configure Kokkos
         run:
-          cmake -B builddir
+          cmake . -B builddir
             -DKokkos_ENABLE_CUDA=${{ matrix.enable_cuda }}
             -DKokkos_ENABLE_CUDA_LAMBDA=${{ matrix.enable_cuda }}
             -DKokkos_ARCH_VOLTA70=${{ matrix.enable_cuda }}
