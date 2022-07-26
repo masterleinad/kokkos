@@ -32,7 +32,9 @@ jobs:
             -DKokkos_ENABLE_DEPRECATED_CODE_3=ON `
             -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF `
             -DCMAKE_CXX_FLAGS="/W0 /EHsc" `
-            -DCMAKE_BUILD_TYPE=Debug
+            -DCMAKE_BUILD_TYPE=Debug; `
+            get-content D:/a/kokkos/kokkos/builddir/CMakeFiles/CMakeOutput.log;`
+            get-content D:/a/kokkos/kokkos/builddir/CMakeFiles/CMakeError.log
       - name: Build
         run: |
           cmake --build builddir --parallel 2
