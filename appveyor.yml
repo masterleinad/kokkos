@@ -3,12 +3,14 @@ image:
 clone_folder: c:\projects\source
 install:
   - cinst cuda
-matrix:
-  - ENABLE_CUDA: OFF
-    TEST_REGEX: ""
 
-  - ENABLE_CUDA: ON
-    TEST_REGEX: '-E "*"'
+environment:    
+  matrix:
+    - ENABLE_CUDA: OFF
+      TEST_REGEX: ""
+
+    - ENABLE_CUDA: ON
+      TEST_REGEX: '-E "*"'
 
 build_script:
 - cmd: >-
