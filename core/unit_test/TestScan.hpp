@@ -129,16 +129,17 @@ struct TestScan {
 
   static void test_range(const size_t begin, const size_t end) {
     for (auto i = begin; i < end; ++i) {
+      std::cout << i << std::endl;
       (void)TestScan(i);
     }
   }
 };
 
 TEST(TEST_CATEGORY, scan) {
-  TestScan<TEST_EXECSPACE>::test_range(1, 1000);
-  TestScan<TEST_EXECSPACE>(0);
-  TestScan<TEST_EXECSPACE>(100000);
-  TestScan<TEST_EXECSPACE>(10000000);
+  TestScan<TEST_EXECSPACE>::test_range(1, 2000);
+//  TestScan<TEST_EXECSPACE>(1000);
+  //TestScan<TEST_EXECSPACE>(100000);
+  //TestScan<TEST_EXECSPACE>(10000000);
   TEST_EXECSPACE().fence();
 }
 }  // namespace Test
