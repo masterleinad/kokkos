@@ -22,7 +22,6 @@ jobs:
       - name: Configure Kokkos
         run: |
           cmake -B builddir \
-            -T host=x64 -A x64 \
             -DKokkos_ENABLE_CUDA=${{ matrix.enable_cuda }} \
             -DKokkos_ENABLE_CUDA_LAMBDA=${{ matrix.enable_cuda }} \
             -DKokkos_ARCH_VOLTA70=${{ matrix.enable_cuda }} \
