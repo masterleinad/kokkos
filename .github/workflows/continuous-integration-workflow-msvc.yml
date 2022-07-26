@@ -22,16 +22,16 @@ jobs:
       - name: Configure Kokkos
         run: |
           refreshenv
-          cmake . -B builddir \
-            -DKokkos_ENABLE_CUDA=${{ matrix.enable_cuda }} \
-            -DKokkos_ENABLE_CUDA_LAMBDA=${{ matrix.enable_cuda }} \
-            -DKokkos_ARCH_VOLTA70=${{ matrix.enable_cuda }} \
-            -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=${{ matrix.enable_cuda }} \
-            -DKokkos_ENABLE_TESTS=ON \
-            -DKokkos_ENABLE_EXAMPLES=ON \
-            -DKokkos_ENABLE_DEPRECATED_CODE_3=ON \
-            -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF \
-            -DCMAKE_CXX_FLAGS="/W0 /EHsc" \
+          cmake . -B builddir `
+            -DKokkos_ENABLE_CUDA=${{ matrix.enable_cuda }} `
+            -DKokkos_ENABLE_CUDA_LAMBDA=${{ matrix.enable_cuda }} `
+            -DKokkos_ARCH_VOLTA70=${{ matrix.enable_cuda }} `
+            -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=${{ matrix.enable_cuda }} `
+            -DKokkos_ENABLE_TESTS=ON `
+            -DKokkos_ENABLE_EXAMPLES=ON `
+            -DKokkos_ENABLE_DEPRECATED_CODE_3=ON `
+            -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF `
+            -DCMAKE_CXX_FLAGS="/W0 /EHsc" `
             -DCMAKE_BUILD_TYPE=Debug
       - name: Build
         run: |
