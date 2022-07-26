@@ -19,6 +19,8 @@ jobs:
       - name: Maybe install CUDA
         if: ${{ matrix.enable_cuda == 'ON' }}
         run: cinst cuda
+      - name: Checkout code
+        uses: actions/checkout@v2.2.0
       - name: Configure Kokkos
         run:
           cmake -B builddir
