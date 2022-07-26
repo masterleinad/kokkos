@@ -24,7 +24,7 @@ jobs:
             -DKokkos_ENABLE_CUDA=${{ matrix.enable_cuda }}
             -DKokkos_ENABLE_CUDA_LAMBDA=${{ matrix.enable_cuda }}
             -DKokkos_ARCH_VOLTA70=${{ matrix.enable_cuda }}
-            -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=${ENABLE_CUDA}
+            -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=${{ matrix.enable_cuda }}
             -DKokkos_ENABLE_TESTS=ON
             -DKokkos_ENABLE_EXAMPLES=ON
             -DKokkos_ENABLE_DEPRECATED_CODE_3=ON
