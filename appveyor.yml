@@ -6,9 +6,9 @@ install:
 
 environment:    
   matrix:
-#    - ENABLE_CUDA: OFF
-#      TEST_REGEX: ""
-#
+    - ENABLE_CUDA: OFF
+      TEST_REGEX: ""
+
     - ENABLE_CUDA: ON
       TEST_REGEX: '-E "*"'
 
