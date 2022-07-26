@@ -6,6 +6,6 @@ build_script:
     choco install cuda && refreshenv &&
     mkdir build &&
     cd build &&
-    cmake c:\projects\source -DKokkos_ENABLE_TESTS=ON -DCMAKE_CXX_FLAGS="/W0 /EHsc" -DKokkos_ENABLE_DEPRECATED_CODE_3=ON -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF -DKokkos_ARCH_NATIVE=ON -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_CUDA_LAMBDA=ON -DKokkos_ARCH_VOLTA70=ON -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON &&
+    cmake c:\projects\source -DKokkos_ENABLE_TESTS=ON -DCMAKE_CXX_FLAGS="/W0 /EHsc" -DKokkos_ENABLE_DEPRECATED_CODE_3=ON -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_CUDA_LAMBDA=ON -DKokkos_ARCH_VOLTA70=ON -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON &&
     cmake --build . --target install &&
     ctest -C Debug --output-on-failure
