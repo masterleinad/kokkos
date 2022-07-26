@@ -9,13 +9,8 @@ jobs:
   CI:
     strategy:
       matrix:
-        os: ''
-        enable_cuda: ''
-        include:
-          - os: 'windows-2019'
-            enable_cuda: 'OFF'
-          - os: 'windows-2022'
-            enable_cuda: 'ON'
+        os: ['windows-2019', 'windows-2022']
+        enable_cuda: ['OFF', 'ON']
     runs-on: ${{ matrix.os }}
     steps:
       - name: Maybe install CUDA
