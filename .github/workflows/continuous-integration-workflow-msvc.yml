@@ -39,4 +39,4 @@ jobs:
       - name: Maybe run tests
         if: ${{ matrix.enable_cuda == 'OFF' }}
         working-directory: builddir
-        run:  ctest -C Debug --output-on-failure
+        run:  ctest -C Release --output-on-failure
