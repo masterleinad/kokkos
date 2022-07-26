@@ -1,0 +1,42 @@
+name: github-Windows
+on: [push, pull_request]
+
+concurrency:
+  group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{github.event_name == 'pull_request'}}
+
+jobs:
+  CI:
+    strategy:
+      matrix:
+        include:
+          - os: 'windows-2019'
+            enable_cuda: 'OFF'
+          - os: 'windows-2022'
+            enable_cuda: 'ON'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Maybe install CUDA
+        if: ${{ matrix.enable_cuda == 'ON' }}
+        run: cinst cuda
+      - name: Configure Kokkos
+        run: |
+          cmake -B builddir \
+            -T host=x64 -A x64
+            -DKokkos_ENABLE_CUDA=${{ matrix.enable_cuda }} \
+            -DKokkos_ENABLE_CUDA_LAMBDA=${{ matrix.enable_cuda }} \
+            -DKokkos_ARCH_VOLTA70=${{ matrix.enable_cuda }} \
+            -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=${ENABLE_CUDA} \
+            -DKokkos_ENABLE_TESTS=ON \
+            -DKokkos_ENABLE_EXAMPLES=ON \
+            -DKokkos_ENABLE_DEPRECATED_CODE_3=ON \
+            -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF \
+            -DCMAKE_CXX_FLAGS="/W0 /EHsc" \
+            -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        run: |
+          cmake --build builddir --parallel 2
+      - name: Maybe run tests
+        if: ${{ matrix.enable_cuda == 'OFF' }}
+        working-directory: builddir
+        run:  ctest -C Debug --output-on-failure
