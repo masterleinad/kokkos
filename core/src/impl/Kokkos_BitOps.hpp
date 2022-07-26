@@ -94,6 +94,7 @@ inline int int_log2_host(unsigned i) {
   constexpr int shift = sizeof(unsigned) * CHAR_BIT - 1;
   return shift - __builtin_clz(i);
 #else
+  (void)shift;
   return int_log2_fallback(i);
 #endif
 }
