@@ -9,6 +9,8 @@ jobs:
   CI:
     strategy:
       matrix:
+        os: ''
+        enable_cuda: ''
         include:
           - os: 'windows-2019'
             enable_cuda: 'OFF'
