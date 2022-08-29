@@ -225,8 +225,15 @@ class ParallelScanSYCLBase {
             scratch_flags_ref(*scratch_flags);
           num_teams_done[0] = ++scratch_flags_ref;
          }
-         item.barrier(sycl::access::fence_space::local_space);
-         if (num_teams_done[0] == n_wgroups) {
+         item.barrier(sycl::access::fence_space::global_space);
+         if (num_teams_done[0] == n_wgroups && local_id==0) {
+           for (unsigned int i=1; i<n_wgroups; ++i)
+             final_reducer.join(&group_results[i], &group_results[i-1]);
+           for (unsigned int i=n_wgroups-1; i>0; --i)
+             group_results[i] = group_results[i-1];
+	   final_reducer.init(&group_results[0]);
+
+		 /*
            value_type total;
            final_reducer.init(&total);
 
@@ -245,7 +252,7 @@ class ParallelScanSYCLBase {
                group_results[id] = update;
              }
              final_reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
-           }
+           }*/
          }
       });
     });
