@@ -61,7 +61,7 @@ struct ViewDataHandle<
                                          ScratchMemorySpace<Kokkos::Experimental::SYCL>>)>> {
   using value_type  = typename Traits::value_type;
   using memory_space = typename Traits::memory_space;
-  using handle_type = std::conditional_t<is_sycl_type_space<memory_space>::value, sycl::global_ptr<value_type>, std::conditional_t<std::is_same_v<memory_space, ScratchMemorySpace<Kokkos::Experimental::SYCL>>, sycl::device_ptr<value_type>, sycl::host_ptr<value_type>>>;
+  using handle_type = std::conditional_t<is_sycl_type_space<memory_space>::value, sycl::global_ptr<value_type>, value_type*>;
   using return_type = typename Traits::value_type&;
   using track_type  = Kokkos::Impl::SharedAllocationTracker;
 
