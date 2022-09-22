@@ -1900,17 +1900,20 @@ struct MirrorOffsetType {
 
 namespace Impl {
 template <class T, class... P, class... ViewCtorArgs>
-inline std::enable_if_t<!Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space, typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror>
+inline std::enable_if_t<
+    !Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space,
+    typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror>
 create_mirror(const Kokkos::Experimental::OffsetView<T, P...>& src,
               const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop) {
   return typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror(
       Kokkos::create_mirror(arg_prop, src.view()), src.begins());
 }
 
-template <class T, class... P, class... ViewCtorArgs, class = std::enable_if_t<Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space>>
-inline auto 
-create_mirror(const Kokkos::Experimental::OffsetView<T, P...>& src,
-              const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop) {
+template <class T, class... P, class... ViewCtorArgs,
+          class = std::enable_if_t<
+              Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space>>
+inline auto create_mirror(const Kokkos::Experimental::OffsetView<T, P...>& src,
+                          const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop) {
   using alloc_prop_input = Impl::ViewCtorProp<ViewCtorArgs...>;
   using Space = typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space;
 
@@ -1956,14 +1959,16 @@ template <class Space, class T, class... P,
           typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
 inline auto create_mirror(
     const Space&, const Kokkos::Experimental::OffsetView<T, P...>& src) {
-  return Impl::create_mirror(src, Kokkos::view_alloc(typename Space::memory_space{}));
+  return Impl::create_mirror(
+      src, Kokkos::view_alloc(typename Space::memory_space{}));
 }
 
 template <class Space, class T, class... P>
 typename Kokkos::Impl::MirrorOffsetType<Space, T, P...>::view_type
 create_mirror(Kokkos::Impl::WithoutInitializing_t wi, const Space&,
               const Kokkos::Experimental::OffsetView<T, P...>& src) {
-  return Impl::create_mirror(src, Kokkos::view_alloc(typename Space::memory_space{}, wi));
+  return Impl::create_mirror(
+      src, Kokkos::view_alloc(typename Space::memory_space{}, wi));
 }
 
 template <class T, class... P, class... ViewCtorArgs>
@@ -1976,13 +1981,15 @@ inline auto create_mirror(
 namespace Impl {
 template <class T, class... P, class... ViewCtorArgs>
 inline std::enable_if_t<
-    !Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space &&(
-std::is_same<
-         typename Kokkos::Experimental::OffsetView<T, P...>::memory_space,
-         typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror::memory_space>::value &&
-     std::is_same<
-         typename Kokkos::Experimental::OffsetView<T, P...>::data_type,
-         typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror::data_type>::value),
+    !Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space &&
+        (std::is_same<
+             typename Kokkos::Experimental::OffsetView<T, P...>::memory_space,
+             typename Kokkos::Experimental::OffsetView<
+                 T, P...>::HostMirror::memory_space>::value &&
+         std::is_same<
+             typename Kokkos::Experimental::OffsetView<T, P...>::data_type,
+             typename Kokkos::Experimental::OffsetView<
+                 T, P...>::HostMirror::data_type>::value),
     typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror>
 create_mirror_view(const Kokkos::Experimental::OffsetView<T, P...>& src,
                    const Impl::ViewCtorProp<ViewCtorArgs...>&) {
@@ -1992,35 +1999,49 @@ create_mirror_view(const Kokkos::Experimental::OffsetView<T, P...>& src,
 template <class T, class... P, class... ViewCtorArgs>
 inline std::enable_if_t<
     !Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space &&
-    !(std::is_same<
-          typename Kokkos::Experimental::OffsetView<T, P...>::memory_space,
-          typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror::memory_space>::value &&
-      std::is_same<
-          typename Kokkos::Experimental::OffsetView<T, P...>::data_type,
-          typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror::data_type>::value),
+        !(std::is_same<
+              typename Kokkos::Experimental::OffsetView<T, P...>::memory_space,
+              typename Kokkos::Experimental::OffsetView<
+                  T, P...>::HostMirror::memory_space>::value &&
+          std::is_same<
+              typename Kokkos::Experimental::OffsetView<T, P...>::data_type,
+              typename Kokkos::Experimental::OffsetView<
+                  T, P...>::HostMirror::data_type>::value),
     typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror>
 create_mirror_view(const Kokkos::Experimental::OffsetView<T, P...>& src,
                    const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop) {
   return Kokkos::create_mirror(arg_prop, src);
 }
 
-template <class T, class... P, class... ViewCtorArgs, typename = std::enable_if_t<Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space>>
-std::enable_if_t<
-Impl::MirrorOffsetViewType<typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space, T, P...>::is_same_memspace,
-                 typename Impl::MirrorOffsetViewType<typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space, T, P...>::view_type>
+template <class T, class... P, class... ViewCtorArgs,
+          typename = std::enable_if_t<
+              Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space>>
+std::enable_if_t<Impl::MirrorOffsetViewType<
+                     typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space,
+                     T, P...>::is_same_memspace,
+                 typename Impl::MirrorOffsetViewType<
+                     typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space,
+                     T, P...>::view_type>
 create_mirror_view(const Kokkos::Experimental::OffsetView<T, P...>& src,
                    const Impl::ViewCtorProp<ViewCtorArgs...>&) {
   return src;
 }
 
-template <class T, class... P, class... ViewCtorArgs, typename = std::enable_if_t<Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space>>
-std::enable_if_t<
-!Impl::MirrorOffsetViewType<typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space, T, P...>::is_same_memspace,
-                 typename Impl::MirrorOffsetViewType<typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space, T, P...>::view_type>
+template <class T, class... P, class... ViewCtorArgs,
+          typename = std::enable_if_t<
+              Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space>>
+std::enable_if_t<!Impl::MirrorOffsetViewType<
+                     typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space,
+                     T, P...>::is_same_memspace,
+                 typename Impl::MirrorOffsetViewType<
+                     typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space,
+                     T, P...>::view_type>
 create_mirror_view(const Kokkos::Experimental::OffsetView<T, P...>& src,
                    const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop) {
   auto return_value = Kokkos::Impl::create_mirror(src, arg_prop);
-  static_assert(std::is_same_v<typename decltype(return_value)::memory_space, typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space>);
+  static_assert(std::is_same_v<
+                typename decltype(return_value)::memory_space,
+                typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space>);
   return return_value;
 }
 }  // namespace Impl
@@ -2051,7 +2072,8 @@ template <class Space, class T, class... P>
 inline auto create_mirror_view(
     Kokkos::Impl::WithoutInitializing_t wi, const Space&,
     const Kokkos::Experimental::OffsetView<T, P...>& src) {
-  return Impl::create_mirror_view(src, Kokkos::view_alloc(typename Space::memory_space{}, wi));
+  return Impl::create_mirror_view(
+      src, Kokkos::view_alloc(typename Space::memory_space{}, wi));
 }
 
 template <class T, class... P, class... ViewCtorArgs>
