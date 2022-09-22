@@ -53,19 +53,24 @@ TEST(kokkosp, create_mirror_no_init) {
   Kokkos::View<int*, Kokkos::DefaultExecutionSpace> device_view("device view",
                                                                 10);
   Kokkos::View<int*, Kokkos::HostSpace> host_view("host view", 10);
+  auto device_memory_space = typename Kokkos::DefaultExecutionSpace::memory_space{};
 
   auto success = validate_absence(
       [&]() {
         auto mirror_device =
             Kokkos::create_mirror(Kokkos::WithoutInitializing, device_view);
+        static_assert(std::is_same_v<typename decltype(mirror_device)::memory_space, Kokkos::HostSpace>);
         auto mirror_host =
             Kokkos::create_mirror(Kokkos::WithoutInitializing,
                                   Kokkos::DefaultExecutionSpace{}, host_view);
+        static_assert(std::is_same_v<typename decltype(mirror_host)::memory_space, decltype(device_memory_space)>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, device_view);
+        static_assert(std::is_same_v<typename decltype(mirror_device_view)::memory_space, Kokkos::HostSpace>);
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, Kokkos::DefaultExecutionSpace{},
             host_view);
+        static_assert(std::is_same_v<typename decltype(mirror_host_view)::memory_space, decltype(device_memory_space)>);
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};
@@ -90,21 +95,22 @@ TEST(kokkosp, create_mirror_no_init_view_ctor) {
             Kokkos::view_alloc(Kokkos::HostSpace{},
                                Kokkos::WithoutInitializing),
             device_view);
+        static_assert(std::is_same_v<typename decltype(mirror_device)::memory_space, Kokkos::HostSpace>);
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(device_memory_space, Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{}),
             host_view);
+        static_assert(std::is_same_v<typename decltype(mirror_host)::memory_space, decltype(device_memory_space)>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::HostSpace{},
                                Kokkos::WithoutInitializing),
             device_view);
-	static_assert(std::is_same_v<decltype(device_memory_space), Kokkos::CudaSpace>);
-	static_assert(std::is_same_v<typename decltype(host_view)::memory_space, Kokkos::HostSpace>);
+        static_assert(std::is_same_v<typename decltype(mirror_device_view)::memory_space, Kokkos::HostSpace>);
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(device_memory_space, Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{}),
             host_view);
-	static_assert(std::is_same_v<typename decltype(mirror_host_view)::memory_space, Kokkos::CudaSpace>);
+	static_assert(std::is_same_v<typename decltype(mirror_host_view)::memory_space, decltype(device_memory_space)>);
         auto mirror_host_view_host = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), host_view);
       },
@@ -136,14 +142,16 @@ TEST(kokkosp, create_mirror_view_and_copy) {
                      Config::EnableFences());
   Kokkos::View<int*, Kokkos::DefaultExecutionSpace> device_view;
   Kokkos::View<int*, Kokkos::HostSpace> host_view("host view", 10);
+  auto device_memory_space = typename Kokkos::DefaultExecutionSpace::memory_space{};
 
   auto success = validate_absence(
       [&]() {
         auto mirror_device = Kokkos::create_mirror_view_and_copy(
             Kokkos::view_alloc(
                 Kokkos::DefaultExecutionSpace{},
-                typename Kokkos::DefaultExecutionSpace::memory_space{}),
+                device_memory_space),
             host_view);
+        static_assert(std::is_same_v<typename decltype(mirror_device)::memory_space, decltype(device_memory_space)>);
         // Avoid fences for deallocation when mirror_device goes out of scope.
         device_view = mirror_device;
       },

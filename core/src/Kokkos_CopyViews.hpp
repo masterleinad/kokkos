@@ -3741,7 +3741,7 @@ typename Impl::MirrorViewType<Space, T, P...>::view_type create_mirror_view(
     const Space& space, const Kokkos::View<T, P...>& src,
     std::enable_if_t<!Impl::MirrorViewType<Space, T, P...>::is_same_memspace>* =
         nullptr) {
-  return Kokkos::create_mirror(src, view_alloc(space));
+  return Kokkos::create_mirror(space, src);
 }
 
 template <class Space, class T, class... P,
