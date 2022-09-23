@@ -444,9 +444,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview) {
         auto mirror_device =
             Kokkos::create_mirror(Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device)::memory_space,
                            Kokkos::HostSpace>);
+#else
+	     static_assert(
+            std::is_same_v<typename decltype(mirror_device)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host = Kokkos::create_mirror(Kokkos::WithoutInitializing,
                                                  TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
@@ -456,9 +462,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview) {
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device_view)::memory_space,
                            Kokkos::HostSpace>);
+#else
+             static_assert(
+            std::is_same_v<typename decltype(mirror_device_view)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
@@ -488,9 +500,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
         auto mirror_device = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device)::memory_space,
                            Kokkos::HostSpace>);
+#else
+             static_assert(
+            std::is_same_v<typename decltype(mirror_device)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{},
@@ -503,9 +521,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device_view)::memory_space,
                            Kokkos::HostSpace>);
+#else
+             static_assert(
+            std::is_same_v<typename decltype(mirror_device_view)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{},
@@ -580,9 +604,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview) {
         auto mirror_device =
             Kokkos::create_mirror(Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device)::memory_space,
                            Kokkos::HostSpace>);
+#else
+             static_assert(
+            std::is_same_v<typename decltype(mirror_device)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host = Kokkos::create_mirror(Kokkos::WithoutInitializing,
                                                  TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
@@ -592,9 +622,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview) {
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device_view)::memory_space,
                            Kokkos::HostSpace>);
+#else
+             static_assert(
+            std::is_same_v<typename decltype(mirror_device_view)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
@@ -625,9 +661,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
         auto mirror_device = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device)::memory_space,
                            Kokkos::HostSpace>);
+#else
+             static_assert(
+            std::is_same_v<typename decltype(mirror_device)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{},
@@ -640,9 +682,15 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
+#ifndef KOKKOS_ENABLE_CUDA_UVM
         static_assert(
             std::is_same_v<typename decltype(mirror_device_view)::memory_space,
                            Kokkos::HostSpace>);
+#else
+             static_assert(
+            std::is_same_v<typename decltype(mirror_device_view)::memory_space,
+                           decltype(device_memory_space)>);
+#endif
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{},
