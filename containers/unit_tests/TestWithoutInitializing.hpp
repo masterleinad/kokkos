@@ -490,7 +490,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview) {
 TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
   using namespace Kokkos::Test::Tools;
   listen_tool_events(Config::DisableAll(), Config::EnableKernels());
-  Kokkos::DynRankView<int, Kokkos::DefaultExecutionSpace> device_view(
+  Kokkos::DynRankView<int, TEST_EXECSPACE> device_view(
       "device view", 10);
   Kokkos::DynRankView<int, Kokkos::HostSpace> host_view("host view", 10);
   auto device_memory_space = typename TEST_EXECSPACE::memory_space{};
@@ -511,7 +511,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
 #endif
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
-                               Kokkos::DefaultExecutionSpace{},
+                               TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
@@ -532,7 +532,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
 #endif
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
-                               Kokkos::DefaultExecutionSpace{},
+                               TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
@@ -650,7 +650,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview) {
 TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
   using namespace Kokkos::Test::Tools;
   listen_tool_events(Config::DisableAll(), Config::EnableKernels());
-  Kokkos::Experimental::OffsetView<int*, Kokkos::DefaultExecutionSpace>
+  Kokkos::Experimental::OffsetView<int*, TEST_EXECSPACE>
       device_view("device view", {0, 10});
   Kokkos::Experimental::OffsetView<int*, Kokkos::HostSpace> host_view(
       "host view", {0, 10});
@@ -672,7 +672,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
 #endif
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
-                               Kokkos::DefaultExecutionSpace{},
+                               TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
@@ -693,7 +693,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
 #endif
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
-                               Kokkos::DefaultExecutionSpace{},
+                               TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
@@ -863,7 +863,7 @@ TEST(TEST_CATEGORY, create_mirror_view_and_copy_dynamicview) {
 TEST(TEST_CATEGORY, create_mirror_no_init_dynamicview_view_ctor) {
   using namespace Kokkos::Test::Tools;
   listen_tool_events(Config::DisableAll(), Config::EnableKernels());
-  Kokkos::Experimental::DynamicView<int*, Kokkos::DefaultExecutionSpace>
+  Kokkos::Experimental::DynamicView<int*, TEST_EXECSPACE>
       device_view("device view", 2, 10);
   device_view.resize_serial(10);
   Kokkos::Experimental::DynamicView<int*, Kokkos::HostSpace> host_view(
@@ -881,7 +881,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynamicview_view_ctor) {
                            decltype(device_memory_space)>);
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
-                               Kokkos::DefaultExecutionSpace{}),
+                               TEST_EXECSPACE{}),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
         static_assert(
@@ -895,7 +895,7 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynamicview_view_ctor) {
                            decltype(device_memory_space)>);
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing,
-                               Kokkos::DefaultExecutionSpace{}),
+                               TEST_EXECSPACE{}),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
         static_assert(
