@@ -513,9 +513,12 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
+    // FIXME_MSVC
+#ifndef KOKKOS_COMPILER_MSVC
         static_assert(
             std::is_same_v<typename decltype(mirror_host)::memory_space,
                            decltype(device_memory_space)>);
+#endif
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
@@ -533,9 +536,12 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
+    // FIXME_MSVC
+#ifndef KOKKOS_COMPILER_MSVC
         static_assert(
             std::is_same_v<typename decltype(mirror_host_view)::memory_space,
                            decltype(device_memory_space)>);
+#endif
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};
@@ -672,9 +678,12 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
+// FIXME_MSVC
+#ifndef KOKKOS_COMPILER_MSVC
         static_assert(
             std::is_same_v<typename decltype(mirror_host)::memory_space,
                            decltype(device_memory_space)>);
+#endif
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
@@ -692,9 +701,12 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
+// FIXME_MSVC
+#ifndef KOKKOS_COMPILER_MSVC
         static_assert(
             std::is_same_v<typename decltype(mirror_host_view)::memory_space,
                            decltype(device_memory_space)>);
+#endif
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};

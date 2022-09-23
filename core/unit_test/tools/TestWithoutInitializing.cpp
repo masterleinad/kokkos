@@ -124,9 +124,12 @@ TEST(kokkosp, create_mirror_no_init_view_ctor) {
             Kokkos::view_alloc(device_memory_space, Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{}),
             host_view);
+    // FIXME_MSVC
+#ifndef KOKKOS_COMPILER_MSVC
         static_assert(
             std::is_same_v<typename decltype(mirror_host)::memory_space,
                            decltype(device_memory_space)>);
+#endif
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::HostSpace{},
                                Kokkos::WithoutInitializing),
@@ -138,9 +141,12 @@ TEST(kokkosp, create_mirror_no_init_view_ctor) {
             Kokkos::view_alloc(device_memory_space, Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{}),
             host_view);
+    // FIXME_MSVC
+#ifndef KOKKOS_COMPILER_MSVC
         static_assert(
             std::is_same_v<typename decltype(mirror_host_view)::memory_space,
                            decltype(device_memory_space)>);
+#endif
         auto mirror_host_view_host = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), host_view);
       },
@@ -181,9 +187,12 @@ TEST(kokkosp, create_mirror_view_and_copy) {
             Kokkos::view_alloc(Kokkos::DefaultExecutionSpace{},
                                device_memory_space),
             host_view);
+// FIXME_MSVC
+#ifndef KOKKOS_COMPILER_MSVC
         static_assert(
             std::is_same_v<typename decltype(mirror_device)::memory_space,
                            decltype(device_memory_space)>);
+#endif
         // Avoid fences for deallocation when mirror_device goes out of scope.
         device_view = mirror_device;
       },
