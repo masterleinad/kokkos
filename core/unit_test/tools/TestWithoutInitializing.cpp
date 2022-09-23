@@ -124,12 +124,11 @@ TEST(kokkosp, create_mirror_no_init_view_ctor) {
             Kokkos::view_alloc(device_memory_space, Kokkos::WithoutInitializing,
                                Kokkos::DefaultExecutionSpace{}),
             host_view);
-    // FIXME_MSVC
-#ifndef KOKKOS_COMPILER_MSVC
+	typename decltype(mirror_host)::memory_space bla = "";
+	decltype(device_memory_space) blub = "";
         static_assert(
             std::is_same_v<typename decltype(mirror_host)::memory_space,
                            decltype(device_memory_space)>);
-#endif
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::HostSpace{},
                                Kokkos::WithoutInitializing),

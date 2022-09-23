@@ -12,7 +12,7 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #include <desul/atomics/Common.hpp>
 
 namespace desul {
-namespace impl {
+namespace Impl {
 
 template <class MemoryScope>
 void host_atomic_thread_fence(MemoryOrderAcquire, MemoryScope) {}
