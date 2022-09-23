@@ -64,8 +64,8 @@ TEST(kokkosp, create_mirror_no_init) {
         static_assert(
             std::is_same_v<typename decltype(mirror_device)::memory_space,
                            Kokkos::HostSpace>);
-#else 
-       static_assert(
+#else
+        static_assert(
             std::is_same_v<typename decltype(mirror_device)::memory_space,
                            decltype(device_memory_space)>);
 #endif
@@ -82,7 +82,7 @@ TEST(kokkosp, create_mirror_no_init) {
             std::is_same_v<typename decltype(mirror_device_view)::memory_space,
                            Kokkos::HostSpace>);
 #else
-       static_assert(
+        static_assert(
             std::is_same_v<typename decltype(mirror_device_view)::memory_space,
                            decltype(device_memory_space)>);
 #endif
