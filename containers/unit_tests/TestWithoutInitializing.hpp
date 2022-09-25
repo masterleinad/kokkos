@@ -453,26 +453,23 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview) {
         auto mirror_device =
             Kokkos::create_mirror(Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(mirror_device)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device)::memory_space>();
         auto mirror_host = Kokkos::create_mirror(Kokkos::WithoutInitializing,
                                                  TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_host)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_host)::memory_space, MemorySpace>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(
-                              mirror_device_view)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device_view)::memory_space>();
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_host_view)::memory_space,
-                           Kokkos::HostSpace>);
+        static_assert(std::is_same_v<decltype(mirror_host_view)::memory_space,
+                                     Kokkos::HostSpace>);
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};
@@ -496,30 +493,27 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynrankview_viewctor) {
         auto mirror_device = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(mirror_device)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device)::memory_space>();
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing, TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_host)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_host)::memory_space, MemorySpace>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(
-                              mirror_device_view)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device_view)::memory_space>();
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing, TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_host_view)::memory_space,
-                           MemorySpace>);
+        static_assert(std::is_same_v<decltype(mirror_host_view)::memory_space,
+                                     MemorySpace>);
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};
@@ -553,8 +547,7 @@ TEST(TEST_CATEGORY, create_mirror_view_and_copy_dynrankview) {
             host_view);
         ASSERT_EQ(host_view.size(), mirror_device.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_device)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_device)::memory_space, MemorySpace>);
         // Avoid fences for deallocation when mirror_device goes out of scope.
         device_view = mirror_device;
       },
@@ -585,26 +578,23 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview) {
         auto mirror_device =
             Kokkos::create_mirror(Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(mirror_device)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device)::memory_space>();
         auto mirror_host = Kokkos::create_mirror(Kokkos::WithoutInitializing,
                                                  TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_host)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_host)::memory_space, MemorySpace>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(
-                              mirror_device_view)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device_view)::memory_space>();
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_host_view)::memory_space,
-                           MemorySpace>);
+        static_assert(std::is_same_v<decltype(mirror_host_view)::memory_space,
+                                     MemorySpace>);
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};
@@ -630,30 +620,27 @@ TEST(TEST_CATEGORY, create_mirror_no_init_offsetview_view_ctor) {
         auto mirror_device = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(mirror_device)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device)::memory_space>();
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing, TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_host)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_host)::memory_space, MemorySpace>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
-        check_host_mirror<typename decltype(device_view)::memory_space,
-                          typename decltype(
-                              mirror_device_view)::memory_space>();
+        check_host_mirror<decltype(device_view)::memory_space,
+                          decltype(mirror_device_view)::memory_space>();
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing, TEST_EXECSPACE{},
                                device_memory_space),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_host_view)::memory_space,
-                           MemorySpace>);
+        static_assert(std::is_same_v<decltype(mirror_host_view)::memory_space,
+                                     MemorySpace>);
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};
@@ -688,17 +675,16 @@ TEST(TEST_CATEGORY, create_mirror_view_and_copy_offsetview) {
             host_view);
         ASSERT_EQ(host_view.size(), mirror_device.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_device)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_device)::memory_space, MemorySpace>);
         // Avoid fences for deallocation when mirror_device goes out of scope.
         device_view               = mirror_device;
         auto mirror_device_mirror = Kokkos::create_mirror_view_and_copy(
             Kokkos::view_alloc(TEST_EXECSPACE{},
                                typename TEST_EXECSPACE::memory_space{}),
             mirror_device);
-        static_assert(std::is_same_v<typename decltype(
-                                         mirror_device_mirror)::memory_space,
-                                     MemorySpace>);
+        static_assert(
+            std::is_same_v<decltype(mirror_device_mirror)::memory_space,
+                           MemorySpace>);
         ASSERT_EQ(mirror_device_mirror.size(), mirror_device.size());
       },
       [&](BeginParallelForEvent) {
@@ -729,26 +715,22 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynamicview) {
             Kokkos::create_mirror(Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_device)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_device)::memory_space, MemorySpace>);
         auto mirror_host = Kokkos::create_mirror(Kokkos::WithoutInitializing,
                                                  TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_host)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_host)::memory_space, MemorySpace>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_device_view)::memory_space,
-                           MemorySpace>);
+        static_assert(std::is_same_v<decltype(mirror_device_view)::memory_space,
+                                     MemorySpace>);
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, TEST_EXECSPACE{}, host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_host_view)::memory_space,
-                           Kokkos::HostSpace>);
+        static_assert(std::is_same_v<decltype(mirror_host_view)::memory_space,
+                                     Kokkos::HostSpace>);
       },
       [&](BeginParallelForEvent) {
         return MatchDiagnostic{true, {"Found begin event"}};
@@ -784,8 +766,7 @@ TEST(TEST_CATEGORY, create_mirror_view_and_copy_dynamicview) {
             host_view);
         ASSERT_EQ(host_view.size(), mirror_device.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_device)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_device)::memory_space, MemorySpace>);
         // Avoid fences for deallocation when mirror_device goes out of scope.
         device_view               = mirror_device;
         auto mirror_device_mirror = Kokkos::create_mirror_view_and_copy(
@@ -793,9 +774,9 @@ TEST(TEST_CATEGORY, create_mirror_view_and_copy_dynamicview) {
                                typename TEST_EXECSPACE::memory_space{}),
             mirror_device);
         ASSERT_EQ(mirror_device_mirror.size(), mirror_device.size());
-        static_assert(std::is_same_v<typename decltype(
-                                         mirror_device_mirror)::memory_space,
-                                     MemorySpace>);
+        static_assert(
+            std::is_same_v<decltype(mirror_device_mirror)::memory_space,
+                           MemorySpace>);
       },
       [&](BeginFenceEvent event) {
         if (event.descriptor().find("DynamicView::resize_serial: Fence after "
@@ -831,28 +812,24 @@ TEST(TEST_CATEGORY, create_mirror_no_init_dynamicview_view_ctor) {
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device.size());
         static_assert(
-            std::is_same_v<typename decltype(mirror_device)::memory_space,
-                           MemorySpace>);
+            std::is_same_v<decltype(mirror_device)::memory_space, MemorySpace>);
         auto mirror_host = Kokkos::create_mirror(
             Kokkos::view_alloc(Kokkos::WithoutInitializing, TEST_EXECSPACE{}),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_host)::memory_space,
-                           Kokkos::HostSpace>);
+        static_assert(std::is_same_v<decltype(mirror_host)::memory_space,
+                                     Kokkos::HostSpace>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing), device_view);
         ASSERT_EQ(device_view.size(), mirror_device_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_device_view)::memory_space,
-                           MemorySpace>);
+        static_assert(std::is_same_v<decltype(mirror_device_view)::memory_space,
+                                     MemorySpace>);
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::view_alloc(Kokkos::WithoutInitializing, TEST_EXECSPACE{}),
             host_view);
         ASSERT_EQ(host_view.size(), mirror_host_view.size());
-        static_assert(
-            std::is_same_v<typename decltype(mirror_host_view)::memory_space,
-                           Kokkos::HostSpace>);
+        static_assert(std::is_same_v<decltype(mirror_host_view)::memory_space,
+                                     Kokkos::HostSpace>);
       },
       [&](BeginFenceEvent event) {
         if (event.descriptor().find("DynamicView::resize_serial: Fence after "
