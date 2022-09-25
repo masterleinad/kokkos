@@ -47,8 +47,10 @@
 
 #include "include/ToolTestingUtilities.hpp"
 
-template <typename InputSpace, typename OutputSpace>
-void check_host_mirror() {
+template <typename InputView, typename OutputView>
+void check_host_mirror(const InputView&, const OutputView&) {
+  using InputSpace  = typename InputView::memory_space;
+  using OutputSpace = typename OutputView::memory_space;
   if constexpr (Kokkos::SpaceAccessibility<Kokkos::HostSpace,
                                            InputSpace>::accessible)
     static_assert(std::is_same_v<OutputSpace, InputSpace>);
@@ -68,8 +70,7 @@ TEST(kokkosp, create_mirror_no_init) {
       [&]() {
         auto mirror_device =
             Kokkos::create_mirror(Kokkos::WithoutInitializing, device_view);
-        check_host_mirror<decltype(device_view)::memory_space,
-                          decltype(mirror_device)::memory_space>();
+        check_host_mirror(device_view, mirror_device);
         auto mirror_host =
             Kokkos::create_mirror(Kokkos::WithoutInitializing,
                                   Kokkos::DefaultExecutionSpace{}, host_view);
@@ -77,8 +78,7 @@ TEST(kokkosp, create_mirror_no_init) {
             std::is_same_v<decltype(mirror_host)::memory_space, MemorySpace>);
         auto mirror_device_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, device_view);
-        check_host_mirror<decltype(device_view)::memory_space,
-                          decltype(mirror_device_view)::memory_space>();
+        check_host_mirror(device_view, mirror_device_view);
         auto mirror_host_view = Kokkos::create_mirror_view(
             Kokkos::WithoutInitializing, Kokkos::DefaultExecutionSpace{},
             host_view);
