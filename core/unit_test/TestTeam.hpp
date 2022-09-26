@@ -1305,14 +1305,14 @@ struct TestTeamBroadcast<ExecSpace, ScheduleType, T,
     value_type value     = (value_type)(tid % 0xFF) + offset;
 
     // broadcast boolean and value to team from source thread
-//    teamMember.team_broadcast(value, lid % ts);
+    teamMember.team_broadcast(value, lid % ts);
 
     Kokkos::parallel_reduce(
         Kokkos::TeamThreadRange(teamMember, ts),
-        [&](const int j, value_type &teamUpdate) { /*teamUpdate |= value;*/ },
+        [&](const int j, value_type &teamUpdate) { teamUpdate |= value; },
         Kokkos::BOr<value_type, memory_space>(parUpdate));
 
-//    if (teamMember.team_rank() == 0) update |= parUpdate;
+    if (teamMember.team_rank() == 0) update |= parUpdate;
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -1330,10 +1330,10 @@ struct TestTeamBroadcast<ExecSpace, ScheduleType, T,
 
     Kokkos::parallel_reduce(
         Kokkos::TeamThreadRange(teamMember, ts),
-        [&](const int j, value_type &teamUpdate) { /*teamUpdate |= value;*/ },
+        [&](const int j, value_type &teamUpdate) { teamUpdate |= value; },
         Kokkos::BOr<value_type, memory_space>(parUpdate));
 
-//    if (teamMember.team_rank() == 0) update |= parUpdate;
+    if (teamMember.team_rank() == 0) update |= parUpdate;
   }
 
   static void test_teambroadcast(const size_t league_size,
