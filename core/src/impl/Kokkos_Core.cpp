@@ -1243,7 +1243,7 @@ void Kokkos::finalize() {
     Kokkos::abort("Error: Kokkos::finalize() has already been called.\n");
   }
   pre_finalize_internal();
-  Kokkos::Impl::ExecSpaceManager::get_instance().finalize_spaces();
+  Impl::ExecSpaceManager::get_instance().finalize_spaces();
   post_finalize_internal();
 }
 
