@@ -203,11 +203,11 @@ class SYCLTeamMember {
           reduction_array[id_in_sg < maximum_work_range ? id_in_sg : 0];
       // In case the maximum_work_range is larger than the range of the first
       // subgroup, we first combine the items with a higher index.
-      for (unsigned int offset = local_range; offset < maximum_work_range;
+/*      for (unsigned int offset = local_range; offset < maximum_work_range;
            offset += local_range)
         if (id_in_sg + offset < maximum_work_range)
           reducer.join(result, reduction_array[id_in_sg + offset]);
-      sycl::group_barrier(sg);
+      sycl::group_barrier(sg);*/
 
       // Now do the actual subgroup reduction.
       const auto min_range =
