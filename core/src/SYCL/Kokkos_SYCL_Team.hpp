@@ -199,15 +199,15 @@ class SYCLTeamMember {
     // Let the first subgroup do the final reduction
     if (group_id == 0) {
       const auto local_range = sg.get_local_range()[0];
-      auto result =
-          reduction_array[id_in_sg < maximum_work_range ? id_in_sg : 0];
+      value_type result{}; /*=
+          reduction_array[id_in_sg < maximum_work_range ? id_in_sg : 0];*/
       // In case the maximum_work_range is larger than the range of the first
       // subgroup, we first combine the items with a higher index.
-/*      for (unsigned int offset = local_range; offset < maximum_work_range;
+      for (unsigned int offset = local_range; offset < maximum_work_range;
            offset += local_range)
         if (id_in_sg + offset < maximum_work_range)
-          reducer.join(result, reduction_array[id_in_sg + offset]);
-      sycl::group_barrier(sg);*/
+          result += reduction_array[id_in_sg + offset];
+      sycl::group_barrier(sg);
 
       // Now do the actual subgroup reduction.
       const auto min_range =
@@ -216,11 +216,11 @@ class SYCLTeamMember {
         const auto tmp = sg.shuffle_down(result, stride);
         if (id_in_sg + stride < min_range) reducer.join(result, tmp);
       }
-      if (id_in_sg == 0) reduction_array[0] = result;
+//      if (id_in_sg == 0) reduction_array[0] = result;
     }
     sycl::group_barrier(m_item.get_group());
 
-    reducer.reference() = reduction_array[0];
+//    reducer.reference() = reduction_array[0];
     // Make sure that the reduction array hasn't been modified in the meantime.
     m_item.barrier(sycl::access::fence_space::local_space);
   }
