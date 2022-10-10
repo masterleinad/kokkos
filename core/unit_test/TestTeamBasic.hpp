@@ -422,6 +422,10 @@ TEST(TEST_CATEGORY, team_handle_by_value) {
   { TestTeamPolicyHandleByValue<TEST_EXECSPACE>(); }
 }
 
+TEST(TEST_CATEGORY, repeated_team_reduce) {
+  TestRepeatedTeamReduce<TEST_EXECSPACE>();
+}
+
 }  // namespace Test
 
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
