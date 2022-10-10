@@ -1657,19 +1657,22 @@ struct TestRepeatedTeamReduce {
   TestRepeatedTeamReduce() : v("v", ncol) { test(); }
 
   void test() {
+    int team_size_max =
+        TeamPolicy(1, 1).team_size_recommended(*this, Kokkos::ParallelForTag());
+    // Choose a non-recommened (non-power of two for GPUs) team size
+    int team_size = team_size_max > 1 ? team_size_max - 1 : 1;
     for (int it = 0; it < 1000; ++it) {
-      Kokkos::parallel_for(TeamPolicy(ncol, nlev, 1), *this);
+      Kokkos::parallel_for(TeamPolicy(ncol, team_size, 1), *this);
       Kokkos::fence();
 
       int bad = 0;
-      Kokkos::parallel_reduce(
-          Kokkos::RangePolicy<Kokkos::DefaultExecutionSpace>(0, ncol), *this,
-          bad);
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecutionSpace>(0, ncol),
+                              *this, bad);
       ASSERT_EQ(bad, 0) << " Failing in iteration " << it;
     }
   }
 
-  Kokkos::View<double *, Kokkos::DefaultExecutionSpace> v;
+  Kokkos::View<double *, ExecutionSpace> v;
 };
 
 }  // namespace
