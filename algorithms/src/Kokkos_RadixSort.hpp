@@ -67,7 +67,7 @@ struct KeyFromView {
 
   // i: index of the key to get
   // bit: which bit, with 0 indicating the least-significant
-  auto operator()(int i, int bit) const {
+  KOKKOS_FUNCTION auto operator()(int i, int bit) const {
     auto h = keys(i) >> bit;
 
     // Handle the sign bit of signed 2's-complement indicating low values
@@ -90,7 +90,7 @@ auto keyFromView(KeyView const& keys) -> KeyFromView<BitWidth, KeyView> {
   return KeyFromView<BitWidth, KeyView>(keys);
 }
 
-template <typename T, typename IndexType = ::std::uint32_t>
+template <typename T, typename MemorySpace, typename IndexType = ::std::uint32_t>
 class RadixSorter {
  public:
   static_assert(std::is_integral_v<T>, "Keys must be integral for now");
@@ -179,7 +179,7 @@ class RadixSorter {
     }
 
     auto values_scratch =
-        View<U*>(view_alloc(exec, "radix_sorter_values_scratch",
+        View<U*, PValues...>(view_alloc(exec, "radix_sorter_values_scratch",
                             Kokkos::WithoutInitializing),
                  n);
 
@@ -195,9 +195,11 @@ class RadixSorter {
                                          {values_scratch, values},
                                          {m_index_new, m_index_old});
       } else {
-        Kokkos::pair key_pair(m_key_scratch, keys);
-        Kokkos::pair values_pair(values_scratch, values);
-        permute_by_scan<T, U>(policy, key_pair, values_pair);
+        using KeysType = View<T*, PView...>;
+	using ValuesType = View<U*, PView...>;
+        Kokkos::pair<KeysType, KeysType> key_pair(m_key_scratch, keys);
+        Kokkos::pair<ValuesType, ValuesType> values_pair(values_scratch, values);
+        permute_by_scan<View<T*, PView...>, View<U*, PValues...>>(policy, key_pair, values_pair);
       }
 
       // Number of bits is always even, and we know on odd numbered
@@ -216,20 +218,20 @@ class RadixSorter {
   }
 
  private:
-  template <class... U, class Policy>
+  template <class... Views, class Policy>
   void permute_by_scan(Policy policy,
-                       Kokkos::pair<View<U*>, View<U*>>... views) {
+                       Kokkos::pair<Views, Views>... views) {
     parallel_for(
         policy, KOKKOS_LAMBDA(int i) {
           auto n           = m_scan.extent(0);
           const auto total = m_scan(n - 1) + m_bits(n - 1);
           auto t           = i - m_scan(i) + total;
           auto new_idx     = m_bits(i) ? m_scan(i) : t;
-          [[maybe_unused]] int dummy[sizeof...(U)] = {
+          [[maybe_unused]] int dummy[sizeof...(Views)] = {
               (views.first(new_idx) = views.second(i), 0)...};
         });
     using std::swap;
-    [[maybe_unused]] int dummy[sizeof...(U)] = {
+    [[maybe_unused]] int dummy[sizeof...(Views)] = {
         (swap(views.first, views.second), 0)...};
   }
 
@@ -254,11 +256,11 @@ class RadixSorter {
         });
   }
 
-  View<T*> m_key_scratch;
-  View<IndexType*> m_index_old;
-  View<IndexType*> m_index_new;
-  View<size_t*> m_scan;
-  View<unsigned char*> m_bits;
+  View<T*, MemorySpace> m_key_scratch;
+  View<IndexType*, MemorySpace> m_index_old;
+  View<IndexType*, MemorySpace> m_index_new;
+  View<size_t*, MemorySpace> m_scan;
+  View<unsigned char*, MemorySpace> m_bits;
 };
 
 }  // namespace Experimental
