@@ -227,12 +227,10 @@ class RadixSorter {
           const auto total = m_scan(n - 1) + m_bits(n - 1);
           auto t           = i - m_scan(i) + total;
           auto new_idx     = m_bits(i) ? m_scan(i) : t;
-          [[maybe_unused]] int dummy[sizeof...(Views)] = {
-              (views.first(new_idx) = views.second(i), 0)...};
+          ((views.first(new_idx) = views.second(i)), ...);
         });
     using std::swap;
-    [[maybe_unused]] int dummy[sizeof...(Views)] = {
-        (swap(views.first, views.second), 0)...};
+    (swap(views.first, views.second),...);
   }
 
   template <class Policy, class KeyFunctor, class Permutation>
