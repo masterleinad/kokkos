@@ -9,8 +9,6 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #ifndef DESUL_ATOMICS_LOCK_ARRAY_SYCL_HPP_
 #define DESUL_ATOMICS_LOCK_ARRAY_SYCL_HPP_
 
-#include <sycl/sycl_runtime.h>
-
 #include <cstdint>
 
 #include "desul/atomics/Common.hpp"
@@ -46,9 +44,8 @@ void finalize_lock_arrays_sycl();
 }  // namespace Impl
 }  // namespace desul
 
-#ifdef __SYCLCC__
-namespace desul {
-namespace Impl {
+//namespace desul {
+//namespace Impl {
 
 /**
  * \brief This global variable in SYCL space is what kernels use to get access
@@ -69,17 +66,14 @@ namespace Impl {
  * will use it.  That is the purpose of the
  * KOKKOS_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE macro.
  */
-__device__
-#ifdef DESUL_SYCL_RDC
-    __constant__ extern
-#endif
-    int32_t* SYCL_SPACE_ATOMIC_LOCKS_DEVICE;
+    static sycl::ext::oneapi::experimental::device_global<int32_t*, 
+	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_DEVICE;
 
-__device__
-#ifdef DESUL_SYCL_RDC
-    __constant__ extern
-#endif
-    int32_t* SYCL_SPACE_ATOMIC_LOCKS_NODE;
+    static sycl::ext::oneapi::experimental::device_global<int32_t*, 
+	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_NODE;
+
+namespace desul {
+namespace Impl {
 
 #define SYCL_SPACE_ATOMIC_MASK 0x1FFFF
 
@@ -88,18 +82,24 @@ __device__
 /// This function tries to acquire the lock for the hash value derived
 /// from the provided ptr. If the lock is successfully acquired the
 /// function returns true. Otherwise it returns false.
-__device__ inline bool lock_address_sycl(void* ptr, desul::MemoryScopeDevice) {
+inline bool lock_address_sycl(void* ptr, desul::MemoryScopeDevice) {
   size_t offset = size_t(ptr);
   offset = offset >> 2;
   offset = offset & SYCL_SPACE_ATOMIC_MASK;
-  return (0 == atomicExch(&desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_DEVICE[offset], 1));
+  sycl::atomic_ref<int32_t, sycl::memory_order::relaxed, 
+	           sycl::memory_scope::device,
+                   sycl::access::address_space::global_space> lock_device_ref(SYCL_SPACE_ATOMIC_LOCKS_DEVICE[offset]);
+  return (0 == lock_device_ref.exchange(1));
 }
 
-__device__ inline bool lock_address_sycl(void* ptr, desul::MemoryScopeNode) {
+inline bool lock_address_sycl(void* ptr, desul::MemoryScopeNode) {
   size_t offset = size_t(ptr);
   offset = offset >> 2;
   offset = offset & SYCL_SPACE_ATOMIC_MASK;
-  return (0 == atomicExch(&desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_NODE[offset], 1));
+  sycl::atomic_ref<int32_t, sycl::memory_order::relaxed,
+                   sycl::memory_scope::system,
+                   sycl::access::address_space::global_space> lock_node_ref(SYCL_SPACE_ATOMIC_LOCKS_NODE[offset]);
+  return (0 == lock_node_ref.exchange(1));
 }
 
 /**
@@ -109,20 +109,25 @@ __device__ inline bool lock_address_sycl(void* ptr, desul::MemoryScopeNode) {
  * ptr. This function should only be called after previously successfully
  * acquiring a lock with lock_address.
  */
-__device__ inline void unlock_address_sycl(void* ptr, desul::MemoryScopeDevice) {
+inline void unlock_address_sycl(void* ptr, desul::MemoryScopeDevice) {
   size_t offset = size_t(ptr);
   offset = offset >> 2;
   offset = offset & SYCL_SPACE_ATOMIC_MASK;
-  atomicExch(&desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_DEVICE[offset], 0);
+  sycl::atomic_ref<int32_t, sycl::memory_order::relaxed,
+                   sycl::memory_scope::device,
+                   sycl::access::address_space::global_space> lock_device_ref(SYCL_SPACE_ATOMIC_LOCKS_NODE[offset]);
+  lock_device_ref.exchange(0);
 }
 
-__device__ inline void unlock_address_sycl(void* ptr, desul::MemoryScopeNode) {
+inline void unlock_address_sycl(void* ptr, desul::MemoryScopeNode) {
   size_t offset = size_t(ptr);
   offset = offset >> 2;
   offset = offset & SYCL_SPACE_ATOMIC_MASK;
-  atomicExch(&desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_NODE[offset], 0);
+  sycl::atomic_ref<int32_t, sycl::memory_order::relaxed,
+                   sycl::memory_scope::system,
+                   sycl::access::address_space::global_space> lock_node_ref(SYCL_SPACE_ATOMIC_LOCKS_NODE[offset]);
+  lock_node_ref.exchange(0);
 }
-#endif
 }  // namespace Impl
 }  // namespace desul
 
@@ -142,22 +147,18 @@ inline int eliminate_warning_for_lock_array() { return lock_array_copied; }
 #define DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE()                                   \
   {                                                                                   \
     if (::desul::Impl::lock_array_copied == 0) {                                      \
-      (void)syclMemcpyToSymbol(                                                        \
-          SYCL_SYMBOL(::desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_DEVICE),                   \
-          &::desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h,                            \
+     sycl::queue q; \
+	    q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_DEVICE, \
+          &SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h,                            \
           sizeof(int32_t*));                                                          \
-      (void)syclMemcpyToSymbol(SYCL_SYMBOL(::desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_NODE), \
-                              &::desul::Impl::SYCL_SPACE_ATOMIC_LOCKS_NODE_h,          \
+      q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_NODE, \
+                              &SYCL_SPACE_ATOMIC_LOCKS_NODE_h,          \
                               sizeof(int32_t*));                                      \
     }                                                                                 \
     ::desul::Impl::lock_array_copied = 1;                                             \
   }
 
-#if defined(DESUL_SYCL_RDC) || (!defined(__SYCLCC__))
-#define DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE()
-#else
 #define DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE() \
   DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE()
-#endif
 
 #endif

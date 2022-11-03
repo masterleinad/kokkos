@@ -120,28 +120,6 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         AtomicOperations_shared
         AtomicViews
         Atomics
-        BlockSizeDeduction
-        Concepts
-        Complex
-        Crs
-        DeepCopyAlignment
-        ExecutionSpace
-        FunctorAnalysis
-        Init
-        JoinBackwardCompatibility
-        LocalDeepCopy
-        MinMaxClamp
-        MathematicalConstants
-        MathematicalFunctions1
-        MathematicalFunctions2
-        MDRange_a
-        MDRange_b
-        MDRange_c
-        HostSharedPtr
-        HostSharedPtrAccessOnDevice
-        QuadPrecisionMath
-        ExecSpacePartitioning
-        MathematicalSpecialFunctions
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -719,11 +697,6 @@ if(Kokkos_ENABLE_HIP)
 endif()
 
 if(Kokkos_ENABLE_SYCL)
-  list(REMOVE_ITEM SYCL_SOURCES1A
-       # FIXME_SYCL atomic_fetch_oper for large types to be implemented
-       ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_AtomicOperations_complexdouble.cpp
-  )
-
   list(REMOVE_ITEM SYCL_SOURCES2A
        ${CMAKE_CURRENT_BINARY_DIR}/sycl/TestSYCL_WorkGraph.cpp
   )

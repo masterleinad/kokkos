@@ -39,9 +39,7 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #define DESUL_HAVE_HIP_ATOMICS
 #endif
 
-#ifdef __SYCL_DEVICE_ONLY__
 #define DESUL_HAVE_SYCL_ATOMICS
-#endif
 
 #if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__) || \
     defined(__SYCL_DEVICE_ONLY__)

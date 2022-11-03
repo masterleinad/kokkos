@@ -79,12 +79,15 @@ std::enable_if_t<sizeof(T) == 8, T> device_atomic_exchange(T* const dest,
 template <class T, class MemoryOrder, class MemoryScope>
 std::enable_if_t<(sizeof(T) != 8) && (sizeof(T) != 4), T>
 device_atomic_compare_exchange(
-    T* const dest, T compare, T /*value*/, MemoryOrder, MemoryScope) {
+    T* const dest, T compare, T value, MemoryOrder, MemoryScope scope) {
   // This is a way to avoid deadlock in a warp or wave front
   T return_val;
   int done = 0;
-  unsigned long long int active = __ballot(1);
-  unsigned long long int done_active = 0;
+  auto sg = sycl::ext::oneapi::experimental::this_sub_group();
+  using sycl::ext::oneapi::sub_group_mask;
+  using sycl::ext::oneapi::group_ballot;
+  sub_group_mask active = group_ballot(sg,1);
+  sub_group_mask done_active = group_ballot(sg,0);
   while (active != done_active) {
     if (!done) {
       if (lock_address_sycl((void*)dest, scope)) {
@@ -100,19 +103,22 @@ device_atomic_compare_exchange(
         done = 1;
       }
     }
-    done_active = __ballot(done);
+    done_active = group_ballot(sg,done);
   }
   return return_val;
 }
 
 template <class T, class MemoryOrder, class MemoryScope>
 std::enable_if_t<(sizeof(T) != 8) && (sizeof(T) != 4), T> device_atomic_exchange(
-    T* const dest, T value, MemoryOrder, MemoryScope) {
+    T* const dest, T value, MemoryOrder, MemoryScope scope) {
   // This is a way to avoid deadlock in a warp or wave front
   T return_val;
   int done = 0;
-  unsigned long long int active = __ballot(1);
-  unsigned long long int done_active = 0;
+  auto sg = sycl::ext::oneapi::experimental::this_sub_group();
+  using sycl::ext::oneapi::sub_group_mask;
+  using sycl::ext::oneapi::group_ballot;
+  sub_group_mask active = group_ballot(sg,1);
+  sub_group_mask done_active = group_ballot(sg,0);
   while (active != done_active) {
     if (!done) {
       if (lock_address_sycl((void*)dest, scope)) {
@@ -126,7 +132,7 @@ std::enable_if_t<(sizeof(T) != 8) && (sizeof(T) != 4), T> device_atomic_exchange
         done = 1;
       }
     }
-    done_active = __ballot(done);
+    done_active = group_ballot(sg,done);
   }
   return return_val;
 }
