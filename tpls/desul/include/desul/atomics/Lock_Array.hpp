@@ -17,6 +17,9 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #ifdef DESUL_HAVE_HIP_ATOMICS
 #include <desul/atomics/Lock_Array_HIP.hpp>
 #endif
+#ifdef DESUL_HAVE_SYCL_ATOMICS
+#include <desul/atomics/Lock_Array_SYCL.hpp>
+#endif
 
 namespace desul {
 namespace Impl {
@@ -49,6 +52,10 @@ inline void init_lock_arrays() {
 #ifdef DESUL_HAVE_HIP_ATOMICS
   init_lock_arrays_hip();
 #endif
+
+#ifdef DESUL_HAVE_SYCL_ATOMICS
+  init_lock_arrays_sycl();
+#endif
 }
 
 inline void finalize_lock_arrays() {
@@ -59,6 +66,10 @@ inline void finalize_lock_arrays() {
 #ifdef DESUL_HAVE_HIP_ATOMICS
   finalize_lock_arrays_hip();
 #endif
+
+#ifdef DESUL_HAVE_SYCL_ATOMICS
+  finalize_lock_arrays_sycl();
+#endif
 }
 
 inline void ensure_lock_arrays_on_device() {
@@ -68,6 +79,10 @@ inline void ensure_lock_arrays_on_device() {
 
 #ifdef DESUL_HAVE_HIP_ATOMICS
   DESUL_ENSURE_HIP_LOCK_ARRAYS_ON_DEVICE();
+#endif
+
+#ifdef DESUL_HAVE_HIP_ATOMICS
+  DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE();
 #endif
 }
 

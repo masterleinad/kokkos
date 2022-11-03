@@ -10,6 +10,7 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #define DESUL_ATOMICS_COMPARE_EXCHANGE_SYCL_HPP_
 
 #include <desul/atomics/Adapt_SYCL.hpp>
+#include <desul/atomics/Lock_Array_SYCL.hpp>
 #include <desul/atomics/Common.hpp>
 #include <desul/atomics/Thread_Fence_SYCL.hpp>
 
