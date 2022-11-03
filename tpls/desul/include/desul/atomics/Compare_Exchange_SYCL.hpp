@@ -79,16 +79,56 @@ std::enable_if_t<sizeof(T) == 8, T> device_atomic_exchange(T* const dest,
 template <class T, class MemoryOrder, class MemoryScope>
 std::enable_if_t<(sizeof(T) != 8) && (sizeof(T) != 4), T>
 device_atomic_compare_exchange(
-    T* const /*dest*/, T compare, T /*value*/, MemoryOrder, MemoryScope) {
-  assert(false);  // FIXME_SYCL not implemented
-  return compare;
+    T* const dest, T compare, T /*value*/, MemoryOrder, MemoryScope) {
+  // This is a way to avoid deadlock in a warp or wave front
+  T return_val;
+  int done = 0;
+  unsigned long long int active = __ballot(1);
+  unsigned long long int done_active = 0;
+  while (active != done_active) {
+    if (!done) {
+      if (lock_address_sycl((void*)dest, scope)) {
+        if (std::is_same<MemoryOrder, MemoryOrderSeqCst>::value)
+          atomic_thread_fence(MemoryOrderRelease(), scope);
+        atomic_thread_fence(MemoryOrderAcquire(), scope);
+        return_val = *dest;
+        if (return_val == compare) {
+          *dest = value;
+          device_atomic_thread_fence(MemoryOrderRelease(), scope);
+        }
+        unlock_address_sycl((void*)dest, scope);
+        done = 1;
+      }
+    }
+    done_active = __ballot(done);
+  }
+  return return_val;
 }
 
 template <class T, class MemoryOrder, class MemoryScope>
 std::enable_if_t<(sizeof(T) != 8) && (sizeof(T) != 4), T> device_atomic_exchange(
-    T* const /*dest*/, T value, MemoryOrder, MemoryScope) {
-  assert(false);  // FIXME_SYCL not implemented
-  return value;
+    T* const dest, T value, MemoryOrder, MemoryScope) {
+  // This is a way to avoid deadlock in a warp or wave front
+  T return_val;
+  int done = 0;
+  unsigned long long int active = __ballot(1);
+  unsigned long long int done_active = 0;
+  while (active != done_active) {
+    if (!done) {
+      if (lock_address_sycl((void*)dest, scope)) {
+        if (std::is_same<MemoryOrder, MemoryOrderSeqCst>::value)
+          atomic_thread_fence(MemoryOrderRelease(), scope);
+        device_atomic_thread_fence(MemoryOrderAcquire(), scope);
+        return_val = *dest;
+        *dest = value;
+        device_atomic_thread_fence(MemoryOrderRelease(), scope);
+        unlock_address_sycl((void*)dest, scope);
+        done = 1;
+      }
+    }
+    done_active = __ballot(done);
+  }
+  return return_val;
 }
 
 }  // namespace Impl
