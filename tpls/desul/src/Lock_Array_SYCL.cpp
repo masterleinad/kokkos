@@ -12,6 +12,18 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #include <string>
 
 #ifdef DESUL_HAVE_SYCL_ATOMICS
+#ifdef DESUL_SYCL_RDC
+//namespace desul {
+//namespace Impl {
+SYCL_EXTERNAL
+ sycl::ext::oneapi::experimental::device_global<int32_t*,
+            decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_DEVICE;
+    SYCL_EXTERNAL
+ sycl::ext::oneapi::experimental::device_global<int32_t*,
+            decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_NODE;
+//}  // namespace Impl
+//}  // namespace desul
+#endif
 
 namespace desul {
 
@@ -46,6 +58,9 @@ void finalize_lock_arrays_sycl() {
   sycl::free(SYCL_SPACE_ATOMIC_LOCKS_NODE_h, q);
   SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h = nullptr;
   SYCL_SPACE_ATOMIC_LOCKS_NODE_h = nullptr;
+#ifdef DESUL_SYCL_RDC
+  DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE();
+#endif
 }
 
 template void init_lock_arrays_sycl<int>();

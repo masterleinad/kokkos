@@ -64,13 +64,24 @@ void finalize_lock_arrays_sycl();
  * instances in other translation units, we must update this CUDA global
  * variable based on the Host global variable prior to running any kernels that
  * will use it.  That is the purpose of the
- * KOKKOS_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE macro.
+ * DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE macro.
+ * FIXME_SYCL The compiler forces us to use device_image_scope. Drop this when possible.
  */
-    static sycl::ext::oneapi::experimental::device_global<int32_t*, 
+#ifdef DESUL_SYCL_RDC
+    SYCL_EXTERNAL extern
+#else
+    static
+#endif
+ sycl::ext::oneapi::experimental::device_global<int32_t* , 
 	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_DEVICE;
 
-    static sycl::ext::oneapi::experimental::device_global<int32_t*, 
-	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_NODE;
+#ifdef DESUL_SYCL_RDC
+SYCL_EXTERNAL extern
+#else
+static
+#endif
+ sycl::ext::oneapi::experimental::device_global<int32_t*, 
+    	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_NODE;
 
 namespace desul {
 namespace Impl {
@@ -115,7 +126,7 @@ inline void unlock_address_sycl(void* ptr, desul::MemoryScopeDevice) {
   offset = offset & SYCL_SPACE_ATOMIC_MASK;
   sycl::atomic_ref<int32_t, sycl::memory_order::relaxed,
                    sycl::memory_scope::device,
-                   sycl::access::address_space::global_space> lock_device_ref(SYCL_SPACE_ATOMIC_LOCKS_NODE[offset]);
+                   sycl::access::address_space::global_space> lock_device_ref(SYCL_SPACE_ATOMIC_LOCKS_DEVICE[offset]);
   lock_device_ref.exchange(0);
 }
 
@@ -158,7 +169,10 @@ inline int eliminate_warning_for_lock_array() { return lock_array_copied; }
     ::desul::Impl::lock_array_copied = 1;                                             \
   }
 
+#if defined(DESUL_SYCL_RDC) 
+#define DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE()
+#else
 #define DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE() \
   DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE()
-
+#endif
 #endif
