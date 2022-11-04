@@ -44,8 +44,8 @@ void finalize_lock_arrays_sycl();
 }  // namespace Impl
 }  // namespace desul
 
-//namespace desul {
-//namespace Impl {
+namespace desul {
+namespace Impl {
 
 /**
  * \brief This global variable in SYCL space is what kernels use to get access
@@ -82,9 +82,6 @@ static
 #endif
  sycl::ext::oneapi::experimental::device_global<int32_t*, 
     	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_NODE;
-
-namespace desul {
-namespace Impl {
 
 #define SYCL_SPACE_ATOMIC_MASK 0x1FFFF
 

@@ -13,16 +13,16 @@ SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifdef DESUL_HAVE_SYCL_ATOMICS
 #ifdef DESUL_SYCL_RDC
-//namespace desul {
-//namespace Impl {
+namespace desul {
+namespace Impl {
 SYCL_EXTERNAL
  sycl::ext::oneapi::experimental::device_global<int32_t*,
             decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_DEVICE;
     SYCL_EXTERNAL
  sycl::ext::oneapi::experimental::device_global<int32_t*,
             decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_NODE;
-//}  // namespace Impl
-//}  // namespace desul
+}  // namespace Impl
+}  // namespace desul
 #endif
 
 namespace desul {
