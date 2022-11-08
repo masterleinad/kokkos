@@ -48,8 +48,7 @@
 namespace Test {
 // Test Interoperability with SYCL Streams
 TEST(sycl, raw_sycl_queues) {
-  sycl::default_selector device_selector;
-  sycl::queue queue(device_selector);
+  sycl::queue queue(sycl::default_selector_v);
   Kokkos::initialize();
   int* p            = sycl::malloc_device<int>(100, queue);
   using MemorySpace = typename TEST_EXECSPACE::memory_space;

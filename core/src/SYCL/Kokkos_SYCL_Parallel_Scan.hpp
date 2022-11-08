@@ -164,8 +164,7 @@ class ParallelScanSYCLBase {
           q.get_device()
               .template get_info<sycl::info::device::sub_group_sizes>()
               .front();
-      sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                     sycl::access::target::local>
+      sycl::local_accessor<value_type, 1>
           local_mem(sycl::range<1>((wgroup_size + min_subgroup_size - 1) /
                                    min_subgroup_size),
                     cgh);

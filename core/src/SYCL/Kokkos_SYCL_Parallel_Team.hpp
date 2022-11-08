@@ -426,8 +426,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     auto parallel_for_event = q.submit([&](sycl::handler& cgh) {
       // FIXME_SYCL accessors seem to need a size greater than zero at least for
       // host queues
-      sycl::accessor<char, 1, sycl::access::mode::read_write,
-                     sycl::access::target::local>
+      sycl::local_accessor<char, 1>
           team_scratch_memory_L0(
               sycl::range<1>(
                   std::max(m_scratch_size[0] + m_shmem_begin, size_t(1))),
@@ -460,8 +459,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
       auto max_sg_size =
           kernel
               .get_info<sycl::info::kernel_device_specific::max_sub_group_size>(
-                  q.get_device(),
-                  sycl::range<3>(m_team_size, m_vector_size, 1));
+                  q.get_device());
       auto final_vector_size = std::min<int>(m_vector_size, max_sg_size);
       // FIXME_SYCL For some reason, explicitly enforcing the kernel bundle to
       // be used gives a runtime error.
@@ -620,8 +618,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
       auto parallel_reduce_event = q.submit([&](sycl::handler& cgh) {
         // FIXME_SYCL accessors seem to need a size greater than zero at least
         // for host queues
-        sycl::accessor<char, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
+        sycl::local_accessor<char, 1>
             team_scratch_memory_L0(
                 sycl::range<1>(
                     std::max(m_scratch_size[0] + m_shmem_begin, size_t(1))),
@@ -673,8 +670,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
 
         // FIXME_SYCL accessors seem to need a size greater than zero at least
         // for host queues
-        sycl::accessor<char, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
+        sycl::local_accessor<char, 1>
             team_scratch_memory_L0(
                 sycl::range<1>(
                     std::max(m_scratch_size[0] + m_shmem_begin, size_t(1))),
@@ -686,8 +682,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
         sycl::device_ptr<char> const global_scratch_ptr = m_global_scratch_ptr;
 
         auto team_reduction_factory =
-            [&](sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                               sycl::access::target::local>
+            [&](sycl::local_accessor<value_type, 1>
                     local_mem,
                 sycl::device_ptr<value_type> results_ptr) {
               sycl::global_ptr<value_type> device_accessible_result_ptr =
@@ -821,7 +816,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
         }();
         auto max_sg_size = kernel.get_info<
             sycl::info::kernel_device_specific::max_sub_group_size>(
-            q.get_device(), sycl::range<3>(m_team_size, m_vector_size, 1));
+            q.get_device());
         auto final_vector_size = std::min<int>(m_vector_size, max_sg_size);
         // FIXME_SYCL For some reason, explicitly enforcing the kernel bundle to
         // be used gives a runtime error.
@@ -830,8 +825,7 @@ class ParallelReduce<FunctorType, Kokkos::TeamPolicy<Properties...>,
 
         auto wgroup_size = m_team_size * final_vector_size;
         std::size_t size = std::size_t(m_league_size) * wgroup_size;
-        sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
+        sycl::local_accessor<value_type, 1>
             local_mem(sycl::range<1>(wgroup_size) * std::max(value_count, 1u) +
                           (sizeof(unsigned int) + sizeof(value_type) - 1) /
                               sizeof(value_type),
