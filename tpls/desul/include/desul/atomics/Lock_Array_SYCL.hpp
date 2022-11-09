@@ -14,6 +14,13 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #include "desul/atomics/Common.hpp"
 #include "desul/atomics/Macros.hpp"
 
+// FIXME_SYCL
+#if __has_include(<sycl/sycl.hpp>)
+#include <sycl/sycl.hpp>
+#else
+#include <CL/sycl.hpp>
+#endif
+
 namespace desul {
 namespace Impl {
 

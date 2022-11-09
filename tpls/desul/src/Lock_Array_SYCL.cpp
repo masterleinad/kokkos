@@ -7,11 +7,11 @@ SPDX-License-Identifier: (BSD-3-Clause)
 */
 
 #include <cinttypes>
-#include <desul/atomics/Lock_Array.hpp>
+#include <desul/atomics/Lock_Array_SYCL.hpp>
 #include <sstream>
 #include <string>
 
-#ifdef DESUL_HAVE_SYCL_ATOMICS
+#ifdef SYCL_LANGUAGE_VERSION
 namespace desul {
 namespace Impl {
 SYCL_EXTERNAL
@@ -24,7 +24,6 @@ SYCL_EXTERNAL
 }  // namespace desul
 
 namespace desul {
-
 namespace Impl {
 
 int32_t* SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h = nullptr;
@@ -67,6 +66,5 @@ template void init_lock_arrays_sycl<int>();
 template void finalize_lock_arrays_sycl<int>();
 
 }  // namespace Impl
-
 }  // namespace desul
 #endif
