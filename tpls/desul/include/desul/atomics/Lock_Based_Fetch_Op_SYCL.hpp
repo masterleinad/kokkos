@@ -24,7 +24,7 @@ template <class Oper,
           // equivalent to:
           //   requires !atomic_always_lock_free(sizeof(T))
           std::enable_if_t<!atomic_always_lock_free(sizeof(T)), int> = 0>
-__device__ T device_atomic_fetch_oper(const Oper& op,
+ T device_atomic_fetch_oper(const Oper& op,
                                       T* const dest,
                                       dont_deduce_this_parameter_t<const T> val,
                                       MemoryOrder /*order*/,
@@ -32,8 +32,11 @@ __device__ T device_atomic_fetch_oper(const Oper& op,
   // This is a way to avoid deadlock in a warp or wave front
   T return_val;
   int done = 0;
-  unsigned long long int active = __ballot(1);
-  unsigned long long int done_active = 0;
+  auto sg = sycl::ext::oneapi::experimental::this_sub_group();
+  using sycl::ext::oneapi::sub_group_mask;
+  using sycl::ext::oneapi::group_ballot;
+  sub_group_mask active = group_ballot(sg,1);
+  sub_group_mask done_active = group_ballot(sg,0);
   while (active != done_active) {
     if (!done) {
       if (lock_address_sycl((void*)dest, scope)) {
@@ -45,7 +48,7 @@ __device__ T device_atomic_fetch_oper(const Oper& op,
         done = 1;
       }
     }
-    done_active = __ballot(done);
+    done_active = group_ballot(sg,done);
   }
   return return_val;
 }
@@ -57,7 +60,7 @@ template <class Oper,
           // equivalent to:
           //   requires !atomic_always_lock_free(sizeof(T))
           std::enable_if_t<!atomic_always_lock_free(sizeof(T)), int> = 0>
-__device__ T device_atomic_oper_fetch(const Oper& op,
+ T device_atomic_oper_fetch(const Oper& op,
                                       T* const dest,
                                       dont_deduce_this_parameter_t<const T> val,
                                       MemoryOrder /*order*/,
@@ -65,8 +68,11 @@ __device__ T device_atomic_oper_fetch(const Oper& op,
   // This is a way to avoid deadlock in a warp or wave front
   T return_val;
   int done = 0;
-  unsigned long long int active = __ballot(1);
-  unsigned long long int done_active = 0;
+  auto sg = sycl::ext::oneapi::experimental::this_sub_group();
+  using sycl::ext::oneapi::sub_group_mask;
+  using sycl::ext::oneapi::group_ballot;
+  sub_group_mask active = group_ballot(sg,1);
+  sub_group_mask done_active = group_ballot(sg,0);
   while (active != done_active) {
     if (!done) {
       if (lock_address_sycl((void*)dest, scope)) {
@@ -78,7 +84,7 @@ __device__ T device_atomic_oper_fetch(const Oper& op,
         done = 1;
       }
     }
-    done_active = __ballot(done);
+    done_active = group_ballot(sg,done);
   }
   return return_val;
 }

@@ -77,6 +77,7 @@ SET(COMPILE_ONLY_SOURCES
   TestDetectionIdiom.cpp
   TestInterOp.cpp
   TestStringManipulation.cpp
+  TestViewTypeTraits.cpp
   TestTypeList.cpp
 )
 
@@ -120,6 +121,28 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         AtomicOperations_shared
         AtomicViews
         Atomics
+        BlockSizeDeduction
+        Concepts
+        Complex
+        Crs
+        DeepCopyAlignment
+        ExecutionSpace
+        FunctorAnalysis
+        Init
+        JoinBackwardCompatibility
+        LocalDeepCopy
+        MinMaxClamp
+        MathematicalConstants
+        MathematicalFunctions1
+        MathematicalFunctions2
+        MDRange_a
+        MDRange_b
+        MDRange_c
+        HostSharedPtr
+        HostSharedPtrAccessOnDevice
+        QuadPrecisionMath
+        ExecSpacePartitioning
+        MathematicalSpecialFunctions
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
