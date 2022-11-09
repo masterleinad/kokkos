@@ -496,9 +496,8 @@ IF (KOKKOS_ENABLE_SYCL)
   COMPILER_SPECIFIC_FLAGS(
     DEFAULT -fsycl -fno-sycl-id-queries-fit-in-int -fsycl-dead-args-optimization
   )
-  # FIXME_SYCL The non-RDC branch runs into a compiler bug at link time. 
   COMPILER_SPECIFIC_FLAGS(
-    DEFAULT -DDESUL_SYCL_RDC -fsycl-device-code-split=off
+    DEFAULT -fsycl-device-code-split=off
   )
   COMPILER_SPECIFIC_OPTIONS(
     DEFAULT -fsycl-unnamed-lambda

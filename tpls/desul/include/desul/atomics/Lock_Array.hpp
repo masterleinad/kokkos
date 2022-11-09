@@ -80,10 +80,6 @@ inline void ensure_lock_arrays_on_device() {
 #ifdef DESUL_HAVE_HIP_ATOMICS
   DESUL_ENSURE_HIP_LOCK_ARRAYS_ON_DEVICE();
 #endif
-
-#ifdef DESUL_HAVE_HIP_ATOMICS
-  DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE();
-#endif
 }
 
 template <class MemoryScope>

@@ -51,35 +51,17 @@ namespace Impl {
  * \brief This global variable in SYCL space is what kernels use to get access
  * to the lock arrays.
  *
- * When relocatable device code is enabled, there can be one single instance of
- * this global variable for the entire executable, whose definition will be in
- * Kokkos_SYCL_Locks.cpp (and whose declaration here must then be extern.  This
- * one instance will be initialized by initialize_host_sycl_lock_arrays and need
- * not be modified afterwards.
- *
- * When relocatable device code is disabled, an instance of this variable will
- * be created in every translation unit that sees this header file (we make this
- * clear by marking it static, meaning no other translation unit can link to
- * it). Since the Kokkos_SYCL_Locks.cpp translation unit cannot initialize the
- * instances in other translation units, we must update this CUDA global
- * variable based on the Host global variable prior to running any kernels that
- * will use it.  That is the purpose of the
- * DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE macro.
+ * There is only one single instance of this global variable for the entire
+ * executable, whose definition will be in Kokkos_SYCL_Locks.cpp (and whose
+ * declaration here must then be extern.  This one instance will be initialized
+ * by initialize_host_sycl_lock_arrays and need not be modified afterwards.
  * FIXME_SYCL The compiler forces us to use device_image_scope. Drop this when possible.
  */
-#ifdef DESUL_SYCL_RDC
     SYCL_EXTERNAL extern
-#else
-    static
-#endif
  sycl::ext::oneapi::experimental::device_global<int32_t* , 
 	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_DEVICE;
 
-#ifdef DESUL_SYCL_RDC
 SYCL_EXTERNAL extern
-#else
-static
-#endif
  sycl::ext::oneapi::experimental::device_global<int32_t*, 
     	    decltype(sycl::ext::oneapi::experimental::properties(sycl::ext::oneapi::experimental::device_image_scope))> SYCL_SPACE_ATOMIC_LOCKS_NODE;
 
@@ -166,10 +148,4 @@ inline int eliminate_warning_for_lock_array() { return lock_array_copied; }
     ::desul::Impl::lock_array_copied = 1;                                             \
   }
 
-#if defined(DESUL_SYCL_RDC) 
-#define DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE()
-#else
-#define DESUL_ENSURE_SYCL_LOCK_ARRAYS_ON_DEVICE() \
-  DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE()
-#endif
 #endif
