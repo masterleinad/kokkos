@@ -39,7 +39,12 @@ void init_lock_arrays_sycl() {
   SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h = sycl::malloc_device<int32_t>(SYCL_SPACE_ATOMIC_MASK + 1, q);
   SYCL_SPACE_ATOMIC_LOCKS_NODE_h = sycl::malloc_host<int32_t>(SYCL_SPACE_ATOMIC_MASK + 1, q);
 
-  DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE();
+  q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_DEVICE,
+          &SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h,
+          sizeof(int32_t*));
+  q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_NODE,
+                              &SYCL_SPACE_ATOMIC_LOCKS_NODE_h,
+                              sizeof(int32_t*));
 
   q.memset(SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h, 0, sizeof(int32_t) * (SYCL_SPACE_ATOMIC_MASK + 1));
   q.memset(SYCL_SPACE_ATOMIC_LOCKS_NODE_h, 0, sizeof(int32_t) * (SYCL_SPACE_ATOMIC_MASK + 1));
@@ -56,7 +61,6 @@ void finalize_lock_arrays_sycl() {
   sycl::free(SYCL_SPACE_ATOMIC_LOCKS_NODE_h, q);
   SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h = nullptr;
   SYCL_SPACE_ATOMIC_LOCKS_NODE_h = nullptr;
-  DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE();
 }
 
 template void init_lock_arrays_sycl<int>();

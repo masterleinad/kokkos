@@ -120,32 +120,4 @@ inline void unlock_address_sycl(void* ptr, desul::MemoryScopeNode) {
 }
 }  // namespace Impl
 }  // namespace desul
-
-// Make lock_array_copied an explicit translation unit scope thing
-namespace desul {
-namespace Impl {
-namespace {
-static int lock_array_copied = 0;
-inline int eliminate_warning_for_lock_array() { return lock_array_copied; }
-}  // namespace
-}  // namespace Impl
-}  // namespace desul
-
-/* It is critical that this code be a macro, so that it will
-   capture the right address for g_device_sycl_lock_arrays!
-   putting this in an inline function will NOT do the right thing! */
-#define DESUL_IMPL_COPY_SYCL_LOCK_ARRAYS_TO_DEVICE()                                   \
-  {                                                                                   \
-    if (::desul::Impl::lock_array_copied == 0) {                                      \
-     sycl::queue q; \
-	    q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_DEVICE, \
-          &SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h,                            \
-          sizeof(int32_t*));                                                          \
-      q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_NODE, \
-                              &SYCL_SPACE_ATOMIC_LOCKS_NODE_h,          \
-                              sizeof(int32_t*));                                      \
-    }                                                                                 \
-    ::desul::Impl::lock_array_copied = 1;                                             \
-  }
-
 #endif
