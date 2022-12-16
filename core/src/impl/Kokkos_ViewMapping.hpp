@@ -1,46 +1,18 @@
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
 //               Solutions of Sandia, LLC (NTESS).
 //
 // Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 #ifndef KOKKOS_EXPERIMENTAL_VIEW_MAPPING_HPP
 #define KOKKOS_EXPERIMENTAL_VIEW_MAPPING_HPP
@@ -1128,9 +1100,8 @@ struct ViewOffset<
   KOKKOS_INLINE_FUNCTION constexpr ViewOffset(
       const ViewOffset<DimRHS, Kokkos::LayoutRight, void>& rhs)
       : m_dim(rhs.m_dim.N0, 0, 0, 0, 0, 0, 0, 0) {
-    static_assert((DimRHS::rank == 0 && dimension_type::rank == 0) ||
-                      (DimRHS::rank == 1 && dimension_type::rank == 1 &&
-                       dimension_type::rank_dynamic == 1),
+    static_assert(((DimRHS::rank == 0 && dimension_type::rank == 0) ||
+                   (DimRHS::rank == 1 && dimension_type::rank == 1)),
                   "ViewOffset LayoutLeft and LayoutRight are only compatible "
                   "when rank <= 1");
   }
@@ -1778,8 +1749,7 @@ struct ViewOffset<
       const ViewOffset<DimRHS, Kokkos::LayoutLeft, void>& rhs)
       : m_dim(rhs.m_dim.N0, 0, 0, 0, 0, 0, 0, 0) {
     static_assert((DimRHS::rank == 0 && dimension_type::rank == 0) ||
-                      (DimRHS::rank == 1 && dimension_type::rank == 1 &&
-                       dimension_type::rank_dynamic == 1),
+                      (DimRHS::rank == 1 && dimension_type::rank == 1),
                   "ViewOffset LayoutRight and LayoutLeft are only compatible "
                   "when rank <= 1");
   }
@@ -2925,7 +2895,9 @@ struct ViewValueFunctor<DeviceType, ValueType, false /* is_scalar */> {
         ptr(arg_ptr),
         n(arg_n),
         name(std::move(arg_name)),
-        default_exec_space(false) {}
+        default_exec_space(false) {
+    functor_instantiate_workaround();
+  }
 
   ViewValueFunctor(ValueType* const arg_ptr, size_t const arg_n,
                    std::string arg_name)
@@ -2933,7 +2905,9 @@ struct ViewValueFunctor<DeviceType, ValueType, false /* is_scalar */> {
         ptr(arg_ptr),
         n(arg_n),
         name(std::move(arg_name)),
-        default_exec_space(true) {}
+        default_exec_space(true) {
+    functor_instantiate_workaround();
+  }
 
   template <typename Dummy = ValueType>
   std::enable_if_t<std::is_trivial<Dummy>::value &&
@@ -3022,6 +2996,18 @@ struct ViewValueFunctor<DeviceType, ValueType, false /* is_scalar */> {
   void destroy_shared_allocation() {
     parallel_for_implementation<DestroyTag>();
   }
+
+  // This function is to ensure that the functor with DestroyTag is instantiated
+  // This is a workaround to avoid "cudaErrorInvalidDeviceFunction" error later
+  // when the function is queried with cudaFuncGetAttributes
+  void functor_instantiate_workaround() {
+#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP) || \
+    defined(KOKKOS_ENABLE_SYCL) || defined(KOKKOS_ENABLE_OPENMPTARGET)
+    if (false) {
+      parallel_for_implementation<DestroyTag>();
+    }
+#endif
+  }
 };
 
 template <class DeviceType, class ValueType>
@@ -3063,10 +3049,10 @@ struct ViewValueFunctor<DeviceType, ValueType, true /* is_scalar */> {
                    std::is_trivially_copy_assignable<Dummy>::value>
   construct_shared_allocation() {
     // Shortcut for zero initialization
-    ValueType value{};
 // On A64FX memset seems to do the wrong thing with regards to first touch
 // leading to the significant performance issues
 #ifndef KOKKOS_ARCH_A64FX
+    ValueType value{};
     if (Impl::is_zero_byte(value)) {
       uint64_t kpID = 0;
       if (Kokkos::Profiling::profileLibraryLoaded()) {
@@ -3421,7 +3407,9 @@ class ViewMapping<
 
     using execution_space = typename alloc_prop::execution_space;
     using memory_space    = typename Traits::memory_space;
-    using value_type      = typename Traits::value_type;
+    static_assert(
+        SpaceAccessibility<execution_space, memory_space>::accessible);
+    using value_type = typename Traits::value_type;
     using functor_type =
         ViewValueFunctor<Kokkos::Device<execution_space, memory_space>,
                          value_type>;
@@ -3462,15 +3450,6 @@ class ViewMapping<
                            m_impl_offset.span(), alloc_name)
             : functor_type((value_type*)m_impl_handle, m_impl_offset.span(),
                            alloc_name);
-
-#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP) || \
-    defined(KOKKOS_ENABLE_SYCL) || defined(KOKKOS_ENABLE_OPENMPTARGET)
-    if (false) {
-      // Make sure the destroy functor gets instantiated.
-      // This avoids "cudaErrorInvalidDeviceFunction"-type errors.
-      functor.destroy_shared_allocation();
-    }
-#endif
 
     //  Only initialize if the allocation is non-zero.
     //  May be zero if one of the dimensions is zero.
@@ -3547,9 +3526,7 @@ class ViewMapping<
                      typename SrcTraits::array_layout>::value ||
         std::is_same<typename DstTraits::array_layout,
                      Kokkos::LayoutStride>::value ||
-        (DstTraits::dimension::rank == 0) ||
-        (DstTraits::dimension::rank == 1 &&
-         DstTraits::dimension::rank_dynamic == 1)
+        (DstTraits::dimension::rank == 0) || (DstTraits::dimension::rank == 1)
   };
 
  public:

@@ -65,9 +65,16 @@ KOKKOS_ENABLE_OPTION(HIP_MULTIPLE_KERNEL_INSTANTIATIONS OFF "Whether multiple ke
 KOKKOS_ENABLE_OPTION(IMPL_DESUL_ATOMICS   ON  "Whether to use desul based atomics - option only during beta")
 KOKKOS_ENABLE_OPTION(DESUL_ATOMICS_EXTERNAL OFF "Whether to use an external desul installation")
 
+KOKKOS_ENABLE_OPTION(IMPL_MDSPAN OFF "Whether to enable experimental mdspan support")
+KOKKOS_ENABLE_OPTION(MDSPAN_EXTERNAL OFF BOOL "Whether to use an external version of mdspan")
+KOKKOS_ENABLE_OPTION(IMPL_SKIP_COMPILER_MDSPAN OFF BOOL "Whether to use an internal version of mdspan even if the compiler supports mdspan")
+mark_as_advanced(Kokkos_ENABLE_IMPL_MDSPAN)
+mark_as_advanced(Kokkos_ENABLE_MDSPAN_EXTERNAL)
+mark_as_advanced(Kokkos_ENABLE_IMPL_SKIP_COMPILER_MDSPAN)
+
 IF (Trilinos_ENABLE_Kokkos AND TPL_ENABLE_CUDA)
   SET(CUDA_LAMBDA_DEFAULT ON)
-ELSEIF (KOKKOS_ENABLE_CUDA AND (KOKKOS_CXX_COMPILER_ID STREQUAL Clang))
+ELSEIF (KOKKOS_ENABLE_CUDA)
   SET(CUDA_LAMBDA_DEFAULT ON)
 ELSE()
   SET(CUDA_LAMBDA_DEFAULT OFF)
@@ -123,6 +130,23 @@ IF (KOKKOS_ENABLE_AGGRESSIVE_VECTORIZATION)
   SET(KOKKOS_OPT_RANGE_AGGRESSIVE_VECTORIZATION ON)
 ENDIF()
 
+# Force consistency of KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE
+# and CMAKE_CUDA_SEPARABLE_COMPILATION when we are compiling
+# using the CMake CUDA language support.
+# Either one being on will turn the other one on.
+IF (KOKKOS_COMPILE_LANGUAGE STREQUAL CUDA)
+  IF (KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE)
+    IF (NOT CMAKE_CUDA_SEPARABLE_COMPILATION)
+      MESSAGE(STATUS "Setting CMAKE_CUDA_SEPARABLE_COMPILATION=ON since Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE is true. When compiling Kokkos with CMake language CUDA, please use CMAKE_CUDA_SEPARABLE_COMPILATION to control RDC support")
+      SET(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
+    ENDIF()
+  ELSE()
+    IF (CMAKE_CUDA_SEPARABLE_COMPILATION)
+      SET(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE ON)
+    ENDIF()
+  ENDIF()
+ENDIF()
+
 # This is known to occur with Clang 9. We would need to use nvcc as the linker
 # http://lists.llvm.org/pipermail/cfe-dev/2018-June/058296.html
 # TODO: Through great effort we can use a different linker by hacking
@@ -133,4 +157,12 @@ ENDIF()
 
 IF (KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE AND BUILD_SHARED_LIBS)
   MESSAGE(FATAL_ERROR "Relocatable device code requires static libraries.")
+ENDIF()
+
+IF(Kokkos_ENABLE_CUDA_LDG_INTRINSIC)
+  IF(KOKKOS_ENABLE_DEPRECATED_CODE_4)
+    MESSAGE(DEPRECATION "Setting Kokkos_ENABLE_CUDA_LDG_INTRINSIC is deprecated. LDG intrinsics are always enabled.")
+  ELSE()
+    MESSAGE(FATAL_ERROR "Kokkos_ENABLE_CUDA_LDG_INTRINSIC has been removed. LDG intrinsics are always enabled.")
+  ENDIF()
 ENDIF()

@@ -22,26 +22,6 @@ SET(SOURCES
   PerfTestHexGrad.cpp
   PerfTest_CustomReduction.cpp
   PerfTest_ExecSpacePartitioning.cpp
-  PerfTest_ViewCopy_a123.cpp
-  PerfTest_ViewCopy_b123.cpp
-  PerfTest_ViewCopy_c123.cpp
-  PerfTest_ViewCopy_d123.cpp
-  PerfTest_ViewCopy_a45.cpp
-  PerfTest_ViewCopy_b45.cpp
-  PerfTest_ViewCopy_c45.cpp
-  PerfTest_ViewCopy_d45.cpp
-  PerfTest_ViewCopy_a6.cpp
-  PerfTest_ViewCopy_b6.cpp
-  PerfTest_ViewCopy_c6.cpp
-  PerfTest_ViewCopy_d6.cpp
-  PerfTest_ViewCopy_a7.cpp
-  PerfTest_ViewCopy_b7.cpp
-  PerfTest_ViewCopy_c7.cpp
-  PerfTest_ViewCopy_d7.cpp
-  PerfTest_ViewCopy_a8.cpp
-  PerfTest_ViewCopy_b8.cpp
-  PerfTest_ViewCopy_c8.cpp
-  PerfTest_ViewCopy_d8.cpp
   PerfTest_ViewAllocate.cpp
   PerfTest_ViewFill_123.cpp
   PerfTest_ViewFill_45.cpp
@@ -61,6 +41,13 @@ IF(Kokkos_ENABLE_OPENMPTARGET)
     PerfTestGramSchmidt.cpp
     PerfTest_CustomReduction.cpp
     PerfTest_ExecSpacePartitioning.cpp
+  )
+ENDIF()
+
+IF(KOKKOS_ENABLE_CUDA OR KOKKOS_ENABLE_HIP OR KOKKOS_ENABLE_SYCL)
+  KOKKOS_ADD_EXECUTABLE (
+    PerformanceTest_SharedSpace
+    SOURCES test_sharedSpace.cpp
   )
 ENDIF()
 
@@ -177,7 +164,7 @@ FUNCTION(KOKKOS_ADD_BENCHMARK NAME)
   )
   TARGET_LINK_LIBRARIES(
     ${BENCHMARK_NAME}
-    PRIVATE benchmark::benchmark Kokkos::kokkos
+    PRIVATE benchmark::benchmark Kokkos::kokkos impl_git_version
   )
   FOREACH(SOURCE_FILE ${BENCHMARK_SOURCES})
     SET_SOURCE_FILES_PROPERTIES(
@@ -202,10 +189,30 @@ ENDFUNCTION()
 SET(
   BENCHMARK_SOURCES
   BenchmarkMain.cpp
-  Benchmark_Sample.cpp
+  PerfTest_ViewCopy_a123.cpp
+  PerfTest_ViewCopy_b123.cpp
+  PerfTest_ViewCopy_c123.cpp
+  PerfTest_ViewCopy_d123.cpp
+  PerfTest_ViewCopy_a45.cpp
+  PerfTest_ViewCopy_b45.cpp
+  PerfTest_ViewCopy_c45.cpp
+  PerfTest_ViewCopy_d45.cpp
+  PerfTest_ViewCopy_a6.cpp
+  PerfTest_ViewCopy_b6.cpp
+  PerfTest_ViewCopy_c6.cpp
+  PerfTest_ViewCopy_d6.cpp
+  PerfTest_ViewCopy_a7.cpp
+  PerfTest_ViewCopy_b7.cpp
+  PerfTest_ViewCopy_c7.cpp
+  PerfTest_ViewCopy_d7.cpp
+  PerfTest_ViewCopy_a8.cpp
+  PerfTest_ViewCopy_b8.cpp
+  PerfTest_ViewCopy_c8.cpp
+  PerfTest_ViewCopy_d8.cpp
+  PerfTest_ViewCopy_Raw.cpp
 )
 
 KOKKOS_ADD_BENCHMARK(
-  PerformanceTest_SampleBenchmark
+  PerformanceTest_Benchmark
   SOURCES ${BENCHMARK_SOURCES}
 )

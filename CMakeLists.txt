@@ -87,6 +87,16 @@ IF(NOT KOKKOS_HAS_TRILINOS)
 
     SET(KOKKOS_COMPILE_LANGUAGE CUDA)
   ENDIF()
+  # use lower case here since we haven't parsed options yet
+  IF (Kokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE AND Kokkos_ENABLE_HIP)
+
+    # Without this as a language for the package we would get a C++ compiler enabled.
+    # but we still need a C++ compiler even if we build all our cpp files as HIP only
+    # because otherwise the C++ features don't work etc.
+    SET(KOKKOS_INTERNAL_EXTRA_COMPILE_LANGUAGE CXX)
+
+    SET(KOKKOS_COMPILE_LANGUAGE HIP)
+  ENDIF()
 
   IF (Spack_WORKAROUND)
     IF (Kokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE)
@@ -158,6 +168,7 @@ ENDIF()
 # but scoping issues can make it difficult
 GLOBAL_SET(KOKKOS_COMPILE_OPTIONS)
 GLOBAL_SET(KOKKOS_LINK_OPTIONS)
+GLOBAL_SET(KOKKOS_AMDGPU_OPTIONS)
 GLOBAL_SET(KOKKOS_CUDA_OPTIONS)
 GLOBAL_SET(KOKKOS_CUDAFE_OPTIONS)
 GLOBAL_SET(KOKKOS_XCOMPILER_OPTIONS)
@@ -184,6 +195,10 @@ INCLUDE(${KOKKOS_SRC_PATH}/cmake/kokkos_tribits.cmake)
 # Check the environment and set certain variables
 # to allow platform-specific checks
 INCLUDE(${KOKKOS_SRC_PATH}/cmake/kokkos_check_env.cmake)
+
+# Gather information about the runtime environment
+INCLUDE(${KOKKOS_SRC_PATH}/cmake/build_env_info.cmake)
+check_git_setup()
 
 # The build environment setup goes in the following steps
 # 1) Check all the enable options. This includes checking Kokkos_DEVICES
@@ -228,6 +243,9 @@ IF (KOKKOS_HAS_TRILINOS)
   # we have to match the annoying behavior, also we have to preserve quotes
   # which needs another workaround.
   SET(KOKKOS_COMPILE_OPTIONS_TMP)
+  IF (KOKKOS_ENABLE_HIP)
+    LIST(APPEND KOKKOS_COMPILE_OPTIONS ${KOKKOS_AMDGPU_OPTIONS})
+  ENDIF()
   FOREACH(OPTION ${KOKKOS_COMPILE_OPTIONS})
     STRING(FIND "${OPTION}" " " OPTION_HAS_WHITESPACE)
     IF(OPTION_HAS_WHITESPACE EQUAL -1)

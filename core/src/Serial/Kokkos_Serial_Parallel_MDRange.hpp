@@ -1,46 +1,18 @@
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
 //               Solutions of Sandia, LLC (NTESS).
 //
 // Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 #ifndef KOKKO_SERIAL_PARALLEL_MDRANGE_HPP
 #define KOKKO_SERIAL_PARALLEL_MDRANGE_HPP
@@ -63,11 +35,10 @@ class ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
 
   const FunctorType m_functor;
   const MDRangePolicy m_mdr_policy;
-  const Policy m_policy;
 
   void exec() const {
-    const typename Policy::member_type e = m_policy.end();
-    for (typename Policy::member_type i = m_policy.begin(); i < e; ++i) {
+    const typename Policy::member_type e = m_mdr_policy.m_num_tiles;
+    for (typename Policy::member_type i = 0; i < e; ++i) {
       iterate_type(m_mdr_policy, m_functor)(i);
     }
   }
@@ -85,9 +56,7 @@ class ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
   }
   inline ParallelFor(const FunctorType& arg_functor,
                      const MDRangePolicy& arg_policy)
-      : m_functor(arg_functor),
-        m_mdr_policy(arg_policy),
-        m_policy(Policy(0, m_mdr_policy.m_num_tiles).set_chunk_size(1)) {}
+      : m_functor(arg_functor), m_mdr_policy(arg_policy) {}
 };
 
 template <class FunctorType, class ReducerType, class... Traits>
@@ -120,13 +89,12 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
 
   const FunctorType m_functor;
   const MDRangePolicy m_mdr_policy;
-  const Policy m_policy;
   const ReducerType m_reducer;
   const pointer_type m_result_ptr;
 
   inline void exec(reference_type update) const {
-    const typename Policy::member_type e = m_policy.end();
-    for (typename Policy::member_type i = m_policy.begin(); i < e; ++i) {
+    const typename Policy::member_type e = m_mdr_policy.m_num_tiles;
+    for (typename Policy::member_type i = 0; i < e; ++i) {
       iterate_type(m_mdr_policy, m_functor, update)(i);
     }
   }
@@ -148,7 +116,8 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
     const size_t team_shared_size  = 0;  // Never shrinks
     const size_t thread_local_size = 0;  // Never shrinks
 
-    auto* internal_instance = m_policy.space().impl_internal_space_instance();
+    auto* internal_instance =
+        m_mdr_policy.space().impl_internal_space_instance();
     // Need to lock resize_thread_team_data
     std::lock_guard<std::mutex> lock(
         internal_instance->m_thread_team_data_mutex);
@@ -181,7 +150,6 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                                   void*> = nullptr)
       : m_functor(arg_functor),
         m_mdr_policy(arg_policy),
-        m_policy(Policy(0, m_mdr_policy.m_num_tiles).set_chunk_size(1)),
         m_reducer(InvalidType()),
         m_result_ptr(arg_result_view.data()) {
     static_assert(Kokkos::is_view<HostViewType>::value,
@@ -197,7 +165,6 @@ class ParallelReduce<FunctorType, Kokkos::MDRangePolicy<Traits...>, ReducerType,
                         MDRangePolicy arg_policy, const ReducerType& reducer)
       : m_functor(arg_functor),
         m_mdr_policy(arg_policy),
-        m_policy(Policy(0, m_mdr_policy.m_num_tiles).set_chunk_size(1)),
         m_reducer(reducer),
         m_result_ptr(reducer.view().data()) {
     /*static_assert( std::is_same< typename ViewType::memory_space
