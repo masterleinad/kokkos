@@ -703,20 +703,20 @@ bool Test(int test) {
 #endif
   int const concurrency = ExecutionSpace().concurrency();
   if (team_size > concurrency) team_size = concurrency;
-  passed = passed && test_scalar<int, ExecutionSpace>(317, team_size, test);
+   passed = passed && test_scalar<int, ExecutionSpace>(317, team_size, test);
   passed = passed &&
            test_scalar<long long int, ExecutionSpace>(317, team_size, test);
   passed = passed && test_scalar<float, ExecutionSpace>(317, team_size, test);
   passed = passed && test_scalar<double, ExecutionSpace>(317, team_size, test);
+  
   passed = passed &&
            test_scalar<Test::my_complex, ExecutionSpace>(317, team_size, test);
   passed = passed && test_scalar<Test::array_reduce<double, 1>, ExecutionSpace>(
                          317, team_size, test);
   passed = passed && test_scalar<Test::array_reduce<float, 1>, ExecutionSpace>(
                          317, team_size, test);
-  passed = passed && test_scalar<Test::array_reduce<double, 3>, ExecutionSpace>(
-                         317, team_size, test);
-
+  /*passed = passed && test_scalar<Test::array_reduce<double, 3>, ExecutionSpace>(
+                         317, team_size, test);*/
   return passed;
 }
 

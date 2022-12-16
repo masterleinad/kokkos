@@ -19,7 +19,7 @@
 #include <TestTeam.hpp>
 
 namespace Test {
-/*
+
 TEST(TEST_CATEGORY, team_for) {
   TestTeamPolicy<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >::test_for(
       0);
@@ -84,7 +84,7 @@ TEST(TEST_CATEGORY, team_reduce_large) {
     TestTeamReduceLarge<TEST_EXECSPACE> test(range);
     test.run();
   }
-}*/
+}
 
 /*! \brief Test passing an aggregate to Kokkos::single in a parallel_for with
            team policy
@@ -181,7 +181,7 @@ struct LargeTeamScratchFunctor {
   }
 };
 
-/*TEST(TEST_CATEGORY, large_team_scratch_size) {
+TEST(TEST_CATEGORY, large_team_scratch_size) {
   const int level   = 1;
   const int n_teams = 1;
 
@@ -295,13 +295,13 @@ TEST(TEST_CATEGORY, team_broadcast_long_wrapper) {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
                     long_wrapper>::test_teambroadcast(1000, 1);
 }
-#endif*/
+#endif
 
 TEST(TEST_CATEGORY, team_broadcast_char) {
   {
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                       unsigned char>::test_teambroadcast(0, 1);
-/*    TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
+    TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
                       unsigned char>::test_teambroadcast(0, 1);
 
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
@@ -317,10 +317,10 @@ TEST(TEST_CATEGORY, team_broadcast_char) {
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                       long>::test_teambroadcast(1000, 1);
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
-                      long>::test_teambroadcast(1000, 1);*/
+                      long>::test_teambroadcast(1000, 1);
   }
 }
-/*
+
 TEST(TEST_CATEGORY, team_broadcast_float) {
   {
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
@@ -392,8 +392,11 @@ TEST(TEST_CATEGORY, team_broadcast_double) {
 
 TEST(TEST_CATEGORY, team_handle_by_value) {
   { TestTeamPolicyHandleByValue<TEST_EXECSPACE>(); }
-}*/
+}
 
 }  // namespace Test
 
+#ifndef KOKKOS_ENABLE_OPENMPTARGET
+#include <TestTeamVector.hpp>
+#endif
 #endif
