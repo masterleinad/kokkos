@@ -12,17 +12,20 @@ jobs:
       matrix:
         distro: ['fedora:latest', 'fedora:rawhide', 'ubuntu:latest']
         cxx: ['g++', 'clang++']
+        cxx_extra_flags: ['']
         cmake_build_type: ['Release', 'Debug']
         backend: ['OPENMP']
         clang-tidy: ['']
         include:
           - distro: 'fedora:intel'
             cxx: 'icpc'
+            cxx_extra_flags: '-diag-disable=10441'
             cmake_build_type: 'Release'
             backend: 'OPENMP'
             clang-tidy: ''
           - distro: 'fedora:intel'
             cxx: 'icpc'
+            cxx_extra_flags: '-diag-disable=10441'
             cmake_build_type: 'Debug'
             backend: 'OPENMP'
             clang-tidy: ''
@@ -105,6 +108,7 @@ jobs:
             -DKokkos_ENABLE_DEPRECATED_CODE_4=ON \
             -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF \
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
+            -DCMAKE_CXX_FLAGS=${{ matrix.cxx_extra_flags }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_BUILD_TYPE=${{ matrix.cmake_build_type }}
