@@ -19,6 +19,9 @@
 #include <impl/Kokkos_InitializationSettings.hpp>
 
 namespace {
+#ifdef __INTEL_COMPILER
+#pragma warning(disable : 177)
+#endif
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_3
 void take_initialization_settings(Kokkos::InitializationSettings const&) {}
@@ -91,4 +94,7 @@ static_assert(test_initialization_settings_getter());
 static_assert(
     std::is_default_constructible<Kokkos::InitializationSettings>::value);
 
+#ifdef __INTEL_COMPILER
+#pragma warning(enable : 177)
+#endif
 }  // namespace
