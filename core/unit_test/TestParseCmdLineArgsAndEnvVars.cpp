@@ -140,6 +140,10 @@ class CmdLineArgsHelper {
     EXPECT_EQ(cla.argv()[cla.argc()], nullptr);           \
   } while (false)
 
+#ifdef __INTEL_COMPILER
+#pragma warning(disable : 177)
+#endif
+
 TEST(defaultdevicetype, cmd_line_args_num_threads) {
   CmdLineArgsHelper cla = {{
       "--foo=bar",
@@ -467,5 +471,9 @@ TEST(defaultdevicetype, visible_devices) {
 #undef DEV
 #undef KOKKOS_TEST_VISIBLE_DEVICES
 }
+
+#ifdef __INTEL_COMPILER
+#pragma warning(enable : 177)
+#endif
 
 }  // namespace
