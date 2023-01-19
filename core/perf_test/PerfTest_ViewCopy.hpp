@@ -18,7 +18,16 @@
 #define KOKKOS_CORE_PERFTEST_BENCHMARK_VIEW_COPY_HPP
 
 #include <Kokkos_Core.hpp>
+
+// Avoid deprecation warning for ICC
+#ifdef __INTEL_COMPILER
+#pragma warning(disable : 1786)
 #include <benchmark/benchmark.h>
+#pragma warning(enable : 1786)
+#else
+#include <benchmark/benchmark.h>
+#endif
+
 #include <cmath>
 
 namespace Test {
