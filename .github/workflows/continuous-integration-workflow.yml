@@ -19,11 +19,11 @@ jobs:
         include:
           - distro: 'fedora:intel'
             cxx: 'icpc'
-            cxx_extra_flags: '-diag-disable=177,10441'
+            cxx_extra_flags: '-diag-disable=10441'
             cmake_build_type: 'Release'
           - distro: 'fedora:intel'
             cxx: 'icpc'
-            cxx_extra_flags: '-diag-disable=177,10441'
+            cxx_extra_flags: '-diag-disable=10441'
             cmake_build_type: 'Debug'
           - distro: 'fedora:intel'
             cxx: 'icpx'
