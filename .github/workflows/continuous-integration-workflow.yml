@@ -93,7 +93,7 @@ jobs:
           ccache -s
       - name: Tests
         working-directory: builddir
-        run: ctest --output-on-failure
+        run: ctest -V --output-on-failure
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
       - name: Install
