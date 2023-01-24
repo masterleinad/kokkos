@@ -45,6 +45,7 @@ TEST(defaultdevicetype,
 #endif
 
 TEST(defaultdevicetype, initialization_settings) {
+  abort();
   auto const settings = Kokkos::InitializationSettings()
                             .set_num_threads(255)
                             .set_disable_warnings(false)
