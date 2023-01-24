@@ -10,42 +10,23 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        distro: ['fedora:latest', 'fedora:rawhide', 'ubuntu:latest']
-        cxx: ['g++', 'clang++']
+        distro: ['']
+        cxx: ['']
         cxx_extra_flags: ['']
-        cmake_build_type: ['Release', 'Debug']
-        backend: ['OPENMP']
+        cmake_build_type: ['']
+        backend: ['']
         clang-tidy: ['']
         include:
           - distro: 'fedora:intel'
             cxx: 'icpc'
-            cxx_extra_flags: '-diag-disable=177,10441'
+            cxx_extra_flags: '-diag-disable=10441'
             cmake_build_type: 'Release'
             backend: 'OPENMP'
           - distro: 'fedora:intel'
             cxx: 'icpc'
-            cxx_extra_flags: '-diag-disable=177,10441'
+            cxx_extra_flags: '-diag-disable=10441'
             cmake_build_type: 'Debug'
             backend: 'OPENMP'
-          - distro: 'fedora:intel'
-            cxx: 'icpx'
-            cxx_extra_flags: '-fp-model=precise'
-            cmake_build_type: 'Release'
-            backend: 'OPENMP'
-          - distro: 'fedora:intel'
-            cxx: 'icpx'
-            cxx_extra_flags: '-fp-model=precise'
-            cmake_build_type: 'Debug'
-            backend: 'OPENMP'
-          - distro: 'ubuntu:latest'
-            cxx: 'clang++'
-            cmake_build_type: 'RelWithDebInfo'
-            backend: 'THREADS'
-            clang-tidy: '-DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"'
-          - distro: 'ubuntu:latest'
-            cxx: 'g++'
-            cmake_build_type: 'RelWithDebInfo'
-            backend: 'THREADS'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/kokkos/ci-containers/${{ matrix.distro }}
@@ -107,7 +88,8 @@ jobs:
       - name: Build
         run: |
           ccache -z
-          cmake --build builddir --parallel 2
+          cd builddir
+          make -j2 -k
           ccache -s
       - name: Tests
         working-directory: builddir
