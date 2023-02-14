@@ -19,6 +19,8 @@
 
 #include <Kokkos_Macros.hpp>
 
+#include <SYCL/Kokkos_SYCL_ScratchSpace.hpp>
+
 #ifdef KOKKOS_ENABLE_SYCL
 
 #include <utility>
