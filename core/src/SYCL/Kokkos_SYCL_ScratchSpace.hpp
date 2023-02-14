@@ -22,6 +22,11 @@ static_assert(false,
 #ifndef KOKKOS_SYCL_SCRATCHSPACE_HPP
 #define KOKKOS_SYCL_SCRATCHSPACE_HPP
 
+// Prior to oneAPI 2023.1.0, this gives
+//
+// InvalidModule: Invalid SPIR-V module: Casts from private/local/global address
+// space are allowed only to generic
+#if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
 #include <cstdio>
 #include <cstddef>
 #include <Kokkos_Core_fwd.hpp>
@@ -159,5 +164,7 @@ class ScratchMemorySpace<Kokkos::Experimental::SYCL> {
 };
 
 }  // namespace Kokkos
+
+// #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
 
 #endif /* #ifndef KOKKOS_SYCL_SCRATCHSPACE_HPP */
