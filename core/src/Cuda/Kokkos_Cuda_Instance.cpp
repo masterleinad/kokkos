@@ -29,7 +29,6 @@
 #include <Cuda/Kokkos_Cuda_Error.hpp>
 #include <Cuda/Kokkos_Cuda_BlockSize_Deduction.hpp>
 #include <Cuda/Kokkos_Cuda_Instance.hpp>
-#include <Cuda/Kokkos_Cuda_Locks.hpp>
 #include <Cuda/Kokkos_Cuda_UniqueToken.hpp>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Tools.hpp>
@@ -129,9 +128,17 @@ void cuda_device_synchronize(const std::string &name) {
       name,
       Kokkos::Tools::Experimental::SpecialSynchronizationCases::
           GlobalDeviceSynchronization,
+#if defined(KOKKOS_COMPILER_CLANG)
+      // annotate with __host__ silence a clang warning about using
+      // cudaDeviceSynchronize in device code
+      [] __host__() {  // TODO: correct device ID
+        KOKKOS_IMPL_CUDA_SAFE_CALL(cudaDeviceSynchronize());
+      });
+#else
       []() {  // TODO: correct device ID
         KOKKOS_IMPL_CUDA_SAFE_CALL(cudaDeviceSynchronize());
       });
+#endif
 }
 
 void cuda_stream_synchronize(const cudaStream_t stream, const CudaInternal *ptr,
@@ -400,8 +407,6 @@ Kokkos::Cuda::initialize WARNING: Cuda is allocating into UVMSpace by default
   }
 #endif
 
-  cudaDeviceSetCacheConfig(cudaFuncCachePreferShared);
-
   // Init the array for used for arbitrarily sized atomics
   if (this == &singleton()) Impl::initialize_host_cuda_lock_arrays();
 
@@ -422,10 +427,11 @@ Kokkos::Cuda::initialize WARNING: Cuda is allocating into UVMSpace by default
     m_team_scratch_ptr[i]          = nullptr;
   }
 
+  m_num_scratch_locks = concurrency();
   KOKKOS_IMPL_CUDA_SAFE_CALL(
-      cudaMalloc(&m_scratch_locks, sizeof(int32_t) * concurrency()));
+      cudaMalloc(&m_scratch_locks, sizeof(int32_t) * m_num_scratch_locks));
   KOKKOS_IMPL_CUDA_SAFE_CALL(
-      cudaMemset(m_scratch_locks, 0, sizeof(int32_t) * concurrency()));
+      cudaMemset(m_scratch_locks, 0, sizeof(int32_t) * m_num_scratch_locks));
 }
 
 //----------------------------------------------------------------------------
@@ -620,7 +626,8 @@ void CudaInternal::finalize() {
   }
 
   KOKKOS_IMPL_CUDA_SAFE_CALL(cudaFree(m_scratch_locks));
-  m_scratch_locks = nullptr;
+  m_scratch_locks     = nullptr;
+  m_num_scratch_locks = 0;
 }
 
 //----------------------------------------------------------------------------
