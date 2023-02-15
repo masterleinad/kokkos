@@ -47,6 +47,12 @@
 
 #include <impl/Kokkos_ViewMapping.hpp>
 
+// Prior to oneAPI 2023.1.0, this gives
+//
+// InvalidModule: Invalid SPIR-V module: Casts from private/local/global address
+// space are allowed only to generic
+#if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
+
 namespace Kokkos {
 namespace Impl {
 
@@ -61,7 +67,7 @@ struct ViewDataHandle<
                                          ScratchMemorySpace<Kokkos::Experimental::SYCL>>)>> {
   using value_type  = typename Traits::value_type;
   using memory_space = typename Traits::memory_space;
-  using handle_type = std::conditional_t<is_sycl_type_space<memory_space>::value, sycl::global_ptr<value_type>, value_type*>;
+  using handle_type = std::conditional_t<is_sycl_type_space<memory_space>::value, sycl::global_ptr<value_type>, sycl::device_ptr<value_type>>;
   using return_type = typename Traits::value_type&;
   using track_type  = Kokkos::Impl::SharedAllocationTracker;
 
@@ -79,5 +85,7 @@ struct ViewDataHandle<
 
 }  // namespace Impl
 }  // namespace Kokkos
+
+#endif // #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
 
 #endif /* #ifndef KOKKOS_SYCL_VIEW_HPP */
