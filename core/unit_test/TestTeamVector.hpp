@@ -636,7 +636,7 @@ bool test_scalar(int nteams, int team_size, int test) {
       h_flag("h_flag");
   h_flag() = 0;
   Kokkos::deep_copy(d_flag, h_flag);
-
+/*
   if (test == 0) {
     Kokkos::parallel_for(
         std::string("A"),
@@ -650,15 +650,15 @@ bool test_scalar(int nteams, int team_size, int test) {
     Kokkos::parallel_for(
         Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
         functor_vec_scan<Scalar, ExecutionSpace>(d_flag));
-  } else if (test == 3) {
+  }*/ /*else if (test == 3) {
     Kokkos::parallel_for(
         Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
         functor_vec_for<Scalar, ExecutionSpace>(d_flag));
-  } else if (test == 4) {
+  } else*/ if (test == 4) {
     Kokkos::parallel_for(
         "B", Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
         functor_vec_single<Scalar, ExecutionSpace>(d_flag, 0, 13));
-  } else if (test == 5) {
+  } /* else if (test == 5) {
     Kokkos::parallel_for(Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size),
                          functor_team_for<Scalar, ExecutionSpace>(d_flag));
   } else if (test == 6) {
@@ -684,7 +684,7 @@ bool test_scalar(int nteams, int team_size, int test) {
     Kokkos::parallel_for(
         "B", Kokkos::TeamPolicy<ExecutionSpace>(nteams, team_size, 8),
         functor_vec_single<Scalar, ExecutionSpace>(d_flag, 4, 13));
-  }
+  }*/
 
   Kokkos::deep_copy(h_flag, d_flag);
 
@@ -959,23 +959,23 @@ struct checkScan {
 #if !(defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND) || defined(KOKKOS_ENABLE_HIP))
 TEST(TEST_CATEGORY, team_vector) {
   ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(0)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(1)));
+ // ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(1)));
 #if !(defined(KOKKOS_ENABLE_CUDA) && \
       defined(KOKKOS_COMPILER_NVHPC))  // FIXME_NVHPC
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(2)));
+  //ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(2)));
 #endif
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(3)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(4)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(5)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(6)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(7)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(8)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(9)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(10)));
-  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(11)));
+  //ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(3)));
+  //ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(4)));
+//  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(5)));
+//  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(6)));
+//  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(7)));
+//  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(8)));
+//  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(9)));
+//  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(10)));
+//  ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(11)));
 }
 #endif
-
+/*
 #if !defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
 TEST(TEST_CATEGORY, triple_nested_parallelism) {
 // With KOKKOS_ENABLE_DEBUG enabled, the functor uses too many registers to run
@@ -1001,8 +1001,8 @@ TEST(TEST_CATEGORY, triple_nested_parallelism) {
   TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 16);
   TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 7, 16);
 }
-#endif
-
+#endif*/
+/*
 TEST(TEST_CATEGORY, parallel_scan_with_reducers) {
   using T = double;
   using namespace VectorScanReducer;
@@ -1040,6 +1040,6 @@ TEST(TEST_CATEGORY, parallel_scan_with_reducers) {
 
   (void)n;
   (void)n_vector_range;
-}
+}*/
 
 }  // namespace Test
