@@ -16,12 +16,14 @@ jobs:
         cmake_build_type: ['']
         backend: ['']
         clang-tidy: ['']
+        hwloc: ['ON']
         include:
           - distro: 'ubuntu:latest'
             cxx: 'g++'
             cxx_extra_flags: '-m32 -DKOKKOS_IMPL_32BIT'
             cmake_build_type: 'RelWithDebInfo'
             backend: 'OPENMP'
+            hwloc: 'OFF'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/kokkos/ci-containers/${{ matrix.distro }}
@@ -70,7 +72,7 @@ jobs:
             ${{ matrix.clang-tidy }} \
             -Ddesul_ROOT=/usr/desul-install/ \
             -DKokkos_ENABLE_DESUL_ATOMICS_EXTERNAL=ON \
-            -DKokkos_ENABLE_HWLOC=ON \
+            -DKokkos_ENABLE_HWLOC=${{ matrix.hwloc }} \
             -DKokkos_ENABLE_${{ matrix.backend }}=ON \
             -DKokkos_ENABLE_TESTS=ON \
             -DKokkos_ENABLE_BENCHMARKS=ON \
