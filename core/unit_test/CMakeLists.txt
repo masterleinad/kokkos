@@ -169,6 +169,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         MDRange_f
         MDRange_g
         MDRangePolicyConstructors
+        MDRangeReduce
         MDSpan
         MinMaxClamp
         NumericTraits
@@ -922,6 +923,7 @@ KOKKOS_ADD_ADVANCED_TEST( UnitTest_PushFinalizeHook_terminate
     tools/TestEventCorrectness.cpp
     tools/TestWithoutInitializing.cpp
     tools/TestProfilingSection.cpp
+    tools/TestScopedRegion.cpp
     )
 
   # FIXME_OPENMPTARGET This test causes internal compiler errors as of 09/01/22
