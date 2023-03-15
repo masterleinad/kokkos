@@ -14,6 +14,7 @@ jobs:
         cxx: ['']
         cxx_extra_flags: ['']
         cmake_build_type: ['']
+        desul_external: ['ON'] 
         backend: ['']
         clang-tidy: ['']
         hwloc: ['ON']
@@ -23,6 +24,7 @@ jobs:
             cxx_extra_flags: '-m32 -DKOKKOS_IMPL_32BIT'
             cmake_build_type: 'RelWithDebInfo'
             backend: 'OPENMP'
+            desul_external: 'OFF'
             hwloc: 'OFF'
     runs-on: ubuntu-latest
     container:
@@ -71,7 +73,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=/usr \
             ${{ matrix.clang-tidy }} \
             -Ddesul_ROOT=/usr/desul-install/ \
-            -DKokkos_ENABLE_DESUL_ATOMICS_EXTERNAL=ON \
+            -DKokkos_ENABLE_DESUL_ATOMICS_EXTERNAL=${{ matrix.desul_external }} \
             -DKokkos_ENABLE_HWLOC=${{ matrix.hwloc }} \
             -DKokkos_ENABLE_${{ matrix.backend }}=ON \
             -DKokkos_ENABLE_TESTS=ON \
