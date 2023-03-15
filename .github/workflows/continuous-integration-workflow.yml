@@ -58,9 +58,6 @@ jobs:
       - name: maybe_use_flang_new
         if: ${{ matrix.cxx == 'clang++' && startsWith(matrix.distro,'fedora:') }}
         run: echo "FC=flang-new" >> $GITHUB_ENV
-      - name: maybe_use_external_gtest
-        if: ${{ matrix.distro == 'ubuntu:latest' }} && ${{ matrix.cxx_extra_flags != '-m32 -DKOKKOS_IMPL_32BIT' }}
-        run: sudo apt-get update && sudo apt-get install -y libgtest-dev
       - name: maybe_install_clang_tidy
         if: ${{ matrix.clang-tidy != '' }}
         run: sudo apt-get update && sudo apt-get install -y clang-tidy
