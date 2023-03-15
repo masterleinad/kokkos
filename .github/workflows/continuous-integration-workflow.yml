@@ -46,6 +46,11 @@ jobs:
             cxx: 'g++'
             cmake_build_type: 'RelWithDebInfo'
             backend: 'THREADS'
+          - distro: 'ubuntu:latest'
+            cxx: 'g++'
+            cxx_extra_flags: '-m32'
+            cmake_build_type: 'RelWithDebInfo'
+            backend: 'OPENMP'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/kokkos/ci-containers/${{ matrix.distro }}
