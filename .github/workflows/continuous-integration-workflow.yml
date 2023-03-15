@@ -89,6 +89,9 @@ jobs:
       - name: maybe_install_clang_tidy
         if: ${{ matrix.clang-tidy != '' }}
         run: sudo apt-get update && sudo apt-get install -y clang-tidy
+      - name: maybe_install_gcc_multilib
+        if: ${{ matrix.cxx_extra_flags == '-m32' }}
+        run: sudo apt-get update && sudo apt-get install -y gcc-multilib g++-multilib
       - name: Configure Kokkos
         run: |
           cmake -B builddir \
