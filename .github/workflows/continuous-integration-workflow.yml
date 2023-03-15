@@ -19,7 +19,7 @@ jobs:
         include:
           - distro: 'ubuntu:latest'
             cxx: 'g++'
-            cxx_extra_flags: '-m32'
+            cxx_extra_flags: '-m32 -DKOKKOS_IMPL_32BIT'
             cmake_build_type: 'RelWithDebInfo'
             backend: 'OPENMP'
     runs-on: ubuntu-latest
