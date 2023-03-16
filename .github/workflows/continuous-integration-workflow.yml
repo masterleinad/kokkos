@@ -10,22 +10,71 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        distro: ['']
-        cxx: ['']
-        cxx_extra_flags: ['']
-        cmake_build_type: ['']
-        desul_external: ['ON'] 
         backend: ['']
         clang-tidy: ['']
+        cmake_build_type: ['Release', 'Debug']
+        cxx: ['g++', 'clang++']
+        cxx_extra_flags: ['']
+        desul_external: ['ON']
+        distro: ['fedora:latest', 'fedora:rawhide', 'ubuntu:latest']
         hwloc: ['ON']
+        libdl: ['ON']
         include:
-          - distro: 'ubuntu:latest'
+          - backend: 'OPENMP'
+            cmake_build_type: 'Release'
+            cxx: 'icpc'
+            cxx_extra_flags: '-diag-disable=177,10441'
+            desul_external: ['ON']
+            distro: 'fedora:intel'
+            hwloc: ['ON']
+            libdl: ['ON']
+          - backend: 'OPENMP'
+            cmake_build_type: 'Debug'
+            cxx: 'icpc'
+            cxx_extra_flags: '-diag-disable=177,10441'
+            desul_external: ['ON']
+            distro: 'fedora:intel'
+            hwloc: ['ON']
+            libdl: ['ON']
+          - backend: 'OPENMP'
+            cmake_build_type: 'Release'
+            cxx: 'icpx'
+            cxx_extra_flags: '-fp-model=precise'
+            desul_external: ['ON']
+            distro: 'fedora:intel'
+            hwloc: ['ON']
+            libdl: ['ON']
+          - backend: 'OPENMP'
+            cmake_build_type: 'Debug'
+            cxx: 'icpx'
+            cxx_extra_flags: '-fp-model=precise'
+            desul_external: ['ON']
+            distro: 'fedora:intel'
+            hwloc: ['ON']
+            libdl: ['ON']
+          - backend: 'THREADS'
+            clang-tidy: '-DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"'
+            cmake_build_type: 'RelWithDebInfo'
+            cxx: 'clang++'
+            desul_external: ['ON']
+            distro: 'ubuntu:latest'
+            hwloc: ['ON']
+            libdl: ['ON']
+          - backend: 'THREADS'
+            cmake_build_type: 'RelWithDebInfo'
+            cxx: 'g++'
+            desul_external: ['ON']
+            distro: 'ubuntu:latest'
+            hwloc: ['ON']
+            libdl: ['ON']
+          - backend: 'OPENMP'
+            cmake_build_type: 'RelWithDebInfo'
             cxx: 'g++'
             cxx_extra_flags: '-m32 -DKOKKOS_IMPL_32BIT'
-            cmake_build_type: 'RelWithDebInfo'
-            backend: 'OPENMP'
+            distro: 'ubuntu:latest'
             desul_external: 'OFF'
             hwloc: 'OFF'
+            libdl: 'OFF'
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/kokkos/ci-containers/${{ matrix.distro }}
@@ -58,6 +107,9 @@ jobs:
       - name: maybe_use_flang_new
         if: ${{ matrix.cxx == 'clang++' && startsWith(matrix.distro,'fedora:') }}
         run: echo "FC=flang-new" >> $GITHUB_ENV
+      - name: maybe_use_external_gtest
+        if: ${{ matrix.distro == 'ubuntu:latest' && matrix.cxx_extra_flags != '-m32 -DKOKKOS_IMPL_32BIT' }}
+        run: sudo apt-get update && sudo apt-get install -y libgtest-dev
       - name: maybe_install_clang_tidy
         if: ${{ matrix.clang-tidy != '' }}
         run: sudo apt-get update && sudo apt-get install -y clang-tidy
@@ -76,7 +128,7 @@ jobs:
             -DKokkos_ENABLE_TESTS=ON \
             -DKokkos_ENABLE_BENCHMARKS=ON \
             -DKokkos_ENABLE_EXAMPLES=ON \
-            -DKokkos_ENABLE_LIBDL=OFF \
+            -DKokkos_ENABLE_LIBDL= ${{ matrix.libdl }} \
             -DKokkos_ENABLE_DEPRECATED_CODE_4=ON \
             -DKokkos_ENABLE_DEPRECATION_WARNINGS=OFF \
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
@@ -97,8 +149,9 @@ jobs:
       - name: Install
         run: sudo cmake --build builddir --target install
       - name: Test install
+        if: ${{ matrix.cxx_extra_flags != '-m32 -DKOKKOS_IMPL_32BIT' }}
         working-directory: example/build_cmake_installed
         run: |
-          cmake -B builddir -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCMAKE_CXX_FLAGS="${{ matrix.cxx_extra_flags }}" -DCMAKE_Fortran_FLAGS="-m32"
+          cmake -B builddir -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCMAKE_CXX_FLAGS="${{ matrix.cxx_extra_flags }}"
           cmake --build builddir
           cmake --build builddir --target test
