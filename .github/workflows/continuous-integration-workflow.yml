@@ -99,6 +99,6 @@ jobs:
       - name: Test install
         working-directory: example/build_cmake_installed
         run: |
-          cmake -B builddir -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          cmake -B builddir -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCMAKE_CXX_FLAGS=" ${{ matrix.cxx_extra_flags }}"
           cmake --build builddir
           cmake --build builddir --target test
