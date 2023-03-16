@@ -99,6 +99,6 @@ jobs:
       - name: Test install
         working-directory: example/build_cmake_installed
         run: |
-          cmake -B builddir -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCMAKE_CXX_FLAGS="${{ matrix.cxx_extra_flags }}" -DCMAKE_FORTRAN_FLAGS="-m32"
+          cmake -B builddir -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCMAKE_CXX_FLAGS="${{ matrix.cxx_extra_flags }}" -DCMAKE_Fortran_FLAGS="-m32"
           cmake --build builddir
           cmake --build builddir --target test
