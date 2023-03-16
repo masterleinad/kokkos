@@ -174,6 +174,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         MinMaxClamp
         NumericTraits
         Other
+        ParallelScanRangePolicy
         QuadPrecisionMath
         RangePolicy
         RangePolicyConstructors
@@ -186,7 +187,6 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         Reducers_e
         Reductions
         Reductions_DeviceView
-        Scan
         SharedAlloc
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
@@ -442,7 +442,6 @@ IF(KOKKOS_ENABLE_OPENMPTARGET AND KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Reducers_d.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Reducers_e.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Reductions_DeviceView.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_Scan.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_SubView_b.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_SubView_c01.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/openmptarget/TestOpenMPTarget_SubView_c02.cpp
@@ -729,6 +728,12 @@ if(Kokkos_ENABLE_HIP)
     SOURCES
       UnitTestMain.cpp
       hip/TestHIP_InterOp_Streams.cpp
+  )
+  KOKKOS_ADD_EXECUTABLE_AND_TEST(
+    UnitTest_HIPGraph
+    SOURCES
+      UnitTestMainInit.cpp
+      hip/TestHIP_Graph.cpp
   )
 endif()
 
