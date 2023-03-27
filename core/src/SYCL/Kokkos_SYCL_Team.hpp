@@ -348,7 +348,8 @@ class SYCLTeamMember {
         m_team_shared(static_cast<sycl::local_ptr<char>>(shared) + shared_begin,
                       shared_size, scratch_level_1_ptr, scratch_level_1_size),
         m_team_reduce_size(shared_begin),
-        m_item(item) {}
+        m_item(item) {
+	}
 
  public:
   // Declare to avoid unused private member warnings which are trigger

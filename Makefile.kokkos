@@ -1169,7 +1169,7 @@ ifeq ($(KOKKOS_INTERNAL_USE_SYCL), 1)
   KOKKOS_SRC += $(wildcard $(KOKKOS_PATH)/core/src/SYCL/*.cpp)
   KOKKOS_HEADERS += $(wildcard $(KOKKOS_PATH)/core/src/SYCL/*.hpp)
 
-  KOKKOS_CXXFLAGS+=-fsycl -fno-sycl-id-queries-fit-in-int -fsycl-unnamed-lambda -fsycl-dead-args-optimization
+  KOKKOS_CXXFLAGS+=-fsycl -fsycl-unnamed-lambda -fsycl-dead-args-optimization
   KOKKOS_CXXFLAGS+=$(KOKKOS_INTERNAL_INTEL_ARCH_FLAG)
   KOKKOS_LDFLAGS+=-fsycl
   KOKKOS_LDFLAGS+=$(KOKKOS_INTERNAL_INTEL_ARCH_FLAG)
