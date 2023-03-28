@@ -28,37 +28,102 @@
 namespace Kokkos {
 namespace Impl {
 
-template <typename ValueType, typename MemorySpace>
-struct SYCLUSMHandle {
-  using usm_ptr_type =
-      std::conditional_t<is_sycl_type_space<MemorySpace>::value,
-                         sycl::global_ptr<ValueType>,
-                         sycl::device_ptr<ValueType>>;
 
-  usm_ptr_type m_ptr;
-  sycl::private_ptr<ValueType> m_raw_ptr = nullptr;
+// shared space -> global
+// host space -> host
+// device space -> device, private
+// scratch space -> local, global
+
+template <typename ValueType, typename MemorySpace>
+struct SYCLUSMHandle;
+
+template <typename ValueType>
+struct SYCLUSMHandle<ValueType, Experimental::SYCLSharedUSMSpace>{
+  sycl::global_ptr<ValueType> m_ptr;
 
   template <typename iType>
   KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
-    return m_raw_ptr?m_raw_ptr[i]:m_ptr[i];
+    return m_ptr[i];
   }
 
   KOKKOS_FUNCTION
-  operator ValueType*() const { return m_raw_ptr?static_cast<ValueType*>(m_raw_ptr.get()): static_cast<ValueType*>(m_ptr.get()); }
+  operator ValueType*() const { return m_ptr.get(); }
 
   KOKKOS_DEFAULTED_FUNCTION
   SYCLUSMHandle() = default;
 
   KOKKOS_FUNCTION
-  explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(sycl::address_space_cast<usm_ptr_type::address_space, sycl::access::decorated::yes>(arg_ptr)) {
-    if (m_ptr == nullptr) {
-     KOKKOS_IMPL_DO_NOT_USE_PRINTF("address_space_cast failed\n");
-      m_raw_ptr = arg_ptr;
-    }
-    else
-	         KOKKOS_IMPL_DO_NOT_USE_PRINTF("address_space_cast successfulf\n");
+  explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(arg_ptr) {
   }
 };
+
+template <typename ValueType>
+struct SYCLUSMHandle<ValueType, Experimental::SYCLHostUSMSpace>{
+  sycl::host_ptr<ValueType> m_ptr;
+
+  template <typename iType>
+  KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
+    return m_ptr[i];
+  }
+
+  KOKKOS_FUNCTION
+  operator ValueType*() const { return m_ptr.get(); }
+
+  KOKKOS_DEFAULTED_FUNCTION
+  SYCLUSMHandle() = default;
+
+  KOKKOS_FUNCTION
+  explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(arg_ptr) {
+  }
+};
+
+template <typename ValueType>
+struct SYCLUSMHandle<ValueType, Experimental::SYCLDeviceUSMSpace>{
+  sycl::device_ptr<ValueType> m_device_ptr;
+  sycl::private_ptr<ValueType> m_private_ptr;
+
+  template <typename iType>
+  KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
+    return m_device_ptr?m_device_ptr[i]:m_private_ptr[i];
+  }
+
+  KOKKOS_FUNCTION
+  operator ValueType*() const { return m_device_ptr?static_cast<ValueType*>(m_device_ptr.get()): static_cast<ValueType*>(m_private_ptr.get()); }
+
+  KOKKOS_DEFAULTED_FUNCTION
+  SYCLUSMHandle() = default;
+
+  KOKKOS_FUNCTION
+  explicit SYCLUSMHandle(ValueType* const arg_ptr) :
+  m_device_ptr (sycl::address_space_cast<sycl::access::address_space::ext_intel_global_device_space,  sycl::access::decorated::yes>(arg_ptr)) ,
+  m_private_ptr(sycl::address_space_cast<sycl::access::address_space::private_space, sycl::access::decorated::yes>(arg_ptr))
+  {
+  }
+};
+
+template <typename ValueType>
+struct SYCLUSMHandle<ValueType, ScratchMemorySpace<Kokkos::Experimental::SYCL>>{
+  sycl::device_ptr<ValueType> m_device_ptr;
+  sycl::local_ptr<ValueType> m_local_ptr;
+
+  template <typename iType>
+  KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
+    return m_device_ptr?m_device_ptr[i]:m_local_ptr[i];
+  }
+
+  KOKKOS_FUNCTION
+  operator ValueType*() const { return m_device_ptr?static_cast<ValueType*>(m_device_ptr.get()): static_cast<ValueType*>(m_local_ptr.get()); }
+
+  KOKKOS_DEFAULTED_FUNCTION
+  SYCLUSMHandle() = default;
+
+  KOKKOS_FUNCTION
+  explicit SYCLUSMHandle(ValueType* const arg_ptr) :
+    m_device_ptr (sycl::address_space_cast<sycl::access::address_space::ext_intel_global_device_space,  sycl::access::decorated::yes>(arg_ptr)) ,
+    m_local_ptr(sycl::address_space_cast<sycl::access::address_space::local_space, sycl::access::decorated::yes>(arg_ptr))
+	{}
+};
+
 
 template <class Traits>
 struct ViewDataHandle<
