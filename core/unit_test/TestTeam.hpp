@@ -835,32 +835,35 @@ namespace Test {
 
 template <class ExecSpace>
 KOKKOS_INLINE_FUNCTION int test_team_mulit_level_scratch_loop_body(
-    const typename Kokkos::TeamPolicy<ExecSpace>::member_type &team) {
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+    const typename Kokkos::TeamPolicy<ExecSpace>::member_type &team) 
+{
+	using scratch_memory_view_type = 
+  Kokkos::View<double *, typename ExecSpace::scratch_memory_space, Kokkos::MemoryTraits<Kokkos::Unmanaged>>;
+	scratch_memory_view_type
       a_team1(team.team_scratch(0), 128);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       a_thread1(team.thread_scratch(0), 16);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       a_team2(team.team_scratch(0), 128);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       a_thread2(team.thread_scratch(0), 16);
 
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       b_team1(team.team_scratch(1), 12800);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       b_thread1(team.thread_scratch(1), 1600);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       b_team2(team.team_scratch(1), 12800);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       b_thread2(team.thread_scratch(1), 1600);
 
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       a_team3(team.team_scratch(0), 128);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       a_thread3(team.thread_scratch(0), 16);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       b_team3(team.team_scratch(1), 12800);
-  Kokkos::View<double *, ExecSpace, Kokkos::MemoryTraits<Kokkos::Unmanaged>>
+  scratch_memory_view_type
       b_thread3(team.thread_scratch(1), 1600);
 
   // The explicit types for 0 and 128 are here to test TeamThreadRange accepting
