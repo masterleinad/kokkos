@@ -39,7 +39,7 @@ struct SYCLUSMHandle;
 
 template <typename ValueType>
 struct SYCLUSMHandle<ValueType, Experimental::SYCLSharedUSMSpace>{
-  sycl::global_ptr<ValueType> m_ptr;
+  sycl::global_ptr<ValueType, sycl::access::decorated::yes> m_ptr;
 
   template <typename iType>
   KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
@@ -55,6 +55,9 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLSharedUSMSpace>{
   KOKKOS_FUNCTION
   explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(arg_ptr) {
   }
+
+     KOKKOS_FUNCTION
+  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_ptr(arg_handle.m_ptr + offset) {}
 };
 
 template <typename ValueType>
@@ -75,12 +78,15 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLHostUSMSpace>{
   KOKKOS_FUNCTION
   explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(arg_ptr) {
   }
+
+   KOKKOS_FUNCTION
+  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_ptr(arg_handle.m_ptr + offset) {}
 };
 
 template <typename ValueType>
 struct SYCLUSMHandle<ValueType, Experimental::SYCLDeviceUSMSpace>{
-  sycl::device_ptr<ValueType> m_device_ptr;
-  sycl::private_ptr<ValueType> m_private_ptr;
+  sycl::device_ptr<ValueType, sycl::access::decorated::yes> m_device_ptr;
+  sycl::private_ptr<ValueType, sycl::access::decorated::yes> m_private_ptr;
 
   template <typename iType>
   KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
@@ -98,13 +104,21 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLDeviceUSMSpace>{
   m_device_ptr (sycl::address_space_cast<sycl::access::address_space::ext_intel_global_device_space,  sycl::access::decorated::yes>(arg_ptr)) ,
   m_private_ptr(sycl::address_space_cast<sycl::access::address_space::private_space, sycl::access::decorated::yes>(arg_ptr))
   {
+	  auto dummy = sycl::address_space_cast<sycl::access::address_space::ext_intel_global_device_space,  sycl::access::decorated::yes>(arg_ptr);
+    static_assert(std::is_same_v<decltype(dummy), sycl::device_ptr<ValueType, sycl::access::decorated::yes>>);
+
   }
+
+   KOKKOS_FUNCTION
+  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr?arg_handle.m_device_ptr + offset:nullptr),
+                                                m_private_ptr(arg_handle.m_private_ptr?arg_handle.m_private_ptr + offset:nullptr){
+        }
 };
 
 template <typename ValueType>
 struct SYCLUSMHandle<ValueType, ScratchMemorySpace<Kokkos::Experimental::SYCL>>{
-  sycl::device_ptr<ValueType> m_device_ptr;
-  sycl::local_ptr<ValueType> m_local_ptr;
+  sycl::device_ptr<ValueType, sycl::access::decorated::yes> m_device_ptr;
+  sycl::local_ptr<ValueType, sycl::access::decorated::yes> m_local_ptr;
 
   template <typename iType>
   KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
@@ -122,6 +136,11 @@ struct SYCLUSMHandle<ValueType, ScratchMemorySpace<Kokkos::Experimental::SYCL>>{
     m_device_ptr (sycl::address_space_cast<sycl::access::address_space::ext_intel_global_device_space,  sycl::access::decorated::yes>(arg_ptr)) ,
     m_local_ptr(sycl::address_space_cast<sycl::access::address_space::local_space, sycl::access::decorated::yes>(arg_ptr))
 	{}
+
+  KOKKOS_FUNCTION
+  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr?arg_handle.m_device_ptr + offset:nullptr), 
+                                                m_local_ptr(arg_handle.m_local_ptr?arg_handle.m_device_ptr + offset:nullptr){
+        }
 };
 
 
@@ -144,15 +163,20 @@ struct ViewDataHandle<
   using track_type  = Kokkos::Impl::SharedAllocationTracker;
 
 		public:
-//  KOKKOS_INLINE_FUNCTION
-//  static handle_type assign(value_type* arg_data_ptr,
-//                            track_type const& /*arg_tracker*/) {
-//    return arg_data_ptr;
-//  }
+  KOKKOS_INLINE_FUNCTION
+  static handle_type assign(value_type* const arg_data_ptr,
+                            track_type const& /*arg_tracker*/) {
+    return handle_type(arg_data_ptr);
+  }
+
+ KOKKOS_INLINE_FUNCTION
+  static handle_type assign(value_type* const arg_data_ptr, size_t offset) {
+    return handle_type(arg_data_ptr+offset);
+  }
 
   KOKKOS_INLINE_FUNCTION
-  static handle_type assign(handle_type const arg_data_ptr, size_t offset) {
-    return (arg_data_ptr + offset);
+  static handle_type assign(const handle_type arg_data_ptr, size_t offset) {
+    return handle_type(arg_data_ptr, offset);
   }
 };
 
