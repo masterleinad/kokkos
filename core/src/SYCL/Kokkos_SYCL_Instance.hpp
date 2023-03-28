@@ -229,7 +229,7 @@ class SYCLInternal {
 
 // FIXME_SYCL the limit is 2048 bytes for all arguments handed to a kernel,
 // assume for now that the rest doesn't need more than 248 bytes.
-#if defined(SYCL_DEVICE_COPYABLE) && defined(KOKKOS_ARCH_INTEL_GPU)
+#if defined(SYCL_DEVICE_COPYABLE)
 template <typename Functor, typename Storage,
           bool ManualCopy = (sizeof(Functor) >= 1800)>
 class SYCLFunctionWrapper;
@@ -240,7 +240,7 @@ template <typename Functor, typename Storage,
 class SYCLFunctionWrapper;
 #endif
 
-#if defined(SYCL_DEVICE_COPYABLE) && defined(KOKKOS_ARCH_INTEL_GPU)
+#if defined(SYCL_DEVICE_COPYABLE)
 template <typename Functor, typename Storage>
 class SYCLFunctionWrapper<Functor, Storage, false> {
   // We need a union here so that we can avoid calling a constructor for m_f
@@ -324,7 +324,7 @@ auto make_sycl_function_wrapper(const Functor& functor, Storage& storage) {
 }  // namespace Experimental
 }  // namespace Kokkos
 
-#if defined(SYCL_DEVICE_COPYABLE) && defined(KOKKOS_ARCH_INTEL_GPU)
+#if defined(SYCL_DEVICE_COPYABLE)
 template <typename Functor, typename Storage>
 struct sycl::is_device_copyable<
     Kokkos::Experimental::Impl::SYCLFunctionWrapper<Functor, Storage, false>>
@@ -339,13 +339,13 @@ struct NonTriviallyCopyableAndDeviceCopyable {
 };
 
 template <typename T>
-struct is_device_copyable<NonTriviallyCopyableAndDeviceCopyable<T>>
+struct sycl::is_device_copyable<NonTriviallyCopyableAndDeviceCopyable<T>>
     : std::true_type {};
 
 static_assert(
     !std::is_trivially_copyable_v<
         NonTriviallyCopyableAndDeviceCopyable<void>> &&
-    is_device_copyable_v<NonTriviallyCopyableAndDeviceCopyable<void>>);
+    sycl::is_device_copyable_v<NonTriviallyCopyableAndDeviceCopyable<void>>);
 
 template <typename Functor, typename Storage>
 struct sycl::is_device_copyable<
