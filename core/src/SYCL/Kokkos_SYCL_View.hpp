@@ -36,20 +36,28 @@ struct SYCLUSMHandle {
                          sycl::device_ptr<ValueType>>;
 
   usm_ptr_type m_ptr;
+  ValueType* m_raw_ptr = nullptr;
 
   template <typename iType>
   KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
-    return m_ptr[i];
+    return m_raw_ptr?m_raw_ptr[i]:m_ptr[i];
   }
 
   KOKKOS_FUNCTION
-  operator ValueType*() const { return m_ptr.get(); }
+  operator ValueType*() const { return m_raw_ptr?m_raw_ptr: m_ptr.get(); }
 
   KOKKOS_DEFAULTED_FUNCTION
   SYCLUSMHandle() = default;
 
   KOKKOS_FUNCTION
-  explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(arg_ptr) {}
+  explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(sycl::address_space_cast<usm_ptr_type::address_space, sycl::access::decorated::no>(arg_ptr)) {
+    if (m_ptr == nullptr) {
+     KOKKOS_IMPL_DO_NOT_USE_PRINTF("address_space_cast failed\n");
+      m_raw_ptr = arg_ptr;
+    }
+    else
+	         KOKKOS_IMPL_DO_NOT_USE_PRINTF("address_space_cast successfulf\n");
+  }
 };
 
 template <class Traits>
@@ -63,17 +71,19 @@ struct ViewDataHandle<
         (is_sycl_type_space<typename Traits::memory_space>::value ||
          std::is_same_v<typename Traits::memory_space,
                         ScratchMemorySpace<Kokkos::Experimental::SYCL>>)>> {
+		//private:
   using value_type   = typename Traits::value_type;
   using memory_space = typename Traits::memory_space;
   using handle_type = SYCLUSMHandle<value_type,memory_space>;
   using return_type = typename Traits::value_type&;
   using track_type  = Kokkos::Impl::SharedAllocationTracker;
 
-  KOKKOS_INLINE_FUNCTION
-  static handle_type assign(value_type* arg_data_ptr,
-                            track_type const& /*arg_tracker*/) {
-    return arg_data_ptr;
-  }
+		public:
+//  KOKKOS_INLINE_FUNCTION
+//  static handle_type assign(value_type* arg_data_ptr,
+//                            track_type const& /*arg_tracker*/) {
+//    return arg_data_ptr;
+//  }
 
   KOKKOS_INLINE_FUNCTION
   static handle_type assign(handle_type const arg_data_ptr, size_t offset) {

@@ -3127,9 +3127,7 @@ class ViewMapping<
 
   using handle_type = typename ViewDataHandle<Traits>::handle_type;
 
-  // SYCL needs the handle to be mutable since operator[] const for
-  // sycl::muti_ptr returns a const&
-  mutable handle_type m_impl_handle;
+  handle_type m_impl_handle;
   offset_type m_impl_offset;
 
  private:
