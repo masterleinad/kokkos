@@ -1610,8 +1610,8 @@ struct TestScratchAlignment {
           auto scratch_ptr3 =
               reinterpret_cast<intptr_t>(team.team_shmem().get_shmem(12));
 
-          if (((scratch_ptr2 - scratch_ptr1) != 24) ||
-              ((scratch_ptr3 - scratch_ptr2) != 32))
+          if ((int(scratch_ptr2 - scratch_ptr1) != 24) ||
+              (int(scratch_ptr3 - scratch_ptr2) != 32))
             flag() = 1;
 
           // Now request aligned memory such that the allocation after
@@ -1632,14 +1632,14 @@ struct TestScratchAlignment {
 
           // The difference between scratch_ptr2 and scratch_ptr1 should be 4
           // bytes larger than what we requested in either case.
-          if (((scratch_ptr2 - scratch_ptr1) != 28) &&
-              ((scratch_ptr2 - scratch_ptr1) != 16))
+          if ((int(scratch_ptr2 - scratch_ptr1) != 28) &&
+              (int(scratch_ptr2 - scratch_ptr1) != 16))
             flag() = 1;
           // Check that there wasn't unneccessary padding happening. Since
           // scratch_ptr2 was allocated with a 32 byte request and scratch_ptr3
           // is then already aligned, its difference should match 32 bytes.
-          if ((scratch_ptr3 - scratch_ptr2) != 32) flag() = 1;
-
+          if ((scratch_ptr3 - scratch_ptr2) != 32) 
+		  flag() = 1;
           // check actually alignment of ptrs is as requested
           // cast to int here to avoid failure with icpx in mixed integer type
           // comparison

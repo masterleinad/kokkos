@@ -94,7 +94,7 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLDeviceUSMSpace>{
   }
 
   KOKKOS_FUNCTION
-  operator ValueType*() const { return m_device_ptr?static_cast<ValueType*>(m_device_ptr.get()): static_cast<ValueType*>(m_private_ptr.get()); }
+  operator ValueType*() const { return m_device_ptr.get()?static_cast<ValueType*>(m_device_ptr.get()): static_cast<ValueType*>(m_private_ptr.get()); }
 
   KOKKOS_DEFAULTED_FUNCTION
   SYCLUSMHandle() = default;
@@ -126,7 +126,7 @@ struct SYCLUSMHandle<ValueType, ScratchMemorySpace<Kokkos::Experimental::SYCL>>{
   }
 
   KOKKOS_FUNCTION
-  operator ValueType*() const { return m_device_ptr?static_cast<ValueType*>(m_device_ptr.get()): static_cast<ValueType*>(m_local_ptr.get()); }
+  operator ValueType*() const { return m_device_ptr.get()?static_cast<ValueType*>(m_device_ptr.get()): static_cast<ValueType*>(m_local_ptr.get()); }
 
   KOKKOS_DEFAULTED_FUNCTION
   SYCLUSMHandle() = default;
