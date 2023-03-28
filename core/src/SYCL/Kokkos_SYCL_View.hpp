@@ -36,7 +36,7 @@ struct SYCLUSMHandle {
                          sycl::device_ptr<ValueType>>;
 
   usm_ptr_type m_ptr;
-  ValueType* m_raw_ptr = nullptr;
+  sycl::private_ptr<ValueType> m_raw_ptr = nullptr;
 
   template <typename iType>
   KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
@@ -44,13 +44,13 @@ struct SYCLUSMHandle {
   }
 
   KOKKOS_FUNCTION
-  operator ValueType*() const { return m_raw_ptr?m_raw_ptr: m_ptr.get(); }
+  operator ValueType*() const { return m_raw_ptr?static_cast<ValueType*>(m_raw_ptr.get()): static_cast<ValueType*>(m_ptr.get()); }
 
   KOKKOS_DEFAULTED_FUNCTION
   SYCLUSMHandle() = default;
 
   KOKKOS_FUNCTION
-  explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(sycl::address_space_cast<usm_ptr_type::address_space, sycl::access::decorated::no>(arg_ptr)) {
+  explicit SYCLUSMHandle(ValueType* const arg_ptr) : m_ptr(sycl::address_space_cast<usm_ptr_type::address_space, sycl::access::decorated::yes>(arg_ptr)) {
     if (m_ptr == nullptr) {
      KOKKOS_IMPL_DO_NOT_USE_PRINTF("address_space_cast failed\n");
       m_raw_ptr = arg_ptr;
