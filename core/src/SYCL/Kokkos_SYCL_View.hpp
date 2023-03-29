@@ -39,7 +39,7 @@ struct SYCLUSMHandle;
 
 template <typename ValueType>
 struct SYCLUSMHandle<ValueType, Experimental::SYCLSharedUSMSpace>{
-  sycl::global_ptr<ValueType, sycl::access::decorated::yes> m_ptr;
+  sycl::global_ptr<ValueType> m_ptr;
 
   template <typename iType>
   KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
@@ -110,8 +110,8 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLDeviceUSMSpace>{
   }
 
    KOKKOS_FUNCTION
-  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr?arg_handle.m_device_ptr + offset:nullptr),
-                                                m_private_ptr(arg_handle.m_private_ptr?arg_handle.m_private_ptr + offset:nullptr){
+  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr.get()?arg_handle.m_device_ptr + offset:nullptr),
+                                                m_private_ptr(arg_handle.m_private_ptr.get()?arg_handle.m_private_ptr + offset:nullptr){
         }
 };
 
@@ -138,8 +138,8 @@ struct SYCLUSMHandle<ValueType, ScratchMemorySpace<Kokkos::Experimental::SYCL>>{
 	{}
 
   KOKKOS_FUNCTION
-  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr?arg_handle.m_device_ptr + offset:nullptr), 
-                                                m_local_ptr(arg_handle.m_local_ptr?arg_handle.m_device_ptr + offset:nullptr){
+  SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr.get()?arg_handle.m_device_ptr + offset:nullptr), 
+                                                m_local_ptr(arg_handle.m_local_ptr.get()?arg_handle.m_device_ptr + offset:nullptr){
         }
 };
 
