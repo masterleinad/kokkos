@@ -58,6 +58,8 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLSharedUSMSpace>{
 
      KOKKOS_FUNCTION
   SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_ptr(arg_handle.m_ptr + offset) {}
+
+  SYCLUSMHandle& operator=(ValueType* const arg_ptr) { return *this = SYCLUSMHandle(arg_ptr); }
 };
 
 template <typename ValueType>
@@ -81,6 +83,8 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLHostUSMSpace>{
 
    KOKKOS_FUNCTION
   SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_ptr(arg_handle.m_ptr + offset) {}
+
+     SYCLUSMHandle& operator=(ValueType* const arg_ptr) { return *this = SYCLUSMHandle(arg_ptr); }
 };
 
 template <typename ValueType>
@@ -113,6 +117,8 @@ struct SYCLUSMHandle<ValueType, Experimental::SYCLDeviceUSMSpace>{
   SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr.get()?arg_handle.m_device_ptr + offset:nullptr),
                                                 m_private_ptr(arg_handle.m_private_ptr.get()?arg_handle.m_private_ptr + offset:nullptr){
         }
+
+     SYCLUSMHandle& operator=(ValueType* const arg_ptr) { return *this = SYCLUSMHandle(arg_ptr); }
 };
 
 template <typename ValueType>
@@ -139,8 +145,10 @@ struct SYCLUSMHandle<ValueType, ScratchMemorySpace<Kokkos::Experimental::SYCL>>{
 
   KOKKOS_FUNCTION
   SYCLUSMHandle(const SYCLUSMHandle& arg_handle, size_t offset) : m_device_ptr(arg_handle.m_device_ptr.get()?arg_handle.m_device_ptr + offset:nullptr), 
-                                                m_local_ptr(arg_handle.m_local_ptr.get()?arg_handle.m_device_ptr + offset:nullptr){
+                                                m_local_ptr(arg_handle.m_local_ptr.get()?arg_handle.m_local_ptr + offset:nullptr){
         }
+
+    SYCLUSMHandle& operator=(ValueType* const arg_ptr) { return *this = SYCLUSMHandle(arg_ptr); }
 };
 
 
