@@ -30,8 +30,7 @@ struct ThreadScratch {
   using team_t   = typename Kokkos::TeamPolicy<ExecSpace>::member_type;
   using data_t   = Kokkos::View<size_t **, ExecSpace>;
 
-  using scratch_t = Kokkos::View<size_t *, ExecSpace,
-                                 Kokkos::MemoryTraits<Kokkos::Unmanaged> >;
+  using scratch_t = Kokkos::View<size_t *, Kokkos::ScratchMemorySpace<ExecSpace>>;
 
   int sX, sY;
   data_t v;
