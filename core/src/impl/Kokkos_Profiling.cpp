@@ -1,46 +1,18 @@
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
 //               Solutions of Sandia, LLC (NTESS).
 //
 // Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #define KOKKOS_IMPL_PUBLIC_INCLUDE
@@ -77,7 +49,8 @@ void warn_cmd_line_arg_ignored_when_kokkos_tools_disabled(char const* arg) {
 #ifndef KOKKOS_TOOLS_ENABLE_LIBDL
   if (Kokkos::show_warnings()) {
     std::cerr << "Warning: command line argument '" << arg
-              << "' ignored because kokkos-tools is disabled." << std::endl;
+              << "' ignored because kokkos-tools is disabled."
+              << " Raised by Kokkos::initialize()." << std::endl;
   }
 #else
   (void)arg;
@@ -88,7 +61,8 @@ void warn_env_var_ignored_when_kokkos_tools_disabled(char const* env_var,
 #ifndef KOKKOS_TOOLS_ENABLE_LIBDL
   if (Kokkos::show_warnings()) {
     std::cerr << "Warning: environment variable '" << env_var << "=" << val
-              << "' ignored because kokkos-tools is disabled." << std::endl;
+              << "' ignored because kokkos-tools is disabled."
+              << " Raised by Kokkos::initialize()." << std::endl;
   }
 #else
   (void)env_var;
@@ -148,14 +122,22 @@ void parse_command_line_arguments(int& argc, char* argv[],
       help = InitArguments::PossiblyUnsetOption::on;
       warn_cmd_line_arg_ignored_when_kokkos_tools_disabled(argv[iarg]);
       remove_flag = true;
-    } else {
-      iarg++;
+    } else if (std::regex_match(argv[iarg], std::regex("-?-kokkos-tool.*",
+                                                       std::regex::egrep))) {
+      std::cerr << "Warning: command line argument '" << argv[iarg]
+                << "' is not recognized."
+                << " Raised by Kokkos::initialize()." << std::endl;
     }
     if (remove_flag) {
-      for (int k = iarg; k < argc - 1; k++) {
+      // Shift the remainder of the argv list by one.  Note that argv has
+      // (argc + 1) arguments, the last one always being nullptr.  The following
+      // loop moves the trailing nullptr element as well
+      for (int k = iarg; k < argc; ++k) {
         argv[k] = argv[k + 1];
       }
       argc--;
+    } else {
+      iarg++;
     }
     if ((args == Kokkos::Tools::InitArguments::unset_string_option) && argc > 0)
       args = argv[0];
@@ -182,8 +164,8 @@ Kokkos::Tools::Impl::InitializationStatus parse_environment_variables(
       std::stringstream ss;
       ss << "Error: environment variables 'KOKKOS_PROFILE_LIBRARY="
          << env_profile_library << "' and 'KOKKOS_TOOLS_LIBS=" << env_tools_libs
-         << "' are both set and do not match.";
-      ss << " Raised by Kokkos::initialize(int argc, char* argv[]).\n";
+         << "' are both set and do not match."
+         << " Raised by Kokkos::initialize().\n";
       Kokkos::abort(ss.str().c_str());
     }
     libs = env_tools_libs;
@@ -195,7 +177,8 @@ Kokkos::Tools::Impl::InitializationStatus parse_environment_variables(
     args = env_tools_args;
   }
   return {
-      Kokkos::Tools::Impl::InitializationStatus::InitializationResult::success};
+      Kokkos::Tools::Impl::InitializationStatus::InitializationResult::success,
+      ""};
 }
 InitializationStatus initialize_tools_subsystem(
     const Kokkos::Tools::InitArguments& args) {
@@ -210,13 +193,13 @@ InitializationStatus initialize_tools_subsystem(
     if (!Kokkos::Tools::printHelp(final_args)) {
       std::cerr << "Tool has not provided a help message" << std::endl;
     }
-    return {InitializationStatus::InitializationResult::help_request};
+    return {InitializationStatus::InitializationResult::help_request, ""};
   }
   Kokkos::Tools::parseArgs(final_args);
 #else
   (void)args;
 #endif
-  return {InitializationStatus::InitializationResult::success};
+  return {InitializationStatus::InitializationResult::success, ""};
 }
 
 }  // namespace Impl
@@ -645,9 +628,9 @@ void initialize(const std::string& profileLibrary) {
 
   char* envProfileLibrary = const_cast<char*>(profileLibrary.c_str());
 
-  const auto envProfileCopy =
-      std::make_unique<char[]>(strlen(envProfileLibrary) + 1);
-  sprintf(envProfileCopy.get(), "%s", envProfileLibrary);
+  const size_t envProfileLen = strlen(envProfileLibrary) + 1;
+  const auto envProfileCopy  = std::make_unique<char[]>(envProfileLen);
+  snprintf(envProfileCopy.get(), envProfileLen, "%s", envProfileLibrary);
 
   char* profileLibraryName = strtok(envProfileCopy.get(), ";");
 

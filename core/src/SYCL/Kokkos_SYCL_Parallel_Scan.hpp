@@ -1,46 +1,18 @@
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
 //               Solutions of Sandia, LLC (NTESS).
 //
 // Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 #ifndef KOKKO_SYCL_PARALLEL_SCAN_HPP
 #define KOKKO_SYCL_PARALLEL_SCAN_HPP
@@ -59,7 +31,7 @@ namespace Impl {
 // total sum.
 template <int dim, typename ValueType, typename FunctorType>
 void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
-                    sycl::local_ptr<ValueType> local_mem,
+                    sycl::local_accessor<ValueType> local_mem,
                     ValueType& local_value, unsigned int global_range) {
   // subgroup scans
   auto sg                = item.get_sub_group();
@@ -127,7 +99,6 @@ class ParallelScanSYCLBase {
  protected:
   using Member       = typename Policy::member_type;
   using WorkTag      = typename Policy::work_tag;
-  using WorkRange    = typename Policy::WorkRange;
   using LaunchBounds = typename Policy::launch_bounds;
 
  public:
@@ -141,9 +112,12 @@ class ParallelScanSYCLBase {
   using index_type     = typename Policy::index_type;
 
  protected:
-  const FunctorType m_functor;
+  const CombinedFunctorReducer<FunctorType, typename Analysis::Reducer>
+      m_functor_reducer;
   const Policy m_policy;
   pointer_type m_scratch_space = nullptr;
+  const pointer_type m_result_ptr;
+  const bool m_result_ptr_device_accessible;
 
   // Only let one Parallel/Scan modify the shared memory. The
   // constructor acquires the mutex which is released in the destructor.
@@ -179,13 +153,11 @@ class ParallelScanSYCLBase {
           q.get_device()
               .template get_info<sycl::info::device::sub_group_sizes>()
               .front();
-      sycl::accessor<value_type, 1, sycl::access::mode::read_write,
-                     sycl::access::target::local>
+      sycl::local_accessor<value_type>
           local_mem(sycl::range<1>((wgroup_size + min_subgroup_size - 1) /
                                    min_subgroup_size),
                     cgh);
-      sycl::accessor<unsigned int, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
+      sycl::local_accessor<unsigned int>
             num_teams_done(1, cgh);
 
       cgh.depends_on(memcpy_event);
@@ -195,20 +167,23 @@ class ParallelScanSYCLBase {
           [=](sycl::nd_item<1> item) {
         const index_type local_id  = item.get_local_linear_id();
         const index_type global_id = item.get_global_linear_id();
-        const FunctorType& functor = functor_wrapper.get_functor();
-        typename Analysis::Reducer final_reducer(&functor);
+	const CombinedFunctorReducer<
+                FunctorType, typename Analysis::Reducer>& functor_reducer =
+                functor_wrapper.get_functor();
+        const FunctorType& functor = functor_reducer.get_functor();
+        const typename Analysis::Reducer& reducer = functor_reducer.get_reducer();
 
         value_type update{};
-        final_reducer.init(&update);
+        reducer.init(&update);
         if (global_id < size) {
           if constexpr (std::is_void<WorkTag>::value)
-            functor_wrapper.get_functor()(global_id+begin, update, false);
+            functor(global_id+begin, update, false);
           else
-            functor_wrapper.get_functor()(WorkTag(), global_id+begin, update, false);
+            functor(WorkTag(), global_id+begin, update, false);
         }
 
         item.barrier(sycl::access::fence_space::global_space);
-        workgroup_scan<>(item, final_reducer, local_mem.get_pointer(), update, wgroup_size);
+        workgroup_scan<>(item, reducer, local_mem, update, wgroup_size);
 	item.barrier(sycl::access::fence_space::global_space);
 
 		// Write results to global memory
@@ -228,30 +203,30 @@ class ParallelScanSYCLBase {
          item.barrier(sycl::access::fence_space::global_space);
          if (num_teams_done[0] == n_wgroups && local_id==0) {
            for (unsigned int i=1; i<n_wgroups; ++i)
-             final_reducer.join(&group_results[i], &group_results[i-1]);
+             reducer.join(&group_results[i], &group_results[i-1]);
            for (unsigned int i=n_wgroups-1; i>0; --i)
              group_results[i] = group_results[i-1];
-	   final_reducer.init(&group_results[0]);
+	   reducer.init(&group_results[0]);
 
 		 /*
            value_type total;
-           final_reducer.init(&total);
+           reducer.init(&total);
 
            for (unsigned int offset=0; offset < n_wgroups; offset += wgroup_size) {
              index_type id = local_id + offset;
              if (id < static_cast<index_type>(n_wgroups))
                update = group_results[id];
 	     else
-               final_reducer.init(&update);
+               reducer.init(&update);
              item.barrier(sycl::access::fence_space::local_space);
-             workgroup_scan<>(item, final_reducer, local_mem.get_pointer(), update,
+             workgroup_scan<>(item, reducer, local_mem.get_pointer(), update,
                               std::min(n_wgroups-offset, wgroup_size));
              item.barrier(sycl::access::fence_space::local_space);
              if (id < static_cast<index_type>(n_wgroups)) {
-               final_reducer.join(&update, &total);
+               reducer.join(&update, &total);
                group_results[id] = update;
              }
-             final_reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
+             reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
            }*/
          }
       });
@@ -265,21 +240,23 @@ class ParallelScanSYCLBase {
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
             [=](sycl::nd_item<1> item) {
               const index_type global_id       = item.get_global_linear_id();
-              const FunctorType& functor = functor_wrapper.get_functor();
-              typename Analysis::Reducer final_reducer(&functor);
+              const CombinedFunctorReducer<
+                FunctorType, typename Analysis::Reducer>& functor_reducer =
+                functor_wrapper.get_functor();
+        const FunctorType& functor = functor_reducer.get_functor();
+        const typename Analysis::Reducer& reducer = functor_reducer.get_reducer();
 
               if (global_id < size) {  
                 value_type update = global_mem[global_id];
-                final_reducer.join(&update,
+                reducer.join(&update,
                                    &group_results[item.get_group_linear_id()]);
 
                 if constexpr (std::is_void<WorkTag>::value)
-                  functor_wrapper.get_functor()(global_id, update, true);
+                  functor_wrapper.get_functor().get_functor()(global_id, update, true);
                 else
-                  functor_wrapper.get_functor()(WorkTag(), global_id, update, true);
+                  functor_wrapper.get_functor().get_functor()(WorkTag(), global_id, update, true);
                 global_mem[global_id] = update;
-              }
-            });
+              }});
     });
     q.ext_oneapi_submit_barrier(
         std::vector<sycl::event>{update_global_results});
@@ -320,7 +297,7 @@ class ParallelScanSYCLBase {
         indirectKernelMem = instance.get_indirect_kernel_mem();
 
     auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper(
-        m_functor, indirectKernelMem);
+        m_functor_reducer, indirectKernelMem);
 
     sycl::event event =
         sycl_direct_launch(functor_wrapper, functor_wrapper.get_copy_event());
@@ -328,9 +305,13 @@ class ParallelScanSYCLBase {
     post_functor();
   }
 
-  ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy)
-      : m_functor(arg_functor),
+  ParallelScanSYCLBase(const FunctorType& arg_functor, const Policy& arg_policy,
+                       pointer_type arg_result_ptr,
+                       bool arg_result_ptr_device_accessible)
+      : m_functor_reducer(arg_functor, typename Analysis::Reducer{arg_functor}),
         m_policy(arg_policy),
+        m_result_ptr(arg_result_ptr),
+        m_result_ptr_device_accessible(arg_result_ptr_device_accessible),
         m_shared_memory_lock(m_policy.space()
                                  .impl_internal_space_instance()
                                  ->m_mutexScratchSpace) {}
@@ -349,7 +330,7 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
 
   ParallelScan(const FunctorType& arg_functor,
                const typename Base::Policy& arg_policy)
-      : Base(arg_functor, arg_policy) {}
+      : Base(arg_functor, arg_policy, nullptr, false) {}
 };
 
 //----------------------------------------------------------------------------
@@ -357,30 +338,32 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
 template <class FunctorType, class ReturnType, class... Traits>
 class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
                             ReturnType, Kokkos::Experimental::SYCL>
-    : private ParallelScanSYCLBase<FunctorType, Traits...> {
+    : public ParallelScanSYCLBase<FunctorType, Traits...> {
  public:
   using Base = ParallelScanSYCLBase<FunctorType, Traits...>;
 
-  ReturnType& m_returnvalue;
   const Kokkos::Experimental::SYCL& m_exec;
 
   inline void execute() {
     Base::impl_execute([&]() {
       const long long nwork = Base::m_policy.end() - Base::m_policy.begin();
-      if (nwork > 0) {
-        const int size = Base::Analysis::value_size(Base::m_functor);
+      if (nwork > 0 && !Base::m_result_ptr_device_accessible) {
+        const int size = Base::m_functor_reducer.get_reducer().value_size();
         DeepCopy<HostSpace, Kokkos::Experimental::SYCLDeviceUSMSpace,
-                 Kokkos::Experimental::SYCL>(
-            m_exec, &m_returnvalue, Base::m_scratch_space + nwork - 1, size);
+                 Kokkos::Experimental::SYCL>(m_exec, Base::m_result_ptr,
+                                             Base::m_scratch_space + nwork - 1,
+                                             size);
       }
     });
   }
 
+  template <class ViewType>
   ParallelScanWithTotal(const FunctorType& arg_functor,
                         const typename Base::Policy& arg_policy,
-                        ReturnType& arg_returnvalue)
-      : Base(arg_functor, arg_policy),
-        m_returnvalue(arg_returnvalue),
+                        const ViewType& arg_result_view)
+      : Base(arg_functor, arg_policy, arg_result_view.data(),
+             MemorySpaceAccess<Experimental::SYCLDeviceUSMSpace,
+                               typename ViewType::memory_space>::accessible),
         m_exec(arg_policy.space()) {}
 };
 

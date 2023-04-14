@@ -1,46 +1,18 @@
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
 //               Solutions of Sandia, LLC (NTESS).
 //
 // Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 #ifndef KOKKOS_FUNCTORANALYSIS_HPP
 #define KOKKOS_FUNCTORANALYSIS_HPP
@@ -108,12 +80,12 @@ struct FunctorAnalysis {
 
   //----------------------------------------
 
-  struct VOID {};
+  struct void_tag {};
 
   template <typename P = Policy, typename = std::false_type>
   struct has_work_tag {
     using type = void;
-    using wtag = VOID;
+    using wtag = void_tag;
   };
 
   template <typename P>
@@ -337,7 +309,7 @@ struct FunctorAnalysis {
 
  private:
   // Stub to avoid defining a type 'void &'
-  using ValueType = std::conditional_t<candidate_is_void, VOID, value_type>;
+  using ValueType = std::conditional_t<candidate_is_void, void_tag, value_type>;
 
  public:
   using pointer_type = std::conditional_t<candidate_is_void, void, ValueType*>;
@@ -348,13 +320,15 @@ struct FunctorAnalysis {
 
  private:
   template <bool IsArray, class FF>
-  KOKKOS_INLINE_FUNCTION static constexpr std::enable_if_t<IsArray, unsigned>
+  KOKKOS_INLINE_FUNCTION static constexpr std::enable_if_t<IsArray,
+                                                           unsigned int>
   get_length(FF const& f) {
     return f.value_count;
   }
 
   template <bool IsArray, class FF>
-  KOKKOS_INLINE_FUNCTION static constexpr std::enable_if_t<!IsArray, unsigned>
+  KOKKOS_INLINE_FUNCTION static constexpr std::enable_if_t<!IsArray,
+                                                           unsigned int>
   get_length(FF const&) {
     return candidate_is_void ? 0 : 1;
   }
@@ -365,12 +339,12 @@ struct FunctorAnalysis {
         !candidate_is_void && !candidate_is_array ? sizeof(ValueType) : 0
   };
 
-  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned value_count(
+  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned int value_count(
       const Functor& f) {
     return FunctorAnalysis::template get_length<candidate_is_array>(f);
   }
 
-  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned value_size(
+  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned int value_size(
       const Functor& f) {
     return FunctorAnalysis::template get_length<candidate_is_array>(f) *
            sizeof(ValueType);
@@ -379,13 +353,13 @@ struct FunctorAnalysis {
   //----------------------------------------
 
   template <class Unknown>
-  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned value_count(
+  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned int value_count(
       const Unknown&) {
     return candidate_is_void ? 0 : 1;
   }
 
   template <class Unknown>
-  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned value_size(
+  KOKKOS_FORCEINLINE_FUNCTION static constexpr unsigned int value_size(
       const Unknown&) {
     return candidate_is_void ? 0 : sizeof(ValueType);
   }
@@ -655,6 +629,11 @@ struct FunctorAnalysis {
                         detected_volatile_join_no_tag<F>::value)>>
       : public has_volatile_join_no_tag_function<F> {
     enum : bool { value = true };
+#ifndef KOKKOS_ENABLE_DEPRECATED_CODE_3
+    static_assert(Impl::dependent_false_v<F>,
+                  "Reducer with a join() operator taking "
+                  "volatile-qualified parameters is no longer supported");
+#endif
   };
 
   template <class F = Functor, typename = void>
@@ -673,6 +652,11 @@ struct FunctorAnalysis {
                                          detected_volatile_join_tag<F>::value)>>
       : public has_volatile_join_tag_function<F> {
     enum : bool { value = true };
+#ifndef KOKKOS_ENABLE_DEPRECATED_CODE_3
+    static_assert(Impl::dependent_false_v<F>,
+                  "Reducer with a join() operator taking "
+                  "volatile-qualified parameters is no longer supported");
+#endif
   };
 
   //----------------------------------------
@@ -745,8 +729,9 @@ struct FunctorAnalysis {
   struct DeduceInitNoTag {
     enum : bool { value = false };
 
-    KOKKOS_INLINE_FUNCTION static void init(F const* const, ValueType* dst) {
-      new (dst) ValueType();
+    KOKKOS_INLINE_FUNCTION static void init(F const* const f, ValueType* dst) {
+      const int n = FunctorAnalysis::value_count(*f);
+      for (int i = 0; i < n; ++i) new (&dst[i]) ValueType();
     }
   };
 
@@ -890,7 +875,9 @@ struct FunctorAnalysis {
   };
 
   template <class F>
-  struct DeduceTeamShmem<F, std::enable_if_t<0 < sizeof(&F::shmem_size)>> {
+  struct DeduceTeamShmem<F,
+                         std::enable_if_t<(0 < sizeof(&F::shmem_size)) &&
+                                          !(0 < sizeof(&F::team_shmem_size))>> {
     enum : bool { value = true };
 
     static size_t team_shmem_size(F const* const f, int team_size) {
@@ -918,12 +905,12 @@ struct FunctorAnalysis {
 
   struct Reducer {
    private:
-    Functor const* const m_functor;
+    Functor m_functor;
 
     template <bool IsArray>
     KOKKOS_INLINE_FUNCTION constexpr std::enable_if_t<IsArray, int> len() const
         noexcept {
-      return m_functor->value_count;
+      return m_functor.value_count;
     }
 
     template <bool IsArray>
@@ -938,6 +925,28 @@ struct FunctorAnalysis {
     using pointer_type   = value_type*;
     using reference_type = FunctorAnalysis::reference_type;
     using functor_type   = Functor;  // Adapts a functor
+
+    static constexpr bool has_join_member_function() {
+      return DeduceJoin<>::value;
+    }
+    static constexpr bool has_init_member_function() {
+      return DeduceInit<>::value;
+    }
+    static constexpr bool has_final_member_function() {
+      return DeduceFinal<>::value;
+    }
+
+    KOKKOS_FUNCTION unsigned int value_size() const {
+      return FunctorAnalysis::value_size(m_functor);
+    }
+
+    KOKKOS_FUNCTION unsigned int value_count() const {
+      return FunctorAnalysis::value_count(m_functor);
+    }
+
+    KOKKOS_FUNCTION static constexpr unsigned int static_value_size() {
+      return StaticValueSize;
+    }
 
     template <bool is_array = candidate_is_array>
     KOKKOS_INLINE_FUNCTION static std::enable_if_t<is_array, reference_type>
@@ -963,19 +972,22 @@ struct FunctorAnalysis {
 
     KOKKOS_INLINE_FUNCTION
     void join(ValueType* dst, ValueType const* src) const noexcept {
-      DeduceJoin<>::join(m_functor, dst, src);
+      DeduceJoin<>::join(&m_functor, dst, src);
     }
 
     KOKKOS_INLINE_FUNCTION reference_type init(ValueType* const dst) const
         noexcept {
-      DeduceInit<>::init(m_functor, dst);
+      DeduceInit<>::init(&m_functor, dst);
       return reference(dst);
     }
 
     KOKKOS_INLINE_FUNCTION
     void final(ValueType* dst) const noexcept {
-      DeduceFinal<>::final(m_functor, dst);
+      DeduceFinal<>::final(&m_functor, dst);
     }
+
+    KOKKOS_INLINE_FUNCTION
+    const Functor& get_functor() const { return m_functor; }
 
     Reducer(Reducer const&) = default;
     Reducer(Reducer&&)      = default;
@@ -984,7 +996,7 @@ struct FunctorAnalysis {
     ~Reducer()                    = default;
 
     KOKKOS_INLINE_FUNCTION explicit constexpr Reducer(
-        Functor const* arg_functor) noexcept
+        Functor const& arg_functor) noexcept
         : m_functor(arg_functor) {}
   };
 };

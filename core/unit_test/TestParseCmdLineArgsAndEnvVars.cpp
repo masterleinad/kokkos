@@ -1,52 +1,25 @@
-/*
 //@HEADER
 // ************************************************************************
 //
-//                        Kokkos v. 3.0
-//       Copyright (2020) National Technology & Engineering
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
 //               Solutions of Sandia, LLC (NTESS).
 //
 // Under the terms of Contract DE-NA0003525 with NTESS,
 // the U.S. Government retains certain rights in this software.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
-// 1. Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright
-// notice, this list of conditions and the following disclaimer in the
-// documentation and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the Corporation nor the names of the
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY NTESS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL NTESS OR THE
-// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Questions? Contact Christian R. Trott (crtrott@sandia.gov)
-//
-// ************************************************************************
 //@HEADER
-*/
 
 #include <gtest/gtest.h>
 
 #include <impl/Kokkos_ParseCommandLineArgumentsAndEnvironmentVariables.hpp>
 #include <impl/Kokkos_InitializationSettings.hpp>
 #include <impl/Kokkos_DeviceManagement.hpp>
+#include <impl/Kokkos_Command_Line_Parsing.hpp>
 
 #include <cstdlib>
 #include <memory>
@@ -149,10 +122,23 @@ class CmdLineArgsHelper {
       strcpy(ptr, x.c_str());
       argv_.push_back(ptr);
     }
+    argv_.push_back(nullptr);
   }
   int& argc() { return argc_; }
   char** argv() { return argv_.data(); }
 };
+#define EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, ...) \
+  do {                                                    \
+    std::vector<std::string> expected_argv = __VA_ARGS__; \
+                                                          \
+    int expected_argc = expected_argv.size();             \
+    EXPECT_EQ(cla.argc(), expected_argc);                 \
+    for (int i = 0; i < expected_argc; ++i) {             \
+      EXPECT_EQ(cla.argv()[i], expected_argv[i])          \
+          << "arguments differ at index " << i;           \
+    }                                                     \
+    EXPECT_EQ(cla.argv()[cla.argc()], nullptr);           \
+  } while (false)
 
 TEST(defaultdevicetype, cmd_line_args_num_threads) {
   CmdLineArgsHelper cla = {{
@@ -164,8 +150,7 @@ TEST(defaultdevicetype, cmd_line_args_num_threads) {
   Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
   EXPECT_TRUE(settings.has_num_threads());
   EXPECT_EQ(settings.get_num_threads(), 2);
-  EXPECT_EQ(cla.argc(), 1);
-  EXPECT_STREQ(*cla.argv(), "--foo=bar");
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"--foo=bar"});
 }
 
 TEST(defaultdevicetype, cmd_line_args_device_id) {
@@ -178,8 +163,7 @@ TEST(defaultdevicetype, cmd_line_args_device_id) {
   Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
   EXPECT_TRUE(settings.has_device_id());
   EXPECT_EQ(settings.get_device_id(), 4);
-  EXPECT_EQ(cla.argc(), 1);
-  EXPECT_STREQ(*cla.argv(), "--dummy");
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"--dummy"});
 }
 
 TEST(defaultdevicetype, cmd_line_args_num_devices) {
@@ -195,8 +179,7 @@ TEST(defaultdevicetype, cmd_line_args_num_devices) {
   // this is the current behavior, not suggesting this cannot be revisited
   EXPECT_TRUE(settings.has_skip_device()) << "behavior changed see comment";
   EXPECT_EQ(settings.get_skip_device(), 6) << "behavior changed see comment";
-  EXPECT_EQ(cla.argc(), 1);
-  EXPECT_STREQ(*cla.argv(), "-v");
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"-v"});
 }
 
 TEST(defaultdevicetype, cmd_line_args_disable_warning) {
@@ -208,6 +191,7 @@ TEST(defaultdevicetype, cmd_line_args_disable_warning) {
   Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
   EXPECT_TRUE(settings.has_disable_warnings());
   EXPECT_FALSE(settings.get_disable_warnings());
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {});
 }
 
 TEST(defaultdevicetype, cmd_line_args_tune_internals) {
@@ -221,6 +205,7 @@ TEST(defaultdevicetype, cmd_line_args_tune_internals) {
   EXPECT_TRUE(settings.get_tune_internals());
   EXPECT_TRUE(settings.has_num_threads());
   EXPECT_EQ(settings.get_num_threads(), 3);
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {});
 }
 
 TEST(defaultdevicetype, cmd_line_args_help) {
@@ -233,8 +218,7 @@ TEST(defaultdevicetype, cmd_line_args_help) {
   auto captured = ::testing::internal::GetCapturedStdout();
   // check that error message was only printed once
   EXPECT_EQ(captured.find("--kokkos-help"), captured.rfind("--kokkos-help"));
-  EXPECT_EQ(cla.argc(), 1);
-  EXPECT_STREQ(*cla.argv(), "--help");
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"--help"});
   auto const help_message_length = captured.length();
 
   cla = {{
@@ -244,7 +228,7 @@ TEST(defaultdevicetype, cmd_line_args_help) {
   Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
   captured = ::testing::internal::GetCapturedStdout();
   EXPECT_EQ(captured.length(), help_message_length);
-  EXPECT_EQ(cla.argc(), 0);
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {});
 
   cla = {{
       {"--kokkos-help"},
@@ -255,8 +239,82 @@ TEST(defaultdevicetype, cmd_line_args_help) {
   Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
   captured = ::testing::internal::GetCapturedStdout();
   EXPECT_EQ(captured.length(), help_message_length);
-  EXPECT_EQ(cla.argc(), 1);
-  EXPECT_STREQ(*cla.argv(), "--help");
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"--help"});
+}
+
+TEST(defaultdevicetype, cmd_line_args_tools_arguments) {
+  CmdLineArgsHelper cla = {{
+      "--kokkos-tool-libs=ich_tue_nur.so",
+  }};
+  Kokkos::InitializationSettings settings;
+  ::testing::internal::CaptureStderr();
+  Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
+  auto captured = ::testing::internal::GetCapturedStderr();
+  EXPECT_TRUE(captured.find("not recognized") != std::string::npos &&
+              captured.find("--kokkos-tool-libs=ich_tue_nur.so") !=
+                  std::string::npos &&
+              !settings.has_tools_libs())
+      << captured;
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(
+      cla, {"--kokkos-tool-libs=ich_tue_nur.so"});
+
+  cla      = {{
+      "--kokkos-tools-libs=ich_tue_nur.so",
+  }};
+  settings = {};
+  Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
+  EXPECT_TRUE(settings.has_tools_libs());
+  EXPECT_EQ(settings.get_tools_libs(), "ich_tue_nur.so");
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {});
+}
+
+TEST(defaultdevicetype, cmd_line_args_unrecognized_flag) {
+  CmdLineArgsHelper cla = {{
+      "--kokkos_num_threads=4",  // underscores instead of dashes
+  }};
+  Kokkos::InitializationSettings settings;
+  ::testing::internal::CaptureStderr();
+  Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
+  auto captured = ::testing::internal::GetCapturedStderr();
+  EXPECT_TRUE(captured.find("not recognized") != std::string::npos &&
+              captured.find("--kokkos_num_threads=4") != std::string::npos &&
+              !settings.has_num_threads())
+      << captured;
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"--kokkos_num_threads=4"});
+
+  cla = {{
+      "-kokkos-num-threads=4",  // missing one leading dash
+  }};
+  ::testing::internal::CaptureStderr();
+  Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
+  captured = ::testing::internal::GetCapturedStderr();
+  EXPECT_TRUE(captured.find("not recognized") != std::string::npos &&
+              captured.find("-kokkos-num-threads=4") != std::string::npos &&
+              !settings.has_num_threads())
+      << captured;
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"-kokkos-num-threads=4"});
+
+  cla = {{
+      "--kokko-num-threads=4",  // no warning when prefix misspelled
+  }};
+  ::testing::internal::CaptureStderr();
+  Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
+  captured = ::testing::internal::GetCapturedStderr();
+  EXPECT_TRUE(captured.empty() && !settings.has_num_threads()) << captured;
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla, {"--kokko-num-threads=4"});
+
+  Kokkos::Impl::do_not_warn_not_recognized_command_line_argument(
+      std::regex{"^--kokkos-extension.*"});
+  cla = {{
+      "--kokkos-extension-option=value",  // user explicitly asked not to warn
+                                          // about that prefix
+  }};
+  ::testing::internal::CaptureStderr();
+  Kokkos::Impl::parse_command_line_arguments(cla.argc(), cla.argv(), settings);
+  captured = ::testing::internal::GetCapturedStderr();
+  EXPECT_TRUE(captured.empty()) << captured;
+  EXPECT_REMAINING_COMMAND_LINE_ARGUMENTS(cla,
+                                          {"--kokkos-extension-option=value"});
 }
 
 TEST(defaultdevicetype, env_vars_num_threads) {
