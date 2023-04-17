@@ -33,8 +33,8 @@ template <int dim, typename ValueType, typename FunctorType>
 void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
                     sycl::local_accessor<ValueType> local_mem,
                     ValueType& local_value, unsigned int global_range) {
-	// subgroup scans
-  auto sg                = item.get_sub_group();
+  // subgroup scans
+  auto sg               = item.get_sub_group();
   const int sg_group_id = sg.get_group_id()[0];
   const int id_in_sg    = sg.get_local_id()[0];
   for (unsigned int stride = 1; stride < global_range; stride <<= 1) {
@@ -129,14 +129,14 @@ class ParallelScanSYCLBase {
     const Kokkos::Experimental::SYCL& space = m_policy.space();
     Kokkos::Experimental::Impl::SYCLInternal& instance =
         *space.impl_internal_space_instance();
-    sycl::queue& q                          = space.sycl_queue();
+    sycl::queue& q = space.sycl_queue();
 
     const auto size = m_policy.end() - m_policy.begin();
 
     // FIXME_SYCL optimize
     constexpr size_t wgroup_size = 16;
     auto n_wgroups               = (size + wgroup_size - 1) / wgroup_size;
-    auto global_mem = m_scratch_space;
+    auto global_mem              = m_scratch_space;
     pointer_type group_results   = global_mem + n_wgroups * wgroup_size;
 
     auto scratch_flags = static_cast<sycl::device_ptr<unsigned int>>(
@@ -144,120 +144,124 @@ class ParallelScanSYCLBase {
 
     // Initialize global memory
     auto initialize_global_memory = q.submit([&](sycl::handler& cgh) {
-      auto begin      = m_policy.begin();
+      auto begin = m_policy.begin();
 
       // Store subgroup totals
       const auto min_subgroup_size =
           q.get_device()
               .template get_info<sycl::info::device::sub_group_sizes>()
               .front();
-      sycl::local_accessor<value_type>
-          local_mem(sycl::range<1>((wgroup_size + min_subgroup_size - 1) /
-                                   min_subgroup_size),
-                    cgh);
-      sycl::local_accessor<unsigned int>
-            num_teams_done(1, cgh);
+      sycl::local_accessor<value_type> local_mem(
+          sycl::range<1>((wgroup_size + min_subgroup_size - 1) /
+                         min_subgroup_size),
+          cgh);
+      sycl::local_accessor<unsigned int> num_teams_done(1, cgh);
 
       cgh.depends_on(memcpy_event);
 
       cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
           [=](sycl::nd_item<1> item) {
-        const index_type local_id  = item.get_local_linear_id();
-        const index_type global_id = item.get_global_linear_id();
-	const CombinedFunctorReducer<
+            const index_type local_id  = item.get_local_linear_id();
+            const index_type global_id = item.get_global_linear_id();
+            const CombinedFunctorReducer<
                 FunctorType, typename Analysis::Reducer>& functor_reducer =
                 functor_wrapper.get_functor();
-        const FunctorType& functor = functor_reducer.get_functor();
-        const typename Analysis::Reducer& reducer = functor_reducer.get_reducer();
+            const FunctorType& functor = functor_reducer.get_functor();
+            const typename Analysis::Reducer& reducer =
+                functor_reducer.get_reducer();
 
-        value_type update{};
-        reducer.init(&update);
-        if (global_id < size) {
-          if constexpr (std::is_void<WorkTag>::value)
-            functor(global_id+begin, update, false);
-          else
-            functor(WorkTag(), global_id+begin, update, false);
-	}
+            value_type update{};
+            reducer.init(&update);
+            if (global_id < size) {
+              if constexpr (std::is_void<WorkTag>::value)
+                functor(global_id + begin, update, false);
+              else
+                functor(WorkTag(), global_id + begin, update, false);
+            }
 
-        workgroup_scan<>(item, reducer, local_mem, update, wgroup_size);
+            workgroup_scan<>(item, reducer, local_mem, update, wgroup_size);
 
-		// Write results to global memory
-        if (global_id < size)
-	  global_mem[global_id] = update;
+            // Write results to global memory
+            if (global_id < size) global_mem[global_id] = update;
 
-        if (local_id == wgroup_size - 1) {
-          group_results[item.get_group_linear_id()] =
-             local_mem[item.get_sub_group().get_group_range()[0] - 1];
+            if (local_id == wgroup_size - 1) {
+              group_results[item.get_group_linear_id()] =
+                  local_mem[item.get_sub_group().get_group_range()[0] - 1];
 
-          sycl::atomic_ref<unsigned, sycl::memory_order::relaxed,
-                           sycl::memory_scope::device,
-                           sycl::access::address_space::global_space>
-            scratch_flags_ref(*scratch_flags);
-          num_teams_done[0] = ++scratch_flags_ref;
-         }
-         item.barrier(sycl::access::fence_space::global_space);
-         if (num_teams_done[0] == n_wgroups) {
-           value_type total;
-           reducer.init(&total);
+              sycl::atomic_ref<unsigned, sycl::memory_order::relaxed,
+                               sycl::memory_scope::device,
+                               sycl::access::address_space::global_space>
+                  scratch_flags_ref(*scratch_flags);
+              num_teams_done[0] = ++scratch_flags_ref;
+            }
+            item.barrier(sycl::access::fence_space::global_space);
+            if (num_teams_done[0] == n_wgroups) {
+              value_type total;
+              reducer.init(&total);
 
-           for (unsigned int offset=0; offset < n_wgroups; offset += wgroup_size) {
-             index_type id = local_id + offset;
-             if (id < static_cast<index_type>(n_wgroups))
-               update = group_results[id];
-	     else
-               reducer.init(&update);
-             workgroup_scan<>(item, reducer, local_mem, update,
-                              std::min(n_wgroups-offset, wgroup_size));
-             if (id < static_cast<index_type>(n_wgroups)) {
-               reducer.join(&update, &total);
-               group_results[id] = update;
-             }
-             reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
-	     if(offset+wgroup_size < n_wgroups)
-		              item.barrier(sycl::access::fence_space::global_space);
-           }
-         }
-      });
+              for (unsigned int offset = 0; offset < n_wgroups;
+                   offset += wgroup_size) {
+                index_type id = local_id + offset;
+                if (id < static_cast<index_type>(n_wgroups))
+                  update = group_results[id];
+                else
+                  reducer.init(&update);
+                workgroup_scan<>(item, reducer, local_mem, update,
+                                 std::min(n_wgroups - offset, wgroup_size));
+                if (id < static_cast<index_type>(n_wgroups)) {
+                  reducer.join(&update, &total);
+                  group_results[id] = update;
+                }
+                reducer.join(
+                    &total,
+                    &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
+                if (offset + wgroup_size < n_wgroups)
+                  item.barrier(sycl::access::fence_space::global_space);
+              }
+            }
+          });
     });
     q.ext_oneapi_submit_barrier(
         std::vector<sycl::event>{initialize_global_memory});
 
     // Write results to global memory
     auto update_global_results = q.submit([&](sycl::handler& cgh) {
-       auto global_mem                   = m_scratch_space;
-       auto result_ptr_device_accessible = m_result_ptr_device_accessible;
-       // The compiler failed with CL_INVALID_ARG_VALUE if using m_result_ptr
-       // directly.
-       auto result_ptr = m_result_ptr_device_accessible ? m_result_ptr : nullptr;    		   
-            auto begin      = m_policy.begin();
+      auto global_mem                   = m_scratch_space;
+      auto result_ptr_device_accessible = m_result_ptr_device_accessible;
+      // The compiler failed with CL_INVALID_ARG_VALUE if using m_result_ptr
+      // directly.
+      auto result_ptr = m_result_ptr_device_accessible ? m_result_ptr : nullptr;
+      auto begin      = m_policy.begin();
 
-        cgh.parallel_for(
-            sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
-            [=](sycl::nd_item<1> item) {
-              const index_type global_id       = item.get_global_linear_id();
-              const CombinedFunctorReducer<
+      cgh.parallel_for(
+          sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+          [=](sycl::nd_item<1> item) {
+            const index_type global_id = item.get_global_linear_id();
+            const CombinedFunctorReducer<
                 FunctorType, typename Analysis::Reducer>& functor_reducer =
                 functor_wrapper.get_functor();
-        const FunctorType& functor = functor_reducer.get_functor();
-        const typename Analysis::Reducer& reducer = functor_reducer.get_reducer();
+            const FunctorType& functor = functor_reducer.get_functor();
+            const typename Analysis::Reducer& reducer =
+                functor_reducer.get_reducer();
 
-              if (global_id < size) {  
-                value_type update = global_mem[global_id];
+            if (global_id < size) {
+              value_type update = global_mem[global_id];
 
-                reducer.join(&update,
-                                   &group_results[item.get_group_linear_id()]);
+              reducer.join(&update, &group_results[item.get_group_linear_id()]);
 
-                if constexpr (std::is_void<WorkTag>::value)
-                  functor_wrapper.get_functor().get_functor()(global_id+begin, update, true);
-                else
-                  functor_wrapper.get_functor().get_functor()(WorkTag(), global_id+begin, update, true);
+              if constexpr (std::is_void<WorkTag>::value)
+                functor_wrapper.get_functor().get_functor()(global_id + begin,
+                                                            update, true);
+              else
+                functor_wrapper.get_functor().get_functor()(
+                    WorkTag(), global_id + begin, update, true);
 
-	        global_mem[global_id] = update;
-                if (global_id == size - 1 && result_ptr_device_accessible)
-                  *result_ptr = update;
-              }
-	    });
+              global_mem[global_id] = update;
+              if (global_id == size - 1 && result_ptr_device_accessible)
+                *result_ptr = update;
+            }
+          });
     });
     q.ext_oneapi_submit_barrier(
         std::vector<sycl::event>{update_global_results});
@@ -269,7 +273,7 @@ class ParallelScanSYCLBase {
   void impl_execute(const PostFunctor& post_functor) {
     if (m_policy.begin() == m_policy.end()) return;
 
-    auto& instance        = *m_policy.space().impl_internal_space_instance();
+    auto& instance         = *m_policy.space().impl_internal_space_instance();
     const std::size_t size = m_policy.end() - m_policy.begin();
 
     // Compute the total amount of memory we will need. We emulate the recursive
@@ -315,8 +319,7 @@ class ParallelScanSYCLBase {
         m_result_ptr_device_accessible(arg_result_ptr_device_accessible),
         m_shared_memory_lock(m_policy.space()
                                  .impl_internal_space_instance()
-                                 ->m_mutexScratchSpace) {
-	}
+                                 ->m_mutexScratchSpace) {}
 };
 
 template <class FunctorType, class... Traits>
