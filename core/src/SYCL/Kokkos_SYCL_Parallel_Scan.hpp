@@ -35,8 +35,9 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
                     ValueType& local_value, unsigned int global_range) {
   // subgroup scans
   auto sg                = item.get_sub_group();
-  const auto sg_group_id = sg.get_group_id()[0];
-  const auto id_in_sg    = sg.get_local_id()[0];
+  const int sg_group_id = sg.get_group_id()[0];
+  const int id_in_sg    = sg.get_local_id()[0];
+  KOKKOS_IMPL_DO_NOT_USE_PRINTF("begin %d %d: %d\n", sg_group_id, id_in_sg, local_value);
   for (unsigned int stride = 1; stride < global_range; stride <<= 1) {
     auto tmp = sg.shuffle_up(local_value, stride);
     if (id_in_sg >= stride) final_reducer.join(&local_value, &tmp);
@@ -52,6 +53,8 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   local_value = sg.shuffle_up(local_value, 1);
   if (id_in_sg == 0) final_reducer.init(&local_value);
   sycl::group_barrier(item.get_group());
+
+  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg scanned %d %d: %d\n", sg_group_id, id_in_sg, local_value);
 
   // scan subgroup results using the first subgroup
   if (n_active_subgroups > 1) {
@@ -79,6 +82,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
           if (round > 0)
             final_reducer.join(&local_mem[idx],
                                &local_mem[round * local_range - 1]);
+	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg results %d: %d\n", idx, local_mem[idx]);
         }
         if (round + 1 < n_rounds) sycl::group_barrier(sg);
       }
@@ -89,6 +93,8 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   // add results to all subgroups
   if (sg_group_id > 0)
     final_reducer.join(&local_value, &local_mem[sg_group_id - 1]);
+
+  KOKKOS_IMPL_DO_NOT_USE_PRINTF("final %d %d: %d\n", sg_group_id, id_in_sg, local_value);
 }
 
 template <class FunctorType, class... Traits>
@@ -204,8 +210,9 @@ class ParallelScanSYCLBase {
          if (num_teams_done[0] == n_wgroups && local_id==0) {
            for (unsigned int i=1; i<n_wgroups; ++i)
              reducer.join(&group_results[i], &group_results[i-1]);
-           for (unsigned int i=n_wgroups-1; i>0; --i)
+           for (unsigned int i=n_wgroups-1; i>0; --i) {
              group_results[i] = group_results[i-1];
+	   }
 	   reducer.init(&group_results[0]);
 
 		 /*
@@ -248,6 +255,7 @@ class ParallelScanSYCLBase {
 
               if (global_id < size) {  
                 value_type update = global_mem[global_id];
+		KOKKOS_IMPL_DO_NOT_USE_PRINTF("global_mem %d: %d\n", global_id, update);
                 reducer.join(&update,
                                    &group_results[item.get_group_linear_id()]);
 

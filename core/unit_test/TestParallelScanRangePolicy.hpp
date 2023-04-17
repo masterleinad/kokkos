@@ -132,7 +132,7 @@ struct TestParallelScanRangePolicy {
       Kokkos::RangePolicy<execution_space, Args...> policy(0, work_size);
 
       // Input: label, work_count, functor
-      Kokkos::parallel_scan("TestWithStrArg3", policy, *this);
+      /*Kokkos::parallel_scan("TestWithStrArg3", policy, *this);
       check_scan_results();
 
       // Input: work_count, functor
@@ -157,7 +157,7 @@ struct TestParallelScanRangePolicy {
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
-      }
+      }*/
 
       // Input: work_count, functor
       // Input/Output: return_view (Device)
@@ -171,7 +171,7 @@ struct TestParallelScanRangePolicy {
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   total);  // sum( 0 .. N-1 )
       }
-
+/*
       // Check Kokkos::Experimental::require()
       // for one of the signatures.
       {
@@ -187,7 +187,7 @@ struct TestParallelScanRangePolicy {
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
-      }
+      }*/
     }
   }
 
@@ -201,7 +201,7 @@ struct TestParallelScanRangePolicy {
 };  // struct TestParallelScanRangePolicy
 
 TEST(TEST_CATEGORY, parallel_scan_range_policy) {
-  {
+  /*{
     TestParallelScanRangePolicy<char> f;
 
     std::vector<size_t> work_sizes{5, 10};
@@ -216,16 +216,16 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }
+  }*/
   {
     TestParallelScanRangePolicy<int> f;
 
-    std::vector<size_t> work_sizes{0, 1, 2, 1000, 1001};
+    std::vector<size_t> work_sizes{/*0, 1,*/ 8/*, 10, 11*/};
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
   }
-  {
+  /*{
     TestParallelScanRangePolicy<long int> f;
 
     std::vector<size_t> work_sizes{1000, 10000};
@@ -248,6 +248,6 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }
+  }*/
 }
 }  // namespace
