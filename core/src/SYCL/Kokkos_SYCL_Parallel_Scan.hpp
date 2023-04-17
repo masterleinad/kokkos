@@ -63,7 +63,6 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
         const auto upper_bound =
             std::min(local_range, n_active_subgroups - round * local_range);
         auto local_sg_value = local_mem[idx < n_active_subgroups ? idx : 0];
-        sycl::group_barrier(sg);
         for (unsigned int stride = 1; stride < upper_bound; stride <<= 1) {
           auto tmp = sg.shuffle_up(local_sg_value, stride);
           if (id_in_sg >= stride) {
@@ -73,7 +72,6 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
               local_sg_value = tmp;
           }
         }
-        sycl::group_barrier(sg);
         if (idx < n_active_subgroups) {
           local_mem[idx] = local_sg_value;
           if (round > 0)
@@ -182,16 +180,11 @@ class ParallelScanSYCLBase {
             functor(WorkTag(), global_id+begin, update, false);
 	}
 
-        item.barrier(sycl::access::fence_space::global_space);
         workgroup_scan<>(item, reducer, local_mem, update, wgroup_size);
-	item.barrier(sycl::access::fence_space::global_space);
 
 		// Write results to global memory
         if (global_id < size)
-	{	
 	  global_mem[global_id] = update;
-	}
-	item.barrier(sycl::access::fence_space::global_space);
 
         if (local_id == wgroup_size - 1) {
           group_results[item.get_group_linear_id()] =
@@ -214,15 +207,15 @@ class ParallelScanSYCLBase {
                update = group_results[id];
 	     else
                reducer.init(&update);
-             item.barrier(sycl::access::fence_space::local_space);
              workgroup_scan<>(item, reducer, local_mem, update,
                               std::min(n_wgroups-offset, wgroup_size));
-             item.barrier(sycl::access::fence_space::local_space);
              if (id < static_cast<index_type>(n_wgroups)) {
                reducer.join(&update, &total);
                group_results[id] = update;
              }
              reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
+	     if(offset+wgroup_size < n_wgroups)
+		              item.barrier(sycl::access::fence_space::global_space);
            }
          }
       });
