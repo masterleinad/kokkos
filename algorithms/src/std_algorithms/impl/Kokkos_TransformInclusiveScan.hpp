@@ -121,7 +121,10 @@ struct TransformInclusiveScanWithInitValueFunctor {
 
   KOKKOS_FUNCTION
   void join(value_type& update, const value_type& input) const {
-    if (update.is_initial) {
+        if (input.is_initial)
+      return;
+	  
+	  if (update.is_initial) {
       update.val = input.val;
     } else {
       update.val = m_binary_op(update.val, input.val);
