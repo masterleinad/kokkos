@@ -171,7 +171,7 @@ void verify_data(ViewType1 data_view,  // contains data
       //           << std::abs(gold_h(i) - test_view_h(i)) << std::endl;
 
       if (std::is_same<gold_view_value_type, int>::value) {
-        EXPECT_EQ(gold_h(i), test_view_h(i)) << " failing at " << i;
+        EXPECT_EQ(gold_h(i), test_view_h(i));
       } else {
         const auto error =
             std::abs(static_cast<double>(gold_h(i) - test_view_h(i)));
@@ -282,7 +282,7 @@ void run_single_scenario_custom_op(const InfoType& scenario_info, BinaryOp bop,
     EXPECT_EQ(r, KE::end(view_dest));
     verify_data(view_from, view_dest, bop, args...);
   }
-/*
+
   {
     fill_zero(view_dest);
     auto r = KE::inclusive_scan("label", exespace(), KE::cbegin(view_from),
@@ -305,7 +305,7 @@ void run_single_scenario_custom_op(const InfoType& scenario_info, BinaryOp bop,
                                 args...);
     EXPECT_EQ(r, KE::end(view_dest));
     verify_data(view_from, view_dest, bop, args...);
-  }*/
+  }
 
   Kokkos::fence();
 }
@@ -313,44 +313,44 @@ void run_single_scenario_custom_op(const InfoType& scenario_info, BinaryOp bop,
 template <class Tag, class ValueType>
 void run_inclusive_scan_all_scenarios() {
   const std::map<std::string, std::size_t> scenarios = {
-      /*{"empty", 0},          {"one-element", 1}, {"two-elements-a", 2},
-      {"two-elements-b", 2},*/ {"small-a", 9}/*,     {"small-b", 13},
-      {"medium-a", 313},     {"medium-b", 1103}, {"large", 10513}*/};
+      {"empty", 0},          {"one-element", 1}, {"two-elements-a", 2},
+      {"two-elements-b", 2}, {"small-a", 9},     {"small-b", 13},
+      {"medium-a", 313},     {"medium-b", 1103}, {"large", 10513}};
 
   for (const auto& it : scenarios) {
-    //run_single_scenario_default_op<Tag, ValueType>(it);
+    run_single_scenario_default_op<Tag, ValueType>(it);
 
 #if !defined KOKKOS_ENABLE_OPENMPTARGET
     // the sum custom op is always run
     using sum_binary_op = SumFunctor<ValueType>;
     sum_binary_op sbop;
-    //run_single_scenario_custom_op<Tag, ValueType>(it, sbop);
-    //run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{0});
-    //run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{1});
-    //run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{-2});
-    //run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{3});
+    run_single_scenario_custom_op<Tag, ValueType>(it, sbop);
+    run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{0});
+    run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{1});
+    run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{-2});
+    run_single_scenario_custom_op<Tag, ValueType>(it, sbop, ValueType{3});
 
     // custom multiply only for small views to avoid overflows
     if (it.first == "small-a" || it.first == "small-b") {
       using mult_binary_op = MultiplyFunctor<ValueType>;
       mult_binary_op mbop;
       run_single_scenario_custom_op<Tag, ValueType>(it, mbop);
-      //run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{0});
-      //run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{1});
-      //run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{-2});
-      //run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{3});
+      run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{0});
+      run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{1});
+      run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{-2});
+      run_single_scenario_custom_op<Tag, ValueType>(it, mbop, ValueType{3});
     }
 #endif
   }
 }
 
 TEST(std_algorithms_numeric_ops_test, inclusive_scan) {
-  //run_inclusive_scan_all_scenarios<DynamicTag, double>();
-  //run_inclusive_scan_all_scenarios<StridedThreeTag, double>();
+  run_inclusive_scan_all_scenarios<DynamicTag, double>();
+  run_inclusive_scan_all_scenarios<StridedThreeTag, double>();
   run_inclusive_scan_all_scenarios<DynamicTag, int>();
-  //run_inclusive_scan_all_scenarios<StridedThreeTag, int>();
-  //run_inclusive_scan_all_scenarios<DynamicTag, CustomValueType>();
-  //run_inclusive_scan_all_scenarios<StridedThreeTag, CustomValueType>();
+  run_inclusive_scan_all_scenarios<StridedThreeTag, int>();
+  run_inclusive_scan_all_scenarios<DynamicTag, CustomValueType>();
+  run_inclusive_scan_all_scenarios<StridedThreeTag, CustomValueType>();
 }
 
 }  // namespace IncScan

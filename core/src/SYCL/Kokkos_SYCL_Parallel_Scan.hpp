@@ -39,7 +39,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   auto sg                = item.get_sub_group();
   const int sg_group_id = sg.get_group_id()[0];
   const int id_in_sg    = sg.get_local_id()[0];
-  KOKKOS_IMPL_DO_NOT_USE_PRINTF("begin %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
+  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("begin %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
   for (unsigned int stride = 1; stride < global_range; stride <<= 1) {
     auto tmp = sg.shuffle_up(local_value, stride);
     if (id_in_sg >= stride) final_reducer.join(&local_value, &tmp);
@@ -56,7 +56,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   if (id_in_sg == 0) final_reducer.init(&local_value);
   sycl::group_barrier(item.get_group());
 
-  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg scanned %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
+  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg scanned %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
 
   // scan subgroup results using the first subgroup
   if (n_active_subgroups > 1) {
@@ -84,7 +84,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
           if (round > 0)
             final_reducer.join(&local_mem[idx],
                                &local_mem[round * local_range - 1]);
-	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg results %d: %d\n", idx, local_mem[idx].val);
+	  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg results %d: %d\n", idx, local_mem[idx].val);
         }
         if (round + 1 < n_rounds) sycl::group_barrier(sg);
       }
@@ -96,7 +96,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   if (sg_group_id > 0)
     final_reducer.join(&local_value, &local_mem[sg_group_id - 1]);
 
-  KOKKOS_IMPL_DO_NOT_USE_PRINTF("final %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
+  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
 }
 
 template <class FunctorType, class... Traits>
@@ -198,7 +198,7 @@ class ParallelScanSYCLBase {
         if (global_id < size)
 	{	
 	  global_mem[global_id] = update;
-	    KOKKOS_IMPL_DO_NOT_USE_PRINTF("final global_mem %d: %d\n", global_id, update.val);
+	    //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final global_mem %d: %d\n", global_id, update.val);
 	}
 	item.barrier(sycl::access::fence_space::global_space);
 
@@ -220,7 +220,7 @@ class ParallelScanSYCLBase {
              group_results[i] = group_results[i-1];
 	   }
 	   reducer.init(&group_results[0]);
-	   KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(0/%d): %d %d\n",n_wgroups, group_results[0].val, int(group_results[0].is_initial));
+	   //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(0/%d): %d %d\n",n_wgroups, group_results[0].val, int(group_results[0].is_initial));
 
 
 		 /*
@@ -271,13 +271,13 @@ class ParallelScanSYCLBase {
               if (global_id < size) {  
                 value_type update = global_mem[global_id];
 
-		            KOKKOS_IMPL_DO_NOT_USE_PRINTF("final before group %d: %d %d\n", global_id, update.val, int(update.is_initial));
-           KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(%d): %d %d\n",item.get_group_linear_id(), group_results[item.get_group_linear_id()].val, int(group_results[item.get_group_linear_id()].is_initial));
+		            //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final before group %d: %d %d\n", global_id, update.val, int(update.is_initial));
+           //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(%d): %d %d\n",item.get_group_linear_id(), group_results[item.get_group_linear_id()].val, int(group_results[item.get_group_linear_id()].is_initial));
 
                 reducer.join(&update,
                                    &group_results[item.get_group_linear_id()]);
 
-            KOKKOS_IMPL_DO_NOT_USE_PRINTF("final before functor %d: %d\n", global_id, update.val);
+            //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final before functor %d: %d\n", global_id, update.val);
 
                 if constexpr (std::is_void<WorkTag>::value)
                   functor_wrapper.get_functor().get_functor()(global_id+begin, update, true);
