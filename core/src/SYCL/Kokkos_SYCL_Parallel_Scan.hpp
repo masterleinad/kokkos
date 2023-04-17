@@ -37,7 +37,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   auto sg                = item.get_sub_group();
   const int sg_group_id = sg.get_group_id()[0];
   const int id_in_sg    = sg.get_local_id()[0];
-  KOKKOS_IMPL_DO_NOT_USE_PRINTF("begin %d %d: %d\n", sg_group_id, id_in_sg, local_value);
+  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("begin %d %d: %d\n", sg_group_id, id_in_sg, local_value);
   for (unsigned int stride = 1; stride < global_range; stride <<= 1) {
     auto tmp = sg.shuffle_up(local_value, stride);
     if (id_in_sg >= stride) final_reducer.join(&local_value, &tmp);
@@ -54,7 +54,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   if (id_in_sg == 0) final_reducer.init(&local_value);
   sycl::group_barrier(item.get_group());
 
-  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg scanned %d %d: %d\n", sg_group_id, id_in_sg, local_value);
+  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg scanned %d %d: %d\n", sg_group_id, id_in_sg, local_value);
 
   // scan subgroup results using the first subgroup
   if (n_active_subgroups > 1) {
@@ -82,7 +82,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
           if (round > 0)
             final_reducer.join(&local_mem[idx],
                                &local_mem[round * local_range - 1]);
-	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg results %d: %d\n", idx, local_mem[idx]);
+	  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg results %d: %d\n", idx, local_mem[idx]);
         }
         if (round + 1 < n_rounds) sycl::group_barrier(sg);
       }
@@ -94,7 +94,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   if (sg_group_id > 0)
     final_reducer.join(&local_value, &local_mem[sg_group_id - 1]);
 
-  KOKKOS_IMPL_DO_NOT_USE_PRINTF("final %d %d: %d\n", sg_group_id, id_in_sg, local_value);
+  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final %d %d: %d\n", sg_group_id, id_in_sg, local_value);
 }
 
 template <class FunctorType, class... Traits>
@@ -243,6 +243,12 @@ class ParallelScanSYCLBase {
 
     // Write results to global memory
     auto update_global_results = q.submit([&](sycl::handler& cgh) {
+       auto global_mem                   = m_scratch_space;
+       auto result_ptr_device_accessible = m_result_ptr_device_accessible;
+       // The compiler failed with CL_INVALID_ARG_VALUE if using m_result_ptr
+       // directly.
+       auto result_ptr = m_result_ptr_device_accessible ? m_result_ptr : nullptr;    
+		    
         cgh.parallel_for(
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
             [=](sycl::nd_item<1> item) {
@@ -255,7 +261,7 @@ class ParallelScanSYCLBase {
 
               if (global_id < size) {  
                 value_type update = global_mem[global_id];
-		KOKKOS_IMPL_DO_NOT_USE_PRINTF("global_mem %d: %d\n", global_id, update);
+		//KOKKOS_IMPL_DO_NOT_USE_PRINTF("global_mem %d: %d\n", global_id, update);
                 reducer.join(&update,
                                    &group_results[item.get_group_linear_id()]);
 
@@ -263,8 +269,12 @@ class ParallelScanSYCLBase {
                   functor_wrapper.get_functor().get_functor()(global_id, update, true);
                 else
                   functor_wrapper.get_functor().get_functor()(WorkTag(), global_id, update, true);
-                global_mem[global_id] = update;
-              }});
+	
+	        global_mem[global_id] = update;
+                if (global_id == size - 1 && result_ptr_device_accessible)
+                  *result_ptr = update;
+              }
+	    });
     });
     q.ext_oneapi_submit_barrier(
         std::vector<sycl::event>{update_global_results});
@@ -322,7 +332,9 @@ class ParallelScanSYCLBase {
         m_result_ptr_device_accessible(arg_result_ptr_device_accessible),
         m_shared_memory_lock(m_policy.space()
                                  .impl_internal_space_instance()
-                                 ->m_mutexScratchSpace) {}
+                                 ->m_mutexScratchSpace) {
+		std::cout << "result_ptr: " << m_result_ptr << std::endl;
+	}
 };
 
 template <class FunctorType, class... Traits>
@@ -361,6 +373,8 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
                  Kokkos::Experimental::SYCL>(m_exec, Base::m_result_ptr,
                                              Base::m_scratch_space + nwork - 1,
                                              size);
+		 std::cout << "deep_copy" << std::endl;
+		 m_exec.fence();
       }
     });
   }
