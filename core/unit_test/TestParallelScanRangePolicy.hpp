@@ -63,6 +63,8 @@ struct TestParallelScanRangePolicy {
     prefix_results  = ViewType("prefix_results", work_size);
     postfix_results = ViewType("postfix_results", work_size);
 
+                    std::cout << "work_size: " << work_size << std::endl;
+
     // Lambda for checking errors from stored value at each index.
     auto check_scan_results = [&]() {
       auto const prefix_h = Kokkos::create_mirror_view_and_copy(
@@ -72,10 +74,13 @@ struct TestParallelScanRangePolicy {
 
       for (size_t i = 0; i < work_size; ++i) {
         // Check prefix sum
-        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i));
+        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i)) << i << " failed";
+
+if ((i * (i - 1)) / 2 != prefix_h(i))
+                      Kokkos::abort("bla");
 
         // Check postfix sum
-        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i));
+        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i)) << i << " failed";
       }
 
       // Reset results
@@ -131,8 +136,11 @@ struct TestParallelScanRangePolicy {
       // based on template Args and work_size.
       Kokkos::RangePolicy<execution_space, Args...> policy(0, work_size);
 
+      Kokkos::deep_copy(prefix_results, 0);
+      Kokkos::deep_copy(postfix_results, 0);
+
       // Input: label, work_count, functor
-      /*Kokkos::parallel_scan("TestWithStrArg3", policy, *this);
+      Kokkos::parallel_scan("TestWithStrArg3", policy, *this);
       check_scan_results();
 
       // Input: work_count, functor
@@ -157,7 +165,7 @@ struct TestParallelScanRangePolicy {
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
-      }*/
+      }
 
       // Input: work_count, functor
       // Input/Output: return_view (Device)
@@ -171,7 +179,7 @@ struct TestParallelScanRangePolicy {
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   total);  // sum( 0 .. N-1 )
       }
-/*
+
       // Check Kokkos::Experimental::require()
       // for one of the signatures.
       {
@@ -187,7 +195,7 @@ struct TestParallelScanRangePolicy {
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
-      }*/
+      }
     }
   }
 
@@ -196,12 +204,13 @@ struct TestParallelScanRangePolicy {
   void test_scan(const std::vector<size_t> work_sizes) {
     for (size_t i = 0; i < work_sizes.size(); ++i) {
       test_scan<Args...>(work_sizes[i]);
+      Kokkos::fence();
     }
   }
 };  // struct TestParallelScanRangePolicy
 
 TEST(TEST_CATEGORY, parallel_scan_range_policy) {
-  /*{
+/*  {
     TestParallelScanRangePolicy<char> f;
 
     std::vector<size_t> work_sizes{5, 10};
@@ -220,12 +229,13 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
   {
     TestParallelScanRangePolicy<int> f;
 
-    std::vector<size_t> work_sizes{/*0, 1,*/ 8/*, 10, 11*/};
-    f.test_scan<>(work_sizes);
-    f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
-    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }
-  /*{
+    std::vector<size_t> work_sizes{/*0, 1, 2,*/ 9/*, 1001*/};
+    //std::vector<size_t> work_sizes{1001, 10000};
+    //f.test_scan<>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Static>>({9});
+    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>({2});
+  }/*
+  {
     TestParallelScanRangePolicy<long int> f;
 
     std::vector<size_t> work_sizes{1000, 10000};

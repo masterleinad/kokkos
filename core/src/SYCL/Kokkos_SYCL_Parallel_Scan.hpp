@@ -333,7 +333,6 @@ class ParallelScanSYCLBase {
         m_shared_memory_lock(m_policy.space()
                                  .impl_internal_space_instance()
                                  ->m_mutexScratchSpace) {
-		std::cout << "result_ptr: " << m_result_ptr << std::endl;
 	}
 };
 
@@ -373,8 +372,6 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
                  Kokkos::Experimental::SYCL>(m_exec, Base::m_result_ptr,
                                              Base::m_scratch_space + nwork - 1,
                                              size);
-		 std::cout << "deep_copy" << std::endl;
-		 m_exec.fence();
       }
     });
   }
