@@ -94,12 +94,12 @@ struct TestParallelScanRangePolicy {
       check_scan_results();
 
       // Input: work_count, functor
-      //Kokkos::parallel_scan(work_size, *this);
-      //check_scan_results();
+      Kokkos::parallel_scan(work_size, *this);
+      check_scan_results();
 
       // Input: label, work_count, functor
       // Input/Output: return_value
-      /*{
+      {
         ValueType return_val = 0;
         Kokkos::parallel_scan("TestWithStrArg2", work_size, *this, return_val);
         check_scan_results();
@@ -125,7 +125,7 @@ struct TestParallelScanRangePolicy {
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_view());  // sum( 0 .. N-1 )
-      }*/
+      }
     } else {
       // Construct RangePolicy for parallel_scan
       // based on template Args and work_size.
@@ -201,7 +201,7 @@ struct TestParallelScanRangePolicy {
 };  // struct TestParallelScanRangePolicy
 
 TEST(TEST_CATEGORY, parallel_scan_range_policy) {
-/*  {
+  {
     TestParallelScanRangePolicy<char> f;
 
     std::vector<size_t> work_sizes{5, 10};
@@ -216,15 +216,15 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }*/
+  }
   {
     TestParallelScanRangePolicy<int> f;
 
-    std::vector<size_t> work_sizes{17};
+    std::vector<size_t> work_sizes{0, 1, 2, 1000, 1001};
     f.test_scan<>(work_sizes);
-    //f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
-    //f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }/*
+    f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
+  }
   {
     TestParallelScanRangePolicy<long int> f;
 
@@ -248,6 +248,6 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }*/
+  }
 }
 }  // namespace
