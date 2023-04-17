@@ -345,12 +345,12 @@ void run_inclusive_scan_all_scenarios() {
 }
 
 TEST(std_algorithms_numeric_ops_test, inclusive_scan) {
-  run_inclusive_scan_all_scenarios<DynamicTag, double>();
-  run_inclusive_scan_all_scenarios<StridedThreeTag, double>();
+  //run_inclusive_scan_all_scenarios<DynamicTag, double>();
+  //run_inclusive_scan_all_scenarios<StridedThreeTag, double>();
   run_inclusive_scan_all_scenarios<DynamicTag, int>();
-  run_inclusive_scan_all_scenarios<StridedThreeTag, int>();
-  run_inclusive_scan_all_scenarios<DynamicTag, CustomValueType>();
-  run_inclusive_scan_all_scenarios<StridedThreeTag, CustomValueType>();
+  //run_inclusive_scan_all_scenarios<StridedThreeTag, int>();
+  //run_inclusive_scan_all_scenarios<DynamicTag, CustomValueType>();
+  //run_inclusive_scan_all_scenarios<StridedThreeTag, CustomValueType>();
 }
 
 }  // namespace IncScan

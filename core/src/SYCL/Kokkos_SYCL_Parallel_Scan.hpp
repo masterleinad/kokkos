@@ -248,8 +248,9 @@ class ParallelScanSYCLBase {
        auto result_ptr_device_accessible = m_result_ptr_device_accessible;
        // The compiler failed with CL_INVALID_ARG_VALUE if using m_result_ptr
        // directly.
-       auto result_ptr = m_result_ptr_device_accessible ? m_result_ptr : nullptr;    
-		    
+       auto result_ptr = m_result_ptr_device_accessible ? m_result_ptr : nullptr;    		   
+            auto begin      = m_policy.begin();
+
         cgh.parallel_for(
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
             [=](sycl::nd_item<1> item) {
@@ -266,9 +267,9 @@ class ParallelScanSYCLBase {
                                    &group_results[item.get_group_linear_id()]);
 
                 if constexpr (std::is_void<WorkTag>::value)
-                  functor_wrapper.get_functor().get_functor()(global_id, update, true);
+                  functor_wrapper.get_functor().get_functor()(global_id+begin, update, true);
                 else
-                  functor_wrapper.get_functor().get_functor()(WorkTag(), global_id, update, true);
+                  functor_wrapper.get_functor().get_functor()(WorkTag(), global_id+begin, update, true);
 
 	        global_mem[global_id] = update;
                 if (global_id == size - 1 && result_ptr_device_accessible)
