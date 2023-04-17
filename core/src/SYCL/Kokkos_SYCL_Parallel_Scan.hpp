@@ -186,11 +186,6 @@ class ParallelScanSYCLBase {
             functor(global_id+begin, update, false);
           else
             functor(WorkTag(), global_id+begin, update, false);
-
-  	  if(update != global_id+begin)
-	  {
-	    KOKKOS_IMPL_DO_NOT_USE_PRINTF("faiking at %d: %d != %d\n", global_id, global_id, update);
-	  }
 	}
 
         item.barrier(sycl::access::fence_space::global_space);
@@ -199,11 +194,8 @@ class ParallelScanSYCLBase {
 
 		// Write results to global memory
         if (global_id < size) 
-	{
-		global_mem[global_id] = update;
-	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("global_mem at %d: %d\n", global_id, update);
-	}
-	  item.barrier(sycl::access::fence_space::global_space);
+	  global_mem[global_id] = update;
+	item.barrier(sycl::access::fence_space::global_space);
 
         if (local_id == wgroup_size - 1) {
           group_results[item.get_group_linear_id()] =
@@ -216,7 +208,6 @@ class ParallelScanSYCLBase {
           num_teams_done[0] = ++scratch_flags_ref;
          }
          item.barrier(sycl::access::fence_space::global_space);
-	 KOKKOS_IMPL_DO_NOT_USE_PRINTF("num_teams_done: %d, n_wgroups: %d\n", num_teams_done[0], n_wgroups);
          if (num_teams_done[0] == n_wgroups && local_id==0) {
            for (unsigned int i=1; i<n_wgroups; ++i)
              reducer.join(&group_results[i], &group_results[i-1]);
@@ -224,7 +215,6 @@ class ParallelScanSYCLBase {
              group_results[i] = group_results[i-1];
 	   }
 	   reducer.init(&group_results[0]);
-           KOKKOS_IMPL_DO_NOT_USE_PRINTF("group_results[0]: %d\n", group_results[0]);
 
 		 /*
            value_type total;
