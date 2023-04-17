@@ -42,8 +42,8 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
     if (id_in_sg >= stride) final_reducer.join(&local_value, &tmp);
   }
 
-  const auto max_subgroup_size = sg.get_max_local_range()[0];
-  const auto n_active_subgroups =
+  const int max_subgroup_size = sg.get_max_local_range()[0];
+  const int n_active_subgroups =
       (global_range + max_subgroup_size - 1) / max_subgroup_size;
 
   const auto local_range = sg.get_local_range()[0];
@@ -56,8 +56,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   // scan subgroup results using the first subgroup
   if (n_active_subgroups > 1) {
     if (sg_group_id == 0) {
-      const auto n_rounds =
-          (n_active_subgroups + local_range - 1) / local_range;
+      const int n_rounds = (n_active_subgroups + local_range - 1) / local_range;
       for (unsigned int round = 0; round < n_rounds; ++round) {
         const unsigned int idx = id_in_sg + round * local_range;
         const auto upper_bound =
@@ -134,7 +133,7 @@ class ParallelScanSYCLBase {
     const auto size = m_policy.end() - m_policy.begin();
 
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size = 16;
+    constexpr size_t wgroup_size = 128;
     auto n_wgroups               = (size + wgroup_size - 1) / wgroup_size;
     auto global_mem              = m_scratch_space;
     pointer_type group_results   = global_mem + n_wgroups * wgroup_size;
@@ -162,8 +161,6 @@ class ParallelScanSYCLBase {
       cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
           [=](sycl::nd_item<1> item) {
-            const index_type local_id  = item.get_local_linear_id();
-            const index_type global_id = item.get_global_linear_id();
             const CombinedFunctorReducer<
                 FunctorType, typename Analysis::Reducer>& functor_reducer =
                 functor_wrapper.get_functor();
@@ -171,16 +168,21 @@ class ParallelScanSYCLBase {
             const typename Analysis::Reducer& reducer =
                 functor_reducer.get_reducer();
 
-            value_type update{};
-            reducer.init(&update);
+            const index_type local_id  = item.get_local_linear_id();
+            const index_type global_id = item.get_global_linear_id();
+
+            // Initialize local memory
+            value_type local_value;
+            reducer.init(&local_value);
             if (global_id < size) {
               if constexpr (std::is_void<WorkTag>::value)
-                functor(global_id + begin, update, false);
+                functor(global_id + begin, local_value, false);
               else
-                functor(WorkTag(), global_id + begin, update, false);
+                functor(WorkTag(), global_id + begin, local_value, false);
             }
 
-            workgroup_scan<>(item, reducer, local_mem, update, wgroup_size);
+            workgroup_scan<>(item, reducer, local_mem, local_value,
+                             wgroup_size);
 
             // Write results to global memory
             if (global_id < size) global_mem[global_id] = update;
@@ -251,11 +253,9 @@ class ParallelScanSYCLBase {
               reducer.join(&update, &group_results[item.get_group_linear_id()]);
 
               if constexpr (std::is_void<WorkTag>::value)
-                functor_wrapper.get_functor().get_functor()(global_id + begin,
-                                                            update, true);
+                functor(global_id + begin, update, true);
               else
-                functor_wrapper.get_functor().get_functor()(
-                    WorkTag(), global_id + begin, update, true);
+                functor(WorkTag(), global_id + begin, update, true);
 
               global_mem[global_id] = update;
               if (global_id == size - 1 && result_ptr_device_accessible)
@@ -273,25 +273,16 @@ class ParallelScanSYCLBase {
   void impl_execute(const PostFunctor& post_functor) {
     if (m_policy.begin() == m_policy.end()) return;
 
-    auto& instance         = *m_policy.space().impl_internal_space_instance();
-    const std::size_t size = m_policy.end() - m_policy.begin();
+    auto& instance        = *m_policy.space().impl_internal_space_instance();
+    const std::size_t len = m_policy.end() - m_policy.begin();
 
-    // Compute the total amount of memory we will need. We emulate the recursive
-    // structure that is used to do the actual scan. Essentially, we need to
-    // allocate memory for the whole range and then recursively for the reduced
-    // group results until only one group is left.
-    std::size_t total_memory = 0;
-    {
-      size_t wgroup_size   = 16;
-      size_t n_nested_size = size;
-      size_t n_nested_wgroups;
-      do {
-        n_nested_wgroups = (n_nested_size + wgroup_size - 1) / wgroup_size;
-        n_nested_size    = n_nested_wgroups;
-        total_memory += sizeof(value_type) * n_nested_wgroups * wgroup_size;
-      } while (n_nested_wgroups > 1);
-      total_memory += sizeof(value_type) * wgroup_size;
-    }
+    // Compute the total amount of memory we will need.
+    // We need to allocate memory for the whole range (rounded towards the next
+    // multiple of the wqorkgroup size) and for one element per workgroup that
+    // will contain the sum of the previous workgroups totals.
+    size_t wgroup_size  = 128;
+    size_t n_wgroups    = (len + wgroup_size - 1) / wgroup_size;
+    size_t total_memory = n_wgroups * (wgroup_size + 1) * sizeof(value_type);
 
     // FIXME_SYCL consider only storing one value per block and recreate initial
     // results in the end before doing the final pass
