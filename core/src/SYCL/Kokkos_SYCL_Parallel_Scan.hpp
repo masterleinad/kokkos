@@ -237,10 +237,6 @@ class ParallelScanSYCLBase {
              reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
            }*/
          }
-	 if (global_id < size)
-        {
-                global_mem[global_id] = update;
-        }
       });
     });
     q.ext_oneapi_submit_barrier(

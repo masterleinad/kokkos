@@ -63,8 +63,6 @@ struct TestParallelScanRangePolicy {
     prefix_results  = ViewType("prefix_results", work_size);
     postfix_results = ViewType("postfix_results", work_size);
 
-                    std::cout << "work_size: " << work_size << std::endl;
-
     // Lambda for checking errors from stored value at each index.
     auto check_scan_results = [&]() {
       auto const prefix_h = Kokkos::create_mirror_view_and_copy(
@@ -74,13 +72,10 @@ struct TestParallelScanRangePolicy {
 
       for (size_t i = 0; i < work_size; ++i) {
         // Check prefix sum
-        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i)) << i << " failed";
-
-if ((i * (i - 1)) / 2 != prefix_h(i))
-                      Kokkos::abort("bla");
+        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i));
 
         // Check postfix sum
-        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i)) << i << " failed";
+        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i));
       }
 
       // Reset results
@@ -93,58 +88,57 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
     // parallel_scan() with RangePolicy<Args...>(0, work_size).
     // For each case, call parallel_scan() with all possible
     // function signatures.
-    {
+    if (sizeof...(Args) == 0) {
+      // Input: label, work_count, functor
+      Kokkos::parallel_scan("TestWithStrArg1", work_size, *this);
+      check_scan_results();
+
+      // Input: work_count, functor
+      Kokkos::parallel_scan(work_size, *this);
+      check_scan_results();
+
+      // Input: label, work_count, functor
+      // Input/Output: return_value
+      {
+        ValueType return_val = 0;
+        Kokkos::parallel_scan("TestWithStrArg2", work_size, *this, return_val);
+        check_scan_results();
+        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+                  return_val);  // sum( 0 .. N-1 )
+      }
+
+      // Input: work_count, functor
+      // Input/Output: return_value
+      {
+        ValueType return_val = 0;
+        Kokkos::parallel_scan(work_size, *this, return_val);
+        check_scan_results();
+        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+                  return_val);  // sum( 0 .. N-1 )
+      }
+
+      // Input: work_count, functor
+      // Input/Output: return_view (host space)
+      {
+        Kokkos::View<ValueType, Kokkos::HostSpace> return_view("return_view");
+        Kokkos::parallel_scan(work_size, *this, return_view);
+        check_scan_results();
+        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+                  return_view());  // sum( 0 .. N-1 )
+      }
+    } else {
       // Construct RangePolicy for parallel_scan
       // based on template Args and work_size.
       Kokkos::RangePolicy<execution_space, Args...> policy(0, work_size);
 
-      Kokkos::deep_copy(prefix_results, 0);
-      Kokkos::deep_copy(postfix_results, 0);
-
       // Input: label, work_count, functor
       Kokkos::parallel_scan("TestWithStrArg3", policy, *this);
-      //check_scan_results();
-      
-      {
-      auto const prefix_h = Kokkos::create_mirror_view_and_copy(
-          Kokkos::HostSpace(), prefix_results);
-      auto const postfix_h = Kokkos::create_mirror_view_and_copy(
-          Kokkos::HostSpace(), postfix_results);
-
-      for (size_t i = 0; i < work_size; ++i) {
-        // Check prefix sum
-        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i)) << i << " failed";
-
-if ((i * (i - 1)) / 2 != prefix_h(i))
-                      Kokkos::abort("bla");
-
-        // Check postfix sum
-        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i)) << i << " failed";
-      }
-      }
+      check_scan_results();
 
       // Input: work_count, functor
-      //Kokkos::parallel_scan(policy, *this);
-      //check_scan_results();
+      Kokkos::parallel_scan(policy, *this);
+      check_scan_results();
 
-      /*{
-      auto const prefix_h = Kokkos::create_mirror_view_and_copy(
-          Kokkos::HostSpace(), prefix_results);
-      auto const postfix_h = Kokkos::create_mirror_view_and_copy(
-          Kokkos::HostSpace(), postfix_results);
-
-      for (size_t i = 0; i < work_size; ++i) {
-        // Check prefix sum
-        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i)) << i << " failed";
-
-if ((i * (i - 1)) / 2 != prefix_h(i))
-                      Kokkos::abort("bla");
-
-        // Check postfix sum
-        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i)) << i << " failed";
-      }
-      }*/
-	/*
       {
         // Input: label, work_count, functor
         // Input/Output: return_value
@@ -153,11 +147,11 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
-      }*/
+      }
 
       // Input: work_count, functor
       // Input/Output: return_value
-      /*{
+      {
         ValueType return_val = 0;
         Kokkos::parallel_scan(policy, *this, return_val);
         check_scan_results();
@@ -193,7 +187,7 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
-      }*/
+      }
     }
   }
 
@@ -202,13 +196,12 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
   void test_scan(const std::vector<size_t> work_sizes) {
     for (size_t i = 0; i < work_sizes.size(); ++i) {
       test_scan<Args...>(work_sizes[i]);
-      Kokkos::fence();
     }
   }
 };  // struct TestParallelScanRangePolicy
 
 TEST(TEST_CATEGORY, parallel_scan_range_policy) {
-/*  {
+  {
     TestParallelScanRangePolicy<char> f;
 
     std::vector<size_t> work_sizes{5, 10};
@@ -223,16 +216,15 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }*/
+  }
   {
     TestParallelScanRangePolicy<int> f;
 
-    std::vector<size_t> work_sizes{/*0, 1, 2,*/ 9/*, 1001*/};
-    //std::vector<size_t> work_sizes{1001, 10000};
-    //f.test_scan<>(work_sizes);
-    f.test_scan<Kokkos::Schedule<Kokkos::Static>>({9});
-    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>({2});
-  }/*
+    std::vector<size_t> work_sizes{0, 1, 2, 1000, 1001};
+    f.test_scan<>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
+  }
   {
     TestParallelScanRangePolicy<long int> f;
 
@@ -256,6 +248,6 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-  }*/
+  }
 }
 }  // namespace
