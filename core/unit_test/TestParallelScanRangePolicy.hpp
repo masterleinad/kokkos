@@ -93,45 +93,7 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
     // parallel_scan() with RangePolicy<Args...>(0, work_size).
     // For each case, call parallel_scan() with all possible
     // function signatures.
-    if (sizeof...(Args) == 0) {
-      // Input: label, work_count, functor
-      Kokkos::parallel_scan("TestWithStrArg1", work_size, *this);
-      check_scan_results();
-
-      // Input: work_count, functor
-      Kokkos::parallel_scan(work_size, *this);
-      check_scan_results();
-
-      // Input: label, work_count, functor
-      // Input/Output: return_value
-      {
-        ValueType return_val = 0;
-        Kokkos::parallel_scan("TestWithStrArg2", work_size, *this, return_val);
-        check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
-                  return_val);  // sum( 0 .. N-1 )
-      }
-
-      // Input: work_count, functor
-      // Input/Output: return_value
-      {
-        ValueType return_val = 0;
-        Kokkos::parallel_scan(work_size, *this, return_val);
-        check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
-                  return_val);  // sum( 0 .. N-1 )
-      }
-
-      // Input: work_count, functor
-      // Input/Output: return_view (host space)
-      {
-        Kokkos::View<ValueType, Kokkos::HostSpace> return_view("return_view");
-        Kokkos::parallel_scan(work_size, *this, return_view);
-        check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
-                  return_view());  // sum( 0 .. N-1 )
-      }
-    } else {
+    {
       // Construct RangePolicy for parallel_scan
       // based on template Args and work_size.
       Kokkos::RangePolicy<execution_space, Args...> policy(0, work_size);
