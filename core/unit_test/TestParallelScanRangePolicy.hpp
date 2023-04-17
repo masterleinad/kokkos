@@ -103,12 +103,48 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
 
       // Input: label, work_count, functor
       Kokkos::parallel_scan("TestWithStrArg3", policy, *this);
-      check_scan_results();
+      //check_scan_results();
+      
+      {
+      auto const prefix_h = Kokkos::create_mirror_view_and_copy(
+          Kokkos::HostSpace(), prefix_results);
+      auto const postfix_h = Kokkos::create_mirror_view_and_copy(
+          Kokkos::HostSpace(), postfix_results);
+
+      for (size_t i = 0; i < work_size; ++i) {
+        // Check prefix sum
+        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i)) << i << " failed";
+
+if ((i * (i - 1)) / 2 != prefix_h(i))
+                      Kokkos::abort("bla");
+
+        // Check postfix sum
+        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i)) << i << " failed";
+      }
+      }
 
       // Input: work_count, functor
-      Kokkos::parallel_scan(policy, *this);
-      check_scan_results();
-/*
+      //Kokkos::parallel_scan(policy, *this);
+      //check_scan_results();
+
+      /*{
+      auto const prefix_h = Kokkos::create_mirror_view_and_copy(
+          Kokkos::HostSpace(), prefix_results);
+      auto const postfix_h = Kokkos::create_mirror_view_and_copy(
+          Kokkos::HostSpace(), postfix_results);
+
+      for (size_t i = 0; i < work_size; ++i) {
+        // Check prefix sum
+        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i)) << i << " failed";
+
+if ((i * (i - 1)) / 2 != prefix_h(i))
+                      Kokkos::abort("bla");
+
+        // Check postfix sum
+        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i)) << i << " failed";
+      }
+      }*/
+	/*
       {
         // Input: label, work_count, functor
         // Input/Output: return_value
