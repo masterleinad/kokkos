@@ -33,13 +33,11 @@ template <int dim, typename ValueType, typename FunctorType>
 void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
                     sycl::local_accessor<ValueType> local_mem,
                     ValueType& local_value, unsigned int global_range) {
-//final_reducer = "";
-      
 	// subgroup scans
   auto sg                = item.get_sub_group();
   const int sg_group_id = sg.get_group_id()[0];
   const int id_in_sg    = sg.get_local_id()[0];
-  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("begin %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
+  KOKKOS_IMPL_DO_NOT_USE_PRINTF("begin %d %d: %d\n", sg_group_id, id_in_sg, local_value);
   for (unsigned int stride = 1; stride < global_range; stride <<= 1) {
     auto tmp = sg.shuffle_up(local_value, stride);
     if (id_in_sg >= stride) final_reducer.join(&local_value, &tmp);
@@ -56,7 +54,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   if (id_in_sg == 0) final_reducer.init(&local_value);
   sycl::group_barrier(item.get_group());
 
-  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg scanned %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
+  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg scanned %d %d: %d\n", sg_group_id, id_in_sg, local_value);
 
   // scan subgroup results using the first subgroup
   if (n_active_subgroups > 1) {
@@ -84,7 +82,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
           if (round > 0)
             final_reducer.join(&local_mem[idx],
                                &local_mem[round * local_range - 1]);
-	  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg results %d: %d\n", idx, local_mem[idx].val);
+	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("sg results %d: %d\n", idx, local_mem[idx]);
         }
         if (round + 1 < n_rounds) sycl::group_barrier(sg);
       }
@@ -96,7 +94,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   if (sg_group_id > 0)
     final_reducer.join(&local_value, &local_mem[sg_group_id - 1]);
 
-  //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final %d %d: %d\n", sg_group_id, id_in_sg, local_value.val);
+  KOKKOS_IMPL_DO_NOT_USE_PRINTF("final %d %d: %d\n", sg_group_id, id_in_sg, local_value);
 }
 
 template <class FunctorType, class... Traits>
@@ -213,17 +211,16 @@ class ParallelScanSYCLBase {
           num_teams_done[0] = ++scratch_flags_ref;
          }
          item.barrier(sycl::access::fence_space::global_space);
-         if (num_teams_done[0] == n_wgroups && local_id==0) {
-           for (unsigned int i=1; i<n_wgroups; ++i)
+         if (num_teams_done[0] == n_wgroups) {
+           /*for (unsigned int i=1; i<n_wgroups; ++i)
              reducer.join(&group_results[i], &group_results[i-1]);
            for (unsigned int i=n_wgroups-1; i>0; --i) {
              group_results[i] = group_results[i-1];
 	   }
-	   reducer.init(&group_results[0]);
-	   //KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(0/%d): %d %d\n",n_wgroups, group_results[0].val, int(group_results[0].is_initial));
-
-
-		 /*
+	   reducer.init(&group_results[0]);*/
+	   KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(0/%d): %d\n",n_wgroups, group_results[0]);
+           KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(1/%d): %d\n",n_wgroups, group_results[1]);
+		 
            value_type total;
            reducer.init(&total);
 
@@ -234,15 +231,16 @@ class ParallelScanSYCLBase {
 	     else
                reducer.init(&update);
              item.barrier(sycl::access::fence_space::local_space);
-             workgroup_scan<>(item, reducer, local_mem.get_pointer(), update,
+             workgroup_scan<>(item, reducer, local_mem, update,
                               std::min(n_wgroups-offset, wgroup_size));
              item.barrier(sycl::access::fence_space::local_space);
              if (id < static_cast<index_type>(n_wgroups)) {
                reducer.join(&update, &total);
                group_results[id] = update;
+	                  KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results joined(%d): %d\n",id, group_results[id]);
              }
              reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
-           }*/
+           }
          }
       });
     });

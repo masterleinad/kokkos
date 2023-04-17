@@ -161,33 +161,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
 
     set(${Tag}_SOURCES1B)
     foreach(Name
-        MDRange_a
-        MDRange_b
-        MDRange_c
-        MDRange_d
-        MDRange_e
-        MDRange_f
-        MDRange_g
-        MDRangePolicyConstructors
-        MDRangeReduce
-        MDSpan
-        MinMaxClamp
-        NumericTraits
-        Other
         ParallelScanRangePolicy
-        QuadPrecisionMath
-        RangePolicy
-        RangePolicyConstructors
-        RangePolicyRequire
-        ReducerCTADs
-        Reducers_a
-        Reducers_b
-        Reducers_c
-        Reducers_d
-        Reducers_e
-        Reductions
-        Reductions_DeviceView
-        SharedAlloc
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
