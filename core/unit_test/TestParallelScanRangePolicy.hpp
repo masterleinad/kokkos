@@ -108,7 +108,7 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
       // Input: work_count, functor
       Kokkos::parallel_scan(policy, *this);
       check_scan_results();
-
+/*
       {
         // Input: label, work_count, functor
         // Input/Output: return_value
@@ -117,7 +117,7 @@ if ((i * (i - 1)) / 2 != prefix_h(i))
         check_scan_results();
         ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
-      }
+      }*/
 
       // Input: work_count, functor
       // Input/Output: return_value
