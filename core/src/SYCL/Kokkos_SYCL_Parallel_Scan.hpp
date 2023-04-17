@@ -33,7 +33,9 @@ template <int dim, typename ValueType, typename FunctorType>
 void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
                     sycl::local_accessor<ValueType> local_mem,
                     ValueType& local_value, unsigned int global_range) {
-  // subgroup scans
+//final_reducer = "";
+      
+	// subgroup scans
   auto sg                = item.get_sub_group();
   const int sg_group_id = sg.get_group_id()[0];
   const int id_in_sg    = sg.get_local_id()[0];
@@ -142,7 +144,7 @@ class ParallelScanSYCLBase {
     const auto size = m_policy.end() - m_policy.begin();
 
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size = 8;
+    constexpr size_t wgroup_size = 16;
     auto n_wgroups               = (size + wgroup_size - 1) / wgroup_size;
     auto global_mem = m_scratch_space;
     pointer_type group_results   = global_mem + n_wgroups * wgroup_size;
@@ -193,8 +195,11 @@ class ParallelScanSYCLBase {
 	item.barrier(sycl::access::fence_space::global_space);
 
 		// Write results to global memory
-        if (global_id < size) 
+        if (global_id < size)
+	{	
 	  global_mem[global_id] = update;
+	    KOKKOS_IMPL_DO_NOT_USE_PRINTF("final global_mem %d: %d\n", global_id, update.val);
+	}
 	item.barrier(sycl::access::fence_space::global_space);
 
         if (local_id == wgroup_size - 1) {
@@ -215,6 +220,8 @@ class ParallelScanSYCLBase {
              group_results[i] = group_results[i-1];
 	   }
 	   reducer.init(&group_results[0]);
+	   KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(0/%d): %d %d\n",n_wgroups, group_results[0].val, int(group_results[0].is_initial));
+
 
 		 /*
            value_type total;
@@ -263,8 +270,14 @@ class ParallelScanSYCLBase {
 
               if (global_id < size) {  
                 value_type update = global_mem[global_id];
+
+		            KOKKOS_IMPL_DO_NOT_USE_PRINTF("final before group %d: %d %d\n", global_id, update.val, int(update.is_initial));
+           KOKKOS_IMPL_DO_NOT_USE_PRINTF("final group_results(%d): %d %d\n",item.get_group_linear_id(), group_results[item.get_group_linear_id()].val, int(group_results[item.get_group_linear_id()].is_initial));
+
                 reducer.join(&update,
                                    &group_results[item.get_group_linear_id()]);
+
+            KOKKOS_IMPL_DO_NOT_USE_PRINTF("final before functor %d: %d\n", global_id, update.val);
 
                 if constexpr (std::is_void<WorkTag>::value)
                   functor_wrapper.get_functor().get_functor()(global_id+begin, update, true);
