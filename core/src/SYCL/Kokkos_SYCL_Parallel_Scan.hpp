@@ -186,17 +186,26 @@ class ParallelScanSYCLBase {
             functor(global_id+begin, update, false);
           else
             functor(WorkTag(), global_id+begin, update, false);
-        }
+
+  	  if(update != global_id+begin)
+	  {
+	    KOKKOS_IMPL_DO_NOT_USE_PRINTF("faiking at %d: %d != %d\n", global_id, global_id, update);
+	  }
+	}
 
         item.barrier(sycl::access::fence_space::global_space);
         workgroup_scan<>(item, reducer, local_mem, update, wgroup_size);
 	item.barrier(sycl::access::fence_space::global_space);
 
 		// Write results to global memory
-        if (global_id < size) global_mem[global_id] = update;
-        item.barrier(sycl::access::fence_space::global_space);
+        if (global_id < size) 
+	{
+		global_mem[global_id] = update;
+	  KOKKOS_IMPL_DO_NOT_USE_PRINTF("global_mem at %d: %d\n", global_id, update);
+	}
+	  item.barrier(sycl::access::fence_space::global_space);
 
-        if (n_wgroups > 1 && local_id == wgroup_size - 1) {
+        if (local_id == wgroup_size - 1) {
           group_results[item.get_group_linear_id()] =
              local_mem[item.get_sub_group().get_group_range()[0] - 1];
 
@@ -207,6 +216,7 @@ class ParallelScanSYCLBase {
           num_teams_done[0] = ++scratch_flags_ref;
          }
          item.barrier(sycl::access::fence_space::global_space);
+	 KOKKOS_IMPL_DO_NOT_USE_PRINTF("num_teams_done: %d, n_wgroups: %d\n", num_teams_done[0], n_wgroups);
          if (num_teams_done[0] == n_wgroups && local_id==0) {
            for (unsigned int i=1; i<n_wgroups; ++i)
              reducer.join(&group_results[i], &group_results[i-1]);
@@ -214,6 +224,7 @@ class ParallelScanSYCLBase {
              group_results[i] = group_results[i-1];
 	   }
 	   reducer.init(&group_results[0]);
+           KOKKOS_IMPL_DO_NOT_USE_PRINTF("group_results[0]: %d\n", group_results[0]);
 
 		 /*
            value_type total;
@@ -236,6 +247,10 @@ class ParallelScanSYCLBase {
              reducer.join(&total, &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
            }*/
          }
+	 if (global_id < size)
+        {
+                global_mem[global_id] = update;
+        }
       });
     });
     q.ext_oneapi_submit_barrier(
@@ -261,7 +276,6 @@ class ParallelScanSYCLBase {
 
               if (global_id < size) {  
                 value_type update = global_mem[global_id];
-		//KOKKOS_IMPL_DO_NOT_USE_PRINTF("global_mem %d: %d\n", global_id, update);
                 reducer.join(&update,
                                    &group_results[item.get_group_linear_id()]);
 
@@ -269,7 +283,7 @@ class ParallelScanSYCLBase {
                   functor_wrapper.get_functor().get_functor()(global_id, update, true);
                 else
                   functor_wrapper.get_functor().get_functor()(WorkTag(), global_id, update, true);
-	
+
 	        global_mem[global_id] = update;
                 if (global_id == size - 1 && result_ptr_device_accessible)
                   *result_ptr = update;
