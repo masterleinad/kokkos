@@ -236,10 +236,9 @@ class ParallelScanSYCLBase {
                 if (id < static_cast<index_type>(n_wgroups)) {
                   reducer.join(&local_value, &total);
                   group_results[id] = local_value;
-		  /*int expected_value = id*4*(id*4-1)/2;
+		  int expected_value = id*4*(id*4-1)/2;
                   if(group_results[id] != expected_value)
                     KOKKOS_IMPL_DO_NOT_USE_PRINTF( "scanned group_results %d:%d, %d\n", id, group_results[id], expected_value);
-		            item.barrier(sycl::access::fence_space::global_space);*/
 		}
                 reducer.join(
                     &total,
@@ -249,7 +248,7 @@ class ParallelScanSYCLBase {
 		            item.barrier(sycl::access::fence_space::global_space);
               }
 	                  item.barrier(sycl::access::fence_space::global_space);
-		/*	  if (local_id ==0)
+			  if (local_id ==0)
 			  {
 			    for (int id = 0; id<n_wgroups; ++id)
 			    {
@@ -257,13 +256,13 @@ class ParallelScanSYCLBase {
                   if(group_results[id] != expected_value)
                     KOKKOS_IMPL_DO_NOT_USE_PRINTF( "serial scanned group_results %d:%d, %d\n", id, group_results[id], expected_value);
 			    }
-			  }*/
+			  }
             }
           });
     });
     //q.wait();
-    q.ext_oneapi_submit_barrier(
-        std::vector<sycl::event>{initialize_global_memory});
+    //q.ext_oneapi_submit_barrier(
+    //    std::vector<sycl::event>{initialize_global_memory});
 
     // Write results to global memory
     auto update_global_results = q.submit([&](sycl::handler& cgh) {
@@ -273,6 +272,8 @@ class ParallelScanSYCLBase {
       // directly.
       auto result_ptr = m_result_ptr_device_accessible ? m_result_ptr : nullptr;
       auto begin      = m_policy.begin();
+
+      cgh.depends_on(initialize_global_memory);
 
       cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
