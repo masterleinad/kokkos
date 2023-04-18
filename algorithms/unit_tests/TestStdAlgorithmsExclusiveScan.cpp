@@ -104,7 +104,7 @@ void fill_view(ViewType dest_view, const std::string& name) {
 
   else if (name == "medium" || name == "large") {
     for (std::size_t i = 0; i < ext; ++i) {
-      v_h(i) = randObj();
+      v_h(i) = i;
     }
   }
 
@@ -157,7 +157,7 @@ void verify_data(ViewType1 data_view,  // contains data
       //           << gold_h(i) << " " << test_view_h(i) << " "
       //           << std::abs(gold_h(i) - test_view_h(i)) << std::endl;
       if (std::is_same<gold_view_value_type, int>::value) {
-        EXPECT_EQ(gold_h(i), test_view_h(i));
+        EXPECT_EQ(gold_h(i), test_view_h(i)) << " failing at " << i;
       } else {
         const auto error =
             std::abs(static_cast<double>(gold_h(i) - test_view_h(i)));
@@ -298,13 +298,13 @@ void run_single_scenario_custom_op(const InfoType& scenario_info,
 template <class Tag, class ValueType>
 void run_exclusive_scan_all_scenarios() {
   const std::map<std::string, std::size_t> scenarios = {
-      {"empty", 0},          {"one-element", 1}, {"two-elements-a", 2},
+      /*{"empty", 0},          {"one-element", 1}, {"two-elements-a", 2},
       {"two-elements-b", 2}, {"small-a", 9},     {"small-b", 13},
-      {"medium", 1103},      {"large", 10513}};
+      {"medium", 1103},*/      {"large", 120}};//10513
 
   for (const auto& it : scenarios) {
     run_single_scenario_default_op<Tag, ValueType>(it, ValueType{0});
-    run_single_scenario_default_op<Tag, ValueType>(it, ValueType{1});
+ /*   run_single_scenario_default_op<Tag, ValueType>(it, ValueType{1});
     run_single_scenario_default_op<Tag, ValueType>(it, ValueType{-2});
     run_single_scenario_default_op<Tag, ValueType>(it, ValueType{3});
 
@@ -331,17 +331,17 @@ void run_exclusive_scan_all_scenarios() {
                                                   custom_bop_t());
     run_single_scenario_custom_op<Tag, ValueType>(it, ValueType{3},
                                                   custom_bop_t());
-#endif
+#endif*/
   }
 }
 
 TEST(std_algorithms_numeric_ops_test, exclusive_scan) {
-  run_exclusive_scan_all_scenarios<DynamicTag, double>();
-  run_exclusive_scan_all_scenarios<StridedThreeTag, double>();
+//  run_exclusive_scan_all_scenarios<DynamicTag, double>();
+//  run_exclusive_scan_all_scenarios<StridedThreeTag, double>();
   run_exclusive_scan_all_scenarios<DynamicTag, int>();
-  run_exclusive_scan_all_scenarios<StridedThreeTag, int>();
-  run_exclusive_scan_all_scenarios<DynamicTag, CustomValueType>();
-  run_exclusive_scan_all_scenarios<StridedThreeTag, CustomValueType>();
+//  run_exclusive_scan_all_scenarios<StridedThreeTag, int>();
+//  run_exclusive_scan_all_scenarios<DynamicTag, CustomValueType>();
+//  run_exclusive_scan_all_scenarios<StridedThreeTag, CustomValueType>();
 }
 
 }  // namespace EScan

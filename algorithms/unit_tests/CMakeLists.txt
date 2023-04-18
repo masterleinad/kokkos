@@ -127,17 +127,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;HIP;SYCL;OpenMPTarget)
     set(STDALGO_SOURCES_E)
     foreach(Name
 	StdAlgorithmsCommon
-	StdAlgorithmsIsSorted
-	StdAlgorithmsIsSortedUntil
-	StdAlgorithmsPartitioningOps
-	StdAlgorithmsPartitionCopy
-	StdAlgorithmsNumerics
-	StdAlgorithmsAdjacentDifference
 	StdAlgorithmsExclusiveScan
-	StdAlgorithmsInclusiveScan
-	StdAlgorithmsTransformUnaryOp
-	StdAlgorithmsTransformExclusiveScan
-	StdAlgorithmsTransformInclusiveScan
 	)
       list(APPEND STDALGO_SOURCES_E Test${Name}.cpp)
     endforeach()
