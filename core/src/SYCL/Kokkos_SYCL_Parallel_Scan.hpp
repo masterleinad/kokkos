@@ -32,17 +32,12 @@ namespace Impl {
 template <int dim, typename ValueType, typename FunctorType>
 void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
                     sycl::local_accessor<ValueType> local_mem,
-                    ValueType& local_value, unsigned int global_range) {  
-	    sycl::group_barrier(item.get_group());
-	// subgroup scans
+                    ValueType& local_value, unsigned int global_range) {
+  // subgroup scans
   auto sg               = item.get_sub_group();
   const int sg_group_id = sg.get_group_id()[0];
   const int id_in_sg    = sg.get_local_id()[0];
-  
-  int group_id = item.get_group().get_group_id()[0];
-  if (local_value != item.get_global_linear_id())
-    KOKKOS_IMPL_DO_NOT_USE_PRINTF("wg scan start %d, %d\n", group_id, sg_group_id, id_in_sg, local_value, int(item.get_global_linear_id()));
-  
+
   for (unsigned int stride = 1; stride < global_range; stride <<= 1) {
     auto tmp = sg.shuffle_up(local_value, stride);
     if (id_in_sg >= stride) final_reducer.join(&local_value, &tmp);
@@ -77,7 +72,6 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
               local_sg_value = tmp;
           }
         }
-	sycl::group_barrier(sg);
         if (idx < n_active_subgroups) {
           local_mem[idx] = local_sg_value;
           if (round > 0)
@@ -93,7 +87,6 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   // add results to all subgroups
   if (sg_group_id > 0)
     final_reducer.join(&local_value, &local_mem[sg_group_id - 1]);
-  sycl::group_barrier(item.get_group());
 }
 
 template <class FunctorType, class... Traits>
@@ -141,7 +134,7 @@ class ParallelScanSYCLBase {
     const auto size = m_policy.end() - m_policy.begin();
 
     // FIXME_SYCL optimize
-    constexpr size_t wgroup_size = 4;
+    constexpr size_t wgroup_size = 128;
     auto n_wgroups               = (size + wgroup_size - 1) / wgroup_size;
     auto global_mem              = m_scratch_space;
     pointer_type group_results   = global_mem + n_wgroups * wgroup_size;
@@ -189,26 +182,15 @@ class ParallelScanSYCLBase {
                 functor(WorkTag(), global_id + begin, local_value, false);
             }
 
-	                item.barrier(sycl::access::fence_space::global_space);
             workgroup_scan<>(item, reducer, local_mem, local_value,
                              wgroup_size);
-	                item.barrier(sycl::access::fence_space::global_space);
 
             // Write results to global memory
             if (global_id < size) global_mem[global_id] = local_value;
-            item.barrier(sycl::access::fence_space::global_space);
-
 
             if (local_id == wgroup_size - 1) {
               group_results[item.get_group_linear_id()] =
                   local_mem[item.get_sub_group().get_group_range()[0] - 1];
-
-	      int group_id = item.get_group_linear_id();
-	      int expected_value = ((group_id+1)*4-1)*((group_id+1)*4)/2-(group_id*4-1)*group_id*4/2;
-	      if (group_id > 0 && group_results[group_id] != expected_value)
-                KOKKOS_IMPL_DO_NOT_USE_PRINTF( "group_result %d:%d, %d\n", group_id, group_results[group_id], expected_value);
-              if (group_id == 0 && group_results[0] != 3*4/2)
-		KOKKOS_IMPL_DO_NOT_USE_PRINTF( "group_result 0:%d, 6\n", group_results[group_id]);
 
               sycl::atomic_ref<unsigned, sycl::memory_order::relaxed,
                                sycl::memory_scope::device,
@@ -218,7 +200,6 @@ class ParallelScanSYCLBase {
             }
             item.barrier(sycl::access::fence_space::global_space);
             if (num_teams_done[0] == n_wgroups) {
-              KOKKOS_IMPL_DO_NOT_USE_PRINTF( "Final group %d\n", int(item.get_group_linear_id()));		    
               value_type total;
               reducer.init(&total);
 
@@ -229,40 +210,21 @@ class ParallelScanSYCLBase {
                   local_value = group_results[id];
                 else
                   reducer.init(&local_value);
-                          item.barrier(sycl::access::fence_space::global_space);
-	      	workgroup_scan<>(item, reducer, local_mem, local_value,
+                workgroup_scan<>(item, reducer, local_mem, local_value,
                                  std::min(n_wgroups - offset, wgroup_size));
-		            item.barrier(sycl::access::fence_space::global_space);
                 if (id < static_cast<index_type>(n_wgroups)) {
                   reducer.join(&local_value, &total);
                   group_results[id] = local_value;
-		  int expected_value = id*4*(id*4-1)/2;
-                  if(group_results[id] != expected_value)
-                    KOKKOS_IMPL_DO_NOT_USE_PRINTF( "scanned group_results %d:%d, %d\n", id, group_results[id], expected_value);
-		}
+                }
                 reducer.join(
                     &total,
                     &local_mem[item.get_sub_group().get_group_range()[0] - 1]);
                 if (offset + wgroup_size < n_wgroups)
                   item.barrier(sycl::access::fence_space::global_space);
-		            item.barrier(sycl::access::fence_space::global_space);
               }
-	                  item.barrier(sycl::access::fence_space::global_space);
-			  if (local_id ==0)
-			  {
-			    for (int id = 0; id<n_wgroups; ++id)
-			    {
-			       int expected_value = id*4*(id*4-1)/2;
-                  if(group_results[id] != expected_value)
-                    KOKKOS_IMPL_DO_NOT_USE_PRINTF( "serial scanned group_results %d:%d, %d\n", id, group_results[id], expected_value);
-			    }
-			  }
             }
           });
     });
-    //q.wait();
-    //q.ext_oneapi_submit_barrier(
-    //    std::vector<sycl::event>{initialize_global_memory});
 
     // Write results to global memory
     auto update_global_results = q.submit([&](sycl::handler& cgh) {
@@ -290,9 +252,6 @@ class ParallelScanSYCLBase {
               value_type update = global_mem[global_id];
 
               reducer.join(&update, &group_results[item.get_group_linear_id()]);
-
-	      if (update != (global_id-1)*global_id/2)
-	        KOKKOS_IMPL_DO_NOT_USE_PRINTF( "Final result %d:%d %d(%d+%d)\n", global_id, update, (global_id-1)*global_id/2, global_mem[global_id], group_results[item.get_group_linear_id()]);
 
               if constexpr (std::is_void<WorkTag>::value)
                 functor(global_id + begin, update, true);
@@ -322,7 +281,7 @@ class ParallelScanSYCLBase {
     // We need to allocate memory for the whole range (rounded towards the next
     // multiple of the wqorkgroup size) and for one element per workgroup that
     // will contain the sum of the previous workgroups totals.
-    size_t wgroup_size  = 4;
+    size_t wgroup_size  = 128;
     size_t n_wgroups    = (len + wgroup_size - 1) / wgroup_size;
     size_t total_memory = n_wgroups * (wgroup_size + 1) * sizeof(value_type);
 
