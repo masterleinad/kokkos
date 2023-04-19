@@ -255,15 +255,18 @@ class ParallelScanSYCLBase {
         // results in the end before doing the final pass
         global_mem = static_cast<sycl::device_ptr<value_type>>(
           instance.scratch_space(n_wgroups * (wgroup_size + 1) * sizeof(value_type)));
+        m_scratch_space = global_mem;
 
         group_results   = global_mem + n_wgroups * wgroup_size;
 
 	// Store subgroup totals in local space
-        const auto subgroup_size = kernel.get_info<sycl::info::kernel_device_specific::
-                                                   compile_sub_group_size>(q.get_device());
+	const auto min_subgroup_size =
+         q.get_device()
+              .template get_info<sycl::info::device::sub_group_sizes>()
+              .front();
         sycl::local_accessor<value_type> local_mem(
-           sycl::range<1>((wgroup_size + subgroup_size - 1) /
-                           subgroup_size),
+           sycl::range<1>((wgroup_size + min_subgroup_size - 1) /
+                           min_subgroup_size),
            cgh);
 
         cgh.depends_on(memcpy_event);
