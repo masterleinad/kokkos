@@ -139,14 +139,14 @@ class ParallelScanSYCLBase {
     const auto begin = m_policy.begin();
 
     // Initialize global memory
-     auto scan_lambda_factory =
-          [&](sycl::local_accessor<value_type> local_mem,
-              sycl::local_accessor<unsigned int> num_teams_done,
-	      sycl::device_ptr<value_type> global_mem_,
-	      sycl::device_ptr<value_type> group_results_) {
-            auto lambda = [=](sycl::nd_item<1> item) {
-            auto global_mem = global_mem_;
-	    auto group_results = group_results_;
+    auto scan_lambda_factory =
+        [&](sycl::local_accessor<value_type> local_mem,
+            sycl::local_accessor<unsigned int> num_teams_done,
+            sycl::device_ptr<value_type> global_mem_,
+            sycl::device_ptr<value_type> group_results_) {
+          auto lambda = [=](sycl::nd_item<1> item) {
+            auto global_mem    = global_mem_;
+            auto group_results = group_results_;
 
             const CombinedFunctorReducer<
                 FunctorType, typename Analysis::Reducer>& functor_reducer =
@@ -155,9 +155,9 @@ class ParallelScanSYCLBase {
             const typename Analysis::Reducer& reducer =
                 functor_reducer.get_reducer();
 
-	    const auto n_wgroups   = item.get_group_range()[0];
+            const auto n_wgroups   = item.get_group_range()[0];
             const auto wgroup_size = item.get_local_range()[0];
-	    
+
             const index_type local_id  = item.get_local_linear_id();
             const index_type global_id = item.get_global_linear_id();
 
@@ -213,70 +213,68 @@ class ParallelScanSYCLBase {
               }
             }
           };
-	    return lambda;
-    };
+          return lambda;
+        };
 
-     size_t wgroup_size;
-     size_t n_wgroups;
-     sycl::device_ptr<value_type> global_mem;
-     sycl::device_ptr<value_type> group_results;
+    size_t wgroup_size;
+    size_t n_wgroups;
+    sycl::device_ptr<value_type> global_mem;
+    sycl::device_ptr<value_type> group_results;
 
-     auto perform_work_group_scans = q.submit([&](sycl::handler& cgh) {
-        sycl::local_accessor<unsigned int> num_teams_done(1, cgh);
+    auto perform_work_group_scans = q.submit([&](sycl::handler& cgh) {
+      sycl::local_accessor<unsigned int> num_teams_done(1, cgh);
 
-        auto dummy_scan_lambda =
-            scan_lambda_factory({1, cgh}, num_teams_done, nullptr, nullptr);
+      auto dummy_scan_lambda =
+          scan_lambda_factory({1, cgh}, num_teams_done, nullptr, nullptr);
 
-        static sycl::kernel kernel = [&] {
-          sycl::kernel_id functor_kernel_id =
-              sycl::get_kernel_id<decltype(dummy_scan_lambda)>();
-          auto kernel_bundle =
-              sycl::get_kernel_bundle<sycl::bundle_state::executable>(
-                  q.get_context(), std::vector{functor_kernel_id});
-          return kernel_bundle.get_kernel(functor_kernel_id);
-        }();
-        auto multiple = kernel.get_info<sycl::info::kernel_device_specific::
-                                            preferred_work_group_size_multiple>(
-            q.get_device());
-        auto max =
-            kernel
-                .get_info<sycl::info::kernel_device_specific::work_group_size>(
-                    q.get_device());
+      static sycl::kernel kernel = [&] {
+        sycl::kernel_id functor_kernel_id =
+            sycl::get_kernel_id<decltype(dummy_scan_lambda)>();
+        auto kernel_bundle =
+            sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+                q.get_context(), std::vector{functor_kernel_id});
+        return kernel_bundle.get_kernel(functor_kernel_id);
+      }();
+      auto multiple = kernel.get_info<sycl::info::kernel_device_specific::
+                                          preferred_work_group_size_multiple>(
+          q.get_device());
+      auto max =
+          kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
+              q.get_device());
 
-        wgroup_size =
-            static_cast<size_t>(max / multiple) * multiple;
-        n_wgroups = (size + wgroup_size - 1) / wgroup_size;
+      wgroup_size = static_cast<size_t>(max / multiple) * multiple;
+      n_wgroups   = (size + wgroup_size - 1) / wgroup_size;
 
-	// Compute the total amount of memory we will need.
-        // We need to allocate memory for the whole range (rounded towards the next
-        // multiple of the workgroup size) and for one element per workgroup that
-        // will contain the sum of the previous workgroups totals.
-        // FIXME_SYCL consider only storing one value per block and recreate initial
-        // results in the end before doing the final pass
-        global_mem = static_cast<sycl::device_ptr<value_type>>(
-          instance.scratch_space(n_wgroups * (wgroup_size + 1) * sizeof(value_type)));
-        m_scratch_space = global_mem;
+      // Compute the total amount of memory we will need.
+      // We need to allocate memory for the whole range (rounded towards the
+      // next multiple of the workgroup size) and for one element per workgroup
+      // that will contain the sum of the previous workgroups totals.
+      // FIXME_SYCL consider only storing one value per block and recreate
+      // initial results in the end before doing the final pass
+      global_mem =
+          static_cast<sycl::device_ptr<value_type>>(instance.scratch_space(
+              n_wgroups * (wgroup_size + 1) * sizeof(value_type)));
+      m_scratch_space = global_mem;
 
-        group_results   = global_mem + n_wgroups * wgroup_size;
+      group_results = global_mem + n_wgroups * wgroup_size;
 
-	// Store subgroup totals in local space
-	const auto min_subgroup_size =
-         q.get_device()
+      // Store subgroup totals in local space
+      const auto min_subgroup_size =
+          q.get_device()
               .template get_info<sycl::info::device::sub_group_sizes>()
               .front();
-        sycl::local_accessor<value_type> local_mem(
-           sycl::range<1>((wgroup_size + min_subgroup_size - 1) /
-                           min_subgroup_size),
-           cgh);
+      sycl::local_accessor<value_type> local_mem(
+          sycl::range<1>((wgroup_size + min_subgroup_size - 1) /
+                         min_subgroup_size),
+          cgh);
 
-        cgh.depends_on(memcpy_event);
+      cgh.depends_on(memcpy_event);
 
-        auto scan_lambda =
-            scan_lambda_factory(local_mem, num_teams_done, global_mem, group_results);
-        cgh.parallel_for(
-            sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
-            scan_lambda);
-      });
+      auto scan_lambda = scan_lambda_factory(local_mem, num_teams_done,
+                                             global_mem, group_results);
+      cgh.parallel_for(sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
+                       scan_lambda);
+    });
 
     // Write results to global memory
     auto update_global_results = q.submit([&](sycl::handler& cgh) {
@@ -290,7 +288,7 @@ class ParallelScanSYCLBase {
       cgh.parallel_for(
           sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
           [=](sycl::nd_item<1> item) {
-	    auto global_mem_copy = global_mem;
+            auto global_mem_copy       = global_mem;
             const index_type global_id = item.get_global_linear_id();
             const CombinedFunctorReducer<
                 FunctorType, typename Analysis::Reducer>& functor_reducer =
