@@ -32,13 +32,13 @@ namespace Impl {
 template <int dim, typename ValueType, typename FunctorType>
 void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
                     sycl::local_accessor<ValueType> local_mem,
-                    ValueType& local_value, unsigned int global_range) {
+                    ValueType& local_value, int global_range) {
   // subgroup scans
   auto sg               = item.get_sub_group();
   const int sg_group_id = sg.get_group_id()[0];
   const int id_in_sg    = sg.get_local_id()[0];
 
-  for (unsigned int stride = 1; stride < global_range; stride <<= 1) {
+  for (int stride = 1; stride < global_range; stride <<= 1) {
     auto tmp = sg.shuffle_up(local_value, stride);
     if (id_in_sg >= stride) final_reducer.join(&local_value, &tmp);
   }
@@ -47,7 +47,7 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   const int n_active_subgroups =
       (global_range + max_subgroup_size - 1) / max_subgroup_size;
 
-  const auto local_range = sg.get_local_range()[0];
+  const int local_range = sg.get_local_range()[0];
   if (id_in_sg == local_range - 1 && sg_group_id < n_active_subgroups)
     local_mem[sg_group_id] = local_value;
   local_value = sg.shuffle_up(local_value, 1);
@@ -58,12 +58,12 @@ void workgroup_scan(sycl::nd_item<dim> item, const FunctorType& final_reducer,
   if (n_active_subgroups > 1) {
     if (sg_group_id == 0) {
       const int n_rounds = (n_active_subgroups + local_range - 1) / local_range;
-      for (unsigned int round = 0; round < n_rounds; ++round) {
-        const unsigned int idx = id_in_sg + round * local_range;
+      for (int round = 0; round < n_rounds; ++round) {
+        const int idx = id_in_sg + round * local_range;
         const auto upper_bound =
             std::min(local_range, n_active_subgroups - round * local_range);
         auto local_sg_value = local_mem[idx < n_active_subgroups ? idx : 0];
-        for (unsigned int stride = 1; stride < upper_bound; stride <<= 1) {
+        for (int stride = 1; stride < upper_bound; stride <<= 1) {
           auto tmp = sg.shuffle_up(local_sg_value, stride);
           if (id_in_sg >= stride) {
             if (idx < n_active_subgroups)
