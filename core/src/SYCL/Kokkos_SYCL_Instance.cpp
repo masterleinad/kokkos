@@ -273,7 +273,8 @@ sycl::device_ptr<void> SYCLInternal::scratch_flags(const std::size_t size) {
 
     m_scratchFlags = reinterpret_cast<size_type*>(r->data());
   }
-  auto memset_event =  m_queue->memset(m_scratchFlags, 0, m_scratchFlagsCount * sizeScratchGrain);
+  auto memset_event = m_queue->memset(m_scratchFlags, 0,
+                                      m_scratchFlagsCount * sizeScratchGrain);
   m_queue->ext_oneapi_submit_barrier(std::vector{memset_event});
 
   return m_scratchFlags;
