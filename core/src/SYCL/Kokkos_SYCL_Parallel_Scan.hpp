@@ -323,8 +323,7 @@ class ParallelScanSYCLBase {
   void impl_execute(const PostFunctor& post_functor) {
     if (m_policy.begin() == m_policy.end()) return;
 
-    auto& instance        = *m_policy.space().impl_internal_space_instance();
-    const std::size_t len = m_policy.end() - m_policy.begin();
+    auto& instance = *m_policy.space().impl_internal_space_instance();
 
     Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem&
         indirectKernelMem = instance.get_indirect_kernel_mem();
