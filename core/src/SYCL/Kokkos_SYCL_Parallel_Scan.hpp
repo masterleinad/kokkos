@@ -155,10 +155,10 @@ class ParallelScanSYCLBase {
             const typename Analysis::Reducer& reducer =
                 functor_reducer.get_reducer();
 
-            const auto n_wgroups   = item.get_group_range()[0];
+            const auto n_wgroups  = item.get_group_range()[0];
             const int wgroup_size = item.get_local_range()[0];
 
-            const int local_id  = item.get_local_linear_id();
+            const int local_id         = item.get_local_linear_id();
             const index_type global_id = item.get_global_linear_id();
 
             // Initialize local memory
@@ -199,8 +199,9 @@ class ParallelScanSYCLBase {
                   local_value = group_results[id];
                 else
                   reducer.init(&local_value);
-                workgroup_scan<>(item, reducer, local_mem, local_value,
-                                 std::min<index_type>(n_wgroups - offset, wgroup_size));
+                workgroup_scan<>(
+                    item, reducer, local_mem, local_value,
+                    std::min<index_type>(n_wgroups - offset, wgroup_size));
                 if (id < static_cast<index_type>(n_wgroups)) {
                   reducer.join(&local_value, &total);
                   group_results[id] = local_value;
