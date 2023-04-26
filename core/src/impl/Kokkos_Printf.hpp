@@ -14,33 +14,18 @@
 //
 //@HEADER
 
-#ifndef KOKKOS_SYCL_ABORT_HPP
-#define KOKKOS_SYCL_ABORT_HPP
+#ifndef KOKKOS_IMPL_PRINTF_HPP
+#define KOKKOS_IMPL_PRINTF_HPP
 
-#include <impl/Kokkos_Printf.hpp>
-#if defined(KOKKOS_ENABLE_SYCL)
-// FIXME_SYCL
-#if __has_include(<sycl/sycl.hpp>)
-#include <sycl/sycl.hpp>
-#else
-#include <CL/sycl.hpp>
-#endif
+#include <Kokkos_Macros.hpp>
 
 namespace Kokkos {
-namespace Impl {
 
-inline void sycl_abort(char const* msg) {
-#ifdef NDEBUG
-  Kokkos::printf("Aborting with message %s.\n", msg);
-#else
-  // Choosing "" here causes problems but a single whitespace character works.
-  const char* empty = " ";
-  __assert_fail(msg, empty, 0, empty);
-#endif
+template <typename... Args>
+int printf(const char* format, Args... args) {
+  return KOKKOS_IMPL_DO_NOT_USE_PRINTF(format, args...);
 }
 
-}  // namespace Impl
 }  // namespace Kokkos
 
-#endif
-#endif
+#endif /* #ifndef KOKKOS_IMPL_PRINTF_HPP */
