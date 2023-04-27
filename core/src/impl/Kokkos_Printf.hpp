@@ -21,10 +21,21 @@
 
 namespace Kokkos {
 
+// We are forwarding the format string to printf but gcc and clang warn about
+// the format string not being a literal.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-security"
+#endif
+
 template <typename... Args>
 int printf(const char* format, Args... args) {
   return KOKKOS_IMPL_DO_NOT_USE_PRINTF(format, args...);
 }
+
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 }  // namespace Kokkos
 
