@@ -39,29 +39,27 @@ struct ThreadScratch {
   KOKKOS_FUNCTION
   void operator()(const team_t &team) const {
     // Allocate and use scratch pad memory
-    scratch_t v_S_(team.thread_scratch(scratch_level), sY);
-    sycl::device_ptr<size_t> v_S = v_S_.data();
+    scratch_t v_S(team.thread_scratch(scratch_level), sY);
     int n = team.league_rank();
 
-    for (int i = 0; i < sY; ++i) v_S[i] = 0;
+    for (int i = 0; i < sY; ++i) v_S(i) = 0;
 
     Kokkos::parallel_for(Kokkos::TeamThreadRange(team, sX), [&](const int m) {
     // FIXME_SYCL This deadlocks in the subgroup_barrier when running on CUDA
     // devices.
 #ifdef KOKKOS_ENABLE_SYCL
-      for (int k = 0; k < sY; ++k) v_S[k] += sX * sY * n + sY * m + k;
+      for (int k = 0; k < sY; ++k) v_S(k) = sX * sY * n + sY * m + k;
 #else
       Kokkos::parallel_for(
           Kokkos::ThreadVectorRange(team, sY),
-          [&](const int k) { v_S[k] += sX * sY * n + sY * m + k; });
+          [&](const int k) { v_S(k) += sX * sY * n + sY * m + k; });
 #endif
     });
 
     team.team_barrier();
 
     for (int i = 0; i < sY; ++i) {
-	    auto var = v_S[i];
-      v(n, team.team_rank()) += var;
+      v(n, team.team_rank()) += v_S(i);
     }
   }
 

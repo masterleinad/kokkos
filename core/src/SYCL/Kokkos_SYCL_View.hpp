@@ -34,6 +34,39 @@ namespace Impl {
 // device space -> device, private
 // scratch space -> local, global
 
+template <typename ValueType>
+struct Wrapper {
+  sycl::device_ptr<ValueType, sycl::access::decorated::yes> m_device_ptr;
+  sycl::local_ptr<ValueType, sycl::access::decorated::yes> m_local_ptr;
+
+  operator ValueType&() {
+     if (m_device_ptr)
+            return *m_device_ptr;
+    else
+          return *m_local_ptr;
+  }
+
+  Wrapper& operator=(ValueType val)
+  {
+   if (m_device_ptr)
+           *m_device_ptr = val;
+    else
+          *m_local_ptr = val;
+    return *this;
+  }
+
+
+  Wrapper& operator+=(ValueType val)
+  {
+   KOKKOS_IMPL_DO_NOT_USE_PRINTF("Hello\n");
+   if (m_device_ptr)
+           *m_device_ptr += val;
+    else
+          *m_local_ptr += val;
+    return *this;
+  }
+};
+
 template <typename ValueType, typename MemorySpace>
 struct SYCLUSMHandle;
 
@@ -127,8 +160,8 @@ struct SYCLUSMHandle<ValueType, ScratchMemorySpace<Kokkos::Experimental::SYCL>>{
   sycl::local_ptr<ValueType, sycl::access::decorated::yes> m_local_ptr;
 
   template <typename iType>
-  KOKKOS_FUNCTION ValueType& operator[](const iType& i) {
-    return m_device_ptr?m_device_ptr[i]:m_local_ptr[i];
+  KOKKOS_FORCEINLINE_FUNCTION auto operator()(const iType& i) {
+    return Wrapper<ValueType>({m_device_ptr+i, m_local_ptr+i});
   }
 
   KOKKOS_FUNCTION
