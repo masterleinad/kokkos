@@ -29,7 +29,7 @@ namespace Kokkos {
 #endif
 
 template <typename... Args>
-int printf(const char* format, Args... args) {
+KOKKOS_FUNCTION int printf(const char* format, Args... args) {
   return KOKKOS_IMPL_DO_NOT_USE_PRINTF(format, args...);
 }
 
