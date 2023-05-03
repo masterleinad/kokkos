@@ -30,7 +30,12 @@ namespace Kokkos {
 
 template <typename... Args>
 KOKKOS_FUNCTION int printf(const char* format, Args... args) {
-  return KOKKOS_IMPL_DO_NOT_USE_PRINTF(format, args...);
+#ifdef __SYCL_DEVICE_ONLY__
+  //const __attribute__((opencl_constant)) char fmt[] = (format);
+  return sycl::ext::oneapi::experimental::printf(format, args...);
+#else
+  return std::printf(format, args...);
+#endif
 }
 
 #if defined(__GNUC__)
