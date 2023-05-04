@@ -29,11 +29,16 @@ namespace Kokkos {
 #endif
 
 template <typename... Args>
-KOKKOS_FUNCTION int printf(const char* format, Args... args) {
+KOKKOS_FUNCTION int printf([[maybe_unused]] const char* format, [[maybe_unused]] Args... args) {
+// FIXME_NVHPC nvc++ complains about missing builtin functions like fabsf
+#ifdef KOKKOS_COMPILER_NVHPC
+return -1;
+#else
 #ifdef __SYCL_DEVICE_ONLY__
   return sycl::ext::oneapi::experimental::printf(format, args...);
 #else
   return std::printf(format, args...);
+#endif
 #endif
 }
 
