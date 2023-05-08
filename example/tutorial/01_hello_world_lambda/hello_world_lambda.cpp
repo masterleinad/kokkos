@@ -73,7 +73,6 @@ int main(int argc, char* argv[]) {
   // order.  Parallel for loops may execute in any order.
   // We also need to protect the usage of a lambda against compiling
   // with a backend which doesn't support it (i.e. Cuda 6.5/7.0).
-#if defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA)
   Kokkos::parallel_for(
       15, KOKKOS_LAMBDA(const int i) {
   // FIXME_SYCL needs workaround for printf
@@ -84,7 +83,6 @@ int main(int argc, char* argv[]) {
 	(void)i;
 #endif
       });
-#endif
   // You must call finalize() after you are done using Kokkos.
   Kokkos::finalize();
 }

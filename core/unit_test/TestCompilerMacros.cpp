@@ -28,10 +28,6 @@
 #error "Only one host compiler macro can be defined"
 #endif
 
-#if !defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA)
-#error "Macro bug: KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA should be defined"
-#endif
-
 namespace TestCompilerMacros {
 
 template <class DEVICE_TYPE>

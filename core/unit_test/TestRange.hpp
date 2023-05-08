@@ -204,7 +204,6 @@ struct TestRange {
   }
 
   void test_dynamic_policy() {
-#if defined(KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA)
     auto const N_no_implicit_capture = N;
     using policy_t =
         Kokkos::RangePolicy<ExecSpace, Kokkos::Schedule<Kokkos::Dynamic> >;
@@ -290,7 +289,6 @@ struct TestRange {
         //}
       }
     }
-#endif
   }
 };
 
