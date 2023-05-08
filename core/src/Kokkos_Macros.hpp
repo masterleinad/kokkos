@@ -91,7 +91,9 @@
 #define KOKKOS_INTERNAL_NOT_PARALLEL
 #endif
 
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 #define KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA
+#endif
 
 #include <KokkosCore_Config_SetupBackend.hpp>
 
