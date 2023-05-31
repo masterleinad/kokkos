@@ -32,6 +32,7 @@
 #include <impl/Kokkos_Atomic_View.hpp>
 #include <impl/Kokkos_Tools.hpp>
 #include <impl/Kokkos_StringManipulation.hpp>
+#include <impl/Kokkos_ZeroMemset_fwd.hpp>
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -159,8 +160,8 @@ struct KOKKOS_IMPL_ENFORCE_EMPTY_BASE_OPTIMIZATION ViewDimension
   using D6::N6;
   using D7::N7;
 
-  enum : unsigned { rank = sizeof...(Vals) };
-  enum : unsigned { rank_dynamic = Impl::rank_dynamic<Vals...>::value };
+  static constexpr unsigned rank         = sizeof...(Vals);
+  static constexpr unsigned rank_dynamic = Impl::rank_dynamic<Vals...>::value;
 
   ViewDimension()                     = default;
   ViewDimension(const ViewDimension&) = default;
@@ -2189,7 +2190,8 @@ struct ViewStride;
 
 template <>
 struct ViewStride<0> {
-  enum { S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0, S5 = 0, S6 = 0, S7 = 0 };
+  static constexpr size_t S0 = 0, S1 = 0, S2 = 0, S3 = 0, S4 = 0, S5 = 0,
+                          S6 = 0, S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2203,7 +2205,8 @@ struct ViewStride<0> {
 template <>
 struct ViewStride<1> {
   size_t S0;
-  enum { S1 = 0, S2 = 0, S3 = 0, S4 = 0, S5 = 0, S6 = 0, S7 = 0 };
+  static constexpr size_t S1 = 0, S2 = 0, S3 = 0, S4 = 0, S5 = 0, S6 = 0,
+                          S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2218,7 +2221,7 @@ struct ViewStride<1> {
 template <>
 struct ViewStride<2> {
   size_t S0, S1;
-  enum { S2 = 0, S3 = 0, S4 = 0, S5 = 0, S6 = 0, S7 = 0 };
+  static constexpr size_t S2 = 0, S3 = 0, S4 = 0, S5 = 0, S6 = 0, S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2233,7 +2236,7 @@ struct ViewStride<2> {
 template <>
 struct ViewStride<3> {
   size_t S0, S1, S2;
-  enum { S3 = 0, S4 = 0, S5 = 0, S6 = 0, S7 = 0 };
+  static constexpr size_t S3 = 0, S4 = 0, S5 = 0, S6 = 0, S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2248,7 +2251,7 @@ struct ViewStride<3> {
 template <>
 struct ViewStride<4> {
   size_t S0, S1, S2, S3;
-  enum { S4 = 0, S5 = 0, S6 = 0, S7 = 0 };
+  static constexpr size_t S4 = 0, S5 = 0, S6 = 0, S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2263,7 +2266,7 @@ struct ViewStride<4> {
 template <>
 struct ViewStride<5> {
   size_t S0, S1, S2, S3, S4;
-  enum { S5 = 0, S6 = 0, S7 = 0 };
+  static constexpr size_t S5 = 0, S6 = 0, S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2278,7 +2281,7 @@ struct ViewStride<5> {
 template <>
 struct ViewStride<6> {
   size_t S0, S1, S2, S3, S4, S5;
-  enum { S6 = 0, S7 = 0 };
+  static constexpr size_t S6 = 0, S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2293,7 +2296,7 @@ struct ViewStride<6> {
 template <>
 struct ViewStride<7> {
   size_t S0, S1, S2, S3, S4, S5, S6;
-  enum { S7 = 0 };
+  static constexpr size_t S7 = 0;
 
   ViewStride()                  = default;
   ViewStride(const ViewStride&) = default;
@@ -2916,8 +2919,9 @@ struct ViewValueFunctor<DeviceType, ValueType, false /* is_scalar */> {
             "Kokkos::View::initialization [" + name + "] via memset",
             Kokkos::Profiling::Experimental::device_id(space), &kpID);
       }
-      (void)ZeroMemset<ExecSpace, ValueType*, typename DeviceType::memory_space,
-                       Kokkos::MemoryTraits<Kokkos::Unmanaged>>(
+      (void)ZeroMemset<
+          ExecSpace, Kokkos::View<ValueType*, typename DeviceType::memory_space,
+                                  Kokkos::MemoryTraits<Kokkos::Unmanaged>>>(
           space,
           Kokkos::View<ValueType*, typename DeviceType::memory_space,
                        Kokkos::MemoryTraits<Kokkos::Unmanaged>>(ptr, n),
@@ -3053,8 +3057,9 @@ struct ViewValueFunctor<DeviceType, ValueType, true /* is_scalar */> {
             Kokkos::Profiling::Experimental::device_id(space), &kpID);
       }
 
-      (void)ZeroMemset<ExecSpace, ValueType*, typename DeviceType::memory_space,
-                       Kokkos::MemoryTraits<Kokkos::Unmanaged>>(
+      (void)ZeroMemset<
+          ExecSpace, Kokkos::View<ValueType*, typename DeviceType::memory_space,
+                                  Kokkos::MemoryTraits<Kokkos::Unmanaged>>>(
           space,
           Kokkos::View<ValueType*, typename DeviceType::memory_space,
                        Kokkos::MemoryTraits<Kokkos::Unmanaged>>(ptr, n),
@@ -3146,7 +3151,7 @@ class ViewMapping<
   //----------------------------------------
   // Domain dimensions
 
-  enum { Rank = Traits::dimension::rank };
+  static constexpr unsigned Rank = Traits::dimension::rank;
 
   template <typename iType>
   KOKKOS_INLINE_FUNCTION constexpr size_t extent(const iType& r) const {
@@ -3662,7 +3667,7 @@ class ViewMapping<
     size_t exp_stride = 1;
     if (std::is_same<typename DstTraits::array_layout,
                      Kokkos::LayoutLeft>::value) {
-      for (int i = 0; i < src.Rank; i++) {
+      for (unsigned int i = 0; i < src.Rank; i++) {
         if (i > 0) exp_stride *= src.extent(i - 1);
         if (strides[i] != exp_stride) {
           assignable = false;
@@ -3671,9 +3676,9 @@ class ViewMapping<
       }
     } else if (std::is_same<typename DstTraits::array_layout,
                             Kokkos::LayoutRight>::value) {
-      for (int i = src.Rank - 1; i >= 0; i--) {
-        if (i < src.Rank - 1) exp_stride *= src.extent(i + 1);
-        if (strides[i] != exp_stride) {
+      for (unsigned int i = 0; i < src.Rank; i++) {
+        if (i > 0) exp_stride *= src.extent(src.Rank - i);
+        if (strides[src.Rank - 1 - i] != exp_stride) {
           assignable = false;
           break;
         }

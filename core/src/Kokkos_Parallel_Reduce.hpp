@@ -416,7 +416,6 @@ struct MinLoc {
   using index_type  = std::remove_cv_t<Index>;
   static_assert(!std::is_pointer_v<scalar_type> &&
                 !std::is_array_v<scalar_type>);
-  static_assert(std::is_integral_v<index_type>);
 
  public:
   // Required
@@ -472,7 +471,6 @@ struct MaxLoc {
   using index_type  = std::remove_cv_t<Index>;
   static_assert(!std::is_pointer_v<scalar_type> &&
                 !std::is_array_v<scalar_type>);
-  static_assert(std::is_integral_v<index_type>);
 
  public:
   // Required
@@ -597,7 +595,6 @@ struct MinMaxLoc {
   using index_type  = std::remove_cv_t<Index>;
   static_assert(!std::is_pointer_v<scalar_type> &&
                 !std::is_array_v<scalar_type>);
-  static_assert(std::is_integral_v<index_type>);
 
  public:
   // Required
@@ -1613,9 +1610,9 @@ struct ParallelReduceAdaptor {
     using ReducerSelector =
         Kokkos::Impl::if_c<std::is_same<InvalidType, PassedReducerType>::value,
                            FunctorType, PassedReducerType>;
-    using Analysis =
-        FunctorAnalysis<FunctorPatternInterface::REDUCE, PolicyType,
-                        typename ReducerSelector::type>;
+    using Analysis = FunctorAnalysis<FunctorPatternInterface::REDUCE,
+                                     PolicyType, typename ReducerSelector::type,
+                                     typename return_value_adapter::value_type>;
     Kokkos::Impl::shared_allocation_tracking_disable();
     CombinedFunctorReducer functor_reducer(
         functor, typename Analysis::Reducer(
@@ -1635,8 +1632,9 @@ struct ParallelReduceAdaptor {
   }
 
   static constexpr bool is_array_reduction =
-      Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE, PolicyType,
-                            FunctorType>::StaticValueSize == 0;
+      Impl::FunctorAnalysis<
+          Impl::FunctorPatternInterface::REDUCE, PolicyType, FunctorType,
+          typename return_value_adapter::value_type>::StaticValueSize == 0;
 
   template <typename Dummy = ReturnType>
   static inline std::enable_if_t<!(is_array_reduction &&
@@ -1936,7 +1934,7 @@ inline void parallel_reduce(
         nullptr) {
   using FunctorAnalysis =
       Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE, PolicyType,
-                            FunctorType>;
+                            FunctorType, void>;
   using value_type = std::conditional_t<(FunctorAnalysis::StaticValueSize != 0),
                                         typename FunctorAnalysis::value_type,
                                         typename FunctorAnalysis::pointer_type>;
@@ -1961,7 +1959,7 @@ inline void parallel_reduce(
         nullptr) {
   using FunctorAnalysis =
       Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE, PolicyType,
-                            FunctorType>;
+                            FunctorType, void>;
   using value_type = std::conditional_t<(FunctorAnalysis::StaticValueSize != 0),
                                         typename FunctorAnalysis::value_type,
                                         typename FunctorAnalysis::pointer_type>;
@@ -1986,7 +1984,7 @@ inline void parallel_reduce(const size_t& policy, const FunctorType& functor) {
                                               FunctorType>::policy_type;
   using FunctorAnalysis =
       Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE, policy_type,
-                            FunctorType>;
+                            FunctorType, void>;
   using value_type = std::conditional_t<(FunctorAnalysis::StaticValueSize != 0),
                                         typename FunctorAnalysis::value_type,
                                         typename FunctorAnalysis::pointer_type>;
@@ -2013,7 +2011,7 @@ inline void parallel_reduce(const std::string& label, const size_t& policy,
                                               FunctorType>::policy_type;
   using FunctorAnalysis =
       Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE, policy_type,
-                            FunctorType>;
+                            FunctorType, void>;
   using value_type = std::conditional_t<(FunctorAnalysis::StaticValueSize != 0),
                                         typename FunctorAnalysis::value_type,
                                         typename FunctorAnalysis::pointer_type>;

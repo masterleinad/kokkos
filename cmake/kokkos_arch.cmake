@@ -120,18 +120,13 @@ KOKKOS_ARCH_OPTION(INTEL_PVC       GPU  "Intel GPU Ponte Vecchio"               
 
 IF(KOKKOS_ENABLE_COMPILER_WARNINGS)
   SET(COMMON_WARNINGS
-    "-Wall" "-Wunused-parameter" "-Wshadow" "-pedantic"
+    "-Wall" "-Wextra" "-Wunused-parameter" "-Wshadow" "-pedantic"
     "-Wsign-compare" "-Wtype-limits" "-Wuninitialized")
 
   # NOTE KOKKOS_ prefixed variable (all uppercase) is not set yet because TPLs are processed after ARCH
   IF(Kokkos_ENABLE_LIBQUADMATH)
     # warning: non-standard suffix on floating constant [-Wpedantic]
     LIST(REMOVE_ITEM COMMON_WARNINGS "-pedantic")
-  ENDIF()
-
-  # OpenMPTarget compilers give erroneous warnings about sign comparison in loops
-  IF(KOKKOS_ENABLE_OPENMPTARGET)
-    LIST(REMOVE_ITEM COMMON_WARNINGS "-Wsign-compare")
   ENDIF()
 
   # NVHPC compiler does not support -Wtype-limits.
@@ -167,11 +162,9 @@ ENDIF()
 #clear anything that might be in the cache
 GLOBAL_SET(KOKKOS_CUDA_OPTIONS)
 # Construct the Makefile options
-IF (KOKKOS_ENABLE_CUDA_LAMBDA)
-  IF(KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA)
-    GLOBAL_APPEND(KOKKOS_CUDA_OPTIONS "-expt-extended-lambda")
-    GLOBAL_APPEND(KOKKOS_CUDA_OPTIONS "-Wext-lambda-captures-this")
-  ENDIF()
+IF(KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA)
+  GLOBAL_APPEND(KOKKOS_CUDA_OPTIONS "-extended-lambda")
+  GLOBAL_APPEND(KOKKOS_CUDA_OPTIONS "-Wext-lambda-captures-this")
 ENDIF()
 
 IF (KOKKOS_ENABLE_CUDA_CONSTEXPR)
@@ -689,11 +682,17 @@ ENDIF()
 IF (KOKKOS_ENABLE_OPENMPTARGET)
   SET(CLANG_CUDA_ARCH ${KOKKOS_CUDA_ARCH_FLAG})
   IF (CLANG_CUDA_ARCH)
-    STRING(REPLACE "sm_" "cc" NVHPC_CUDA_ARCH ${CLANG_CUDA_ARCH})
-    COMPILER_SPECIFIC_FLAGS(
-      Clang -Xopenmp-target -march=${CLANG_CUDA_ARCH} -fopenmp-targets=nvptx64
-      NVHPC -gpu=${NVHPC_CUDA_ARCH}
-    )
+    IF(KOKKOS_CLANG_IS_CRAY)
+      COMPILER_SPECIFIC_FLAGS(
+        Cray -fopenmp
+      )
+    ELSE()
+      STRING(REPLACE "sm_" "cc" NVHPC_CUDA_ARCH ${CLANG_CUDA_ARCH})
+      COMPILER_SPECIFIC_FLAGS(
+        Clang -Xopenmp-target -march=${CLANG_CUDA_ARCH} -fopenmp-targets=nvptx64
+        NVHPC -gpu=${NVHPC_CUDA_ARCH}
+      )
+    ENDIF()
   ENDIF()
   SET(CLANG_AMDGPU_ARCH ${KOKKOS_AMDGPU_ARCH_FLAG})
   IF (CLANG_AMDGPU_ARCH)

@@ -75,7 +75,14 @@ void SYCLInternal::initialize(const sycl::device& d) {
       Kokkos::Impl::throw_runtime_exception(
           "There was an asynchronous SYCL error!\n");
   };
+  // FIXME SYCL+Cuda Apparently, submit_barrier doesn't quite work as expected
+  // for oneAPI 2023.0.0 on NVIDIA GPUs.
+#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
+  initialize(
+      sycl::queue{d, exception_handler, sycl::property::queue::in_order()});
+#else
   initialize(sycl::queue{d, exception_handler});
+#endif
 }
 
 // FIXME_SYCL
@@ -273,11 +280,9 @@ sycl::device_ptr<void> SYCLInternal::scratch_flags(const std::size_t size) {
 
     m_scratchFlags = reinterpret_cast<size_type*>(r->data());
   }
-  m_queue->memset(m_scratchFlags, 0, m_scratchFlagsCount * sizeScratchGrain);
-  fence(*m_queue,
-        "Kokkos::Experimental::SYCLInternal::scratch_flags fence after "
-        "initializing m_scratchFlags",
-        m_instance_id);
+  auto memset_event = m_queue->memset(m_scratchFlags, 0,
+                                      m_scratchFlagsCount * sizeScratchGrain);
+  m_queue->ext_oneapi_submit_barrier(std::vector{memset_event});
 
   return m_scratchFlags;
 }

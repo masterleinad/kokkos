@@ -14,24 +14,16 @@
 //
 //@HEADER
 
-#include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_OPENMP
+#ifndef KOKKOS_ZEROMEMSET_FWD_HPP
+#define KOKKOS_ZEROMEMSET_FWD_HPP
 
-#include <gtest/gtest.h>
-#include <Kokkos_Core.hpp>
+namespace Kokkos {
+namespace Impl {
 
-//----------------------------------------------------------------------------
-#include <TestRandom.hpp>
-#include <TestSort.hpp>
-#include <iomanip>
+template <typename ExecutionSpace, class ViewType>
+struct ZeroMemset;
 
-namespace Test {
+}  // namespace Impl
+}  // namespace Kokkos
 
-TEST(openmp, SortUnsignedDynamicView) {
-  Impl::test_dynamic_view_sort<Kokkos::OpenMP, unsigned>(171);
-}
-
-}  // namespace Test
-#else
-void KOKKOS_ALGORITHMS_UNITTESTS_TESTOPENMP_PREVENT_LINK_ERROR() {}
-#endif
+#endif  // #ifndef KOKKOS_ZEROMEMSET_FWD_HPP
