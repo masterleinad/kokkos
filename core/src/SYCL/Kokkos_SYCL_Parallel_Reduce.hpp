@@ -437,14 +437,18 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
         if (max > 512) max = 512;
 #endif
 
-        const size_t wgroup_size = std::min(Kokkos::bit_ceil(size),
-            static_cast<size_t>(max / multiple) * multiple);
+        auto max_compute_units = q.get_device().get_info<sycl::info::device::max_compute_units>();
 
-        // FIXME_SYCL This gives similar choices to what the compiler does for
-        // sycl::reductions by limiting the number of workgroups to the
-        // workgroup size
-        const int values_per_thread = (size + 2*(wgroup_size * wgroup_size)/1 - 1) /
-                                      (2*(wgroup_size * wgroup_size)/1);
+        const size_t wgroup_size = std::min(Kokkos::bit_ceil(size), static_cast<size_t>(max / multiple) * multiple);
+      
+	int values_per_thread = 1;
+        int n_wgroups= (size+wgroup_size-1)/wgroup_size;
+	while (n_wgroups > 2*max_compute_units) {
+	  values_per_thread*=2;
+	  n_wgroups =  ((size + values_per_thread - 1) / values_per_thread +
+                          wgroup_size - 1) /
+                         wgroup_size;
+	} 
 
         //std::cout << "values_per_threads: " << values_per_thread << std::endl;
 
@@ -456,12 +460,7 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
             static_cast<sycl::device_ptr<value_type>>(instance.scratch_space(
                 sizeof(value_type) * std::max(value_count, 1u) * init_size));
 
-        auto n_wgroups = ((size + values_per_thread - 1) / values_per_thread +
-                          wgroup_size - 1) /
-                         wgroup_size;
-
-	auto max_compute_units = q.get_device().get_info<sycl::info::device::max_compute_units>();
-        std::cout << "n_wgroups: " << n_wgroups << " " << max_compute_units << std::endl;
+        std::cout << "n_wgroups: " << n_wgroups << " " << values_per_thread << std::endl;
 
         sycl::local_accessor<value_type> local_mem(
             sycl::range<1>(wgroup_size) * std::max(value_count, 1u), cgh);
