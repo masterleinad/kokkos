@@ -33,7 +33,7 @@ namespace Impl {
 
 template <class ReducerType>
 inline constexpr bool use_shuffle_based_algorithm =
-   std::is_reference_v<typename ReducerType::reference_type>;
+   !std::is_reference_v<typename ReducerType::reference_type>;
 
 namespace SYCLReduction {
 template <typename ValueType, typename ReducerType, int dim>
@@ -239,8 +239,8 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
     sycl::queue& q = space.sycl_queue();
 
     std::size_t size = policy.end() - policy.begin();
-    const unsigned int value_count =
-        m_functor_reducer.get_reducer().value_count();
+    const unsigned int value_count = std::max(
+        m_functor_reducer.get_reducer().value_count(), 1u);
     sycl::device_ptr<value_type> results_ptr = nullptr;
     sycl::global_ptr<value_type> device_accessible_result_ptr =
         m_result_ptr_device_accessible ? m_result_ptr : nullptr;
@@ -253,7 +253,7 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
     if (size <= 1) {
       results_ptr =
           static_cast<sycl::device_ptr<value_type>>(instance.scratch_space(
-              sizeof(value_type) * std::max(value_count, 1u)));
+              sizeof(value_type) * value_count));
 
       auto parallel_reduce_event = q.submit([&](sycl::handler& cgh) {
         const auto begin = policy.begin();
@@ -432,25 +432,20 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
         auto max =
             q.get_device().get_info<sycl::info::device::max_work_group_size>();
 
-// FIXME_SYCL 1024 seems to be invalid when running on a Volta70.
-#ifndef KOKKOS_ARCH_INTEL_GPU
-        if (max > 512) max = 512;
-#endif
+	auto max_local_memory = q.get_device().get_info<sycl::info::device::local_mem_size>();
+        const auto wgroup_size = std::min({Kokkos::bit_ceil(size), static_cast<size_t>(max / multiple) * multiple, Kokkos::bit_floor(max_local_memory/value_count)});
 
-        auto max_compute_units = q.get_device().get_info<sycl::info::device::max_compute_units>();
-
-        const size_t wgroup_size = std::min(Kokkos::bit_ceil(size), static_cast<size_t>(max / multiple) * multiple);
-      
+	// FIXME_SYCL Find a better way to determine a good limit for the maximum number of work groups, also see 
+	// https://github.com/intel/llvm/blob/756ba2616111235bba073e481b7f1c8004b34ee6/sycl/source/detail/reduction.cpp#L51-L62
+        auto max_work_groups = 2*q.get_device().get_info<sycl::info::device::max_compute_units>();
 	int values_per_thread = 1;
         int n_wgroups= (size+wgroup_size-1)/wgroup_size;
-	while (n_wgroups > 2*max_compute_units) {
+	while (n_wgroups > max_work_groups) {
 	  values_per_thread*=2;
 	  n_wgroups =  ((size + values_per_thread - 1) / values_per_thread +
                           wgroup_size - 1) /
                          wgroup_size;
 	} 
-
-        //std::cout << "values_per_threads: " << values_per_thread << std::endl;
 
         const std::size_t init_size =
             ((size + values_per_thread - 1) / values_per_thread + wgroup_size -
@@ -458,12 +453,10 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
             wgroup_size;
         results_ptr =
             static_cast<sycl::device_ptr<value_type>>(instance.scratch_space(
-                sizeof(value_type) * std::max(value_count, 1u) * init_size));
-
-        std::cout << "n_wgroups: " << n_wgroups << " " << values_per_thread << std::endl;
+                sizeof(value_type) * value_count * init_size));
 
         sycl::local_accessor<value_type> local_mem(
-            sycl::range<1>(wgroup_size) * std::max(value_count, 1u), cgh);
+            sycl::range<1>(wgroup_size) * value_count, cgh);
 
         cgh.depends_on(memcpy_event);
 
@@ -599,11 +592,11 @@ class ParallelReduce<CombinedFunctorReducerType,
     size_t size              = range.get_global_range().size();
     const auto init_size =
         std::max<std::size_t>((size + wgroup_size - 1) / wgroup_size, 1);
-    const unsigned int value_count =
-        m_functor_reducer.get_reducer().value_count();
+    const unsigned int value_count = std::max(
+        m_functor_reducer.get_reducer().value_count(), 1);
     const auto results_ptr =
         static_cast<sycl::device_ptr<value_type>>(instance.scratch_space(
-            sizeof(value_type) * std::max(value_count, 1u) * init_size));
+            sizeof(value_type) * value_count * init_size));
     sycl::global_ptr<value_type> device_accessible_result_ptr =
         m_result_ptr_device_accessible ? m_result_ptr : nullptr;
     auto scratch_flags = static_cast<sycl::device_ptr<unsigned int>>(
@@ -649,7 +642,7 @@ class ParallelReduce<CombinedFunctorReducerType,
       auto n_wgroups             = (size + wgroup_size - 1) / wgroup_size;
       auto parallel_reduce_event = q.submit([&](sycl::handler& cgh) {
         sycl::local_accessor<value_type> local_mem(
-            sycl::range<1>(wgroup_size) * std::max(value_count, 1u), cgh);
+            sycl::range<1>(wgroup_size) * value_count, cgh);
         sycl::local_accessor<unsigned int> num_teams_done(1, cgh);
 
         const BarePolicy bare_policy = m_policy;
