@@ -61,6 +61,7 @@ std::enable_if_t<!use_shuffle_based_algorithm<ReducerType>> workgroup_reduction(
   for (unsigned int stride = 1; stride < local_range; stride <<= 1) {
     if (stride < upper_stride_bound)
       final_reducer.join(result, &local_mem[(local_id + stride) * value_count]);
+    //item.barrier(sycl::access::fence_space::local_space);
     sycl::group_barrier(sg);
   }
   // -0.3 ms
@@ -442,8 +443,8 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
         // FIXME_SYCL This gives similar choices to what the compiler does for
         // sycl::reductions by limiting the number of workgroups to the
         // workgroup size
-        const int values_per_thread = (size + wgroup_size * wgroup_size - 1) /
-                                      (wgroup_size * wgroup_size);
+        const int values_per_thread = (size + (wgroup_size * wgroup_size)/2 - 1) /
+                                      ((wgroup_size * wgroup_size)/2);
 
         //std::cout << "values_per_threads: " << values_per_thread << std::endl;
 
