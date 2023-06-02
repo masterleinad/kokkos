@@ -33,7 +33,7 @@ namespace Impl {
 
 template <class ReducerType>
 inline constexpr bool use_shuffle_based_algorithm =
-   !std::is_reference_v<typename ReducerType::reference_type>;
+   std::is_reference_v<typename ReducerType::reference_type>;
 
 namespace SYCLReduction {
 template <typename ValueType, typename ReducerType, int dim>
@@ -443,8 +443,8 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
         // FIXME_SYCL This gives similar choices to what the compiler does for
         // sycl::reductions by limiting the number of workgroups to the
         // workgroup size
-        const int values_per_thread = (size + (wgroup_size * wgroup_size)/2 - 1) /
-                                      ((wgroup_size * wgroup_size)/2);
+        const int values_per_thread = (size + 2*(wgroup_size * wgroup_size)/1 - 1) /
+                                      (2*(wgroup_size * wgroup_size)/1);
 
         //std::cout << "values_per_threads: " << values_per_thread << std::endl;
 
@@ -459,6 +459,9 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
         auto n_wgroups = ((size + values_per_thread - 1) / values_per_thread +
                           wgroup_size - 1) /
                          wgroup_size;
+
+	auto max_compute_units = q.get_device().get_info<sycl::info::device::max_compute_units>();
+        std::cout << "n_wgroups: " << n_wgroups << " " << max_compute_units << std::endl;
 
         sycl::local_accessor<value_type> local_mem(
             sycl::range<1>(wgroup_size) * std::max(value_count, 1u), cgh);
