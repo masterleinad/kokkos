@@ -21,11 +21,15 @@
 
 #include <Kokkos_SIMD_Scalar.hpp>
 
-#ifdef KOKKOS_ARCH_AVX2
+#if defined(KOKKOS_ARCH_AVX2) || \
+    (defined(KOKKOS_ENABLE_IMPL_SIMD_NATIVE) && defined(__AVX2__))
 #include <Kokkos_SIMD_AVX2.hpp>
 #endif
 
-#ifdef KOKKOS_ARCH_AVX512XEON
+// FIXME_NVHPC nvc++ doesn't seem to support AVX512.
+#if !defined(KOKKOS_COMPILER_NVHPC) &&  \
+    (defined(KOKKOS_ARCH_AVX512XEON) || \
+     (defined(KOKKOS_ENABLE_IMPL_SIMD_NATIVE) && defined(__AVX512F__)))
 #include <Kokkos_SIMD_AVX512.hpp>
 #endif
 
@@ -40,9 +44,13 @@ namespace simd_abi {
 
 namespace Impl {
 
-#if defined(KOKKOS_ARCH_AVX512XEON)
+// FIXME_NVHPC nvc++ doesn't seem to support AVX512.
+#if !defined(KOKKOS_COMPILER_NVHPC) &&  \
+    (defined(KOKKOS_ARCH_AVX512XEON) || \
+     (defined(KOKKOS_ENABLE_IMPL_SIMD_NATIVE) && defined(__AVX512F__)))
 using host_native = avx512_fixed_size<8>;
-#elif defined(KOKKOS_ARCH_AVX2)
+#elif defined(KOKKOS_ARCH_AVX2) || \
+    (defined(KOKKOS_ENABLE_IMPL_SIMD_NATIVE) && defined(__AVX2__))
 using host_native  = avx2_fixed_size<4>;
 #elif defined(__ARM_NEON)
 using host_native  = neon_fixed_size<2>;
@@ -139,11 +147,15 @@ class abi_set {};
 template <typename... Ts>
 class data_types {};
 
-#if defined(KOKKOS_ARCH_AVX512XEON)
+// FIXME_NVHPC nvc++ doesn't seem to support AVX512.
+#if !defined(KOKKOS_COMPILER_NVHPC) &&  \
+    (defined(KOKKOS_ARCH_AVX512XEON) || \
+     (defined(KOKKOS_ENABLE_IMPL_SIMD_NATIVE) && defined(__AVX512F__)))
 using host_abi_set  = abi_set<simd_abi::scalar, simd_abi::avx512_fixed_size<8>>;
 using data_type_set = data_types<std::int32_t, std::uint32_t, std::int64_t,
                                  std::uint64_t, double>;
-#elif defined(KOKKOS_ARCH_AVX2)
+#elif defined(KOKKOS_ARCH_AVX2) || \
+    (defined(KOKKOS_ENABLE_IMPL_SIMD_NATIVE) && defined(__AVX2__))
 using host_abi_set = abi_set<simd_abi::scalar, simd_abi::avx2_fixed_size<4>>;
 using data_type_set =
     data_types<std::int32_t, std::int64_t, std::uint64_t, double>;

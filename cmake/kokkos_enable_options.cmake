@@ -66,6 +66,7 @@ KOKKOS_ENABLE_OPTION(DEBUG_BOUNDS_CHECK   OFF "Whether to use bounds checking - 
 KOKKOS_ENABLE_OPTION(COMPILER_WARNINGS    OFF "Whether to print all compiler warnings")
 KOKKOS_ENABLE_OPTION(TUNING               OFF "Whether to create bindings for tuning tools")
 KOKKOS_ENABLE_OPTION(AGGRESSIVE_VECTORIZATION OFF "Whether to aggressively vectorize loops")
+KOKKOS_ENABLE_OPTION(IMPL_SIMD_NATIVE     OFF "Whether to allow detecting SIMD types based on compiler macros")
 KOKKOS_ENABLE_OPTION(COMPILE_AS_CMAKE_LANGUAGE OFF "Whether to use native cmake language support")
 KOKKOS_ENABLE_OPTION(HIP_MULTIPLE_KERNEL_INSTANTIATIONS OFF "Whether multiple kernels are instantiated at compile time - improve performance but increase compile time")
 
