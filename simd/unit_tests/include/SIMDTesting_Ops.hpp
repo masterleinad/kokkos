@@ -119,4 +119,183 @@ class shift_left {
   }
 };
 
+class cbrt_op {
+ public:
+  template <typename T>
+  auto on_host(T const& a) const {
+#ifdef __INTEL_COMPILER
+    using abi_type = typename T::abi_type;
+    if constexpr (!std::is_same_v<abi_type,
+                                  Kokkos::Experimental::simd_abi::scalar>)
+      return Kokkos::Experimental::cbrt(a);
+#endif
+    T result(a);
+    for (std::size_t i = 0; i < result.size(); ++i) {
+      result[i] = Kokkos::cbrt(result[i]);
+    }
+    return result;
+  }
+  template <typename T>
+  auto on_host_serial(T const& a) const {
+    return Kokkos::cbrt(a);
+  }
+};
+
+class exp_op {
+ public:
+  template <typename T>
+  auto on_host(T const& a) const {
+#ifdef __INTEL_COMPILER
+    using abi_type = typename T::abi_type;
+    if constexpr (!std::is_same_v<abi_type,
+                                  Kokkos::Experimental::simd_abi::scalar>)
+      return Kokkos::Experimental::exp(a);
+#endif
+    T result(a);
+    for (std::size_t i = 0; i < result.size(); ++i) {
+      result[i] = Kokkos::exp(result[i]);
+    }
+    return result;
+  }
+  template <typename T>
+  auto on_host_serial(T const& a) const {
+    return Kokkos::exp(a);
+  }
+};
+
+class log_op {
+ public:
+  template <typename T>
+  auto on_host(T const& a) const {
+#ifdef __INTEL_COMPILER
+    using abi_type = typename T::abi_type;
+    if constexpr (!std::is_same_v<abi_type,
+                                  Kokkos::Experimental::simd_abi::scalar>)
+      return Kokkos::Experimental::log(a);
+#endif
+    T result(a);
+    for (std::size_t i = 0; i < result.size(); ++i) {
+      result[i] = Kokkos::log(result[i]);
+    }
+    return result;
+  }
+  template <typename T>
+  auto on_host_serial(T const& a) const {
+    return Kokkos::log(a);
+  }
+};
+
+class hmin {
+ public:
+  template <typename T>
+  auto on_host(T const& a) const {
+    return Kokkos::Experimental::hmin(a);
+  }
+  template <typename T>
+  auto on_host_serial(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+
+    auto const& v = a.impl_get_value();
+    auto const& m = a.impl_get_mask();
+    auto result   = Kokkos::reduction_identity<DataType>::min();
+    for (std::size_t i = 0; i < v.size(); ++i) {
+      if (m[i]) result = Kokkos::min(result, v[i]);
+    }
+    return result;
+  }
+
+  template <typename T>
+  KOKKOS_INLINE_FUNCTION auto on_device(T const& a) const {
+    return Kokkos::Experimental::hmin(a);
+  }
+  template <typename T>
+  KOKKOS_INLINE_FUNCTION auto on_device_serial(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+
+    auto const& v = a.impl_get_value();
+    auto const& m = a.impl_get_mask();
+    auto result   = Kokkos::reduction_identity<DataType>::min();
+    for (std::size_t i = 0; i < v.size(); ++i) {
+      if (m[i]) result = Kokkos::min(result, v[i]);
+    }
+    return result;
+  }
+};
+
+class hmax {
+ public:
+  template <typename T>
+  auto on_host(T const& a) const {
+    return Kokkos::Experimental::hmax(a);
+  }
+  template <typename T>
+  auto on_host_serial(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+
+    auto const& v = a.impl_get_value();
+    auto const& m = a.impl_get_mask();
+    auto result   = Kokkos::reduction_identity<DataType>::max();
+    for (std::size_t i = 0; i < v.size(); ++i) {
+      if (m[i]) result = Kokkos::max(result, v[i]);
+    }
+    return result;
+  }
+
+  template <typename T>
+  KOKKOS_INLINE_FUNCTION auto on_device(T const& a) const {
+    return Kokkos::Experimental::hmax(a);
+  }
+  template <typename T>
+  KOKKOS_INLINE_FUNCTION auto on_device_serial(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+
+    auto const& v = a.impl_get_value();
+    auto const& m = a.impl_get_mask();
+    auto result   = Kokkos::reduction_identity<DataType>::max();
+    for (std::size_t i = 0; i < v.size(); ++i) {
+      if (m[i]) result = Kokkos::max(result, v[i]);
+    }
+    return result;
+  }
+};
+
+class reduce {
+ public:
+  template <typename T>
+  auto on_host(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+    return Kokkos::Experimental::reduce(a, DataType(0), std::plus<>());
+  }
+  template <typename T>
+  auto on_host_serial(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+
+    auto const& v = a.impl_get_value();
+    auto const& m = a.impl_get_mask();
+    auto result   = Kokkos::reduction_identity<DataType>::sum();
+    for (std::size_t i = 0; i < v.size(); ++i) {
+      if (m[i]) result += v[i];
+    }
+    return result;
+  }
+
+  template <typename T>
+  KOKKOS_INLINE_FUNCTION auto on_device(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+    return Kokkos::Experimental::reduce(a, DataType(0), std::plus<>());
+  }
+  template <typename T>
+  KOKKOS_INLINE_FUNCTION auto on_device_serial(T const& a) const {
+    using DataType = typename T::value_type::value_type;
+
+    auto const& v = a.impl_get_value();
+    auto const& m = a.impl_get_mask();
+    auto result   = Kokkos::reduction_identity<DataType>::sum();
+    for (std::size_t i = 0; i < v.size(); ++i) {
+      if (m[i]) result += v[i];
+    }
+    return result;
+  }
+};
+
 #endif
