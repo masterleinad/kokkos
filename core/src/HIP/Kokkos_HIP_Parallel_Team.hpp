@@ -768,8 +768,7 @@ class ParallelReduce<CombinedFunctorReducerType,
       reducer.final(&value);
       *result = value;
     } else if (Impl::hip_inter_block_shuffle_reduction(
-                   value, init, reducer,
-                   reinterpret_cast<size_type*>(m_scratch_space), result,
+                   value, init, reducer, m_scratch_space, result,
                    m_scratch_flags, blockDim.y)) {
       unsigned int const id = threadIdx.y * blockDim.x + threadIdx.x;
       if (id == 0) {
