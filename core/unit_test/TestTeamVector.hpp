@@ -607,7 +607,7 @@ struct functor_vec_scan {
 
 // Temporary: This condition will progressively be reduced when parallel_scan
 // with return value will be implemented for more backends.
-#if !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_OPENACC) &&  \
+#if !defined(KOKKOS_ENABLE_OPENACC) &&  \
     !defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ENABLE_THREADS) && \
     !defined(KOKKOS_ENABLE_OPENMPTARGET) && !defined(KOKKOS_ENABLE_HPX)
 template <typename Scalar, class ExecutionSpace>
@@ -736,7 +736,7 @@ bool test_scalar(int nteams, int team_size, int test) {
   } else if (test == 12) {
 // Temporary: This condition will progressively be reduced when parallel_scan
 // with return value will be implemented for more backends.
-#if !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_OPENACC) &&  \
+#if !defined(KOKKOS_ENABLE_OPENACC) &&  \
     !defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ENABLE_THREADS) && \
     !defined(KOKKOS_ENABLE_OPENMPTARGET) && !defined(KOKKOS_ENABLE_HPX)
     Kokkos::parallel_for(
