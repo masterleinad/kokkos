@@ -23,6 +23,37 @@
 #include <std_algorithms/Kokkos_Distance.hpp>
 #include <string>
 
+#define KOKKOS_DO_PRAGMA(x) _Pragma(#x)
+#if defined __NVCC__
+    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+      #define KOKKOS_NVCC_DIAG_PRAGMA_PUSH \
+        KOKKOS_DO_PRAGMA(nv_diagnostic push) 
+      #define KOKKOS_NVCC_DIAG_PRAGMA_SUPPRESS(WARNING) \
+        KOKKOS_DO_PRAGMA(nv_diag_suppress = WARNING)
+      #define KOKKOS_NVCC_DIAG_PRAGMA_POP \
+        KOKKOS_DO_PRAGMA(nv_diagnostic pop)
+    #elif defined __CUDA_ARCH__
+      #define KOKKOS_NVCC_DIAG_PRAGMA_PUSH \
+        KOKKOS_DO_PRAGMA(diagnostic push)
+	      #define KOKKOS_NVCC_DIAG_PRAGMA_SUPPRESS(WARNING) \
+        KOKKOS_DO_PRAGMA(diag_suppress WARNING)
+      #define KOKKOS_NVCC_DIAG_PRAGMA_POP \
+        KOKKOS_DO_PRAGMA(diagnostic pop)
+    #endif
+#elif defined __NVCOMPILER
+  #define KOKKOS_NVCC_DIAG_PRAGMA_PUSH \
+    KOKKOS_DO_PRAGMA(diagnostic push)
+	  #define KOKKOS_NVCC_DIAG_PRAGMA_SUPPRESS(WARNING) \
+    KOKKOS_DO_PRAGMA(diag_suppress = WARNING)
+      #define KOKKOS_NVCC_DIAG_PRAGMA_POP \
+        KOKKOS_DO_PRAGMA(diagnostic pop)
+#else
+	  #define KOKKOS_NVCC_DIAG_PUSH
+          #define KOKKOS_NVCC_DIAG_PRAGMA_PUSH_AND_SUPPRESS(WARNING)
+      #define KOKKOS_NVCC_DIAG_PRAGMA_POP
+#endif
+
+
 namespace Kokkos {
 namespace Experimental {
 namespace Impl {
@@ -41,6 +72,10 @@ struct StdForEachFunctor {
       : m_first(std::move(_first)), m_functor(std::move(_functor)) {}
 };
 
+KOKKOS_NVCC_DIAG_PRAGMA_PUSH
+KOKKOS_NVCC_DIAG_PRAGMA_SUPPRESS(20011)
+KOKKOS_NVCC_DIAG_PRAGMA_SUPPRESS(20014)
+
 template <class HandleType, class IteratorType, class UnaryFunctorType>
 KOKKOS_FUNCTION UnaryFunctorType
 for_each_impl([[maybe_unused]] const char* label, const HandleType& handle,
@@ -52,11 +87,11 @@ for_each_impl([[maybe_unused]] const char* label, const HandleType& handle,
   // run
   const auto num_elements = Kokkos::Experimental::distance(first, last);
   if constexpr (is_execution_space_v<HandleType>) {
-	  KOKKOS_IF_ON_HOST((
+    KOKKOS_IF_ON_DEVICE((Kokkos::abort("error");))
     ::Kokkos::parallel_for(
         label, RangePolicy<HandleType>(handle, 0, num_elements),
         StdForEachFunctor<IteratorType, UnaryFunctorType>(first, functor));
-    handle.fence("Kokkos::for_each: fence after operation");))
+    handle.fence("Kokkos::for_each: fence after operation");
   } else {
     ::Kokkos::parallel_for(
         TeamThreadRange(handle, 0, num_elements),
@@ -66,6 +101,8 @@ for_each_impl([[maybe_unused]] const char* label, const HandleType& handle,
 
   return functor;
 }
+
+KOKKOS_NVCC_DIAG_PRAGMA_POP 
 
 template <class ExecutionSpace, class IteratorType, class SizeType,
           class UnaryFunctorType>
@@ -128,5 +165,10 @@ for_each_n_team_impl(const TeamHandleType& teamHandle, IteratorType first,
 }  // namespace Impl
 }  // namespace Experimental
 }  // namespace Kokkos
+
+#undef KOKKOS_DO_PRAGMA
+          #undef KOKKOS_NVCC_DIAG_PRAGMA_PUSH
+          #undef KOKKOS_NVCC_DIAG_PRAGMA_SUPPRESS
+      #undef KOKKOS_NVCC_DIAG_PRAGMA_POP
 
 #endif
