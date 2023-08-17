@@ -123,7 +123,7 @@ class cbrt_op {
  public:
   template <typename T>
   auto on_host(T const& a) const {
-#ifdef __INTEL_COMPILER
+#if defined(KOKKOS_COMPILER_INTEL) && defined(KOKKOS_COMPILER_INTEL_LLVM)
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
@@ -145,7 +145,7 @@ class exp_op {
  public:
   template <typename T>
   auto on_host(T const& a) const {
-#ifdef __INTEL_COMPILER
+#if defined(KOKKOS_COMPILER_INTEL) && defined(KOKKOS_COMPILER_INTEL_LLVM)
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
@@ -167,7 +167,7 @@ class log_op {
  public:
   template <typename T>
   auto on_host(T const& a) const {
-#ifdef __INTEL_COMPILER
+#if defined(KOKKOS_COMPILER_INTEL) && defined(KOKKOS_COMPILER_INTEL_LLVM)
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
