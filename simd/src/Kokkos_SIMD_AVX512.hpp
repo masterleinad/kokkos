@@ -919,7 +919,7 @@ class simd<double, simd_abi::avx512_fixed_size<8>> {
       _mm512_sqrt_pd(static_cast<__m512d>(a)));
 }
 
-#if defined(KOKKOS_COMPILER_INTEL) && defined(KOKKOS_COMPILER_INTEL_LLVM)
+#if defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)
 
 [[nodiscard]] KOKKOS_IMPL_HOST_FORCEINLINE_FUNCTION
     simd<double, simd_abi::avx512_fixed_size<8>>

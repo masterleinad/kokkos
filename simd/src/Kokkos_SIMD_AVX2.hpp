@@ -559,7 +559,7 @@ simd<double, simd_abi::avx2_fixed_size<4>> sqrt(
       _mm256_sqrt_pd(static_cast<__m256d>(a)));
 }
 
-#if defined(KOKKOS_COMPILER_INTEL) && defined(KOKKOS_COMPILER_INTEL_LLVM)
+#if defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)
 
 KOKKOS_IMPL_HOST_FORCEINLINE_FUNCTION
 simd<double, simd_abi::avx2_fixed_size<4>> cbrt(
