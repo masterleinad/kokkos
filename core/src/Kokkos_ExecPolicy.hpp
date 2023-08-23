@@ -902,7 +902,7 @@ struct TeamThreadMDRange<Rank<N, OuterDir, InnerDir>, TeamHandle> {
 
 template <typename TeamHandle, typename... Args>
 TeamThreadMDRange(TeamHandle const&, Args&&...)
-    ->TeamThreadMDRange<Rank<sizeof...(Args), Iterate::Default>, TeamHandle>;
+    -> TeamThreadMDRange<Rank<sizeof...(Args), Iterate::Default>, TeamHandle>;
 
 template <typename Rank, typename TeamHandle>
 struct ThreadVectorMDRange;
@@ -939,7 +939,7 @@ struct ThreadVectorMDRange<Rank<N, OuterDir, InnerDir>, TeamHandle> {
 
 template <typename TeamHandle, typename... Args>
 ThreadVectorMDRange(TeamHandle const&, Args&&...)
-    ->ThreadVectorMDRange<Rank<sizeof...(Args), Iterate::Default>, TeamHandle>;
+    -> ThreadVectorMDRange<Rank<sizeof...(Args), Iterate::Default>, TeamHandle>;
 
 template <typename Rank, typename TeamHandle>
 struct TeamVectorMDRange;
@@ -976,7 +976,7 @@ struct TeamVectorMDRange<Rank<N, OuterDir, InnerDir>, TeamHandle> {
 
 template <typename TeamHandle, typename... Args>
 TeamVectorMDRange(TeamHandle const&, Args&&...)
-    ->TeamVectorMDRange<Rank<sizeof...(Args), Iterate::Default>, TeamHandle>;
+    -> TeamVectorMDRange<Rank<sizeof...(Args), Iterate::Default>, TeamHandle>;
 
 template <typename Rank, typename TeamHandle, typename Lambda,
           typename ReducerValueType>

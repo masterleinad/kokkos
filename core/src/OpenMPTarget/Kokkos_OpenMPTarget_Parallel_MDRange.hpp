@@ -469,15 +469,12 @@ class ParallelReduce<CombinedFunctorReducerType,
     // FIXME_OPENMPTARGET: Unable to separate directives and their companion
     // loops which leads to code duplication for different reduction types.
     if constexpr (UseReducer) {
-#pragma omp declare reduction(                                         \
-    custom:ValueType                                                   \
-    : OpenMPTargetReducerWrapper <ReducerType>::join(omp_out, omp_in)) \
-    initializer(OpenMPTargetReducerWrapper <ReducerType>::init(omp_priv))
+#pragma omp declare reduction(custom                                         \
+:ValueType : OpenMPTargetReducerWrapper<ReducerType>::join(omp_out, omp_in)) \
+    initializer(OpenMPTargetReducerWrapper<ReducerType>::init(omp_priv))
 
-#pragma omp target teams distribute parallel for collapse(2) map(to         \
-                                                                 : functor) \
-    reduction(custom                                                        \
-              : result)
+#pragma omp target teams distribute parallel for collapse(2) map(to : functor) \
+    reduction(custom : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           if constexpr (std::is_void<typename Policy::work_tag>::value)
@@ -488,7 +485,7 @@ class ParallelReduce<CombinedFunctorReducerType,
       }
     } else {
 #pragma omp target teams distribute parallel for collapse(2) map(to : functor) \
-reduction(+:result)
+    reduction(+ : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           if constexpr (std::is_void<typename Policy::work_tag>::value)
@@ -520,18 +517,15 @@ reduction(+:result)
     // FIXME_OPENMPTARGET: Unable to separate directives and their companion
     // loops which leads to code duplication for different reduction types.
     if constexpr (UseReducer) {
-#pragma omp declare reduction(                                                 \
-    custom:ValueType                                                           \
-    : OpenMPTargetReducerWrapper <typename ReducerType::functor_type>::join(   \
-        omp_out, omp_in))                                                      \
-    initializer(                                                               \
-        OpenMPTargetReducerWrapper <typename ReducerType::functor_type>::init( \
-            omp_priv))
+#pragma omp declare reduction(                                       \
+        custom                                                       \
+:ValueType : OpenMPTargetReducerWrapper<                             \
+         typename ReducerType::functor_type>::join(omp_out, omp_in)) \
+    initializer(OpenMPTargetReducerWrapper<                          \
+                    typename ReducerType::functor_type>::init(omp_priv))
 
-#pragma omp target teams distribute parallel for collapse(3) map(to         \
-                                                                 : functor) \
-    reduction(custom                                                        \
-              : result)
+#pragma omp target teams distribute parallel for collapse(3) map(to : functor) \
+    reduction(custom : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {
@@ -544,7 +538,7 @@ reduction(+:result)
       }
     } else {
 #pragma omp target teams distribute parallel for collapse(3) map(to : functor) \
-reduction(+:result)
+    reduction(+ : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {
@@ -580,15 +574,12 @@ reduction(+:result)
     // FIXME_OPENMPTARGET: Unable to separate directives and their companion
     // loops which leads to code duplication for different reduction types.
     if constexpr (UseReducer) {
-#pragma omp declare reduction(                                         \
-    custom:ValueType                                                   \
-    : OpenMPTargetReducerWrapper <ReducerType>::join(omp_out, omp_in)) \
-    initializer(OpenMPTargetReducerWrapper <ReducerType>::init(omp_priv))
+#pragma omp declare reduction(custom                                         \
+:ValueType : OpenMPTargetReducerWrapper<ReducerType>::join(omp_out, omp_in)) \
+    initializer(OpenMPTargetReducerWrapper<ReducerType>::init(omp_priv))
 
-#pragma omp target teams distribute parallel for collapse(4) map(to         \
-                                                                 : functor) \
-    reduction(custom                                                        \
-              : result)
+#pragma omp target teams distribute parallel for collapse(4) map(to : functor) \
+    reduction(custom : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {
@@ -604,7 +595,7 @@ reduction(+:result)
       }
     } else {
 #pragma omp target teams distribute parallel for collapse(4) map(to : functor) \
-reduction(+:result)
+    reduction(+ : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {
@@ -645,15 +636,12 @@ reduction(+:result)
     // FIXME_OPENMPTARGET: Unable to separate directives and their companion
     // loops which leads to code duplication for different reduction types.
     if constexpr (UseReducer) {
-#pragma omp declare reduction(                                         \
-    custom:ValueType                                                   \
-    : OpenMPTargetReducerWrapper <ReducerType>::join(omp_out, omp_in)) \
-    initializer(OpenMPTargetReducerWrapper <ReducerType>::init(omp_priv))
+#pragma omp declare reduction(custom                                         \
+:ValueType : OpenMPTargetReducerWrapper<ReducerType>::join(omp_out, omp_in)) \
+    initializer(OpenMPTargetReducerWrapper<ReducerType>::init(omp_priv))
 
-#pragma omp target teams distribute parallel for collapse(5) map(to         \
-                                                                 : functor) \
-    reduction(custom                                                        \
-              : result)
+#pragma omp target teams distribute parallel for collapse(5) map(to : functor) \
+    reduction(custom : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {
@@ -672,7 +660,7 @@ reduction(+:result)
       }
     } else {
 #pragma omp target teams distribute parallel for collapse(5) map(to : functor) \
-reduction(+:result)
+    reduction(+ : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {
@@ -718,15 +706,12 @@ reduction(+:result)
     // FIXME_OPENMPTARGET: Unable to separate directives and their companion
     // loops which leads to code duplication for different reduction types.
     if constexpr (UseReducer) {
-#pragma omp declare reduction(                                         \
-    custom:ValueType                                                   \
-    : OpenMPTargetReducerWrapper <ReducerType>::join(omp_out, omp_in)) \
-    initializer(OpenMPTargetReducerWrapper <ReducerType>::init(omp_priv))
+#pragma omp declare reduction(custom                                         \
+:ValueType : OpenMPTargetReducerWrapper<ReducerType>::join(omp_out, omp_in)) \
+    initializer(OpenMPTargetReducerWrapper<ReducerType>::init(omp_priv))
 
-#pragma omp target teams distribute parallel for collapse(6) map(to         \
-                                                                 : functor) \
-    reduction(custom                                                        \
-              : result)
+#pragma omp target teams distribute parallel for collapse(6) map(to : functor) \
+    reduction(custom : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {
@@ -747,7 +732,7 @@ reduction(+:result)
       }
     } else {
 #pragma omp target teams distribute parallel for collapse(6) map(to : functor) \
-reduction(+:result)
+    reduction(+ : result)
       for (auto i0 = begin_0; i0 < end_0; ++i0) {
         for (auto i1 = begin_1; i1 < end_1; ++i1) {
           for (auto i2 = begin_2; i2 < end_2; ++i2) {

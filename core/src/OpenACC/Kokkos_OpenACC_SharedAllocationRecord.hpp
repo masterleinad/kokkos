@@ -37,7 +37,7 @@ class Kokkos::Impl::SharedAllocationRecord<Kokkos::Experimental::OpenACCSpace,
       Kokkos::Experimental::OpenACCSpace>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
   /**\brief  Root record for tracked allocations from this OpenACCSpace

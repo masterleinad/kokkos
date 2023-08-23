@@ -125,10 +125,10 @@ class MasterLock<OpenMP> {
   KOKKOS_DEPRECATED MasterLock() { omp_init_lock(&m_lock); }
   ~MasterLock() { omp_destroy_lock(&m_lock); }
 
-  MasterLock(MasterLock const&) = delete;
-  MasterLock(MasterLock&&)      = delete;
+  MasterLock(MasterLock const&)            = delete;
+  MasterLock(MasterLock&&)                 = delete;
   MasterLock& operator=(MasterLock const&) = delete;
-  MasterLock& operator=(MasterLock&&) = delete;
+  MasterLock& operator=(MasterLock&&)      = delete;
 
  private:
   omp_lock_t m_lock;

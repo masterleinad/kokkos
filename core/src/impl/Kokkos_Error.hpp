@@ -150,9 +150,9 @@ class RawMemoryAllocationFailure : public std::bad_alloc {
       default;
   RawMemoryAllocationFailure(RawMemoryAllocationFailure &&) noexcept = default;
 
-  RawMemoryAllocationFailure &operator             =(
+  RawMemoryAllocationFailure &operator=(
       RawMemoryAllocationFailure const &) noexcept = default;
-  RawMemoryAllocationFailure &operator             =(
+  RawMemoryAllocationFailure &operator=(
       RawMemoryAllocationFailure &&) noexcept = default;
 
   ~RawMemoryAllocationFailure() noexcept override = default;

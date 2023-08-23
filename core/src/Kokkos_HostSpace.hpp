@@ -66,9 +66,9 @@ class HostSpace {
 
   /**\brief  Default memory space instance */
   HostSpace();
-  HostSpace(HostSpace&& rhs)      = default;
-  HostSpace(const HostSpace& rhs) = default;
-  HostSpace& operator=(HostSpace&&) = default;
+  HostSpace(HostSpace&& rhs)             = default;
+  HostSpace(const HostSpace& rhs)        = default;
+  HostSpace& operator=(HostSpace&&)      = default;
   HostSpace& operator=(const HostSpace&) = default;
   ~HostSpace()                           = default;
 
@@ -179,7 +179,7 @@ class SharedAllocationRecord<Kokkos::HostSpace, void>
   using base_t     = SharedAllocationRecordCommon<Kokkos::HostSpace>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
 #ifdef KOKKOS_ENABLE_DEBUG

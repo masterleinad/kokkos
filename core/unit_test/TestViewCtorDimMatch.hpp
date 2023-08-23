@@ -273,12 +273,12 @@ TEST(TEST_CATEGORY_DEATH, view_construction_with_wrong_params_mix) {
 
   using DType_0 = DType;
   using DType_1 = DType[1];
-  using DType_2 = DType * [1];
-  using DType_3 = DType * * [1];
-  using DType_4 = DType ** * [1];
-  using DType_5 = DType *** * [1];
-  using DType_6 = DType **** * [1];
-  using DType_7 = DType ***** * [1];
+  using DType_2 = DType *[1];
+  using DType_3 = DType **[1];
+  using DType_4 = DType ***[1];
+  using DType_5 = DType ****[1];
+  using DType_6 = DType *****[1];
+  using DType_7 = DType ******[1];
   {
     // test View parameters for View dim = 0, dynamic = 0
     LIVE({ Kokkos::View<DType_0> v_0("v_0" PARAM_0); }, 0, 0);

@@ -84,7 +84,7 @@ class LogicalMemorySpace {
   LogicalMemorySpace() = default;
 
   template <typename... Args>
-  LogicalMemorySpace(Args&&... args) : underlying_space((Args &&) args...) {}
+  LogicalMemorySpace(Args&&... args) : underlying_space((Args&&)args...) {}
 
   /**\brief  Allocate untracked memory in the space */
   void* allocate(const size_t arg_alloc_size) const {
@@ -199,7 +199,7 @@ class SharedAllocationRecord<Kokkos::Experimental::LogicalMemorySpace<
                                                SharesAccessSemanticsWithBase>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
   static void deallocate(RecordBase* arg_rec) {

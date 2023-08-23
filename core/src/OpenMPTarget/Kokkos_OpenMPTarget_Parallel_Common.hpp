@@ -98,14 +98,12 @@ struct ParallelReduceSpecialize<FunctorType, Kokkos::RangePolicy<PolicyArgs...>,
       return;
     }
 
-#pragma omp declare reduction(                                         \
-    custom:ValueType                                                   \
-    : OpenMPTargetReducerWrapper <ReducerType>::join(omp_out, omp_in)) \
-    initializer(OpenMPTargetReducerWrapper <ReducerType>::init(omp_priv))
+#pragma omp declare reduction(custom                                         \
+:ValueType : OpenMPTargetReducerWrapper<ReducerType>::join(omp_out, omp_in)) \
+    initializer(OpenMPTargetReducerWrapper<ReducerType>::init(omp_priv))
 
-#pragma omp target teams distribute parallel for map(to                    \
-                                                     : f) reduction(custom \
-                                                                    : result)
+#pragma omp target teams distribute parallel for map(to : f) \
+    reduction(custom : result)
     for (auto i = begin; i < end; ++i) {
       if constexpr (std::is_void_v<TagType>) {
         f(i, result);
@@ -142,8 +140,8 @@ struct ParallelReduceSpecialize<FunctorType, Kokkos::RangePolicy<PolicyArgs...>,
 
       // Case where reduction is on a native data type.
       if constexpr (std::is_arithmetic<ValueType>::value) {
-#pragma omp target teams distribute parallel for \
-         map(to:f) reduction(+: result)
+#pragma omp target teams distribute parallel for map(to : f) \
+    reduction(+ : result)
         for (auto i = begin; i < end; ++i)
 
           if constexpr (std::is_void_v<TagType>) {
@@ -153,9 +151,8 @@ struct ParallelReduceSpecialize<FunctorType, Kokkos::RangePolicy<PolicyArgs...>,
           }
       } else {
 #pragma omp declare reduction(custom:ValueType : omp_out += omp_in)
-#pragma omp target teams distribute parallel for map(to                    \
-                                                     : f) reduction(custom \
-                                                                    : result)
+#pragma omp target teams distribute parallel for map(to : f) \
+    reduction(custom : result)
         for (auto i = begin; i < end; ++i)
 
           if constexpr (std::is_void_v<TagType>) {
@@ -178,7 +175,8 @@ struct ParallelReduceSpecialize<FunctorType, Kokkos::RangePolicy<PolicyArgs...>,
                                      ptr_on_device);
         return;
       }
-#pragma omp target teams distribute parallel for map(to:f) reduction(+:result[:NumReductions])
+#pragma omp target teams distribute parallel for map(to : f) \
+    reduction(+ : result[ : NumReductions])
       for (auto i = begin; i < end; ++i) {
         if constexpr (std::is_void_v<TagType>) {
           f(i, result);
@@ -244,8 +242,7 @@ struct ParallelReduceSpecialize<FunctorType, Kokkos::RangePolicy<PolicyArgs...>,
     }
 
 #pragma omp target teams num_teams(max_teams) thread_limit(max_team_threads) \
-    map(to                                                                   \
-        : final_reducer) is_device_ptr(scratch_ptr)
+    map(to : final_reducer) is_device_ptr(scratch_ptr)
     {
 #pragma omp parallel
       {
@@ -288,8 +285,7 @@ struct ParallelReduceSpecialize<FunctorType, Kokkos::RangePolicy<PolicyArgs...>,
 
     int tree_neighbor_offset = 1;
     do {
-#pragma omp target teams distribute parallel for simd map(to   \
-                                                          : f) \
+#pragma omp target teams distribute parallel for simd map(to : f) \
     is_device_ptr(scratch_ptr)
       for (int i = 0; i < max_teams - tree_neighbor_offset;
            i += 2 * tree_neighbor_offset) {
@@ -369,15 +365,13 @@ struct ParallelReduceSpecialize<FunctorType, TeamPolicyInternal<PolicyArgs...>,
     // If the league size is <=0, do not launch the kernel.
     if (max_active_teams <= 0) return;
 
-#pragma omp declare reduction(                                         \
-    custom:ValueType                                                   \
-    : OpenMPTargetReducerWrapper <ReducerType>::join(omp_out, omp_in)) \
-    initializer(OpenMPTargetReducerWrapper <ReducerType>::init(omp_priv))
+#pragma omp declare reduction(custom                                         \
+:ValueType : OpenMPTargetReducerWrapper<ReducerType>::join(omp_out, omp_in)) \
+    initializer(OpenMPTargetReducerWrapper<ReducerType>::init(omp_priv))
 
 #if !defined(KOKKOS_IMPL_OPENMPTARGET_HIERARCHICAL_INTEL_GPU)
 #pragma omp target teams num_teams(max_active_teams) thread_limit(team_size) \
-    firstprivate(f) is_device_ptr(scratch_ptr) reduction(custom              \
-                                                         : result)
+    firstprivate(f) is_device_ptr(scratch_ptr) reduction(custom : result)
 #pragma omp parallel reduction(custom : result)
     {
       if (omp_get_num_teams() > max_active_teams)
@@ -400,8 +394,8 @@ struct ParallelReduceSpecialize<FunctorType, TeamPolicyInternal<PolicyArgs...>,
     }
 #else
 #pragma omp target teams distribute firstprivate(f) is_device_ptr(scratch_ptr) \
-    num_teams(max_active_teams) thread_limit(team_size) reduction(custom       \
-                                                                  : result)
+    num_teams(max_active_teams) thread_limit(team_size)                        \
+    reduction(custom : result)
     for (int i = 0; i < league_size; i++) {
 #pragma omp parallel reduction(custom : result)
       {
@@ -461,9 +455,8 @@ struct ParallelReduceSpecialize<FunctorType, TeamPolicyInternal<PolicyArgs...>,
 
       // Case where reduction is on a native data type.
       if constexpr (std::is_arithmetic<ValueType>::value) {
-#pragma omp target teams num_teams(max_active_teams) thread_limit(team_size) map(to   \
-                                                                       : f) \
-    is_device_ptr(scratch_ptr) reduction(+: result)
+#pragma omp target teams num_teams(max_active_teams) thread_limit(team_size) \
+    map(to : f) is_device_ptr(scratch_ptr) reduction(+ : result)
 #pragma omp parallel reduction(+ : result)
         {
           if (omp_get_num_teams() > max_active_teams)
@@ -488,9 +481,7 @@ struct ParallelReduceSpecialize<FunctorType, TeamPolicyInternal<PolicyArgs...>,
         // Case where the reduction is on a non-native data type.
 #pragma omp declare reduction(custom:ValueType : omp_out += omp_in)
 #pragma omp target teams num_teams(max_active_teams) thread_limit(team_size) \
-    map(to                                                                   \
-        : f) is_device_ptr(scratch_ptr) reduction(custom                     \
-                                                  : result)
+    map(to : f) is_device_ptr(scratch_ptr) reduction(custom : result)
 #pragma omp parallel reduction(custom : result)
         {
           if (omp_get_num_teams() > max_active_teams)
@@ -519,10 +510,10 @@ struct ParallelReduceSpecialize<FunctorType, TeamPolicyInternal<PolicyArgs...>,
     } else {
       ValueType result[NumReductions] = {};
       // Case where the reduction is on an array.
-#pragma omp target teams num_teams(max_active_teams) thread_limit(team_size) map(to   \
-                                                                       : f) \
-    is_device_ptr(scratch_ptr) reduction(+ : result[:NumReductions])
-#pragma omp parallel reduction(+ : result[:NumReductions])
+#pragma omp target teams num_teams(max_active_teams) thread_limit(team_size) \
+    map(to : f) is_device_ptr(scratch_ptr)                                   \
+    reduction(+ : result[ : NumReductions])
+#pragma omp parallel reduction(+ : result[ : NumReductions])
       {
         if (omp_get_num_teams() > max_active_teams)
           Kokkos::abort("`omp_set_num_teams` call was not respected.\n");
@@ -608,8 +599,7 @@ struct ParallelReduceSpecialize<FunctorType, TeamPolicyInternal<PolicyArgs...>,
       return;
     }
 
-#pragma omp target teams num_teams(nteams) thread_limit(team_size) map(to   \
-                                                                       : f) \
+#pragma omp target teams num_teams(nteams) thread_limit(team_size) map(to : f) \
     is_device_ptr(scratch_ptr)
     {
 #pragma omp parallel
@@ -636,8 +626,7 @@ struct ParallelReduceSpecialize<FunctorType, TeamPolicyInternal<PolicyArgs...>,
 
     int tree_neighbor_offset = 1;
     do {
-#pragma omp target teams distribute parallel for simd map(to               \
-                                                          : final_reducer) \
+#pragma omp target teams distribute parallel for simd map(to : final_reducer) \
     is_device_ptr(scratch_ptr)
       for (int i = 0; i < nteams - tree_neighbor_offset;
            i += 2 * tree_neighbor_offset) {

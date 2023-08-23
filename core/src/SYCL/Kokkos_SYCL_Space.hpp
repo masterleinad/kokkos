@@ -325,10 +325,10 @@ class SharedAllocationRecord<Kokkos::Experimental::SYCLDeviceUSMSpace, void>
       Kokkos::Experimental::SYCLDeviceUSMSpace>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
-  SharedAllocationRecord(SharedAllocationRecord&&)      = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
+  SharedAllocationRecord(SharedAllocationRecord&&)                 = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
-  SharedAllocationRecord& operator=(SharedAllocationRecord&&) = delete;
+  SharedAllocationRecord& operator=(SharedAllocationRecord&&)      = delete;
 
 #ifdef KOKKOS_ENABLE_DEBUG
   static RecordBase s_root_record;
@@ -371,10 +371,10 @@ class SharedAllocationRecord<Kokkos::Experimental::SYCLSharedUSMSpace, void>
       SharedAllocationRecordCommon<Kokkos::Experimental::SYCLSharedUSMSpace>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
-  SharedAllocationRecord(SharedAllocationRecord&&)      = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
+  SharedAllocationRecord(SharedAllocationRecord&&)                 = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
-  SharedAllocationRecord& operator=(SharedAllocationRecord&&) = delete;
+  SharedAllocationRecord& operator=(SharedAllocationRecord&&)      = delete;
 
   static RecordBase s_root_record;
 
@@ -417,10 +417,10 @@ class SharedAllocationRecord<Kokkos::Experimental::SYCLHostUSMSpace, void>
       SharedAllocationRecordCommon<Kokkos::Experimental::SYCLHostUSMSpace>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
-  SharedAllocationRecord(SharedAllocationRecord&&)      = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
+  SharedAllocationRecord(SharedAllocationRecord&&)                 = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
-  SharedAllocationRecord& operator=(SharedAllocationRecord&&) = delete;
+  SharedAllocationRecord& operator=(SharedAllocationRecord&&)      = delete;
 
   static RecordBase s_root_record;
 

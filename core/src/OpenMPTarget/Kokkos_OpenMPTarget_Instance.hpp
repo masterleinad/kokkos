@@ -27,8 +27,8 @@ enum class openmp_fence_is_static { yes, no };
 
 class OpenMPTargetInternal {
  private:
-  OpenMPTargetInternal()                            = default;
-  OpenMPTargetInternal(const OpenMPTargetInternal&) = default;
+  OpenMPTargetInternal()                                       = default;
+  OpenMPTargetInternal(const OpenMPTargetInternal&)            = default;
   OpenMPTargetInternal& operator=(const OpenMPTargetInternal&) = default;
 
  public:

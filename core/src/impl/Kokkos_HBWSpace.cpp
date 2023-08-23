@@ -272,9 +272,9 @@ void *SharedAllocationRecord<Kokkos::Experimental::HBWSpace, void>::
   return r_new->data();
 }
 
-SharedAllocationRecord<Kokkos::Experimental::HBWSpace, void>
-    *SharedAllocationRecord<Kokkos::Experimental::HBWSpace, void>::get_record(
-        void *alloc_ptr) {
+SharedAllocationRecord<Kokkos::Experimental::HBWSpace, void> *
+SharedAllocationRecord<Kokkos::Experimental::HBWSpace, void>::get_record(
+    void *alloc_ptr) {
   using Header = SharedAllocationHeader;
   using RecordHost =
       SharedAllocationRecord<Kokkos::Experimental::HBWSpace, void>;

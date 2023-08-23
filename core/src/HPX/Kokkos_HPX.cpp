@@ -330,4 +330,4 @@ int g_hpx_space_factory_initialized =
 
 #else
 void KOKKOS_CORE_SRC_IMPL_HPX_PREVENT_LINK_ERROR() {}
-#endif  //#ifdef KOKKOS_ENABLE_HPX
+#endif  // #ifdef KOKKOS_ENABLE_HPX

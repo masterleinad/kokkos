@@ -547,32 +547,22 @@ struct ViewOffset<
 
   KOKKOS_INLINE_FUNCTION constexpr size_type span() const {
     // Rank2: ( NumTile0 * ( NumTile1 ) ) * TileSize, etc
-    return (VORank == 2)
-               ? (m_tile_N0 * m_tile_N1) << SHIFT_2T
-               : (VORank == 3)
-                     ? (m_tile_N0 * m_tile_N1 * m_tile_N2) << SHIFT_3T
-                     : (VORank == 4)
-                           ? (m_tile_N0 * m_tile_N1 * m_tile_N2 * m_tile_N3)
-                                 << SHIFT_4T
-                           : (VORank == 5)
-                                 ? (m_tile_N0 * m_tile_N1 * m_tile_N2 *
-                                    m_tile_N3 * m_tile_N4)
-                                       << SHIFT_5T
-                                 : (VORank == 6)
-                                       ? (m_tile_N0 * m_tile_N1 * m_tile_N2 *
-                                          m_tile_N3 * m_tile_N4 * m_tile_N5)
-                                             << SHIFT_6T
-                                       : (VORank == 7)
-                                             ? (m_tile_N0 * m_tile_N1 *
-                                                m_tile_N2 * m_tile_N3 *
-                                                m_tile_N4 * m_tile_N5 *
-                                                m_tile_N6)
-                                                   << SHIFT_7T
-                                             : (m_tile_N0 * m_tile_N1 *
-                                                m_tile_N2 * m_tile_N3 *
-                                                m_tile_N4 * m_tile_N5 *
-                                                m_tile_N6 * m_tile_N7)
-                                                   << SHIFT_8T;
+    return (VORank == 2)   ? (m_tile_N0 * m_tile_N1) << SHIFT_2T
+           : (VORank == 3) ? (m_tile_N0 * m_tile_N1 * m_tile_N2) << SHIFT_3T
+           : (VORank == 4)
+               ? (m_tile_N0 * m_tile_N1 * m_tile_N2 * m_tile_N3) << SHIFT_4T
+           : (VORank == 5)
+               ? (m_tile_N0 * m_tile_N1 * m_tile_N2 * m_tile_N3 * m_tile_N4)
+                     << SHIFT_5T
+           : (VORank == 6) ? (m_tile_N0 * m_tile_N1 * m_tile_N2 * m_tile_N3 *
+                              m_tile_N4 * m_tile_N5)
+                                 << SHIFT_6T
+           : (VORank == 7) ? (m_tile_N0 * m_tile_N1 * m_tile_N2 * m_tile_N3 *
+                              m_tile_N4 * m_tile_N5 * m_tile_N6)
+                                 << SHIFT_7T
+                           : (m_tile_N0 * m_tile_N1 * m_tile_N2 * m_tile_N3 *
+                              m_tile_N4 * m_tile_N5 * m_tile_N6 * m_tile_N7)
+                                 << SHIFT_8T;
   }
 
   KOKKOS_INLINE_FUNCTION constexpr bool span_is_contiguous() const {
@@ -606,9 +596,9 @@ struct ViewOffset<
     return *this;
   }
 #else
-  KOKKOS_DEFAULTED_FUNCTION ~ViewOffset()                 = default;
-  KOKKOS_DEFAULTED_FUNCTION ViewOffset()                  = default;
-  KOKKOS_DEFAULTED_FUNCTION ViewOffset(const ViewOffset&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ViewOffset()                            = default;
+  KOKKOS_DEFAULTED_FUNCTION ViewOffset()                             = default;
+  KOKKOS_DEFAULTED_FUNCTION ViewOffset(const ViewOffset&)            = default;
   KOKKOS_DEFAULTED_FUNCTION ViewOffset& operator=(const ViewOffset&) = default;
 #endif
 

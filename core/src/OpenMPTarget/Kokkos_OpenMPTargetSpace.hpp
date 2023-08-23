@@ -91,9 +91,9 @@ class OpenMPTargetSpace {
 
   /**\brief  Default memory space instance */
   OpenMPTargetSpace();
-  OpenMPTargetSpace(OpenMPTargetSpace&& rhs)      = default;
-  OpenMPTargetSpace(const OpenMPTargetSpace& rhs) = default;
-  OpenMPTargetSpace& operator=(OpenMPTargetSpace&&) = default;
+  OpenMPTargetSpace(OpenMPTargetSpace&& rhs)             = default;
+  OpenMPTargetSpace(const OpenMPTargetSpace& rhs)        = default;
+  OpenMPTargetSpace& operator=(OpenMPTargetSpace&&)      = default;
   OpenMPTargetSpace& operator=(const OpenMPTargetSpace&) = default;
   ~OpenMPTargetSpace()                                   = default;
 
@@ -149,7 +149,7 @@ class SharedAllocationRecord<Kokkos::Experimental::OpenMPTargetSpace, void>
       Kokkos::Experimental::OpenMPTargetSpace>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
   /**\brief  Root record for tracked allocations from this OpenMPTargetSpace

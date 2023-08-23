@@ -68,9 +68,9 @@ class CudaSpace {
   /*--------------------------------*/
 
   CudaSpace();
-  CudaSpace(CudaSpace&& rhs)      = default;
-  CudaSpace(const CudaSpace& rhs) = default;
-  CudaSpace& operator=(CudaSpace&& rhs) = default;
+  CudaSpace(CudaSpace&& rhs)                 = default;
+  CudaSpace(const CudaSpace& rhs)            = default;
+  CudaSpace& operator=(CudaSpace&& rhs)      = default;
   CudaSpace& operator=(const CudaSpace& rhs) = default;
   ~CudaSpace()                               = default;
 
@@ -149,9 +149,9 @@ class CudaUVMSpace {
   /*--------------------------------*/
 
   CudaUVMSpace();
-  CudaUVMSpace(CudaUVMSpace&& rhs)      = default;
-  CudaUVMSpace(const CudaUVMSpace& rhs) = default;
-  CudaUVMSpace& operator=(CudaUVMSpace&& rhs) = default;
+  CudaUVMSpace(CudaUVMSpace&& rhs)                 = default;
+  CudaUVMSpace(const CudaUVMSpace& rhs)            = default;
+  CudaUVMSpace& operator=(CudaUVMSpace&& rhs)      = default;
   CudaUVMSpace& operator=(const CudaUVMSpace& rhs) = default;
   ~CudaUVMSpace()                                  = default;
 
@@ -223,9 +223,9 @@ class CudaHostPinnedSpace {
   /*--------------------------------*/
 
   CudaHostPinnedSpace();
-  CudaHostPinnedSpace(CudaHostPinnedSpace&& rhs)      = default;
-  CudaHostPinnedSpace(const CudaHostPinnedSpace& rhs) = default;
-  CudaHostPinnedSpace& operator=(CudaHostPinnedSpace&& rhs) = default;
+  CudaHostPinnedSpace(CudaHostPinnedSpace&& rhs)                 = default;
+  CudaHostPinnedSpace(const CudaHostPinnedSpace& rhs)            = default;
+  CudaHostPinnedSpace& operator=(CudaHostPinnedSpace&& rhs)      = default;
   CudaHostPinnedSpace& operator=(const CudaHostPinnedSpace& rhs) = default;
   ~CudaHostPinnedSpace()                                         = default;
 
@@ -531,7 +531,7 @@ class SharedAllocationRecord<Kokkos::CudaSpace, void>
   using base_t =
       HostInaccessibleSharedAllocationRecordCommon<Kokkos::CudaSpace>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
 #ifdef KOKKOS_ENABLE_DEBUG
@@ -597,7 +597,7 @@ class SharedAllocationRecord<Kokkos::CudaUVMSpace, void>
   using base_t     = SharedAllocationRecordCommon<Kokkos::CudaUVMSpace>;
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
   static RecordBase s_root_record;
@@ -646,7 +646,7 @@ class SharedAllocationRecord<Kokkos::CudaHostPinnedSpace, void>
   using RecordBase = SharedAllocationRecord<void, void>;
   using base_t     = SharedAllocationRecordCommon<Kokkos::CudaHostPinnedSpace>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
   static RecordBase s_root_record;

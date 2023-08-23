@@ -55,7 +55,7 @@ class HBWSpace {
 
   /**\brief  Default memory space instance */
   HBWSpace();
-  HBWSpace(const HBWSpace& rhs) = default;
+  HBWSpace(const HBWSpace& rhs)        = default;
   HBWSpace& operator=(const HBWSpace&) = default;
   ~HBWSpace()                          = default;
 
@@ -124,7 +124,7 @@ class SharedAllocationRecord<Kokkos::Experimental::HBWSpace, void>
 
   using RecordBase = SharedAllocationRecord<void, void>;
 
-  SharedAllocationRecord(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
   static void deallocate(RecordBase*);

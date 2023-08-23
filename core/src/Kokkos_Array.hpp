@@ -166,9 +166,9 @@ struct Array<T, 0, Proxy> {
   KOKKOS_INLINE_FUNCTION pointer data() { return pointer(0); }
   KOKKOS_INLINE_FUNCTION const_pointer data() const { return const_pointer(0); }
 
-  KOKKOS_DEFAULTED_FUNCTION ~Array()            = default;
-  KOKKOS_DEFAULTED_FUNCTION Array()             = default;
-  KOKKOS_DEFAULTED_FUNCTION Array(const Array&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~Array()                       = default;
+  KOKKOS_DEFAULTED_FUNCTION Array()                        = default;
+  KOKKOS_DEFAULTED_FUNCTION Array(const Array&)            = default;
   KOKKOS_DEFAULTED_FUNCTION Array& operator=(const Array&) = default;
 
   // Some supported compilers are not sufficiently C++11 compliant
