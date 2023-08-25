@@ -771,18 +771,18 @@ class ScatterView<DataType, Layout, DeviceType, Op, ScatterNonDuplicated,
             execution_space, typename dest_type::memory_space>::accessible,
         "ScatterView contribute destination memory space not accessible");
     if (dest.data() == internal_view.data()) return;
+    if (!dest.span_is_contiguous())
+      Kokkos::abort(
+          "Kokkos::contribute is only implemented for contiguous Views when "
+          "there is no duplication and ScatterView and the original View use "
+          "different allocations!");
     Kokkos::Impl::Experimental::ReduceDuplicates<execution_space,
                                                  original_value_type, Op>(
-        exec_space, internal_view.data(), dest.data(), 0, 0, 1,
-        internal_view.label());
+        exec_space, internal_view.data(), dest.data(), internal_view.size(), 0,
+        1, internal_view.label());
   }
 
-  void reset(execution_space const& exec_space = execution_space()) {
-    Kokkos::Impl::Experimental::ResetDuplicates<execution_space,
-                                                original_value_type, Op>(
-        exec_space, internal_view.data(), internal_view.size(),
-        internal_view.label());
-  }
+  void reset(execution_space const& exec_space = execution_space()) { return; }
   template <typename DT, typename... RP>
   void reset_except(View<DT, RP...> const& view) {
     reset_except(execution_space(), view);
