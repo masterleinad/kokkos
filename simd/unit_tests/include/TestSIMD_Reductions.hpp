@@ -26,7 +26,7 @@ inline void host_check_reduction_one_loader(ReductionOp reduce_op,
   Loader loader;
   using simd_type = Kokkos::Experimental::simd<T, Abi>;
   using mask_type = typename Kokkos::Experimental::simd<T, Abi>::mask_type;
-  std::size_t constexpr width = simd_type::size();
+  constexpr std::size_t width = simd_type::size();
 
   for (std::size_t i = 0; i < n; i += width) {
     std::size_t const nremaining = n - i;
@@ -95,7 +95,7 @@ KOKKOS_INLINE_FUNCTION void device_check_reduction_one_loader(
   Loader loader;
   using simd_type = Kokkos::Experimental::simd<T, Abi>;
   using mask_type = typename Kokkos::Experimental::simd<T, Abi>::mask_type;
-  std::size_t constexpr width = simd_type::size();
+  constexpr std::size_t width = simd_type::size();
 
   for (std::size_t i = 0; i < n; i += width) {
     std::size_t const nremaining = n - i;
