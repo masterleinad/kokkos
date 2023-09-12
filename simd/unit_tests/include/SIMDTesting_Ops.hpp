@@ -123,17 +123,14 @@ class cbrt_op {
  public:
   template <typename T>
   auto on_host(T const& a) const {
-#if defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)
+	  // FIXME specialization only exists in namespace Kokkos::Experimental for AVX2 and AVX512, the fallback is in namespace Kokkos
+#if (defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)) && (defined(KOKKOS_ARCH_AVX2) || defined(KOKKOS_ARCH_AVX512XEON)) 
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
       return Kokkos::Experimental::cbrt(a);
 #endif
-    T result(a);
-    for (std::size_t i = 0; i < result.size(); ++i) {
-      result[i] = Kokkos::cbrt(result[i]);
-    }
-    return result;
+    return Kokkos::cbrt(a);
   }
   template <typename T>
   auto on_host_serial(T const& a) const {
@@ -145,17 +142,14 @@ class exp_op {
  public:
   template <typename T>
   auto on_host(T const& a) const {
-#if defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)
+	            // FIXME specialization only exists in namespace Kokkos::Experimental for AVX2 and AVX512, the fallback is in namespace Kokkos
+#if (defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)) && (defined(KOKKOS_ARCH_AVX2) || defined(KOKKOS_ARCH_AVX512XEON))
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
       return Kokkos::Experimental::exp(a);
 #endif
-    T result(a);
-    for (std::size_t i = 0; i < result.size(); ++i) {
-      result[i] = Kokkos::exp(result[i]);
-    }
-    return result;
+    return Kokkos::exp(a);
   }
   template <typename T>
   auto on_host_serial(T const& a) const {
@@ -167,17 +161,14 @@ class log_op {
  public:
   template <typename T>
   auto on_host(T const& a) const {
-#if defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)
+	                      // FIXME specialization only exists in namespace Kokkos::Experimental for AVX2 and AVX512, the fallback is in namespace Kokkos
+#if (defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_INTEL_LLVM)) && (defined(KOKKOS_ARCH_AVX2) || defined(KOKKOS_ARCH_AVX512XEON))
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
       return Kokkos::Experimental::log(a);
 #endif
-    T result(a);
-    for (std::size_t i = 0; i < result.size(); ++i) {
-      result[i] = Kokkos::log(result[i]);
-    }
-    return result;
+    return Kokkos::log(a);
   }
   template <typename T>
   auto on_host_serial(T const& a) const {
