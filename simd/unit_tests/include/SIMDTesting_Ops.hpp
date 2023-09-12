@@ -79,7 +79,7 @@ class absolutes {
  public:
   template <typename T>
   auto on_host(T const& a) const {
-    return Kokkos::abs(a);
+    return Kokkos::Experimental::abs(a);
   }
   template <typename T>
   auto on_host_serial(T const& a) const {
@@ -87,7 +87,7 @@ class absolutes {
   }
   template <typename T>
   KOKKOS_INLINE_FUNCTION auto on_device(T const& a) const {
-    return Kokkos::abs(a);
+    return Kokkos::Experimental::abs(a);
   }
   template <typename T>
   KOKKOS_INLINE_FUNCTION auto on_device_serial(T const& a) const {
@@ -127,7 +127,7 @@ class cbrt_op {
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
-      return Kokkos::cbrt(a);
+      return Kokkos::Experimental::cbrt(a);
 #endif
     T result(a);
     for (std::size_t i = 0; i < result.size(); ++i) {
@@ -149,7 +149,7 @@ class exp_op {
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
-      return Kokkos::exp(a);
+      return Kokkos::Experimental::exp(a);
 #endif
     T result(a);
     for (std::size_t i = 0; i < result.size(); ++i) {
@@ -171,7 +171,7 @@ class log_op {
     using abi_type = typename T::abi_type;
     if constexpr (!std::is_same_v<abi_type,
                                   Kokkos::Experimental::simd_abi::scalar>)
-      return Kokkos::log(a);
+      return Kokkos::Experimental::log(a);
 #endif
     T result(a);
     for (std::size_t i = 0; i < result.size(); ++i) {
