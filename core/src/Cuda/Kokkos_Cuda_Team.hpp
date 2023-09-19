@@ -744,8 +744,8 @@ parallel_scan(const Impl::ThreadVectorRangeBoundariesStruct<
   (void)loop_boundaries;
   (void)closure;
   (void)reducer;
-  KOKKOS_IF_ON_DEVICE((
 
+  KOKKOS_IF_ON_DEVICE ((
       using value_type = typename ReducerType::value_type;
 
       value_type accum;
@@ -812,9 +812,9 @@ parallel_scan(const Impl::ThreadVectorRangeBoundariesStruct<
         // and add it to accum for next round
         if (i < loop_boundaries.end) closure(i, val, true);
         Impl::in_place_shfl(accum, val, mask, blockDim.x, active_mask);
-      }
-
+      } 
       ))
+      reducer.reference() = accum;
 }
 
 //----------------------------------------------------------------------------
