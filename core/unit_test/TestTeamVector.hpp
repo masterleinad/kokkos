@@ -920,9 +920,6 @@ struct checkScan {
   view_type inputs  = view_type{"inputs"};
   view_type outputs = view_type{"outputs"};
 
-  value_type result;
-  Reducer reducer = {result};
-
   struct ThreadVectorFunctor {
     KOKKOS_FUNCTION void operator()(const size_type j, value_type &update,
                                     const bool final) const {
@@ -970,6 +967,8 @@ struct checkScan {
       const {
     const size_type iTeam       = team.league_rank();
     const size_type iTeamOffset = iTeam * n_per_team;
+    value_type dummy;
+    Reducer reducer = {dummy};
     Kokkos::parallel_for(
         Kokkos::TeamThreadRange(team, n_team_thread_range),
         TeamThreadRangeFunctor{team, reducer, iTeamOffset, outputs, inputs});
@@ -1000,7 +999,9 @@ struct checkScan {
     Kokkos::View<value_type[n], Kokkos::HostSpace> expected("expected");
     {
       value_type identity;
+      Reducer reducer = {identity};
       reducer.init(identity);
+
       for (int i = 0; i < expected.extent_int(0); ++i) {
         const int vector       = i % n_vector_range;
         const value_type accum = vector == 0 ? identity : expected(i - 1);
