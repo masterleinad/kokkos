@@ -613,7 +613,7 @@ class ParallelReduce<CombinedFunctorReducerType,
   const pointer_type m_result_ptr;
   const bool m_result_ptr_device_accessible;
   const bool m_result_ptr_host_accessible;
-  word_size_type* m_scratch_space;
+  size_type* m_scratch_space;
   size_type* m_scratch_flags;
   size_type m_team_begin;
   size_type m_shmem_begin;
@@ -790,9 +790,8 @@ class ParallelReduce<CombinedFunctorReducerType,
     if (!is_empty_range || need_device_set) {
       int const block_count = compute_block_count();
 
-      m_scratch_space =
-          reinterpret_cast<word_size_type*>(hip_internal_scratch_space(
-              m_policy.space(), reducer.value_size() * block_count));
+      m_scratch_space = hip_internal_scratch_space(
+          m_policy.space(), reducer.value_size() * block_count);
       m_scratch_flags =
           hip_internal_scratch_flags(m_policy.space(), sizeof(size_type));
 
