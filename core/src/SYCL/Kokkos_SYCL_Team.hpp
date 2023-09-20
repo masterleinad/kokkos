@@ -808,7 +808,7 @@ parallel_scan(const Impl::ThreadVectorRangeBoundariesStruct<
     // This sets i's val to i-1's contribution to make the latter shfl_up an
     // exclusive scan -- the final accumulation of i's val will be included in
     // the second closure call later.
-    if (i < loop_boundaries.end && tidx1 > 0) closure(i - 1, val, false);
+    if (i -1 < loop_boundaries.end && tidx1 > 0) closure(i - 1, val, false);
 
     // Bottom up exclusive scan in triangular pattern where each SYCL thread is
     // the root of a reduction tree from the zeroth "lane" to itself.
@@ -830,6 +830,7 @@ parallel_scan(const Impl::ThreadVectorRangeBoundariesStruct<
     if (i < loop_boundaries.end) closure(i, val, true);
     accum = sg.shuffle(val, mask + vector_offset);
   }
+  reducer.reference() = accum;
 }
 
 /** \brief  Intra-thread vector parallel exclusive prefix sum.
