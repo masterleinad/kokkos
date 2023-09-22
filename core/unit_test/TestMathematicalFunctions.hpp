@@ -1572,9 +1572,8 @@ struct TestIsNaN {
       ++e;
       Kokkos::printf("failed isnan(float)\n");
     }
-#if !defined(KOKKOS_ENABLE_SYCL) && \
-    !defined(KOKKOS_ENABLE_HIP)  // FIXME_SYCL, FIXME_HIP
-    if (isnan(static_cast<KE::half_t>(2.f))
+#if !defined(KOKKOS_ENABLE_HIP)  // FIXME_HIP
+    if (Kokkos::isnan(static_cast<KE::half_t>(0.f))
 #if !defined(KOKKOS_ENABLE_CUDA)
         || !isnan(quiet_NaN<KE::half_t>::value) ||
         !isnan(signaling_NaN<KE::half_t>::value)
@@ -1583,7 +1582,7 @@ struct TestIsNaN {
       ++e;
       KOKKOS_IMPL_DO_NOT_USE_PRINTF("failed isnan(KE::half_t)\n");
     }
-    if (isnan(static_cast<KE::bhalf_t>(2.f))
+    if (Kokkos::isnan(static_cast<KE::bhalf_t>(0.f))
 #if !defined(KOKKOS_ENABLE_CUDA)
         || !isnan(quiet_NaN<KE::bhalf_t>::value) ||
         !isnan(signaling_NaN<KE::bhalf_t>::value)
