@@ -233,6 +233,33 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
   }
 };
 
+KOKKOS_INLINE_FUNCTION bool
+isnan(Kokkos::Experimental::bhalf_t x) {
+	Kokkos::printf("%f %f\n", Kokkos::Experimental::cast_from_bhalf<float>(x), static_cast<float>(Kokkos::Experimental::bhalf_t::impl_type(x)));
+	return sycl::ext::oneapi::experimental::isnan(Kokkos::Experimental::bhalf_t::impl_type(x));
+}
+
+KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t
+fabs(Kokkos::Experimental::bhalf_t x)
+{
+  return sycl::ext::oneapi::experimental::fabs(Kokkos::Experimental::bhalf_t::impl_type(x));
+}
+
+KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t
+fmin(Kokkos::Experimental::bhalf_t x, Kokkos::Experimental::bhalf_t y) {
+  return sycl::ext::oneapi::experimental::fmin(Kokkos::Experimental::bhalf_t::impl_type(x), Kokkos::Experimental::bhalf_t::impl_type(y));
+}
+
+KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t
+fmax(Kokkos::Experimental::bhalf_t x, Kokkos::Experimental::bhalf_t y) {
+  return sycl::ext::oneapi::experimental::fmax(Kokkos::Experimental::bhalf_t::impl_type(x), Kokkos::Experimental::bhalf_t::impl_type(y));
+}
+
+KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t
+fma(Kokkos::Experimental::bhalf_t x, Kokkos::Experimental::bhalf_t y, Kokkos::Experimental::bhalf_t z) {
+  return sycl::ext::oneapi::experimental::fma(Kokkos::Experimental::bhalf_t::impl_type(x), Kokkos::Experimental::bhalf_t::impl_type(y), Kokkos::Experimental::bhalf_t::impl_type(z));
+}
+
 }  // namespace Kokkos
 #endif  // KOKKOS_IMPL_SYCL_BHALF_TYPE_DEFINED
 
