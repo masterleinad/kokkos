@@ -47,6 +47,9 @@ extern "C" void kokkos_impl_cuda_set_pin_uvm_to_host(bool);
 /*--------------------------------------------------------------------------*/
 
 namespace Kokkos {
+
+class CudaInternal;
+
 namespace Impl {
 
 template <typename T>
@@ -68,7 +71,9 @@ class CudaSpace {
   /*--------------------------------*/
 
   CudaSpace();
-  CudaSpace(int cuda_device, cudaStream_t cuda_stream);
+private:
+  CudaSpace(int device_id, cudaStream_t stream);
+public:
   CudaSpace(CudaSpace&& rhs)      = default;
   CudaSpace(const CudaSpace& rhs) = default;
   CudaSpace& operator=(CudaSpace&& rhs) = default;
@@ -113,6 +118,8 @@ class CudaSpace {
   static constexpr const char* name() { return m_name; }
 
  private:
+  friend class Kokkos::CudaInternal;
+
   int m_device;
   cudaStream_t m_stream;
 
@@ -151,7 +158,9 @@ class CudaUVMSpace {
   /*--------------------------------*/
 
   CudaUVMSpace();
-  CudaUVMSpace(int cuda_device, cudaStream_t cuda_stream);
+   private:
+  CudaUVMSpace(int device_id, cudaStream_t stream);
+   public:
   CudaUVMSpace(CudaUVMSpace&& rhs)      = default;
   CudaUVMSpace(const CudaUVMSpace& rhs) = default;
   CudaUVMSpace& operator=(CudaUVMSpace&& rhs) = default;
@@ -193,6 +202,8 @@ class CudaUVMSpace {
   /*--------------------------------*/
 
  private:
+  friend class Kokkos::CudaInternal;
+  
   int m_device;
   cudaStream_t m_stream;
 
@@ -227,7 +238,9 @@ class CudaHostPinnedSpace {
   /*--------------------------------*/
 
   CudaHostPinnedSpace();
-  CudaHostPinnedSpace(int cuda_device, cudaStream_t cuda_stream);
+ private:
+  CudaHostPinnedSpace(int device_id, cudaStream_t stream);
+ public:
   CudaHostPinnedSpace(CudaHostPinnedSpace&& rhs)      = default;
   CudaHostPinnedSpace(const CudaHostPinnedSpace& rhs) = default;
   CudaHostPinnedSpace& operator=(CudaHostPinnedSpace&& rhs) = default;
@@ -263,6 +276,8 @@ class CudaHostPinnedSpace {
   static constexpr const char* name() { return m_name; }
 
  private:
+    friend class Kokkos::CudaInternal;
+
   int m_device;
   cudaStream_t m_stream;
 
