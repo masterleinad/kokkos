@@ -233,16 +233,139 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
   }
 };
 
+#define KOKKOS_SYCL_HALF_FUNCTION(op)                                 \
+  KOKKOS_INLINE_FUNCTION Kokkos::Experimental::half_t op(Kokkos::Experimental::half_t x) {                  \
+    return sycl::op(Kokkos::Experimental::half_t::impl_type(x));  \
+  }
+
+#define KOKKOS_SYCL_BHALF_FUNCTION(op)                                 \
+  KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t op(Kokkos::Experimental::bhalf_t x) {                  \
+    return sycl::ext::oneapi::experimental::op(Kokkos::Experimental::bhalf_t::impl_type(x));  \
+  }
+
+// FIXME_SYCL
+#define KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(op)                                 \
+  KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t op(Kokkos::Experimental::bhalf_t x) {                  \
+    return Kokkos::op(static_cast<float>(x));  \
+  }
+
+KOKKOS_SYCL_HALF_FUNCTION(abs)
+KOKKOS_SYCL_HALF_FUNCTION(asin)
+	KOKKOS_SYCL_HALF_FUNCTION(asinh)
+KOKKOS_SYCL_HALF_FUNCTION(acos)
+	KOKKOS_SYCL_HALF_FUNCTION(acosh)
+	KOKKOS_SYCL_HALF_FUNCTION(atan)
+	        KOKKOS_SYCL_HALF_FUNCTION(atanh)
+	                        KOKKOS_SYCL_HALF_FUNCTION(cbrt)
+	KOKKOS_SYCL_HALF_FUNCTION(ceil)
+KOKKOS_SYCL_HALF_FUNCTION(cos)
+	KOKKOS_SYCL_HALF_FUNCTION(cosh)
+	KOKKOS_SYCL_HALF_FUNCTION(exp)
+KOKKOS_SYCL_HALF_FUNCTION(exp2)
+KOKKOS_SYCL_HALF_FUNCTION(expm1)
+KOKKOS_SYCL_HALF_FUNCTION(erf)
+KOKKOS_SYCL_HALF_FUNCTION(erfc)
+	KOKKOS_SYCL_HALF_FUNCTION(fabs)
+	KOKKOS_SYCL_HALF_FUNCTION(floor)
+KOKKOS_SYCL_HALF_FUNCTION(log)
+	KOKKOS_SYCL_HALF_FUNCTION(logb)
+	        KOKKOS_SYCL_HALF_FUNCTION(log1p)
+	KOKKOS_SYCL_HALF_FUNCTION(log2)
+KOKKOS_SYCL_HALF_FUNCTION(log10)
+KOKKOS_SYCL_HALF_FUNCTION(lgamma)
+	        KOKKOS_SYCL_HALF_FUNCTION(round)
+KOKKOS_SYCL_HALF_FUNCTION(sin)
+	KOKKOS_SYCL_HALF_FUNCTION(sinh)
+	KOKKOS_SYCL_HALF_FUNCTION(sqrt)
+KOKKOS_SYCL_HALF_FUNCTION(tan)
+	KOKKOS_SYCL_HALF_FUNCTION(tanh)
+	KOKKOS_SYCL_HALF_FUNCTION(trunc)
+KOKKOS_SYCL_HALF_FUNCTION(tgamma)
+
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(abs)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(asin)
+	        KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(asinh)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(acos)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(acosh)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(atan)
+	        KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(atanh)
+	                KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(cbrt)
+	        KOKKOS_SYCL_BHALF_FUNCTION(ceil)
+KOKKOS_SYCL_BHALF_FUNCTION(cos)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(cosh)
+KOKKOS_SYCL_BHALF_FUNCTION(exp)
+KOKKOS_SYCL_BHALF_FUNCTION(exp2)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(expm1)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(erf)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(erfc)
+	        KOKKOS_SYCL_BHALF_FUNCTION(fabs)
+	        KOKKOS_SYCL_BHALF_FUNCTION(floor)
+KOKKOS_SYCL_BHALF_FUNCTION(log)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(logb)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(log1p)
+	KOKKOS_SYCL_BHALF_FUNCTION(log2)
+KOKKOS_SYCL_BHALF_FUNCTION(log10)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(lgamma)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(round)
+KOKKOS_SYCL_BHALF_FUNCTION(sin)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(sinh)
+	KOKKOS_SYCL_BHALF_FUNCTION(sqrt)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(tan)
+	KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(tanh)
+	KOKKOS_SYCL_BHALF_FUNCTION(trunc)
+KOKKOS_SYCL_BHALF_FUNCTION_FALLBACK(tgamma)
+
+	// FIXME_SYCL
+#define KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, MIXED_TYPE) \
+  KOKKOS_INLINE_FUNCTION double FUNC(HALF_TYPE x, MIXED_TYPE y) {  \
+    return Kokkos::FUNC(static_cast<double>(x), static_cast<double>(y)); \
+  } \
+  KOKKOS_INLINE_FUNCTION double FUNC(MIXED_TYPE x, HALF_TYPE y) {  \
+    return Kokkos::FUNC(static_cast<double>(x), static_cast<double>(y)); \
+  }
+
+	// FIXME_SYCL
+#define KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(FUNC, HALF_TYPE)       \
+  KOKKOS_INLINE_FUNCTION HALF_TYPE FUNC(HALF_TYPE x, HALF_TYPE y) {  \
+    return static_cast<HALF_TYPE>(                                   \
+        Kokkos::FUNC(static_cast<float>(x), static_cast<float>(y))); \
+  } \
+  KOKKOS_INLINE_FUNCTION float FUNC(float x, HALF_TYPE y) {  \
+    return Kokkos::FUNC(static_cast<float>(x), static_cast<float>(y)); \
+  } \
+  KOKKOS_INLINE_FUNCTION float FUNC(HALF_TYPE x, float y) {  \
+    return Kokkos::FUNC(static_cast<float>(x), static_cast<float>(y)); \
+  } \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, double) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, short) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, unsigned short) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, int) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, unsigned int) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, long) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, unsigned long) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, long long) \
+  KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_MIXED_FALLBACK(FUNC, HALF_TYPE, unsigned long long)
+
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(pow, Kokkos::Experimental::half_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(pow, Kokkos::Experimental::bhalf_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(nextafter, Kokkos::Experimental::half_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(nextafter, Kokkos::Experimental::bhalf_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(hypot, Kokkos::Experimental::half_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(hypot, Kokkos::Experimental::bhalf_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(copysign, Kokkos::Experimental::half_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(copysign, Kokkos::Experimental::bhalf_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(fmod, Kokkos::Experimental::half_t);
+KOKKOS_SYCL_MATH_BINARY_FUNCTION_HALF_FALLBACK(fmod, Kokkos::Experimental::bhalf_t);
+
+// FIXME_SYCL
 KOKKOS_INLINE_FUNCTION bool
-isnan(Kokkos::Experimental::bhalf_t x) {
-	Kokkos::printf("%f %f\n", Kokkos::Experimental::cast_from_bhalf<float>(x), static_cast<float>(Kokkos::Experimental::bhalf_t::impl_type(x)));
-	return sycl::ext::oneapi::experimental::isnan(Kokkos::Experimental::bhalf_t::impl_type(x));
+isnan(Kokkos::Experimental::half_t x) {
+  return Kokkos::isnan(static_cast<float>(Kokkos::Experimental::half_t::impl_type(x)));
 }
 
-KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t
-fabs(Kokkos::Experimental::bhalf_t x)
-{
-  return sycl::ext::oneapi::experimental::fabs(Kokkos::Experimental::bhalf_t::impl_type(x));
+KOKKOS_INLINE_FUNCTION bool
+isnan(Kokkos::Experimental::bhalf_t x) {
+  return sycl::ext::oneapi::experimental::isnan(Kokkos::Experimental::bhalf_t::impl_type(x));
 }
 
 KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t

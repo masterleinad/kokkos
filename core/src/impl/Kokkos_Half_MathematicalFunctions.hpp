@@ -22,14 +22,14 @@
 // clang-format off
 namespace Kokkos {
 // BEGIN macro definitions
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_HALF_T_IS_FLOAT && !defined(KOKKOS_ENABLE_SYCL)
   #define KOKKOS_IMPL_MATH_H_FUNC_WRAPPER(MACRO, FUNC) \
     MACRO(FUNC, Kokkos::Experimental::half_t)
 #else
   #define KOKKOS_IMPL_MATH_H_FUNC_WRAPPER(MACRO, FUNC)
 #endif
 
-#if defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#if !KOKKOS_BHALF_T_IS_FLOAT && !defined(KOKKOS_ENABLE_SYCL)
   #define KOKKOS_IMPL_MATH_B_FUNC_WRAPPER(MACRO, FUNC) \
     MACRO(FUNC, Kokkos::Experimental::bhalf_t)
 #else
