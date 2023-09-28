@@ -898,9 +898,9 @@ struct Functor_TestHalfOperators {
 
     actual_lhs(LT_H_H)   = h_lhs < h_rhs;
     expected_lhs(LT_H_H) = d_lhs < d_rhs;
-    actual_lhs(LT_H_S)   = h_lhs < static_cast<float>(h_rhs);
+    actual_lhs(LT_H_S)   = h_lhs < static_cast<int>(h_rhs);
     expected_lhs(LT_H_S) = d_lhs < d_rhs;
-    actual_lhs(LT_S_H)   = static_cast<float>(h_lhs) < h_rhs;
+    actual_lhs(LT_S_H)   = static_cast<int>(h_lhs) < h_rhs;
     expected_lhs(LT_S_H) = d_lhs < d_rhs;
     actual_lhs(LT_H_D)   = h_lhs < static_cast<double>(h_rhs);
     expected_lhs(LT_H_D) = d_lhs < d_rhs;

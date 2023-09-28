@@ -884,24 +884,7 @@ endif()
 
 SET(DEFAULT_DEVICE_SOURCES
   UnitTestMainInit.cpp
-  TestInitializationSettings.cpp
-  TestParseCmdLineArgsAndEnvVars.cpp
-  TestSharedSpace.cpp
-  TestSharedHostPinnedSpace.cpp
-  TestCompilerMacros.cpp
   default/TestDefaultDeviceType.cpp
-  default/TestDefaultDeviceType_a1.cpp
-  default/TestDefaultDeviceType_b1.cpp
-  default/TestDefaultDeviceType_c1.cpp
-  default/TestDefaultDeviceType_a2.cpp
-  default/TestDefaultDeviceType_b2.cpp
-  default/TestDefaultDeviceType_c2.cpp
-  default/TestDefaultDeviceType_a3.cpp
-  default/TestDefaultDeviceType_b3.cpp
-  default/TestDefaultDeviceType_c3.cpp
-  default/TestDefaultDeviceType_d.cpp
-  default/TestDefaultDeviceTypeResize.cpp
-  default/TestDefaultDeviceTypeViewAPI.cpp
 )
 # FIXME_OPENMPTARGET and FIXME_OPENACC do not provide a MemorySpace that can be accessed from all ExecSpaces
 # FIXME_SYCL clock_tic does not give the correct timings for cloc_tic

@@ -820,18 +820,18 @@ class alignas(FloatType) floating_point_wrapper {
     return tmp_lhs < tmp_rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator<(floating_point_wrapper lhs, T rhs) {
-    return T(lhs) < rhs;
+  template <typename T>
+  KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool>
+  operator<(const floating_point_wrapper& lhs,
+                        const T& rhs) {
+    return static_cast<impl_type>(lhs) < rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator<(T lhs, floating_point_wrapper rhs) {
-    return lhs < T(rhs);
+  template <typename T>
+  KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool>
+  operator<(const T& lhs,
+		        const floating_point_wrapper& rhs) {
+    return lhs < static_cast<impl_type>(rhs);
   }
 
   KOKKOS_FUNCTION
@@ -841,18 +841,18 @@ class alignas(FloatType) floating_point_wrapper {
     return tmp_lhs > tmp_rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator>(floating_point_wrapper lhs, T rhs) {
-    return T(lhs) > rhs;
+  template <typename T>
+  KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool>
+  operator>(const floating_point_wrapper& lhs,
+                        const T& rhs) {
+    return static_cast<float>(lhs) > rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator>(T lhs, floating_point_wrapper rhs) {
-    return lhs > T(rhs);
+  template <typename T>
+    KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool> 
+	  operator>(const T& lhs,
+                        const floating_point_wrapper& rhs) {
+    return lhs > static_cast<float>(rhs);
   }
 
   KOKKOS_FUNCTION
@@ -862,18 +862,18 @@ class alignas(FloatType) floating_point_wrapper {
     return tmp_lhs <= tmp_rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator<=(floating_point_wrapper lhs, T rhs) {
-    return T(lhs) <= rhs;
+ template <typename T>
+	   KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool>
+  operator<=(const floating_point_wrapper& lhs,
+                        const T& rhs) {
+    return static_cast<float>(lhs) <= rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator<=(T lhs, floating_point_wrapper rhs) {
-    return lhs <= T(rhs);
+  template <typename T>
+  KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool>
+  operator<=(const T& lhs,
+                        const floating_point_wrapper& rhs) {
+    return lhs <= static_cast<float>(rhs);
   }
 
   KOKKOS_FUNCTION
@@ -883,18 +883,18 @@ class alignas(FloatType) floating_point_wrapper {
     return tmp_lhs >= tmp_rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator>=(floating_point_wrapper lhs, T rhs) {
-    return T(lhs) >= rhs;
+   template <typename T>
+    KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool> 
+   operator>=(const floating_point_wrapper& lhs,
+                        const T& rhs) {
+    return static_cast<float>(lhs) >= rhs;
   }
 
-  template <class T>
-  KOKKOS_FUNCTION friend std::enable_if_t<
-      std::is_same_v<T, float> || std::is_same_v<T, double>, bool>
-  operator>=(T lhs, floating_point_wrapper rhs) {
-    return lhs >= T(rhs);
+  template <typename T>
+    KOKKOS_FUNCTION friend std::enable_if_t<std::is_convertible_v<T, float>, bool> 
+  operator>=(const T& lhs,
+                        const floating_point_wrapper& rhs) {
+    return lhs >= static_cast<float>(rhs);
   }
 
   // Insertion and extraction operators
