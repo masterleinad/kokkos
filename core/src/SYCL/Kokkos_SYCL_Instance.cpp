@@ -92,7 +92,11 @@ void SYCLInternal::initialize(const sycl::device& d) {
   };
 #ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
   initialize(
-      sycl::queue{d, exception_handler, sycl::property::queue::in_order()});
+      sycl::queue{d, exception_handler, sycl::property_list{
+#ifdef SYCL_EXT_ONEAPI_DISCARD_QUEUE_EVENTS
+       sycl::ext::oneapi::property::queue::discard_events(),
+#endif
+      sycl::property::queue::in_order()}});
 #else
   initialize(sycl::queue{d, exception_handler});
 #endif
@@ -137,6 +141,10 @@ void SYCLInternal::initialize(const sycl::queue& q) {
 }
 
 int SYCLInternal::acquire_team_scratch_space() {
+#ifdef SYCL_EXT_ONEAPI_DISCARD_QUEUE_EVENTS
+  m_queue->wait_and_throw();
+  return m_current_team_scratch;
+#else
   // Grab the next scratch memory allocation. We must make sure that the last
   // kernel using the allocation has completed, so we wait for the event that
   // was registered with that kernel.
@@ -147,6 +155,7 @@ int SYCLInternal::acquire_team_scratch_space() {
   m_team_scratch_event[current_team_scratch].wait_and_throw();
 
   return current_team_scratch;
+#endif
 }
 
 sycl::device_ptr<void> SYCLInternal::resize_team_scratch_space(
