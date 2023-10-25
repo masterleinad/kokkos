@@ -370,19 +370,18 @@ void CudaInternal::fence() const {
   fence("Kokkos::CudaInternal::fence(): Unnamed Instance Fence");
 }
 
-void CudaInternal::initialize(cudaStream_t stream,
-                              bool manage_stream) {
+void CudaInternal::initialize(cudaStream_t stream, bool manage_stream) {
   KOKKOS_EXPECTS(!is_initialized());
 
-   if (was_finalized)
+  if (was_finalized)
     Kokkos::abort("Calling Cuda::initialize after Cuda::finalize is illegal\n");
   was_initialized = true;
 
   // Check that the device associated with the stream matches cuda_device
   CUcontext context;
-  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaError_t(cuStreamGetCtx ( stream, &context)));
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaError_t(cuStreamGetCtx(stream, &context)));
   KOKKOS_IMPL_CUDA_SAFE_CALL(cudaError_t(cuCtxPushCurrent(context)));
-  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaError_t(cuCtxGetDevice ( &m_cudaDev )));
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaError_t(cuCtxGetDevice(&m_cudaDev)));
   KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(m_cudaDev));
 
   // FIXME_CUDA multiple devices
@@ -861,8 +860,7 @@ Cuda::Cuda(cudaStream_t stream, Impl::ManageStream manage_stream)
       }) {
   Impl::CudaInternal::singleton().verify_is_initialized(
       "Cuda instance constructor");
-  m_space_instance->initialize(
-                               stream, static_cast<bool>(manage_stream));
+  m_space_instance->initialize(stream, static_cast<bool>(manage_stream));
 }
 
 void Cuda::print_configuration(std::ostream &os, bool /*verbose*/) const {
