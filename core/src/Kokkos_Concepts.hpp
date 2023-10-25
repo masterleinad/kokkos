@@ -110,22 +110,16 @@ inline constexpr bool operator==(WorkItemProperty::ImplWorkItemProperty<pv1>,
  *
  *  If no launch bounds specified then do not set launch bounds.
  */
-template <unsigned int maxT = 0 /* Max threads per block */
-          ,
-          unsigned int minB = 0 /* Min blocks per SM */
+template </* Max threads per block */ unsigned int maxT = 0     ,
+          /* Min blocks per SM */ unsigned int minB=0,
+          /* warp/wavefront/subgroup size */ unsigned int wSize = 0
           >
 struct LaunchBounds {
   using launch_bounds = LaunchBounds;
-  using type          = LaunchBounds<maxT, minB>;
+  using type          = LaunchBounds<maxT, minB, wSize>;
   static constexpr unsigned int maxTperB{maxT};
   static constexpr unsigned int minBperSM{minB};
-};
-
-template <int size>
-struct SubGroupSize {
-  using subgroup_size        = SubGroupSize;
-  using type                 = SubGroupSize<size>;
-  static constexpr int value = size;
+  static constexpr unsigned int warpSize{wSize};
 };
 
 }  // namespace Kokkos

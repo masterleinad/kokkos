@@ -63,7 +63,6 @@ struct ScheduleTrait;
 struct IterationPatternTrait;
 struct WorkItemPropertyTrait;
 struct LaunchBoundsTrait;
-struct SubGroupSizeTrait;
 struct OccupancyControlTrait;
 struct GraphKernelTrait;
 struct WorkTagTrait;
@@ -79,7 +78,6 @@ using execution_policy_trait_specifications =
     IterationPatternTrait,
     WorkItemPropertyTrait,
     LaunchBoundsTrait,
-    SubGroupSizeTrait,
     OccupancyControlTrait,
     GraphKernelTrait,
     // This one has to be last, unfortunately:

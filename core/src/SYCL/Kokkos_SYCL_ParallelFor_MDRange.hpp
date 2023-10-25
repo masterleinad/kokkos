@@ -154,10 +154,10 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
       };
 #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
       auto get_properties = [&]() {
-        if constexpr (Policy::subgroup_size > 0)
+        if constexpr (Policy::launch_bounds::warpSize > 0)
           return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
-                  Policy::subgroup_size>};
+                  Policy::launch_bounds::warpSize>};
         else
           return sycl::ext::oneapi::experimental::properties{};
       };
