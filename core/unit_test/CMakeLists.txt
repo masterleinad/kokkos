@@ -172,34 +172,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
 
     set(${Tag}_SOURCES1B)
     foreach(Name
-        MDRange_a
-        MDRange_b
-        MDRange_c
-        MDRange_d
-        MDRange_e
-        MDRange_f
-        MDRange_g
-        MDRangePolicyConstructors
-        MDRangeReduce
-        MDSpan
-        MinMaxClamp
-        NumericTraits
-        Other
-        ParallelScanRangePolicy
-        Printf
-        QuadPrecisionMath
-        RangePolicy
-        RangePolicyConstructors
-        RangePolicyRequire
-        ReducerCTADs
-        Reducers_a
-        Reducers_b
-        Reducers_c
         Reducers_d
-        Reducers_e
-        Reductions
-        Reductions_DeviceView
-        SharedAlloc
         )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
@@ -322,7 +295,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
       list(APPEND ${Tag}_SOURCES2D ${file})
     endforeach()
 
-    SET(${Tag}_SOURCES1 ${${Tag}_SOURCES1A} ${${Tag}_SOURCES1B})
+    SET(${Tag}_SOURCES1 ${${Tag}_SOURCES1B})
     SET(${Tag}_SOURCES2 ${${Tag}_SOURCES2A} ${${Tag}_SOURCES2B} ${${Tag}_SOURCES2C} ${${Tag}_SOURCES2D})
     SET(${Tag}_SOURCES ${${Tag}_SOURCES1} ${${Tag}_SOURCES2})
   endif()

@@ -81,7 +81,7 @@ void* allocate_sycl(
     const size_t arg_logical_size, const Kokkos::Tools::SpaceHandle arg_handle,
     const RawMemoryAllocationFailure::AllocationMechanism failure_tag,
     const sycl::usm::alloc allocation_kind, const sycl::queue& queue) {
-  void* const hostPtr = sycl::malloc(arg_alloc_size, queue, allocation_kind);
+  void* const hostPtr = sycl::aligned_alloc(64, arg_alloc_size, queue, allocation_kind);
 
   if (hostPtr == nullptr)
     throw RawMemoryAllocationFailure(

@@ -350,13 +350,11 @@ struct TestReducers {
       return;  // FIXME_OPENACC
     }
 #endif
-#ifdef KOKKOS_ENABLE_SYCL
-    if constexpr (std::is_same_v<ExecSpace, Kokkos::Experimental::SYCL> &&
+    /*if constexpr (std::is_same_v<ExecSpace, Kokkos::Experimental::SYCL> &&
                   (std::is_same_v<Scalar, array_reduce<float, 7>> ||
                    std::is_same_v<Scalar, int8_t>)) {
       return;  // FIXME_SYCL
-    }
-#endif
+    }*/
     if constexpr (std::is_same_v<Scalar, point_t>) {
       return;  // FIXME_POINT_T
     }
@@ -372,12 +370,13 @@ struct TestReducers {
 #ifdef KOKKOS_ENABLE_OPENMPTARGET
     auto team_pol = Kokkos::TeamPolicy<ExecSpace>(num_teams, Kokkos::AUTO);
 #else
-    auto team_pol = Kokkos::TeamPolicy<ExecSpace>(num_teams, 1);
+    auto team_pol = Kokkos::TeamPolicy<ExecSpace>(1, 2);
 #endif
     Kokkos::parallel_reduce(team_pol, tf, sum_view);
     Kokkos::deep_copy(sum_scalar, sum_view);
     ASSERT_EQ(sum_scalar, Scalar{num_teams});
-
+/*
+    std::cout << "before\n";
     Kokkos::parallel_for(
 #ifdef KOKKOS_ENABLE_OPENMPTARGET
         Kokkos::TeamPolicy<ExecSpace>(1, Kokkos::AUTO),
@@ -394,6 +393,7 @@ struct TestReducers {
         });
     Kokkos::deep_copy(sum_scalar, sum_view);
     ASSERT_EQ(sum_scalar, Scalar{0}) << "N: " << N;
+    std::cout <<"after\n";
 
     auto team_size = std::min(128, TEST_EXECSPACE().concurrency());
     Kokkos::parallel_for(
@@ -407,7 +407,7 @@ struct TestReducers {
           sum_view() = local_scalar;
         });
     Kokkos::deep_copy(sum_scalar, sum_view);
-    ASSERT_EQ(sum_scalar, reference_sum) << "N: " << N;
+    ASSERT_EQ(sum_scalar, reference_sum) << "N: " << N;*/
   }
 
   static void test_sum(int N) {

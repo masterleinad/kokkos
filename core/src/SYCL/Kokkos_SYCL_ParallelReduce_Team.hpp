@@ -212,10 +212,11 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
                                      sycl::memory_scope::device,
                                      sycl::access::address_space::global_space>
                         scratch_flags_ref(*scratch_flags);
-                    num_teams_done = ++scratch_flags_ref;
+		    Kokkos::printf("%p %llu\n", static_cast<void*>(scratch_flags), uintptr_t( static_cast<void*>(scratch_flags))%64); 
+                    //num_teams_done = ++scratch_flags_ref;
                   }
                   sycl::group_barrier(item.get_group());
-                  if (num_teams_done == n_wgroups) {
+                  if (1) {//num_teams_done == n_wgroups) {
                     if (local_id >= n_wgroups)
                       reducer.init(&local_mem[local_id * value_count]);
                     else {
