@@ -212,7 +212,9 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
                                      sycl::memory_scope::device,
                                      sycl::access::address_space::global_space>
                         scratch_flags_ref(*scratch_flags);
-		    Kokkos::printf("%p %llu\n", static_cast<void*>(scratch_flags), uintptr_t( static_cast<void*>(scratch_flags))%64); 
+		    //Kokkos::printf("%p %llu, %p %llu\n",
+		//		   static_cast<void*>(scratch_flags), uintptr_t( static_cast<void*>(scratch_flags))%64,
+	//			   static_cast<void*>(num_teams_done.get_pointer()), uintptr_t( static_cast<void*>(num_teams_done.get_pointer()))%64); 
                     n_teams_done[0] = ++scratch_flags_ref;
                   }
                   sycl::group_barrier(item.get_group());
@@ -312,9 +314,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
         auto wgroup_size = m_team_size * final_vector_size;
         std::size_t size = std::size_t(m_league_size) * wgroup_size;
         sycl::local_accessor<value_type, 1> local_mem(
-            sycl::range<1>(wgroup_size) * std::max(value_count, 1u) +
-                (sizeof(unsigned int) + sizeof(value_type) - 1) /
-                    sizeof(value_type),
+            sycl::range<1>(wgroup_size) * std::max(value_count, 1u),
             cgh);
 
         const auto init_size =
