@@ -172,7 +172,6 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
 
         auto team_reduction_factory =
             [&](sycl::local_accessor<value_type, 1> local_mem,
-		sycl::local_accessor<unsigned int> n_teams_done,
                 sycl::device_ptr<value_type> results_ptr) {
               auto device_accessible_result_ptr =
                   m_result_ptr_device_accessible
@@ -219,17 +218,17 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
                                                 item.get_local_range()[1]));
 
                   if (local_id == 0) {
-                    sycl::atomic_ref<unsigned, sycl::memory_order::seq_cst,
+                    sycl::atomic_ref<unsigned, sycl::memory_order::acq_rel,
                                      sycl::memory_scope::device,
                                      sycl::access::address_space::global_space>
                         scratch_flags_ref(*scratch_flags);
-		    //Kokkos::printf("%p %llu, %p %llu\n",
-		//		   static_cast<void*>(scratch_flags), uintptr_t( static_cast<void*>(scratch_flags))%64,
-	//			   static_cast<void*>(num_teams_done.get_pointer()), uintptr_t( static_cast<void*>(num_teams_done.get_pointer()))%64); 
-                    n_teams_done[0] = ++scratch_flags_ref;
+		    Kokkos::printf("%p %llu, %p %llu\n",
+				   static_cast<void*>(scratch_flags), uintptr_t( static_cast<void*>(scratch_flags))%64,
+				   static_cast<void*>(num_teams_done.get_pointer()), uintptr_t( static_cast<void*>(num_teams_done.get_pointer()))%64); 
+                    num_teams_done[0] = ++scratch_flags_ref;
                   }
                   sycl::group_barrier(item.get_group());
-                  if (n_teams_done[0] == n_wgroups) {
+                  if (num_teams_done[0] == n_wgroups) {
                     if (local_id >= n_wgroups)
                       reducer.init(&local_mem[local_id * value_count]);
                     else {
@@ -278,10 +277,10 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
                                      sycl::memory_scope::device,
                                      sycl::access::address_space::global_space>
                         scratch_flags_ref(*scratch_flags);
-                    n_teams_done[0] = ++scratch_flags_ref;
+                    num_teams_done[0] = ++scratch_flags_ref;
                   }
                   item.barrier(sycl::access::fence_space::local_space);
-                  if (n_teams_done[0] == n_wgroups) {
+                  if (num_teams_done[0] == n_wgroups) {
                     if (local_id >= n_wgroups)
                       reducer.init(&local_value);
                     else {
@@ -303,7 +302,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
               return lambda;
             };
 
-        auto dummy_reduction_lambda = team_reduction_factory({1, cgh}, num_teams_done, nullptr);
+        auto dummy_reduction_lambda = team_reduction_factory({1, cgh}, nullptr);
 
         static sycl::kernel kernel = [&] {
           sycl::kernel_id functor_kernel_id =
@@ -348,7 +347,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
               wgroup_size;
         }
 
-        auto reduction_lambda = team_reduction_factory(local_mem, num_teams_done, results_ptr);
+        auto reduction_lambda = team_reduction_factory(local_mem, results_ptr);
 
 #ifndef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
         cgh.depends_on(memcpy_event);
