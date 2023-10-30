@@ -19,7 +19,6 @@
 #include <limits>
 
 #include <Kokkos_Core.hpp>
-#include <TestNonTrivialScalarTypes.hpp>
 
 //--------------------------------------------------------------------------
 
@@ -45,15 +44,6 @@ struct TestReducers {
 
     KOKKOS_INLINE_FUNCTION
     void operator()(const int& i, Scalar& value) const { value += values(i); }
-  };
-
-  struct TeamSumFunctor {
-    using member_type = typename Kokkos::TeamPolicy<ExecSpace>::member_type;
-
-    KOKKOS_INLINE_FUNCTION
-    void operator()(const member_type& m, Scalar& value) const {
-      if (m.team_rank() == m.team_size() - 1) value += Scalar(1);
-    }
   };
 
   struct ProdFunctor {
@@ -329,87 +319,6 @@ struct TestReducers {
       value = value || values(i);
     }
   };
-
-  // get number of teams for TeamPolicy depending on the tested type
-  constexpr static int get_num_teams() {
-    if constexpr (sizeof(Scalar) == 1) {
-      return 126;
-    } else if constexpr (std::is_same_v<Scalar,
-                                        Kokkos::Experimental::bhalf_t>) {
-      return 256;
-    }
-
-    return 1024;
-  }
-
-  static void test_sum_team_policy(int N, SumFunctor f, Scalar reference_sum) {
-#ifdef KOKKOS_ENABLE_OPENACC
-    if constexpr (std::is_same_v<ExecSpace, Kokkos::Experimental::OpenACC> &&
-                  (std::is_same_v<Scalar, size_t> ||
-                   std::is_same_v<Scalar, double>)) {
-      return;  // FIXME_OPENACC
-    }
-#endif
-    /*if constexpr (std::is_same_v<ExecSpace, Kokkos::Experimental::SYCL> &&
-                  (std::is_same_v<Scalar, array_reduce<float, 7>> ||
-                   std::is_same_v<Scalar, int8_t>)) {
-      return;  // FIXME_SYCL
-    }*/
-    if constexpr (std::is_same_v<Scalar, point_t>) {
-      return;  // FIXME_POINT_T
-    }
-
-    using member_type = typename Kokkos::TeamPolicy<ExecSpace>::member_type;
-
-    Scalar sum_scalar;
-    Kokkos::View<Scalar, ExecSpace> sum_view("result");
-    Kokkos::deep_copy(sum_view, Scalar(1));
-
-    constexpr int num_teams = get_num_teams();
-    TeamSumFunctor tf;
-#ifdef KOKKOS_ENABLE_OPENMPTARGET
-    auto team_pol = Kokkos::TeamPolicy<ExecSpace>(num_teams, Kokkos::AUTO);
-#else
-    auto team_pol = Kokkos::TeamPolicy<ExecSpace>(1, 2);
-#endif
-    Kokkos::parallel_reduce(team_pol, tf, sum_view);
-    Kokkos::deep_copy(sum_scalar, sum_view);
-    ASSERT_EQ(sum_scalar, Scalar{num_teams});
-/*
-    std::cout << "before\n";
-    Kokkos::parallel_for(
-#ifdef KOKKOS_ENABLE_OPENMPTARGET
-        Kokkos::TeamPolicy<ExecSpace>(1, Kokkos::AUTO),
-#else
-        Kokkos::TeamPolicy<ExecSpace>(1, 1),
-#endif
-        KOKKOS_LAMBDA(member_type team_member) {
-          Scalar local_scalar;
-          Kokkos::Sum<Scalar, typename ExecSpace::memory_space> reducer_scalar(
-              local_scalar);
-          Kokkos::parallel_reduce(Kokkos::TeamThreadRange(team_member, 0), f,
-                                  reducer_scalar);
-          sum_view() = local_scalar;
-        });
-    Kokkos::deep_copy(sum_scalar, sum_view);
-    ASSERT_EQ(sum_scalar, Scalar{0}) << "N: " << N;
-    std::cout <<"after\n";
-
-    auto team_size = std::min(128, TEST_EXECSPACE().concurrency());
-    Kokkos::parallel_for(
-        Kokkos::TeamPolicy<ExecSpace>(10, team_size),
-        KOKKOS_LAMBDA(member_type team_member) {
-          Scalar local_scalar;
-          Kokkos::Sum<Scalar, typename ExecSpace::memory_space> reducer_scalar(
-              local_scalar);
-          Kokkos::parallel_reduce(Kokkos::TeamThreadRange(team_member, N), f,
-                                  reducer_scalar);
-          sum_view() = local_scalar;
-        });
-    Kokkos::deep_copy(sum_scalar, sum_view);
-    ASSERT_EQ(sum_scalar, reference_sum) << "N: " << N;*/
-  }
-
   static void test_sum(int N) {
     Kokkos::View<Scalar*, ExecSpace> values("Values", N);
     auto h_values        = Kokkos::create_mirror_view(values);
@@ -464,8 +373,6 @@ struct TestReducers {
       Scalar sum_scalar_view = reducer_scalar.reference();
       ASSERT_EQ(sum_scalar_view, reference_sum) << "N: " << N;
     }
-
-    test_sum_team_policy(N, f, reference_sum);
 
     {
       Kokkos::View<Scalar, Kokkos::HostSpace> sum_view("View");

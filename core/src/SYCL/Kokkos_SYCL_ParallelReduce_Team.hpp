@@ -222,9 +222,6 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
                                      sycl::memory_scope::device,
                                      sycl::access::address_space::global_space>
                         scratch_flags_ref(*scratch_flags);
-		    Kokkos::printf("%p %llu, %p %llu\n",
-				   static_cast<void*>(scratch_flags), uintptr_t( static_cast<void*>(scratch_flags))%64,
-				   static_cast<void*>(num_teams_done.get_pointer()), uintptr_t( static_cast<void*>(num_teams_done.get_pointer()))%64); 
                     num_teams_done[0] = ++scratch_flags_ref;
                   }
                   sycl::group_barrier(item.get_group());
