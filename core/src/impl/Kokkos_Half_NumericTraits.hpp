@@ -87,7 +87,7 @@ struct Kokkos::Experimental::Impl::infinity_helper<Kokkos::Experimental::half_t>
 template <>
 struct Kokkos::Experimental::Impl::finite_min_helper<
     Kokkos::Experimental::half_t> {
-  static constexpr float value = -65504.0F;
+  static constexpr Kokkos::Experimental::half_t::bit_comparison_type value{0b1'11110'1111111111};
 };
 
 /// \brief: Maximum normalized number
@@ -104,7 +104,7 @@ struct Kokkos::Experimental::Impl::finite_min_helper<
 template <>
 struct Kokkos::Experimental::Impl::finite_max_helper<
     Kokkos::Experimental::half_t> {
-  static constexpr float value = 65504.0F;
+  static constexpr Kokkos::Experimental::half_t::bit_comparison_type value{0b0'11110'1111111111};
 };
 
 /// \brief: This is the difference between 1 and the smallest floating point
@@ -123,7 +123,7 @@ struct Kokkos::Experimental::Impl::finite_max_helper<
 template <>
 struct Kokkos::Experimental::Impl::epsilon_helper<
     Kokkos::Experimental::half_t> {
-  static constexpr float value = 0.0009765625F;
+  static constexpr Kokkos::Experimental::half_t::bit_comparison_type value{0b0'00101'0000000000};
 };
 
 /// @brief: The largest possible rounding error in ULPs
@@ -134,7 +134,7 @@ struct Kokkos::Experimental::Impl::epsilon_helper<
 template <>
 struct Kokkos::Experimental::Impl::round_error_helper<
     Kokkos::Experimental::half_t> {
-  static constexpr float value = 0.5F;
+  static constexpr Kokkos::Experimental::half_t::bit_comparison_type value{0b0'01110'0000000000};
 };
 
 /// \brief: Minimum normalized positive half precision number
@@ -152,7 +152,13 @@ struct Kokkos::Experimental::Impl::round_error_helper<
 template <>
 struct Kokkos::Experimental::Impl::norm_min_helper<
     Kokkos::Experimental::half_t> {
-  static constexpr float value = 0.00006103515625F;
+  static constexpr Kokkos::Experimental::half_t::bit_comparison_type value{0b0'00001'0000000000};
+};
+
+template <>
+struct Kokkos::Experimental::Impl::denorm_min_helper<
+    Kokkos::Experimental::half_t> {
+  static constexpr Kokkos::Experimental::half_t::bit_comparison_type value{0b0'00000'0000000001};
 };
 
 /// \brief: Quiet not a half precision number
@@ -207,6 +213,13 @@ struct Kokkos::Experimental::Impl::digits10_helper<
   static constexpr int value = 3;
 };
 
+// std::ceil(std::numeric_limits<float>::digits * std::log10(2) + 1)
+template <>
+struct Kokkos::Experimental::Impl::max_digits10_helper<
+    Kokkos::Experimental::half_t> {
+  static constexpr int value = 5 ;
+};
+
 /// \brief: Value of the base of the exponent representation.
 ///
 /// Stdc defined this as the value of the base, or radix, of the exponent representation.
@@ -234,6 +247,12 @@ template <>
 struct Kokkos::Experimental::Impl::min_exponent_helper<
     Kokkos::Experimental::half_t> {
   static constexpr int value = -13;
+};
+
+template <>
+struct Kokkos::Experimental::Impl::min_exponent10_helper<
+    Kokkos::Experimental::half_t> {
+  static constexpr int value = -4;
 };
 
 /// \brief: This is the largest possible exponent value
@@ -274,30 +293,36 @@ struct Kokkos::Experimental::Impl::infinity_helper<Kokkos::Experimental::bhalf_t
 template <>
 struct Kokkos::Experimental::Impl::finite_min_helper<
     Kokkos::Experimental::bhalf_t> {
-  static constexpr float value = -3.38953139e38;
+  static constexpr Kokkos::Experimental::bhalf_t::bit_comparison_type value{0b1'11111110'1111111};
 };
 // Maximum normalized number
 template <>
 struct Kokkos::Experimental::Impl::finite_max_helper<
     Kokkos::Experimental::bhalf_t> {
-  static constexpr float value = 3.38953139e38;
+  static constexpr Kokkos::Experimental::bhalf_t::bit_comparison_type value{0b0'11111110'1111111};
 };
 // 1/2^7
 template <>
 struct Kokkos::Experimental::Impl::epsilon_helper<
     Kokkos::Experimental::bhalf_t> {
-  static constexpr float value = 0.0078125F;
+  static constexpr Kokkos::Experimental::bhalf_t::bit_comparison_type value{0b0'01111000'0000000};
 };
 template <>
 struct Kokkos::Experimental::Impl::round_error_helper<
     Kokkos::Experimental::bhalf_t> {
-  static constexpr float value = 0.5F;
+  static constexpr Kokkos::Experimental::bhalf_t::bit_comparison_type value{0b0'01111110'0000000};
 };
 // Minimum normalized positive bhalf number
 template <>
 struct Kokkos::Experimental::Impl::norm_min_helper<
     Kokkos::Experimental::bhalf_t> {
-  static constexpr float value = 1.1754494351e-38;
+  static constexpr Kokkos::Experimental::bhalf_t::bit_comparison_type value{0b0'00000001'0000000};
+};
+// Minimum denormalized positive bhalf number
+template <>
+struct Kokkos::Experimental::Impl::denorm_min_helper<
+    Kokkos::Experimental::bhalf_t> {
+  static constexpr Kokkos::Experimental::bhalf_t::bit_comparison_type value{0b0'00000000'0000001};
 };
 // Quiet not a bhalf number
 template <>
@@ -324,6 +349,12 @@ struct Kokkos::Experimental::Impl::digits10_helper<
     Kokkos::Experimental::bhalf_t> {
   static constexpr int value = 1;
 };
+// std::ceil(std::numeric_limits<float>::digits * std::log10(2) + 1)
+template <>
+struct Kokkos::Experimental::Impl::max_digits10_helper<
+    Kokkos::Experimental::bhalf_t> {
+  static constexpr int value = 2;
+};
 // Value of the base of the exponent representation.
 template <>
 struct Kokkos::Experimental::Impl::radix_helper<Kokkos::Experimental::bhalf_t> {
@@ -335,6 +366,11 @@ template <>
 struct Kokkos::Experimental::Impl::min_exponent_helper<
     Kokkos::Experimental::bhalf_t> {
   static constexpr int value = -125;
+};
+template <>
+struct Kokkos::Experimental::Impl::min_exponent10_helper<
+    Kokkos::Experimental::bhalf_t> {
+  static constexpr int value = -37;
 };
 // This is the largest possible exponent value
 // with a bias of one (C11 5.2.4.2.2).
