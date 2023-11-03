@@ -283,13 +283,6 @@ class alignas(FloatType) floating_point_wrapper {
 
  private:
   impl_type val;
-  using fixed_width_integer_type = std::conditional_t<
-      sizeof(impl_type) == 2, uint16_t,
-      std::conditional_t<
-          sizeof(impl_type) == 4, uint32_t,
-          std::conditional_t<sizeof(impl_type) == 8, uint64_t, void>>>;
-  static_assert(!std::is_void<fixed_width_integer_type>::value,
-                "Invalid impl_type");
 
  public:
   // In-class initialization and defaulted default constructors not used
@@ -323,10 +316,8 @@ class alignas(FloatType) floating_point_wrapper {
 #if defined(KOKKOS_HALF_IS_FULL_TYPE_ON_ARCH) && !defined(KOKKOS_ENABLE_SYCL)
     val = rhs.val;
 #else
-    const volatile fixed_width_integer_type* rv_ptr =
-        reinterpret_cast<const volatile fixed_width_integer_type*>(&rhs.val);
-    const fixed_width_integer_type rv_val = *rv_ptr;
-    val       = reinterpret_cast<const impl_type&>(rv_val);
+    const auto bit_val = Kokkos::bit_cast<bit_comparison_type>(rhs.val);
+    val                = bit_val;
 #endif  // KOKKOS_HALF_IS_FULL_TYPE_ON_ARCH
   }
 
@@ -495,10 +486,7 @@ class alignas(FloatType) floating_point_wrapper {
   template <class T>
   KOKKOS_FUNCTION void operator=(T rhs) volatile {
     impl_type new_val = cast_to_wrapper(rhs, val).val;
-    volatile fixed_width_integer_type* val_ptr =
-        reinterpret_cast<volatile fixed_width_integer_type*>(
-            const_cast<impl_type*>(&val));
-    *val_ptr = reinterpret_cast<fixed_width_integer_type&>(new_val);
+    val               = Kokkos::bit_cast<bit_comparison_type>(new_val);
   }
 
   // Compound operators
