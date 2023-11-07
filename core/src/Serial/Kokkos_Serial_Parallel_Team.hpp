@@ -223,7 +223,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
   const size_t m_shared;
 
   template <class TagType>
-  inline std::enable_if_t<std::is_void<TagType>::value> exec(
+  inline std::enable_if_t<std::is_void_v<TagType>> exec(
       HostThreadTeamData& data) const {
     for (int ileague = 0; ileague < m_league; ++ileague) {
       m_functor(Member(data, ileague, m_league));
@@ -231,7 +231,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
   }
 
   template <class TagType>
-  inline std::enable_if_t<!std::is_void<TagType>::value> exec(
+  inline std::enable_if_t<!std::is_void_v<TagType>> exec(
       HostThreadTeamData& data) const {
     const TagType t{};
     for (int ileague = 0; ileague < m_league; ++ileague) {
@@ -291,7 +291,7 @@ class ParallelReduce<CombinedFunctorReducerType,
   size_t m_shared;
 
   template <class TagType>
-  inline std::enable_if_t<std::is_void<TagType>::value> exec(
+  inline std::enable_if_t<std::is_void_v<TagType>> exec(
       HostThreadTeamData& data, reference_type update) const {
     for (int ileague = 0; ileague < m_league; ++ileague) {
       m_functor_reducer.get_functor()(Member(data, ileague, m_league), update);
@@ -299,7 +299,7 @@ class ParallelReduce<CombinedFunctorReducerType,
   }
 
   template <class TagType>
-  inline std::enable_if_t<!std::is_void<TagType>::value> exec(
+  inline std::enable_if_t<!std::is_void_v<TagType>> exec(
       HostThreadTeamData& data, reference_type update) const {
     const TagType t{};
 

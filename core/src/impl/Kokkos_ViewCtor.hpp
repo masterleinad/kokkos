@@ -84,10 +84,9 @@ struct ViewCtorProp<void, CommonViewAllocProp<Specialize, T>> {
 
 /* Property flags have constexpr value */
 template <typename P>
-struct ViewCtorProp<
-    std::enable_if_t<std::is_same<P, AllowPadding_t>::value ||
-                     std::is_same<P, WithoutInitializing_t>::value>,
-    P> {
+struct ViewCtorProp<std::enable_if_t<std::is_same_v<P, AllowPadding_t> ||
+                                     std::is_same_v<P, WithoutInitializing_t>>,
+                    P> {
   ViewCtorProp()                     = default;
   ViewCtorProp(const ViewCtorProp &) = default;
   ViewCtorProp &operator=(const ViewCtorProp &) = default;

@@ -243,11 +243,11 @@ class UnorderedMap {
   using const_map_type = UnorderedMap<const_key_type, const_value_type,
                                       device_type, hasher_type, equal_to_type>;
 
-  static const bool is_set = std::is_void<value_type>::value;
+  static const bool is_set = std::is_void_v<value_type>;
   static const bool has_const_key =
-      std::is_same<const_key_type, declared_key_type>::value;
+      std::is_same_v<const_key_type, declared_key_type>;
   static const bool has_const_value =
-      is_set || std::is_same<const_value_type, declared_value_type>::value;
+      is_set || std::is_same_v<const_value_type, declared_value_type>;
 
   static const bool is_insertable_map =
       !has_const_key && (is_set || !has_const_value);
@@ -746,7 +746,7 @@ class UnorderedMap {
   /// 'const value_type' via Cuda texture fetch must return by value.
   template <typename Dummy = value_type>
   KOKKOS_FORCEINLINE_FUNCTION std::enable_if_t<
-      !std::is_void<Dummy>::value,  // !is_set
+      !std::is_void_v<Dummy>,  // !is_set
       std::conditional_t<has_const_value, impl_value_type, impl_value_type &>>
   value_at(size_type i) const {
     KOKKOS_EXPECTS(i < capacity());
@@ -806,8 +806,8 @@ class UnorderedMap {
   }
 
   template <typename SKey, typename SValue, typename SDevice>
-  std::enable_if_t<std::is_same<std::remove_const_t<SKey>, key_type>::value &&
-                   std::is_same<std::remove_const_t<SValue>, value_type>::value>
+  std::enable_if_t<std::is_same_v<std::remove_const_t<SKey>, key_type> &&
+                   std::is_same_v<std::remove_const_t<SValue>, value_type>>
   create_copy_view(
       UnorderedMap<SKey, SValue, SDevice, Hasher, EqualTo> const &src) {
     if (m_hash_lists.data() != src.m_hash_lists.data()) {

@@ -60,13 +60,13 @@ namespace Impl {
 // NOTE the comparison below is encapsulated to silent warnings about pointless
 // comparison of unsigned integer with zero
 template <class T>
-constexpr std::enable_if_t<!std::is_signed<T>::value, bool>
+constexpr std::enable_if_t<!std::is_signed_v<T>, bool>
 is_less_than_value_initialized_variable(T) {
   return false;
 }
 
 template <class T>
-constexpr std::enable_if_t<std::is_signed<T>::value, bool>
+constexpr std::enable_if_t<std::is_signed_v<T>, bool>
 is_less_than_value_initialized_variable(T arg) {
   return arg < T{};
 }
@@ -75,7 +75,7 @@ is_less_than_value_initialized_variable(T arg) {
 template <class To, class From>
 constexpr To checked_narrow_cast(From arg) {
   constexpr const bool is_different_signedness =
-      (std::is_signed<To>::value != std::is_signed<From>::value);
+      (std::is_signed_v<To> != std::is_signed_v<From>);
   auto const ret = static_cast<To>(arg);
   if (static_cast<From>(ret) != arg ||
       (is_different_signedness &&
@@ -167,7 +167,7 @@ struct MDRangePolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
   template <class... OtherProperties>
   friend struct MDRangePolicy;
 
-  static_assert(!std::is_void<typename traits::iteration_pattern>::value,
+  static_assert(!std::is_void_v<typename traits::iteration_pattern>,
                 "Kokkos Error: MD iteration pattern not defined");
 
   using iteration_pattern = typename traits::iteration_pattern;
@@ -222,9 +222,9 @@ struct MDRangePolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
 
   template <typename LT, std::size_t LN, typename UT, std::size_t UN,
             typename TT = array_index_type, std::size_t TN = rank,
-            typename = std::enable_if_t<std::is_integral<LT>::value &&
-                                        std::is_integral<UT>::value &&
-                                        std::is_integral<TT>::value>>
+            typename = std::enable_if_t<std::is_integral_v<LT> &&
+                                        std::is_integral_v<UT> &&
+                                        std::is_integral_v<TT>>>
   MDRangePolicy(const LT (&lower)[LN], const UT (&upper)[UN],
                 const TT (&tile)[TN] = {})
       : MDRangePolicy(
@@ -241,9 +241,9 @@ struct MDRangePolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
 
   template <typename LT, std::size_t LN, typename UT, std::size_t UN,
             typename TT = array_index_type, std::size_t TN = rank,
-            typename = std::enable_if_t<std::is_integral<LT>::value &&
-                                        std::is_integral<UT>::value &&
-                                        std::is_integral<TT>::value>>
+            typename = std::enable_if_t<std::is_integral_v<LT> &&
+                                        std::is_integral_v<UT> &&
+                                        std::is_integral_v<TT>>>
   MDRangePolicy(const typename traits::execution_space& work_space,
                 const LT (&lower)[LN], const UT (&upper)[UN],
                 const TT (&tile)[TN] = {})
@@ -275,14 +275,14 @@ struct MDRangePolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
   }
 
   template <typename T, std::size_t NT = rank,
-            typename = std::enable_if_t<std::is_integral<T>::value>>
+            typename = std::enable_if_t<std::is_integral_v<T>>>
   MDRangePolicy(Kokkos::Array<T, rank> const& lower,
                 Kokkos::Array<T, rank> const& upper,
                 Kokkos::Array<T, NT> const& tile = Kokkos::Array<T, NT>{})
       : MDRangePolicy(typename traits::execution_space(), lower, upper, tile) {}
 
   template <typename T, std::size_t NT = rank,
-            typename = std::enable_if_t<std::is_integral<T>::value>>
+            typename = std::enable_if_t<std::is_integral_v<T>>>
   MDRangePolicy(const typename traits::execution_space& work_space,
                 Kokkos::Array<T, rank> const& lower,
                 Kokkos::Array<T, rank> const& upper,

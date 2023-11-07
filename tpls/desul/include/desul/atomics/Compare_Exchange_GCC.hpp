@@ -27,7 +27,7 @@ struct host_atomic_exchange_available_gcc {
 #endif
        (sizeof(T) == 8 && alignof(T) == 8)) &&
 #endif
-      std::is_trivially_copyable<T>::value;
+      std::is_trivially_copyable_v<T>;
 };
 
 // clang-format off

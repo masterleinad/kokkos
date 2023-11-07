@@ -75,7 +75,7 @@ class LogicalMemorySpace {
   /// parallel using the View's default execution space).
 
   using execution_space =
-      std::conditional_t<std::is_void<DefaultBaseExecutionSpace>::value,
+      std::conditional_t<std::is_void_v<DefaultBaseExecutionSpace>,
                          typename BaseSpace::execution_space,
                          DefaultBaseExecutionSpace>;
 

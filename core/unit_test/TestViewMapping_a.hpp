@@ -539,19 +539,17 @@ void test_view_mapping() {
     static_assert(a_int_r5::dimension::ArgN5 == 1, "");
 
     static_assert(
-        std::is_same<typename a_int_r1::dimension, ViewDimension<0> >::value,
-        "");
-    static_assert(
-        std::is_same<typename a_int_r1::non_const_value_type, int>::value, "");
+        std::is_same_v<typename a_int_r1::dimension, ViewDimension<0> >, "");
+    static_assert(std::is_same_v<typename a_int_r1::non_const_value_type, int>,
+                  "");
 
     static_assert(a_const_int_r1::dimension::rank == 1, "");
     static_assert(a_const_int_r1::dimension::rank_dynamic == 1, "");
-    static_assert(std::is_same<typename a_const_int_r1::dimension,
-                               ViewDimension<0> >::value,
-                  "");
     static_assert(
-        std::is_same<typename a_const_int_r1::non_const_value_type, int>::value,
+        std::is_same_v<typename a_const_int_r1::dimension, ViewDimension<0> >,
         "");
+    static_assert(
+        std::is_same_v<typename a_const_int_r1::non_const_value_type, int>, "");
 
     static_assert(a_const_int_r5::dimension::rank == 5, "");
     static_assert(a_const_int_r5::dimension::rank_dynamic == 2, "");
@@ -563,20 +561,19 @@ void test_view_mapping() {
     static_assert(a_const_int_r5::dimension::ArgN4 == 6, "");
     static_assert(a_const_int_r5::dimension::ArgN5 == 1, "");
 
-    static_assert(std::is_same<typename a_const_int_r5::dimension,
-                               ViewDimension<0, 0, 4, 5, 6> >::value,
+    static_assert(std::is_same_v<typename a_const_int_r5::dimension,
+                                 ViewDimension<0, 0, 4, 5, 6> >,
                   "");
     static_assert(
-        std::is_same<typename a_const_int_r5::non_const_value_type, int>::value,
-        "");
+        std::is_same_v<typename a_const_int_r5::non_const_value_type, int>, "");
 
     static_assert(a_int_r5::dimension::rank == 5, "");
     static_assert(a_int_r5::dimension::rank_dynamic == 2, "");
-    static_assert(std::is_same<typename a_int_r5::dimension,
-                               ViewDimension<0, 0, 4, 5, 6> >::value,
+    static_assert(std::is_same_v<typename a_int_r5::dimension,
+                                 ViewDimension<0, 0, 4, 5, 6> >,
                   "");
-    static_assert(
-        std::is_same<typename a_int_r5::non_const_value_type, int>::value, "");
+    static_assert(std::is_same_v<typename a_int_r5::non_const_value_type, int>,
+                  "");
   }
 
   {
@@ -594,8 +591,8 @@ void test_view_mapping() {
     static_assert(a_int_r5::dimension::ArgN2 == 0, "");
     static_assert(a_int_r5::dimension::ArgN3 == 3, "");
     static_assert(a_int_r5::dimension::ArgN4 == 4, "");
-    static_assert(
-        std::is_same<typename a_int_r5::non_const_value_type, int>::value, "");
+    static_assert(std::is_same_v<typename a_int_r5::non_const_value_type, int>,
+                  "");
   }
 
   {
@@ -603,70 +600,66 @@ void test_view_mapping() {
 
     using a_const_int_r1 = ViewDataAnalysis<const int[], void>;
 
-    static_assert(std::is_void<typename a_const_int_r1::specialize>::value, "");
-    static_assert(std::is_same<typename a_const_int_r1::dimension,
-                               Kokkos::Impl::ViewDimension<0> >::value,
+    static_assert(std::is_void_v<typename a_const_int_r1::specialize>, "");
+    static_assert(std::is_same_v<typename a_const_int_r1::dimension,
+                                 Kokkos::Impl::ViewDimension<0> >,
                   "");
 
+    static_assert(std::is_same_v<typename a_const_int_r1::type, const int*>,
+                  "");
     static_assert(
-        std::is_same<typename a_const_int_r1::type, const int*>::value, "");
-    static_assert(
-        std::is_same<typename a_const_int_r1::value_type, const int>::value,
-        "");
+        std::is_same_v<typename a_const_int_r1::value_type, const int>, "");
 
-    static_assert(std::is_same<typename a_const_int_r1::scalar_array_type,
-                               const int*>::value,
-                  "");
     static_assert(
-        std::is_same<typename a_const_int_r1::const_type, const int*>::value,
+        std::is_same_v<typename a_const_int_r1::scalar_array_type, const int*>,
         "");
-    static_assert(std::is_same<typename a_const_int_r1::const_value_type,
-                               const int>::value,
-                  "");
-    static_assert(std::is_same<typename a_const_int_r1::const_scalar_array_type,
-                               const int*>::value,
-                  "");
     static_assert(
-        std::is_same<typename a_const_int_r1::non_const_type, int*>::value, "");
+        std::is_same_v<typename a_const_int_r1::const_type, const int*>, "");
     static_assert(
-        std::is_same<typename a_const_int_r1::non_const_value_type, int>::value,
+        std::is_same_v<typename a_const_int_r1::const_value_type, const int>,
         "");
+    static_assert(
+        std::is_same_v<typename a_const_int_r1::const_scalar_array_type,
+                       const int*>,
+        "");
+    static_assert(std::is_same_v<typename a_const_int_r1::non_const_type, int*>,
+                  "");
+    static_assert(
+        std::is_same_v<typename a_const_int_r1::non_const_value_type, int>, "");
 
     using a_const_int_r3 = ViewDataAnalysis<const int* * [4], void>;
 
-    static_assert(std::is_void<typename a_const_int_r3::specialize>::value, "");
+    static_assert(std::is_void_v<typename a_const_int_r3::specialize>, "");
 
-    static_assert(std::is_same<typename a_const_int_r3::dimension,
-                               Kokkos::Impl::ViewDimension<0, 0, 4> >::value,
+    static_assert(std::is_same_v<typename a_const_int_r3::dimension,
+                                 Kokkos::Impl::ViewDimension<0, 0, 4> >,
                   "");
 
     static_assert(
-        std::is_same<typename a_const_int_r3::type, const int* * [4]>::value,
-        "");
+        std::is_same_v<typename a_const_int_r3::type, const int* * [4]>, "");
     static_assert(
-        std::is_same<typename a_const_int_r3::value_type, const int>::value,
-        "");
-    static_assert(std::is_same<typename a_const_int_r3::scalar_array_type,
-                               const int* * [4]>::value,
-                  "");
-    static_assert(std::is_same<typename a_const_int_r3::const_type,
-                               const int* * [4]>::value,
-                  "");
-    static_assert(std::is_same<typename a_const_int_r3::const_value_type,
-                               const int>::value,
-                  "");
-    static_assert(std::is_same<typename a_const_int_r3::const_scalar_array_type,
-                               const int* * [4]>::value,
-                  "");
-    static_assert(std::is_same<typename a_const_int_r3::non_const_type,
-                               int* * [4]>::value,
+        std::is_same_v<typename a_const_int_r3::value_type, const int>, "");
+    static_assert(std::is_same_v<typename a_const_int_r3::scalar_array_type,
+                                 const int* * [4]>,
                   "");
     static_assert(
-        std::is_same<typename a_const_int_r3::non_const_value_type, int>::value,
+        std::is_same_v<typename a_const_int_r3::const_type, const int* * [4]>,
         "");
     static_assert(
-        std::is_same<typename a_const_int_r3::non_const_scalar_array_type,
-                     int* * [4]>::value,
+        std::is_same_v<typename a_const_int_r3::const_value_type, const int>,
+        "");
+    static_assert(
+        std::is_same_v<typename a_const_int_r3::const_scalar_array_type,
+                       const int* * [4]>,
+        "");
+    static_assert(
+        std::is_same_v<typename a_const_int_r3::non_const_type, int* * [4]>,
+        "");
+    static_assert(
+        std::is_same_v<typename a_const_int_r3::non_const_value_type, int>, "");
+    static_assert(
+        std::is_same_v<typename a_const_int_r3::non_const_scalar_array_type,
+                       int* * [4]>,
         "");
 
     // std::cout << "typeid( const int**[4] ).name() = " << typeid( const
@@ -818,8 +811,8 @@ void test_view_mapping() {
   // Testing using space instance for allocation.
   // The execution space of the memory space must be available for view data
   // initialization.
-  if (std::is_same<ExecSpace,
-                   typename ExecSpace::memory_space::execution_space>::value) {
+  if (std::is_same_v<ExecSpace,
+                     typename ExecSpace::memory_space::execution_space>) {
     using namespace Kokkos;
 
     using memory_space = typename ExecSpace::memory_space;

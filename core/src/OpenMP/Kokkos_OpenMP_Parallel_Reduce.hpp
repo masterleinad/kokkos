@@ -47,7 +47,7 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
   const pointer_type m_result_ptr;
 
   template <class TagType>
-  inline static std::enable_if_t<std::is_void<TagType>::value> exec_range(
+  inline static std::enable_if_t<std::is_void_v<TagType>> exec_range(
       const FunctorType& functor, const Member ibeg, const Member iend,
       reference_type update) {
     for (Member iwork = ibeg; iwork < iend; ++iwork) {
@@ -56,7 +56,7 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
   }
 
   template <class TagType>
-  inline static std::enable_if_t<!std::is_void<TagType>::value> exec_range(
+  inline static std::enable_if_t<!std::is_void_v<TagType>> exec_range(
       const FunctorType& functor, const Member ibeg, const Member iend,
       reference_type update) {
     const TagType t{};
@@ -358,7 +358,7 @@ class ParallelReduce<CombinedFunctorReducerType,
   const int m_shmem_size;
 
   template <class TagType>
-  inline static std::enable_if_t<(std::is_void<TagType>::value)> exec_team(
+  inline static std::enable_if_t<(std::is_void_v<TagType>)> exec_team(
       const FunctorType& functor, HostThreadTeamData& data,
       reference_type& update, const int league_rank_begin,
       const int league_rank_end, const int league_size) {
@@ -376,7 +376,7 @@ class ParallelReduce<CombinedFunctorReducerType,
   }
 
   template <class TagType>
-  inline static std::enable_if_t<(!std::is_void<TagType>::value)> exec_team(
+  inline static std::enable_if_t<(!std::is_void_v<TagType>)> exec_team(
       const FunctorType& functor, HostThreadTeamData& data,
       reference_type& update, const int league_rank_begin,
       const int league_rank_end, const int league_size) {

@@ -874,7 +874,7 @@ KOKKOS_INLINE_FUNCTION
   using ClosureValueType = typename Kokkos::Impl::FunctorAnalysis<
       Kokkos::Impl::FunctorPatternInterface::SCAN, void, Closure,
       void>::value_type;
-  static_assert(std::is_same<ClosureValueType, ValueType>::value,
+  static_assert(std::is_same_v<ClosureValueType, ValueType>,
                 "Non-matching value types of closure and return type");
 
   ValueType accum = ValueType();
@@ -926,7 +926,7 @@ KOKKOS_INLINE_FUNCTION
   using ClosureValueType = typename Kokkos::Impl::FunctorAnalysis<
       Kokkos::Impl::FunctorPatternInterface::SCAN, void, ClosureType,
       void>::value_type;
-  static_assert(std::is_same<ClosureValueType, ValueType>::value,
+  static_assert(std::is_same_v<ClosureValueType, ValueType>,
                 "Non-matching value types of closure and return type");
 
   ValueType scan_val = ValueType();

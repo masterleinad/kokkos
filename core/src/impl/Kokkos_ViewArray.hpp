@@ -27,11 +27,11 @@ struct ViewDataAnalysis<DataType, ArrayLayout, Kokkos::Array<V, N, P>> {
  private:
   using array_analysis = ViewArrayAnalysis<DataType>;
 
-  static_assert(std::is_void<P>::value, "");
-  static_assert(std::is_same<typename array_analysis::non_const_value_type,
-                             Kokkos::Array<V, N, P>>::value,
+  static_assert(std::is_void_v<P>, "");
+  static_assert(std::is_same_v<typename array_analysis::non_const_value_type,
+                               Kokkos::Array<V, N, P>>,
                 "");
-  static_assert(std::is_scalar<V>::value,
+  static_assert(std::is_scalar_v<V>,
                 "View of Array type must be of a scalar type");
 
  public:
@@ -41,8 +41,8 @@ struct ViewDataAnalysis<DataType, ArrayLayout, Kokkos::Array<V, N, P>> {
 
  private:
   enum {
-    is_const = std::is_same<typename array_analysis::value_type,
-                            typename array_analysis::const_value_type>::value
+    is_const = std::is_same_v<typename array_analysis::value_type,
+                              typename array_analysis::const_value_type>
   };
 
   using array_scalar_dimension = typename dimension::template append<N>::type;
@@ -106,8 +106,8 @@ class ViewMapping<Traits, Kokkos::Array<>> {
 
   enum {
     is_contiguous_reference =
-        (Traits::rank == 0) || (std::is_same<typename Traits::array_layout,
-                                             Kokkos::LayoutRight>::value)
+        (Traits::rank == 0) ||
+        (std::is_same_v<typename Traits::array_layout, Kokkos::LayoutRight>)
   };
 
   enum { Array_N = Traits::value_type::size() };
@@ -398,37 +398,34 @@ template <class DstTraits, class SrcTraits>
 class ViewMapping<
     DstTraits, SrcTraits,
     std::enable_if_t<(
-        std::is_same<typename DstTraits::memory_space,
-                     typename SrcTraits::memory_space>::value &&
-        std::is_void<typename DstTraits::specialize>::value &&
-        (std::is_same<typename DstTraits::array_layout,
-                      Kokkos::LayoutLeft>::value ||
-         std::is_same<typename DstTraits::array_layout,
-                      Kokkos::LayoutRight>::value ||
-         std::is_same<typename DstTraits::array_layout,
-                      Kokkos::LayoutStride>::value) &&
-        std::is_same<typename SrcTraits::specialize, Kokkos::Array<>>::value &&
-        (std::is_same<typename SrcTraits::array_layout,
-                      Kokkos::LayoutLeft>::value ||
-         std::is_same<typename SrcTraits::array_layout,
-                      Kokkos::LayoutRight>::value ||
-         std::is_same<typename SrcTraits::array_layout,
-                      Kokkos::LayoutStride>::value))>> {
+        std::is_same_v<typename DstTraits::memory_space,
+                       typename SrcTraits::memory_space> &&
+        std::is_void_v<typename DstTraits::specialize> &&
+        (std::is_same_v<typename DstTraits::array_layout, Kokkos::LayoutLeft> ||
+         std::is_same_v<typename DstTraits::array_layout,
+                        Kokkos::LayoutRight> ||
+         std::is_same_v<typename DstTraits::array_layout,
+                        Kokkos::LayoutStride>)&&std::
+            is_same_v<typename SrcTraits::specialize, Kokkos::Array<>> &&
+        (std::is_same_v<typename SrcTraits::array_layout, Kokkos::LayoutLeft> ||
+         std::is_same_v<typename SrcTraits::array_layout,
+                        Kokkos::LayoutRight> ||
+         std::is_same_v<typename SrcTraits::array_layout,
+                        Kokkos::LayoutStride>))>> {
  public:
   // Can only convert to View::array_type
 
   enum {
     is_assignable_data_type =
-        std::is_same<typename DstTraits::data_type,
-                     typename SrcTraits::scalar_array_type>::value &&
+        std::is_same_v<typename DstTraits::data_type,
+                       typename SrcTraits::scalar_array_type> &&
         (DstTraits::rank == SrcTraits::rank + 1)
   };
   enum {
-    is_assignable =
-        std::is_same<typename DstTraits::data_type,
-                     typename SrcTraits::scalar_array_type>::value &&
-        std::is_same<typename DstTraits::array_layout,
-                     typename SrcTraits::array_layout>::value
+    is_assignable = std::is_same_v<typename DstTraits::data_type,
+                                   typename SrcTraits::scalar_array_type> &&
+                    std::is_same_v<typename DstTraits::array_layout,
+                                   typename SrcTraits::array_layout>
   };
 
   using TrackType = Kokkos::Impl::SharedAllocationTracker;
@@ -498,13 +495,12 @@ class ViewMapping<
 template <class SrcTraits, class... Args>
 class ViewMapping<
     std::enable_if_t<(
-        std::is_same<typename SrcTraits::specialize, Kokkos::Array<>>::value &&
-        (std::is_same<typename SrcTraits::array_layout,
-                      Kokkos::LayoutLeft>::value ||
-         std::is_same<typename SrcTraits::array_layout,
-                      Kokkos::LayoutRight>::value ||
-         std::is_same<typename SrcTraits::array_layout,
-                      Kokkos::LayoutStride>::value))>,
+        std::is_same_v<typename SrcTraits::specialize, Kokkos::Array<>> &&
+        (std::is_same_v<typename SrcTraits::array_layout, Kokkos::LayoutLeft> ||
+         std::is_same_v<typename SrcTraits::array_layout,
+                        Kokkos::LayoutRight> ||
+         std::is_same_v<typename SrcTraits::array_layout,
+                        Kokkos::LayoutStride>))>,
     SrcTraits, Args...> {
  private:
   static_assert(SrcTraits::rank == sizeof...(Args), "");
@@ -548,16 +544,13 @@ class ViewMapping<
   };
 
   // Subview's layout
-  using array_layout =
-      std::conditional_t<((rank == 0) ||
-                          (rank <= 2 && R0 &&
-                           std::is_same<typename SrcTraits::array_layout,
-                                        Kokkos::LayoutLeft>::value) ||
-                          (rank <= 2 && R0_rev &&
-                           std::is_same<typename SrcTraits::array_layout,
-                                        Kokkos::LayoutRight>::value)),
-                         typename SrcTraits::array_layout,
-                         Kokkos::LayoutStride>;
+  using array_layout = std::conditional_t<
+      ((rank == 0) ||
+       (rank <= 2 && R0 &&
+        std::is_same_v<typename SrcTraits::array_layout, Kokkos::LayoutLeft>) ||
+       (rank <= 2 && R0_rev &&
+        std::is_same_v<typename SrcTraits::array_layout, Kokkos::LayoutRight>)),
+      typename SrcTraits::array_layout, Kokkos::LayoutStride>;
 
   using value_type = typename SrcTraits::value_type;
 

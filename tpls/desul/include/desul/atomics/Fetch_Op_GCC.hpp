@@ -18,11 +18,11 @@ namespace Impl {
 // clang-format off
 #define DESUL_IMPL_GCC_HOST_ATOMIC_FETCH_OP_INTEGRAL_ORDER_SCOPE(OP, MEMORY_ORDER, MEMORY_SCOPE)                                 \
   template <class T>                                                                                                          \
-  std::enable_if_t<std::is_integral<T>::value, T> host_atomic_fetch_##OP  (T* const dest, T value, MEMORY_ORDER, MEMORY_SCOPE) { \
+  std::enable_if_t<std::is_integral_v<T>, T> host_atomic_fetch_##OP  (T* const dest, T value, MEMORY_ORDER, MEMORY_SCOPE) { \
     return __atomic_fetch_##OP  (dest, value, GCCMemoryOrder<MEMORY_ORDER>::value);                                              \
   }                                                                                                                              \
   template <class T>                                                                                                          \
-  std::enable_if_t<std::is_integral<T>::value, T> host_atomic_##OP##_fetch(T* const dest, T value, MEMORY_ORDER, MEMORY_SCOPE) { \
+  std::enable_if_t<std::is_integral_v<T>, T> host_atomic_##OP##_fetch(T* const dest, T value, MEMORY_ORDER, MEMORY_SCOPE) { \
     return __atomic_##OP##_fetch(dest, value, GCCMemoryOrder<MEMORY_ORDER>::value);                                              \
   }
 
