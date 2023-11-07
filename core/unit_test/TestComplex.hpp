@@ -400,8 +400,8 @@ TEST(TEST_CATEGORY, complex_trivially_copyable) {
   using RealType = double;
   // clang claims compatibility with gcc 4.2.1 but all versions tested know
   // about std::is_trivially_copyable.
-  ASSERT_TRUE(std::is_trivially_copyable<Kokkos::complex<RealType>>::value ||
-              !std::is_trivially_copyable<RealType>::value);
+  ASSERT_TRUE(std::is_trivially_copyable_v<Kokkos::complex<RealType>> ||
+              !std::is_trivially_copyable_v<RealType>);
 }
 
 template <class ExecSpace>
