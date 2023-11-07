@@ -250,7 +250,7 @@ class DynamicView : public Kokkos::ViewTraits<DataType, P...> {
 
   // It is assumed that the value_type is trivially copyable;
   // when this is not the case, potential problems can occur.
-  static_assert(std::is_void<typename traits::specialize>::value,
+  static_assert(std::is_void_v<typename traits::specialize>,
                 "DynamicView only implemented for non-specialized View type");
 
  private:
@@ -363,7 +363,7 @@ class DynamicView : public Kokkos::ViewTraits<DataType, P...> {
 
   enum {
     reference_type_is_lvalue_reference =
-        std::is_lvalue_reference<reference_type>::value
+        std::is_lvalue_reference_v<reference_type>
   };
 
   KOKKOS_INLINE_FUNCTION constexpr bool span_is_contiguous() const {
@@ -572,7 +572,7 @@ struct MirrorDynamicViewType {
   // Check whether it is the same memory space
   enum {
     is_same_memspace =
-        std::is_same<memory_space, typename src_view_type::memory_space>::value
+        std::is_same_v<memory_space, typename src_view_type::memory_space>
   };
   // The array_layout
   using array_layout = typename src_view_type::array_layout;
@@ -699,14 +699,14 @@ namespace Impl {
 template <class T, class... P, class... ViewCtorArgs>
 inline std::enable_if_t<
     !Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space &&
-        (std::is_same<
+        (std::is_same_v<
              typename Kokkos::Experimental::DynamicView<T, P...>::memory_space,
              typename Kokkos::Experimental::DynamicView<
-                 T, P...>::HostMirror::memory_space>::value &&
-         std::is_same<
+                 T, P...>::HostMirror::memory_space> &&
+         std::is_same_v<
              typename Kokkos::Experimental::DynamicView<T, P...>::data_type,
              typename Kokkos::Experimental::DynamicView<
-                 T, P...>::HostMirror::data_type>::value),
+                 T, P...>::HostMirror::data_type>),
     typename Kokkos::Experimental::DynamicView<T, P...>::HostMirror>
 create_mirror_view(const Kokkos::Experimental::DynamicView<T, P...>& src,
                    const Impl::ViewCtorProp<ViewCtorArgs...>&) {
@@ -716,14 +716,14 @@ create_mirror_view(const Kokkos::Experimental::DynamicView<T, P...>& src,
 template <class T, class... P, class... ViewCtorArgs>
 inline std::enable_if_t<
     !Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space &&
-        !(std::is_same<
+        !(std::is_same_v<
               typename Kokkos::Experimental::DynamicView<T, P...>::memory_space,
               typename Kokkos::Experimental::DynamicView<
-                  T, P...>::HostMirror::memory_space>::value &&
-          std::is_same<
+                  T, P...>::HostMirror::memory_space> &&
+          std::is_same_v<
               typename Kokkos::Experimental::DynamicView<T, P...>::data_type,
               typename Kokkos::Experimental::DynamicView<
-                  T, P...>::HostMirror::data_type>::value),
+                  T, P...>::HostMirror::data_type>),
     typename Kokkos::Experimental::DynamicView<T, P...>::HostMirror>
 create_mirror_view(const Kokkos::Experimental::DynamicView<T, P...>& src,
                    const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop) {
@@ -990,7 +990,7 @@ auto create_mirror_view_and_copy(
     const Impl::ViewCtorProp<ViewCtorArgs...>&,
     const Kokkos::Experimental::DynamicView<T, P...>& src,
     std::enable_if_t<
-        std::is_void<typename ViewTraits<T, P...>::specialize>::value &&
+        std::is_void_v<typename ViewTraits<T, P...>::specialize> &&
         Impl::MirrorDynamicViewType<
             typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space, T,
             P...>::is_same_memspace>* = nullptr) {
@@ -1020,7 +1020,7 @@ auto create_mirror_view_and_copy(
     const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop,
     const Kokkos::Experimental::DynamicView<T, P...>& src,
     std::enable_if_t<
-        std::is_void<typename ViewTraits<T, P...>::specialize>::value &&
+        std::is_void_v<typename ViewTraits<T, P...>::specialize> &&
         !Impl::MirrorDynamicViewType<
             typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space, T,
             P...>::is_same_memspace>* = nullptr) {

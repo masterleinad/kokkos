@@ -25,10 +25,9 @@ namespace Experimental {
 // swap
 template <class T>
 KOKKOS_INLINE_FUNCTION void swap(T& a, T& b) noexcept {
-  static_assert(
-      std::is_move_assignable<T>::value && std::is_move_constructible<T>::value,
-      "Kokkos::Experimental::swap arguments must be move assignable "
-      "and move constructible");
+  static_assert(std::is_move_assignable_v<T> && std::is_move_constructible_v<T>,
+                "Kokkos::Experimental::swap arguments must be move assignable "
+                "and move constructible");
 
   T tmp = std::move(a);
   a     = std::move(b);

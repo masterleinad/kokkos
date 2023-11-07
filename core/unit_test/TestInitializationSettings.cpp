@@ -64,7 +64,6 @@ constexpr bool test_initialization_settings_getter() {
 
 static_assert(test_initialization_settings_getter());
 
-static_assert(
-    std::is_default_constructible<Kokkos::InitializationSettings>::value);
+static_assert(std::is_default_constructible_v<Kokkos::InitializationSettings>);
 
 }  // namespace

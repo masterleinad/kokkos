@@ -714,7 +714,7 @@ void test_scatter_view(int64_t n) {
     test_sv_config.run_test(n);
   }
 #ifdef KOKKOS_ENABLE_SERIAL
-  if (!std::is_same<DeviceType, Kokkos::Serial>::value) {
+  if (!std::is_same_v<DeviceType, Kokkos::Serial>) {
 #endif
     test_scatter_view_config<DeviceType, Kokkos::LayoutRight,
                              Kokkos::Experimental::ScatterNonDuplicated,
@@ -772,12 +772,12 @@ TEST(TEST_CATEGORY, scatterview) {
 
 #if defined(KOKKOS_ENABLE_SERIAL) || defined(KOKKOS_ENABLE_OPENMP)
 #if defined(KOKKOS_ENABLE_SERIAL)
-  bool is_serial = std::is_same<TEST_EXECSPACE, Kokkos::Serial>::value;
+  bool is_serial = std::is_same_v<TEST_EXECSPACE, Kokkos::Serial>;
 #else
   bool is_serial = false;
 #endif
 #if defined(KOKKOS_ENABLE_OPENMP)
-  bool is_openmp = std::is_same<TEST_EXECSPACE, Kokkos::OpenMP>::value;
+  bool is_openmp = std::is_same_v<TEST_EXECSPACE, Kokkos::OpenMP>;
 #else
   bool is_openmp = false;
 #endif

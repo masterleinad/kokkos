@@ -164,7 +164,7 @@ void verify_data(ViewType1 data_view,  // contains data
       //           << gold_h(i) << " " << test_view_h(i) << " "
       //           << std::abs(gold_h(i) - test_view_h(i)) << std::endl;
 
-      if (std::is_same<gold_view_value_type, int>::value) {
+      if (std::is_same_v<gold_view_value_type, int>) {
         ASSERT_EQ(gold_h(i), test_view_h(i));
       } else {
         const auto error = std::abs(gold_h(i) - test_view_h(i));
