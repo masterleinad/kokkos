@@ -236,6 +236,61 @@ KOKKOS_IMPL_DEFINE_TRAIT(max_exponent10)
 
 #undef KOKKOS_IMPL_DEFINE_TRAIT
 
+template <typename T>
+struct numeric_traits {
+  KOKKOS_FUNCTION static constexpr T infinity() {
+    return Kokkos::Experimental::infinity_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T finite_min() {
+    return Kokkos::Experimental::finite_min_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T finite_max() {
+    return Kokkos::Experimental::finite_max_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T epsilon() {
+    return Kokkos::Experimental::epsilon_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T round_error() {
+    return Kokkos::Experimental::round_error_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T norm_min() {
+    return Kokkos::Experimental::norm_min_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T denorm_min() {
+    return Kokkos::Experimental::denorm_min_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T quiet_NaN() {
+    return Kokkos::Experimental::quiet_NaN_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T signaling_NaN() {
+    return Kokkos::Experimental::signaling_NaN_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T digits() {
+    return Kokkos::Experimental::digits_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T digits10() {
+    return Kokkos::Experimental::digits10_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T max_digits10() {
+    return Kokkos::Experimental::max_digits10_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T radix() {
+    return Kokkos::Experimental::radix_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T min_exponent() {
+    return Kokkos::Experimental::min_exponent_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T min_exponent10() {
+    return Kokkos::Experimental::min_exponent10_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T max_exponent() {
+    return Kokkos::Experimental::max_exponent_v<T>;
+  }
+  KOKKOS_FUNCTION static constexpr T max_exponent10() {
+    return Kokkos::Experimental::max_exponent10_v<T>;
+  }
+};
+
 }  // namespace Kokkos::Experimental
 
 #ifdef KOKKOS_IMPL_PUBLIC_INCLUDE_NOTDEFINED_NUMERIC_TRAITS

@@ -101,7 +101,7 @@ struct TestNumericTraits {
 
   KOKKOS_FUNCTION void operator()(Infinity, int, int& e) const {
     using Kokkos::Experimental::infinity;
-    constexpr auto inf = infinity<T>::value;
+    constexpr auto inf = Kokkos::Experimental::numeric_traits<T>::infinity();
     auto const zero    = T(0);
     e += (int)!(inf + inf == inf);
     e += (int)!(inf != zero);
@@ -110,7 +110,7 @@ struct TestNumericTraits {
 
   KOKKOS_FUNCTION void operator()(Epsilon, int, int& e) const {
     using Kokkos::Experimental::epsilon;
-    T const eps = epsilon<T>::value;
+    T const eps = Kokkos::Experimental::numeric_traits<T>::epsilon();
     T const one = 1;
     // Avoid higher precision intermediate representation
     compare() = one + eps;
