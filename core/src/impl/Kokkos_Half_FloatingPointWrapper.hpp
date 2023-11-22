@@ -220,36 +220,6 @@ namespace Impl {
 template <typename FloatType>
 struct BitComparisonWrapper {
   std::uint16_t value;
-
-  template <typename Number>
-  KOKKOS_FUNCTION friend bool operator==(BitComparisonWrapper a, Number b) {
-    return static_cast<FloatType>(a) == b;
-  }
-
-  template <typename Number>
-  KOKKOS_FUNCTION friend bool operator!=(BitComparisonWrapper a, Number b) {
-    return static_cast<FloatType>(a) != b;
-  }
-
-  template <typename Number>
-  KOKKOS_FUNCTION friend bool operator<(BitComparisonWrapper a, Number b) {
-    return static_cast<FloatType>(a) < b;
-  }
-
-  template <typename Number>
-  KOKKOS_FUNCTION friend bool operator<=(BitComparisonWrapper a, Number b) {
-    return static_cast<FloatType>(a) <= b;
-  }
-
-  template <typename Number>
-  KOKKOS_FUNCTION friend bool operator>(BitComparisonWrapper a, Number b) {
-    return static_cast<FloatType>(a) > b;
-  }
-
-  template <typename Number>
-  KOKKOS_FUNCTION friend bool operator>=(BitComparisonWrapper a, Number b) {
-    return static_cast<FloatType>(a) >= b;
-  }
 };
 
 template <typename FloatType>

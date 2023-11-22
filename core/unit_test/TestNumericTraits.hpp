@@ -100,8 +100,7 @@ struct TestNumericTraits {
   }
 
   KOKKOS_FUNCTION void operator()(Infinity, int, int& e) const {
-    using Kokkos::Experimental::infinity;
-    constexpr auto inf = Kokkos::Experimental::numeric_traits<T>::infinity();
+    const auto inf = Kokkos::Experimental::numeric_traits<T>::infinity();
     auto const zero    = T(0);
     e += (int)!(inf + inf == inf);
     e += (int)!(inf != zero);
@@ -109,7 +108,6 @@ struct TestNumericTraits {
   }
 
   KOKKOS_FUNCTION void operator()(Epsilon, int, int& e) const {
-    using Kokkos::Experimental::epsilon;
     T const eps = Kokkos::Experimental::numeric_traits<T>::epsilon();
     T const one = 1;
     // Avoid higher precision intermediate representation
@@ -146,8 +144,7 @@ struct TestNumericTraits {
   // clang-format on
   KOKKOS_FUNCTION void operator()(QuietNaN, int, int& e) const {
 #ifndef KOKKOS_COMPILER_NVHPC  // FIXME_NVHPC 23.7 nan
-    using Kokkos::Experimental::quiet_NaN;
-    constexpr auto nan = quiet_NaN<T>::value;
+    const auto nan = Kokkos::Experimental::numeric_traits<T>::quiet_NaN();
     auto const zero    = T(0);
     e += (int)!(nan != nan);
     e += (int)!(nan != zero);
@@ -158,8 +155,7 @@ struct TestNumericTraits {
   }
   KOKKOS_FUNCTION void operator()(SignalingNaN, int, int& e) const {
 #ifndef KOKKOS_COMPILER_NVHPC  // FIXME_NVHPC 23.7 nan
-    using Kokkos::Experimental::signaling_NaN;
-    constexpr auto nan = signaling_NaN<T>::value;
+    const auto nan = Kokkos::Experimental::numeric_traits<T>::signaling_NaN();
     auto const zero    = T(0);
     e += (int)!(nan != nan);
     e += (int)!(nan != zero);
