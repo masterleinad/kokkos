@@ -101,18 +101,18 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  if (P == 1) {
+//  if (P == 1) {
     run_stride_unroll<float>(N, K, R, D, U, F, T, S, B, I);
-  }
-  if (P == 2) {
+  //}
+ // if (P == 2) {
     run_stride_unroll<double>(N, K, R, D, U, F, T, S, B, I);
-  }
-  if (P == 3) {
+ // }
+  //if (P == 3) {
     run_stride_unroll<int32_t>(N, K, R, D, U, F, T, S, B, I);
-  }
-  if (P == 4) {
+  //}
+  //if (P == 4) {
     run_stride_unroll<int64_t>(N, K, R, D, U, F, T, S, B, I);
-  }
+  //}
 
   Kokkos::finalize();
 }
