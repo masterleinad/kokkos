@@ -33,4 +33,4 @@ jobs:
     - name: build library
       shell: bash
       run: |
-        cmake --build build --parallel 2 --config Release
+        cmake --build build --parallel 2 --config Debug
