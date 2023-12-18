@@ -743,6 +743,10 @@ if(Kokkos_ENABLE_CUDA)
       cuda/TestCuda_ReducerViewSizeLimit.cpp
     )
 
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+      target_compile_options(Kokkos_CoreUnitTest_Cuda1 PRIVATE /bigobj)
+    endif()
+
     KOKKOS_ADD_EXECUTABLE_AND_TEST(
     CoreUnitTest_Cuda2
     SOURCES

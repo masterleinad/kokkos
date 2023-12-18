@@ -52,6 +52,10 @@ foreach(Tag Threads;Serial;OpenMP;HPX;Cuda;HIP;SYCL)
     endif()
 
     KOKKOS_ADD_EXECUTABLE_AND_TEST(ContainersUnitTest_${Tag} SOURCES ${UnitTestSources})
+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+      target_compile_options(Kokkos_ContainersUnitTest_${Tag} PRIVATE /bigobj)
+    endif()
   endif()
 endforeach()
 
