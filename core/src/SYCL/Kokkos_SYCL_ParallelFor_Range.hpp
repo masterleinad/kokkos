@@ -26,25 +26,8 @@ template <typename FunctorWrapper, typename Policy>
 struct FunctorWrapperRangePolicyParallelFor {
   using WorkTag = typename Policy::work_tag;
 
-  void operator()(sycl::item<1> item) const {
-    const typename Policy::index_type id = item.get_linear_id() + m_begin;
-    if constexpr (std::is_void_v<WorkTag>)
-      m_functor_wrapper.get_functor()(id);
-    else
-      m_functor_wrapper.get_functor()(WorkTag(), id);
-  }
-
-  typename Policy::index_type m_begin;
-  FunctorWrapper m_functor_wrapper;
-};
-
-// Same as above but for a user-provided workgroup size
-template <typename FunctorWrapper, typename Policy>
-struct FunctorWrapperRangePolicyParallelForCustom {
-  using WorkTag = typename Policy::work_tag;
-
-  void operator()(sycl::item<1> item) const {
-    const typename Policy::index_type id = item.get_linear_id();
+  void operator()(sycl::nd_item<1> item) const {
+    const typename Policy::index_type id = item.get_global_linear_id();
     if (id < m_work_size) {
       const auto shifted_id = id + m_begin;
       if constexpr (std::is_void_v<WorkTag>)
@@ -89,28 +72,31 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
 #else
       (void)memcpy_event;
 #endif
-      if (policy.chunk_size() <= 1) {
-        FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{policy.begin(),
-                                                                functor};
-        sycl::range<1> range(policy.end() - policy.begin());
-        cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(
-            range, f);
-      } else {
-        // Use the chunk size as workgroup size. We need to make sure that the
-        // range the kernel is launched with is a multiple of the workgroup
-        // size. Hence, we need to restrict the execution of the functor in the
-        // kernel to the actual range.
-        const auto actual_range = policy.end() - policy.begin();
-        const auto wgroup_size  = policy.chunk_size();
-        const auto launch_range =
-            (actual_range + wgroup_size - 1) / wgroup_size * wgroup_size;
-        FunctorWrapperRangePolicyParallelForCustom<Functor, Policy> f{
-            policy.begin(), functor, actual_range};
-        sycl::nd_range<1> range(launch_range, wgroup_size);
-        cgh.parallel_for<
-            FunctorWrapperRangePolicyParallelForCustom<Functor, Policy>>(range,
-                                                                         f);
+      const auto actual_range = policy.end() - policy.begin();
+      FunctorWrapperRangePolicyParallelFor<Functor, Policy> f{
+          policy.begin(), functor, actual_range};
+      auto wgroup_size = policy.chunk_size();
+      if (wgroup_size <= 1) {
+        static sycl::kernel kernel = [&] {
+          sycl::kernel_id functor_kernel_id =
+              sycl::get_kernel_id<decltype(f)>();
+          auto kernel_bundle =
+              sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+                  q.get_context(), std::vector{functor_kernel_id});
+          return kernel_bundle.get_kernel(functor_kernel_id);
+        }();
+        wgroup_size = kernel.get_info<sycl::info::kernel_device_specific::
+                                          preferred_work_group_size_multiple>(
+            q.get_device());
       }
+      // We need to make sure that the range the kernel is launched with is a
+      // multiple of the workgroup size. Hence, we need to restrict the
+      // execution of the functor in the kernel to the actual range.
+      const auto launch_range =
+          (actual_range + wgroup_size - 1) / wgroup_size * wgroup_size;
+      sycl::nd_range<1> range(launch_range, wgroup_size);
+      cgh.parallel_for<FunctorWrapperRangePolicyParallelFor<Functor, Policy>>(
+          range, f);
     });
 #ifndef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
     q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_for_event});
