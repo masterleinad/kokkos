@@ -35,15 +35,6 @@ namespace {
   return {exec0, exec};
 	}
 
-	void cleanup_execution_spaces(std::array<TEST_EXECSPACE, 2> execs)
-	{
-  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(execs[0].cuda_device()));
-  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamDestroy(execs[0].cuda_stream()));
-                         
-  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(execs[1].cuda_device()));
-  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamDestroy(execs[1].cuda_stream()));
-	}
-	
 	// Test Interoperability with Cuda Streams
 void test_policies(TEST_EXECSPACE exec0, Kokkos::View<int*, TEST_EXECSPACE> v0, 
 		TEST_EXECSPACE exec, Kokkos::View<int*, TEST_EXECSPACE> v) {
@@ -118,9 +109,12 @@ void test_policies(TEST_EXECSPACE exec0, Kokkos::View<int*, TEST_EXECSPACE> v0,
 }
 
 TEST(cuda_multi_gpu, managed_views) {
-	          int n_devices;
+	cudaStream_t stream0;
+	cudaStream_t stream; 
+	int n_devices;
   KOKKOS_IMPL_CUDA_SAFE_CALL(cudaGetDeviceCount(&n_devices));
-        std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces(n_devices);
+        { 
+		std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces(n_devices);
 
   ASSERT_EQ(execs[0].cuda_device(), 0);
 	    Kokkos::View<int *, TEST_EXECSPACE> view0(Kokkos::view_alloc("v0", execs[0]), 100);
@@ -128,14 +122,23 @@ TEST(cuda_multi_gpu, managed_views) {
 	    Kokkos::View<int *, TEST_EXECSPACE> view(Kokkos::view_alloc("v", execs[1]), 100);
 
  test_policies(execs[0], view0, execs[1], view);
+ stream0 =  execs[0].cuda_stream();
+ stream = execs[1].cuda_stream();
+	}
+	  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(0));
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamDestroy(stream0));
 
-  cleanup_execution_spaces(execs);
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(n_devices-1));
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamDestroy(stream));
 }
 
 TEST(cuda_multi_gpu, unmanaged_views) {
-          int n_devices;
-  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaGetDeviceCount(&n_devices));
-	std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces(n_devices);
+        cudaStream_t stream0;                  
+        cudaStream_t stream;  
+int n_devices;
+	    KOKKOS_IMPL_CUDA_SAFE_CALL(cudaGetDeviceCount(&n_devices));
+	    {
+	    std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces(n_devices);
 
   int device0 = execs[0].cuda_device();
   ASSERT_EQ(device0, 0);
@@ -154,9 +157,15 @@ TEST(cuda_multi_gpu, unmanaged_views) {
     Kokkos::View<int*, TEST_EXECSPACE> view(p, 100);
 
  test_policies(execs[0], view0, execs[1], view);
-
- cleanup_execution_spaces(execs);
    KOKKOS_IMPL_CUDA_SAFE_CALL(cudaFree(p0));
   KOKKOS_IMPL_CUDA_SAFE_CALL(cudaFree(p));
+   stream0 =  execs[0].cuda_stream();
+ stream = execs[1].cuda_stream();
+}
+          KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(0));
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamDestroy(stream0));
+
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(n_devices-1));
+  KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamDestroy(stream));
 }
 }  // namespace
