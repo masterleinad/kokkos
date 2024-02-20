@@ -180,7 +180,6 @@ void sort_by_key_via_sort(
 #ifdef KOKKOS_ENABLE_SYCL
 	    auto* raw_keys_in_comparator = keys_in_comparator.data();
         auto stride = keys_in_comparator.stride(0);
-	std::cout << "stride: " << stride << std::endl;
 	  Kokkos::sort(
         exec, permute, KOKKOS_LAMBDA(int i, int j) {
           return raw_keys_in_comparator[i*stride] < raw_keys_in_comparator[j*stride];
@@ -197,10 +196,9 @@ void sort_by_key_via_sort(
 #ifdef KOKKOS_ENABLE_SYCL
         auto* raw_keys_in_comparator = keys_in_comparator.data();
 	auto stride = keys_in_comparator.stride(0);
-	        std::cout << "stride w: " << stride << std::endl;
         Kokkos::sort(
         exec, permute, KOKKOS_LAMBDA(int i, int j) {
-          return keys_comparator(raw_keys_in_comparator[0*stride], raw_keys_in_comparator[0*stride]);
+          return keys_comparator(raw_keys_in_comparator[i*stride], raw_keys_in_comparator[j*stride]);
         });
 #else
     Kokkos::sort(
