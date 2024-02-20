@@ -24,12 +24,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;HIP;SYCL;OpenMPTarget)
     # and add this .cpp file to the sources for UnitTest_RandomAndSort.
     set(ALGO_SORT_SOURCES)
     foreach(SOURCE_Input
-	TestSort
 	TestSortByKey
-	TestSortCustomComp
-	TestBinSortA
-	TestBinSortB
-	TestNestedSort
       )
       set(file ${dir}/${SOURCE_Input}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid

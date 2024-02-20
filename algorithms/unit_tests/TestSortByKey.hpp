@@ -27,24 +27,24 @@
 namespace Test {
 namespace SortImpl {
 
+template <class ValueType>
 struct Less {
-  template <class ValueType>
   KOKKOS_INLINE_FUNCTION bool operator()(const ValueType &lhs,
                                          const ValueType &rhs) const {
     return lhs < rhs;
   }
 };
 
+template <class ValueType>
 struct Greater {
-  template <class ValueType>
   KOKKOS_INLINE_FUNCTION bool operator()(const ValueType &lhs,
                                          const ValueType &rhs) const {
     return lhs > rhs;
   }
 };
 
-template <class ExecutionSpace, class Keys, class Permute,
-          class Comparator = Less>
+template <class Keys, class Permute,
+          class Comparator = Less<typename Keys::value_type>>
 struct is_sorted_by_key_struct {
   Keys keys;
   Keys keys_orig;
@@ -115,7 +115,7 @@ TEST(TEST_CATEGORY, SortByKey) {
     unsigned int sort_fails = 0;
     Kokkos::parallel_reduce(
         Kokkos::RangePolicy<ExecutionSpace>(space, 0, n),
-        SortImpl::is_sorted_by_key_struct<ExecutionSpace, decltype(keys),
+        SortImpl::is_sorted_by_key_struct< decltype(keys),
                                           decltype(permute)>(keys, keys_orig,
                                                              permute),
         sort_fails);
@@ -130,7 +130,7 @@ TEST(TEST_CATEGORY, SortByKeyWithComparator) {
 
   ExecutionSpace space{};
 
-  SortImpl::Greater comparator;
+  SortImpl::Greater<int> comparator;
 
   for (auto keys_vector : {std::vector<int>{36, 19, 25, 17, 3, 7, 1, 2, 9},
                            std::vector<int>{36, 19, 25, 17, 3, 9, 1, 2, 7},
@@ -154,8 +154,8 @@ TEST(TEST_CATEGORY, SortByKeyWithComparator) {
     unsigned int sort_fails = 0;
     Kokkos::parallel_reduce(
         Kokkos::RangePolicy<ExecutionSpace>(space, 0, n),
-        SortImpl::is_sorted_by_key_struct<ExecutionSpace, decltype(keys),
-                                          decltype(permute), SortImpl::Greater>(
+        SortImpl::is_sorted_by_key_struct<decltype(keys),
+                                          decltype(permute), SortImpl::Greater<int>>(
             keys, keys_orig, permute, comparator),
         sort_fails);
 
@@ -214,7 +214,7 @@ TEST(TEST_CATEGORY, SortByKeyWithStrides) {
   unsigned int sort_fails = 0;
   Kokkos::parallel_reduce(
       Kokkos::RangePolicy<ExecutionSpace>(space, 0, n),
-      SortImpl::is_sorted_by_key_struct<ExecutionSpace, decltype(keys_sub),
+      SortImpl::is_sorted_by_key_struct< decltype(keys_sub),
                                         decltype(values_sub)>(
           keys_sub, keys_orig, values_sub),
       sort_fails);
@@ -233,7 +233,7 @@ TEST(TEST_CATEGORY, SortByKeyKeysLargerThanValues) {
       Kokkos::Experimental::sort_by_key(ExecutionSpace(), keys, values),
       "values and keys extents must be the same");
   ASSERT_DEATH(Kokkos::Experimental::sort_by_key(ExecutionSpace(), keys, values,
-                                                 SortImpl::Greater{}),
+                                                 SortImpl::Greater<int>{}),
                "values and keys extents must be the same");
 }
 
