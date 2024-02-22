@@ -128,6 +128,13 @@ struct SubGroupSize {
   static constexpr int value = size;
 };
 
+template <int size>
+struct GrfSize {
+  using grf_size             = GrfSize;
+  using type                 = GrfSize<size>;
+  static constexpr int value = size; 
+}
+
 }  // namespace Kokkos
 
 //----------------------------------------------------------------------------
