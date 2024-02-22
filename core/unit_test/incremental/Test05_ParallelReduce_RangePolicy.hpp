@@ -85,7 +85,7 @@ struct TestReduction {
 
     // Creates a range policy that uses dynamic schedule.
     using range_policy =
-        Kokkos::RangePolicy<ExecSpace, Kokkos::SubGroupSize<16>,
+        Kokkos::RangePolicy<ExecSpace, Kokkos::SubGroupSize<16>, Kokkos::GrfSize<256>, 
                             Kokkos::Schedule<Kokkos::Dynamic> >;
 
     // parallel_reduce call with range policy over num_elements number of

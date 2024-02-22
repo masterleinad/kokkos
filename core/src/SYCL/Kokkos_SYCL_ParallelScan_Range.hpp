@@ -222,14 +222,26 @@ class ParallelScanSYCLBase {
     sycl::device_ptr<value_type> group_results;
 
 #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
-    auto get_properties = [&]() {
-      if constexpr (Policy::subgroup_size > 0)
-        return sycl::ext::oneapi::experimental::properties{
-            sycl::ext::oneapi::experimental::sub_group_size<
-                Policy::subgroup_size>};
-      else
-        return sycl::ext::oneapi::experimental::properties{};
-    };
+      auto get_properties = [&]() {
+        if constexpr (Policy::subgroup_size > 0) {
+          if constexpr (Policy::grf_size > 0) {
+            return sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::sub_group_size<
+                  Policy::subgroup_size>, sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+          } else {
+            return sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::sub_group_size<
+                  Policy::subgroup_size>};
+          }
+        } else {
+          if constexpr (Policy::grf_size > 0) {
+            return sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+          } else {
+            return sycl::ext::oneapi::experimental::properties{};
+          }
+        }
+      };
 #endif
     desul::ensure_sycl_lock_arrays_on_device(q);
 
@@ -330,9 +342,7 @@ class ParallelScanSYCLBase {
           else
             functor(WorkTag(), global_id + begin, update, true);
 
-          global_mem_copy[global_id] = update;
-          if (global_id == size - 1 && result_ptr_device_accessible)
-            *result_ptr = update;
+              if (global_id == size - 1) *result_ptr = update;
         }
       };
 

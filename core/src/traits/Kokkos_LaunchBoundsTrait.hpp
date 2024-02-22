@@ -86,6 +86,27 @@ struct SubGroupSizeTrait : TraitSpecificationBase<SubGroupSizeTrait> {
   };
 };
 
+struct GrfSizeTrait : TraitSpecificationBase<GrfSizeTrait> {
+  struct base_traits {
+    static constexpr bool grf_size_is_defaulted = true;
+    static constexpr int grf_size               = -1;
+
+    KOKKOS_IMPL_MSVC_NVCC_EBO_WORKAROUND
+  };
+  template <class GrfSizeParam, class AnalyzeNextTrait>
+  struct mixin_matching_trait : AnalyzeNextTrait {
+    using base_t = AnalyzeNextTrait;
+    using base_t::base_t;
+
+    static constexpr bool grf_size_is_defaulted = false;
+
+    static_assert(base_t::grf_size_is_defaulted,
+                  "Kokkos Error: More than one subgroup size given");
+
+    static constexpr int grf_size = GrfSizeParam::value;
+  };
+};
+
 // </editor-fold> end trait specification }}}1
 //==============================================================================
 

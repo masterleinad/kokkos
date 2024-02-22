@@ -294,66 +294,29 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
                       std::min<int>(n_wgroups, wgroup_size));
                 }
               }
-
-              SYCLReduction::workgroup_reduction<>(
-                  item, local_mem, results_ptr, device_accessible_result_ptr,
-                  value_count, reducer, true,
-                  std::min<int>(n_wgroups, wgroup_size));
-            }
-          } else {
-            value_type local_value;
-            reference_type update = reducer.init(&local_value);
-
-            for (index_type global_x = item.get_group(0); global_x < n_tiles;
-                 global_x += item.get_group_range(0))
-              Kokkos::Impl::Reduce::DeviceIterateTile<
-                  Policy::rank, BarePolicy, FunctorType,
-                  typename Policy::work_tag, reference_type>(
-                  bare_policy, functor, update,
-                  {n_global_x, n_global_y, n_global_z},
-                  {global_x, global_y, global_z}, {local_x, local_y, local_z})
-                  .exec_range();
-
-            SYCLReduction::workgroup_reduction<>(
-                item, local_mem, local_value, results_ptr,
-                device_accessible_result_ptr, reducer, false, wgroup_size);
-
-            if (local_id == 0) {
-              sycl::atomic_ref<unsigned, sycl::memory_order::acq_rel,
-                               sycl::memory_scope::device,
-                               sycl::access::address_space::global_space>
-                  scratch_flags_ref(*scratch_flags);
-              num_teams_done[0] = ++scratch_flags_ref;
-            }
-            item.barrier(sycl::access::fence_space::local_space);
-            if (num_teams_done[0] == n_wgroups) {
-              if (local_id >= static_cast<int>(n_wgroups))
-                reducer.init(&local_value);
-              else {
-                local_value = results_ptr[local_id];
-                for (unsigned int id = local_id + wgroup_size; id < n_wgroups;
-                     id += wgroup_size) {
-                  reducer.join(&local_value, &results_ptr[id]);
-                }
-              }
-
-              SYCLReduction::workgroup_reduction<>(
-                  item, local_mem, local_value, results_ptr,
-                  device_accessible_result_ptr, reducer, true,
-                  std::min<int>(n_wgroups, wgroup_size));
-            }
-          }
         };
 
 #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
-        auto get_properties = [&]() {
-          if constexpr (Policy::subgroup_size > 0)
+      auto get_properties = [&]() {
+        if constexpr (Policy::subgroup_size > 0) {
+          if constexpr (Policy::grf_size > 0) {
             return sycl::ext::oneapi::experimental::properties{
-                sycl::ext::oneapi::experimental::sub_group_size<
-                    Policy::subgroup_size>};
-          else
+              sycl::ext::oneapi::experimental::sub_group_size<
+                  Policy::subgroup_size>, sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+          } else {
+            return sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::sub_group_size<
+                  Policy::subgroup_size>};
+          }
+        } else {
+          if constexpr (Policy::grf_size > 0) {
+            return sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+          } else {
             return sycl::ext::oneapi::experimental::properties{};
-        };
+          }
+        }
+      };
         cgh.parallel_for(
             sycl::nd_range<1>(n_wgroups * wgroup_size, wgroup_size),
             get_properties(), lambda);

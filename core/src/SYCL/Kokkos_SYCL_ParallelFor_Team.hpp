@@ -112,12 +112,24 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
 
 #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
       auto get_properties = [&]() {
-        if constexpr (Policy::subgroup_size > 0)
-          return sycl::ext::oneapi::experimental::properties{
+        if constexpr (Policy::subgroup_size > 0) {
+          if constexpr (Policy::grf_size > 0) {
+            return sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::sub_group_size<
+                  Policy::subgroup_size>, sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+          } else {
+            return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
                   Policy::subgroup_size>};
-        else
-          return sycl::ext::oneapi::experimental::properties{};
+          }
+        } else {
+          if constexpr (Policy::grf_size > 0) {
+            return sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+          } else {
+            return sycl::ext::oneapi::experimental::properties{};
+          }
+        }
       };
       cgh.parallel_for(
           sycl::nd_range<2>(
