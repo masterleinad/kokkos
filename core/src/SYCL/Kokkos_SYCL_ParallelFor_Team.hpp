@@ -116,7 +116,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
           if constexpr (Policy::grf_size > 0) {
             return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
-                  Policy::subgroup_size>, sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+                  Policy::subgroup_size>, sycl::ext::intel::experimental::grf_size<Policy::grf_size>};
           } else {
             return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
@@ -125,7 +125,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
         } else {
           if constexpr (Policy::grf_size > 0) {
             return sycl::ext::oneapi::experimental::properties{
-              sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+              sycl::ext::intel::experimental::grf_size<Policy::grf_size>};
           } else {
             return sycl::ext::oneapi::experimental::properties{};
           }

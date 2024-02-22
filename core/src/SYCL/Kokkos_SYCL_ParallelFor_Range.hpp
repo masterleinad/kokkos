@@ -17,6 +17,8 @@
 #ifndef KOKKOS_SYCL_PARALLEL_FOR_RANGE_HPP_
 #define KOKKOS_SYCL_PARALLEL_FOR_RANGE_HPP_
 
+#include <ext/intel/experimental/grf_size_properties.hpp>
+
 #ifndef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
 #include <vector>
 #endif
@@ -91,13 +93,12 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
 #endif
 
 #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20230100
-      bla
       auto get_properties = [&]() {
         if constexpr (Policy::subgroup_size > 0) { 
 	  if constexpr (Policy::grf_size > 0) {
             return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
-                  Policy::subgroup_size>, sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+                  Policy::subgroup_size>, sycl::ext::intel::experimental::grf_size<Policy::grf_size>};
           } else {
             return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
@@ -106,7 +107,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>,
 	} else {
           if constexpr (Policy::grf_size > 0) {
             return sycl::ext::oneapi::experimental::properties{
-              sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+              sycl::ext::intel::experimental::grf_size<Policy::grf_size>};
           } else {
             return sycl::ext::oneapi::experimental::properties{};
           }

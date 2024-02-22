@@ -302,7 +302,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
           if constexpr (Policy::grf_size > 0) {
             return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
-                  Policy::subgroup_size>, sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+                  Policy::subgroup_size>, sycl::ext::intel::experimental::grf_size<Policy::grf_size>};
           } else {
             return sycl::ext::oneapi::experimental::properties{
               sycl::ext::oneapi::experimental::sub_group_size<
@@ -311,7 +311,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
         } else {
           if constexpr (Policy::grf_size > 0) {
             return sycl::ext::oneapi::experimental::properties{
-              sycl::ext::oneapi::experimental::grf_size<Policy::grf_size>};
+              sycl::ext::intel::experimental::grf_size<Policy::grf_size>};
           } else {
             return sycl::ext::oneapi::experimental::properties{};
           }

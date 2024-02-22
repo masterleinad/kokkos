@@ -117,6 +117,10 @@ template <int size>
 struct PolicyTraitMatcher<SubGroupSizeTrait, SubGroupSize<size>>
     : std::true_type {};
 
+template <int size>
+struct PolicyTraitMatcher<GrfSizeTrait, GrfSize<size>>
+    : std::true_type {};
+
 // </editor-fold> end PolicyTraitMatcher specialization }}}1
 //==============================================================================
 
