@@ -182,7 +182,7 @@ std::vector<int> const& Kokkos::Impl::get_visible_devices() {
 #elif defined(KOKKOS_ENABLE_OPENMPTARGET)
   int device = omp_get_default_device();  // FIXME_OPENMPTARGET
 #elif defined(KOKKOS_ENABLE_SYCL)
-  int device = Experimental::Impl::SYCLInternal::m_syclDev;
+  int device = Experimental::SYCL().impl_internal_space_instance()->m_syclDev;
 #else
   int device = -1;
   return device;

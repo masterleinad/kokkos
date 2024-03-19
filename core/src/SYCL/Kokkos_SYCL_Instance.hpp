@@ -53,7 +53,7 @@ class SYCLInternal {
   void register_team_scratch_event(int scratch_pool_id, sycl::event event);
 
   uint32_t impl_get_instance_id() const;
-  static int m_syclDev;
+  int m_syclDev;
 
   size_t m_maxWorkgroupSize   = 0;
   uint32_t m_maxConcurrency   = 0;

@@ -14,95 +14,88 @@
 //
 //@HEADER
 
-#include <TestCuda_Category.hpp>
+#include <TestSYCL_Category.hpp>
 #include <Test_InterOp_Streams.hpp>
 
 namespace {
 
-struct StreamsAndDevices {
-  std::array<cudaStream_t, 2> streams;
-  std::array<int, 2> devices;
-
-  StreamsAndDevices() {
-    int n_devices;
-    KOKKOS_IMPL_CUDA_SAFE_CALL(cudaGetDeviceCount(&n_devices));
-
-    devices = {0, n_devices - 1};
-    for (int i = 0; i < 2; ++i) {
-      KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(devices[i]));
-      KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamCreate(&streams[i]));
+std::array<TEST_EXECSPACE, 2> get_execution_spaces() {
+  std::vector<sycl::device> gpu_devices =
+      sycl::device::get_devices(sycl::info::device_type::gpu);
+  auto exception_handler = [](sycl::exception_list exceptions) {
+    bool asynchronous_error = false;
+    for (std::exception_ptr const &e : exceptions) {
+      try {
+        std::rethrow_exception(e);
+      } catch (sycl::exception const &e) {
+        std::cerr << e.what() << '\n';
+        asynchronous_error = true;
+      }
     }
-  }
-  StreamsAndDevices(const StreamsAndDevices &) = delete;
-  StreamsAndDevices &operator=(const StreamsAndDevices &) = delete;
-  ~StreamsAndDevices() {
-    for (int i = 0; i < 2; ++i) {
-      KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(devices[i]));
-      KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamDestroy(streams[i]));
-    }
-  }
-};
+    if (asynchronous_error)
+      Kokkos::Impl::throw_runtime_exception(
+          "There was an asynchronous SYCL error!\n");
+  };
 
-std::array<TEST_EXECSPACE, 2> get_execution_spaces(
-    const StreamsAndDevices &streams_and_devices) {
-  TEST_EXECSPACE exec0(streams_and_devices.streams[0]);
-  TEST_EXECSPACE exec1(streams_and_devices.streams[1]);
-
-  // Must return void to use ASSERT_EQ
-  [&]() {
-    ASSERT_EQ(exec0.cuda_device(), streams_and_devices.devices[0]);
-    ASSERT_EQ(exec1.cuda_device(), streams_and_devices.devices[1]);
-  }();
+  TEST_EXECSPACE exec0(sycl::queue{gpu_devices.front(), exception_handler,
+                                   sycl::property::queue::in_order()});
+  TEST_EXECSPACE exec1(sycl::queue{gpu_devices.back(), exception_handler,
+                                   sycl::property::queue::in_order()});
 
   return {exec0, exec1};
 }
 
-// Test Interoperability with Cuda Streams
+// Test Interoperability with SYCL Streams
 void test_policies(TEST_EXECSPACE exec0, Kokkos::View<int *, TEST_EXECSPACE> v0,
                    TEST_EXECSPACE exec, Kokkos::View<int *, TEST_EXECSPACE> v) {
   using MemorySpace = typename TEST_EXECSPACE::memory_space;
 
+  exec.fence();
+  exec0.fence();
+
   Kokkos::deep_copy(exec, v, 5);
   Kokkos::deep_copy(exec0, v0, 5);
 
-  Kokkos::deep_copy(v, v0);
+  // Kokkos::deep_copy(v, v0);
 
   int sum;
   int sum0;
 
-  Kokkos::parallel_for("Test::cuda::raw_cuda_stream::Range_0",
+  Kokkos::parallel_for("Test::sycl::raw_sycl_queue::Range_0",
                        Kokkos::RangePolicy<TEST_EXECSPACE>(exec0, 0, 100),
                        Test::FunctorRange<MemorySpace>(v0));
-  Kokkos::parallel_for("Test::cuda::raw_cuda_stream::Range",
+  Kokkos::parallel_for("Test::sycl::raw_sycl_queue::Range",
                        Kokkos::RangePolicy<TEST_EXECSPACE>(exec, 0, 100),
                        Test::FunctorRange<MemorySpace>(v));
+  exec.fence();
+  exec0.fence();
   Kokkos::parallel_reduce(
-      "Test::cuda::raw_cuda_stream::RangeReduce_0",
+      "Test::sycl::raw_sycl_queue::RangeReduce_0",
       Kokkos::RangePolicy<TEST_EXECSPACE, Kokkos::LaunchBounds<128, 2>>(exec0,
                                                                         0, 100),
       Test::FunctorRangeReduce<MemorySpace>(v0), sum0);
   Kokkos::parallel_reduce(
-      "Test::cuda::raw_cuda_stream::RangeReduce",
+      "Test::sycl::raw_sycl_queue::RangeReduce",
       Kokkos::RangePolicy<TEST_EXECSPACE, Kokkos::LaunchBounds<128, 2>>(exec, 0,
                                                                         100),
       Test::FunctorRangeReduce<MemorySpace>(v), sum);
   ASSERT_EQ(600, sum0);
   ASSERT_EQ(600, sum);
 
-  Kokkos::parallel_for("Test::cuda::raw_cuda_stream::MDRange_0",
+  Kokkos::parallel_for("Test::sycl::raw_sycl_queue::MDRange_0",
                        Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<2>>(
                            exec0, {0, 0}, {10, 10}),
                        Test::FunctorMDRange<MemorySpace>(v0));
-  Kokkos::parallel_for("Test::cuda::raw_cuda_stream::MDRange",
+  Kokkos::parallel_for("Test::sycl::raw_sycl_queue::MDRange",
                        Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<2>>(
                            exec, {0, 0}, {10, 10}),
                        Test::FunctorMDRange<MemorySpace>(v));
-  Kokkos::parallel_reduce("Test::cuda::raw_cuda_stream::MDRangeReduce_0",
+  Kokkos::parallel_reduce("Test::sycl::raw_sycl_queue::MDRangeReduce_0",
                           Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<2>,
                                                 Kokkos::LaunchBounds<128, 2>>(
                               exec0, {0, 0}, {10, 10}),
                           Test::FunctorMDRangeReduce<MemorySpace>(v0), sum0);
-  Kokkos::parallel_reduce("Test::cuda::raw_cuda_stream::MDRangeReduce",
+  Kokkos::parallel_reduce("Test::sycl::raw_sycl_queue::MDRangeReduce",
                           Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<2>,
                                                 Kokkos::LaunchBounds<128, 2>>(
                               exec, {0, 0}, {10, 10}),
@@ -110,19 +103,19 @@ void test_policies(TEST_EXECSPACE exec0, Kokkos::View<int *, TEST_EXECSPACE> v0,
   ASSERT_EQ(700, sum0);
   ASSERT_EQ(700, sum);
 
-  Kokkos::parallel_for("Test::cuda::raw_cuda_stream::Team_0",
+  Kokkos::parallel_for("Test::sycl::raw_sycl_queue::Team_0",
                        Kokkos::TeamPolicy<TEST_EXECSPACE>(exec0, 10, 10),
                        Test::FunctorTeam<MemorySpace, TEST_EXECSPACE>(v0));
-  Kokkos::parallel_for("Test::cuda::raw_cuda_stream::Team",
+  Kokkos::parallel_for("Test::sycl::raw_sycl_queue::Team",
                        Kokkos::TeamPolicy<TEST_EXECSPACE>(exec, 10, 10),
                        Test::FunctorTeam<MemorySpace, TEST_EXECSPACE>(v));
   Kokkos::parallel_reduce(
-      "Test::cuda::raw_cuda_stream::Team_0",
+      "Test::sycl::raw_sycl_queue::Team_0",
       Kokkos::TeamPolicy<TEST_EXECSPACE, Kokkos::LaunchBounds<128, 2>>(exec0,
                                                                        10, 10),
       Test::FunctorTeamReduce<MemorySpace, TEST_EXECSPACE>(v0), sum0);
   Kokkos::parallel_reduce(
-      "Test::cuda::raw_cuda_stream::Team",
+      "Test::sycl::raw_sycl_queue::Team",
       Kokkos::TeamPolicy<TEST_EXECSPACE, Kokkos::LaunchBounds<128, 2>>(exec, 10,
                                                                        10),
       Test::FunctorTeamReduce<MemorySpace, TEST_EXECSPACE>(v), sum);
@@ -130,43 +123,29 @@ void test_policies(TEST_EXECSPACE exec0, Kokkos::View<int *, TEST_EXECSPACE> v0,
   ASSERT_EQ(800, sum);
 }
 
-TEST(cuda_multi_gpu, managed_views) {
-  StreamsAndDevices streams_and_devices;
-  {
-    std::array<TEST_EXECSPACE, 2> execs =
-        get_execution_spaces(streams_and_devices);
+TEST(sycl_multi_gpu, managed_views) {
+  std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces();
 
-    Kokkos::View<int *, TEST_EXECSPACE> view0(
-        Kokkos::view_alloc("v0", execs[0]), 100);
-    Kokkos::View<int *, TEST_EXECSPACE> view(Kokkos::view_alloc("v", execs[1]),
-                                             100);
+  Kokkos::View<int *, TEST_EXECSPACE> view0(Kokkos::view_alloc("v0", execs[0]),
+                                            100);
+  Kokkos::View<int *, TEST_EXECSPACE> view(Kokkos::view_alloc("v", execs[1]),
+                                           100);
 
-    test_policies(execs[0], view0, execs[1], view);
-  }
+  test_policies(execs[0], view0, execs[1], view);
 }
 
-TEST(cuda_multi_gpu, unmanaged_views) {
-  StreamsAndDevices streams_and_devices;
-  {
-    std::array<TEST_EXECSPACE, 2> execs =
-        get_execution_spaces(streams_and_devices);
+TEST(sycl_multi_gpu, unmanaged_views) {
+  std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces();
 
-    KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(execs[0].cuda_device()));
-    int *p0;
-    KOKKOS_IMPL_CUDA_SAFE_CALL(
-        cudaMalloc(reinterpret_cast<void **>(&p0), sizeof(int) * 100));
-    Kokkos::View<int *, TEST_EXECSPACE> view0(p0, 100);
+  int *p0 = sycl::malloc_device<int>(100, execs[0].sycl_queue());
+  Kokkos::View<int *, TEST_EXECSPACE> view0(p0, 100);
 
-    KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(execs[1].cuda_device()));
-    int *p;
-    KOKKOS_IMPL_CUDA_SAFE_CALL(
-        cudaMalloc(reinterpret_cast<void **>(&p), sizeof(int) * 100));
-    Kokkos::View<int *, TEST_EXECSPACE> view(p, 100);
+  int *p1 = sycl::malloc_device<int>(100, execs[1].sycl_queue());
+  Kokkos::View<int *, TEST_EXECSPACE> view1(p1, 100);
 
-    test_policies(execs[0], view0, execs[1], view);
-    KOKKOS_IMPL_CUDA_SAFE_CALL(cudaFree(p0));
-    KOKKOS_IMPL_CUDA_SAFE_CALL(cudaFree(p));
-  }
+  test_policies(execs[0], view0, execs[1], view1);
+  sycl::free(p0, execs[0].sycl_queue());
+  sycl::free(p1, execs[1].sycl_queue());
 }
 
 struct ScratchFunctor {
@@ -177,10 +156,11 @@ struct ScratchFunctor {
       : scratch_size(scratch_size_), R(R_) {}
 
   KOKKOS_FUNCTION
-  void operator()(const Kokkos::TeamPolicy<Kokkos::Cuda>::member_type &team,
-                  int &error_accum) const {
-    Kokkos::View<int *, Kokkos::Cuda::scratch_memory_space> scratch_mem(
-        team.team_scratch(1), scratch_size);
+  void operator()(
+      const Kokkos::TeamPolicy<Kokkos::Experimental::SYCL>::member_type &team,
+      int &error_accum) const {
+    Kokkos::View<int *, Kokkos::Experimental::SYCL::scratch_memory_space>
+        scratch_mem(team.team_scratch(1), scratch_size);
 
     // Initialize scratch memory
     Kokkos::parallel_for(Kokkos::TeamVectorRange(team, 0, scratch_size),
@@ -214,17 +194,18 @@ void test_scratch(TEST_EXECSPACE exec0, TEST_EXECSPACE exec1) {
   constexpr int N            = 10;
   constexpr int R            = 1000;
   constexpr int scratch_size = 100;
-  using ScratchType = Kokkos::View<int *, Kokkos::Cuda::scratch_memory_space>;
+  using ScratchType =
+      Kokkos::View<int *, Kokkos::Experimental::SYCL::scratch_memory_space>;
 
   // Test allocating and using scratch space
   ScratchFunctor f(scratch_size, R);
 
   auto policy0 =
-      Kokkos::TeamPolicy<Kokkos::Cuda>(exec0, N, 10)
+      Kokkos::TeamPolicy<Kokkos::Experimental::SYCL>(exec0, N, 10)
           .set_scratch_size(
               1, Kokkos::PerTeam(ScratchType::shmem_size(scratch_size)));
   auto policy1 =
-      Kokkos::TeamPolicy<Kokkos::Cuda>(exec1, N, 10)
+      Kokkos::TeamPolicy<Kokkos::Experimental::SYCL>(exec1, N, 10)
           .set_scratch_size(
               1, Kokkos::PerTeam(ScratchType::shmem_size(scratch_size)));
 
@@ -240,11 +221,11 @@ void test_scratch(TEST_EXECSPACE exec0, TEST_EXECSPACE exec1) {
   ScratchFunctor f_more_scratch(new_scratch_size, R);
 
   auto policy0_more_scratch =
-      Kokkos::TeamPolicy<Kokkos::Cuda>(exec0, N, 10)
+      Kokkos::TeamPolicy<Kokkos::Experimental::SYCL>(exec0, N, 10)
           .set_scratch_size(
               1, Kokkos::PerTeam(ScratchType::shmem_size(new_scratch_size)));
   auto policy1_more_scratch =
-      Kokkos::TeamPolicy<Kokkos::Cuda>(exec1, N, 10)
+      Kokkos::TeamPolicy<Kokkos::Experimental::SYCL>(exec1, N, 10)
           .set_scratch_size(
               1, Kokkos::PerTeam(ScratchType::shmem_size(new_scratch_size)));
 
@@ -256,13 +237,9 @@ void test_scratch(TEST_EXECSPACE exec0, TEST_EXECSPACE exec1) {
   ASSERT_EQ(error1, 0);
 }
 
-TEST(cuda_multi_gpu, scratch_space) {
-  StreamsAndDevices streams_and_devices;
-  {
-    std::array<TEST_EXECSPACE, 2> execs =
-        get_execution_spaces(streams_and_devices);
+TEST(sycl_multi_gpu, scratch_space) {
+  std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces();
 
-    test_scratch(execs[0], execs[1]);
-  }
+  test_scratch(execs[0], execs[1]);
 }
 }  // namespace

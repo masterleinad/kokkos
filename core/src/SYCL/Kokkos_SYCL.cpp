@@ -173,7 +173,7 @@ void SYCL::impl_initialize(InitializationSettings const& settings) {
       ::Kokkos::Impl::get_gpu(settings).value_or(visible_devices[0]);
   std::vector<sycl::device> sycl_devices = Impl::get_sycl_devices();
   Impl::SYCLInternal::singleton().initialize(sycl_devices[id]);
-  Impl::SYCLInternal::m_syclDev = id;
+  Impl::SYCLInternal::singleton().m_syclDev = id;
 }
 
 std::ostream& SYCL::impl_sycl_info(std::ostream& os,
