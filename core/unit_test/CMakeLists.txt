@@ -917,6 +917,12 @@ if(Kokkos_ENABLE_SYCL)
       UnitTestMainInit.cpp
       sycl/TestSYCL_InterOp_StreamsMultiGPU.cpp
   )
+  KOKKOS_ADD_EXECUTABLE_AND_TEST(
+    UnitTest_SYCLGraph
+    SOURCES
+      UnitTestMainInit.cpp
+      sycl/TestSYCL_Graph.cpp
+  )
 endif()
 
 SET(DEFAULT_DEVICE_SOURCES
