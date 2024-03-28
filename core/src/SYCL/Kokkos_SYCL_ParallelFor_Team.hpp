@@ -44,9 +44,8 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
   size_type const m_vector_size;
   int m_shmem_begin;
   int m_shmem_size;
-  sycl::device_ptr<char> m_global_scratch_ptr;
+  mutable sycl::device_ptr<char> m_global_scratch_ptr;
   size_t m_scratch_size[2];
-  int m_scratch_pool_id = -1;
 
   template <typename FunctorWrapper>
   sycl::event sycl_direct_launch(const Policy& policy,
@@ -122,9 +121,21 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
   inline void execute() const {
     if (m_league_size == 0) return;
 
-    auto& space = *m_policy.space().impl_internal_space_instance();
+        auto& instance       = *m_policy.space().impl_internal_space_instance();
+
+ // Only let one instance at a time resize the instance's scratch memory allocations.
+    std::scoped_lock<std::mutex> team_scratch_block(instance.m_team_scratch_mutex);
+
+  // Functor's reduce memory, team scan memory, and team shared memory depend
+    // upon team size.
+    int scratch_pool_id = instance.acquire_team_scratch_space();
+    m_global_scratch_ptr =
+        static_cast<sycl::device_ptr<char>>(instance.resize_team_scratch_space(
+            scratch_pool_id,
+            static_cast<ptrdiff_t>(m_scratch_size[1]) * m_league_size));
+
     Kokkos::Experimental::Impl::SYCLInternal::IndirectKernelMem&
-        indirectKernelMem = space.get_indirect_kernel_mem();
+        indirectKernelMem = instance.get_indirect_kernel_mem();
 
     auto functor_wrapper = Experimental::Impl::make_sycl_function_wrapper(
         m_functor, indirectKernelMem);
@@ -132,7 +143,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     sycl::event event = sycl_direct_launch(m_policy, functor_wrapper,
                                            functor_wrapper.get_copy_event());
     functor_wrapper.register_event(event);
-    space.register_team_scratch_event(m_scratch_pool_id, event);
+    instance.register_team_scratch_event(scratch_pool_id, event);
   }
 
   ParallelFor(FunctorType const& arg_functor, Policy const& arg_policy)
@@ -153,22 +164,14 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     m_scratch_size[0] = m_shmem_size;
     m_scratch_size[1] = m_policy.scratch_size(1, m_team_size);
 
-    // Functor's reduce memory, team scan memory, and team shared memory depend
-    // upon team size.
-    auto& space       = *m_policy.space().impl_internal_space_instance();
-    m_scratch_pool_id = space.acquire_team_scratch_space();
-    m_global_scratch_ptr =
-        static_cast<sycl::device_ptr<char>>(space.resize_team_scratch_space(
-            m_scratch_pool_id,
-            static_cast<ptrdiff_t>(m_scratch_size[1]) * m_league_size));
-
-    if (static_cast<int>(space.m_maxShmemPerBlock) <
+            auto& instance       = *m_policy.space().impl_internal_space_instance();
+    if (static_cast<int>(instance.m_maxShmemPerBlock) <
         m_shmem_size - m_shmem_begin) {
       std::stringstream out;
       out << "Kokkos::Impl::ParallelFor<SYCL> insufficient shared memory! "
              "Requested "
           << m_shmem_size - m_shmem_begin << " bytes but maximum is "
-          << space.m_maxShmemPerBlock << '\n';
+          << instance.m_maxShmemPerBlock << '\n';
       Kokkos::Impl::throw_runtime_exception(out.str());
     }
 
