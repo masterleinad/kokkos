@@ -144,7 +144,6 @@ inline Kokkos::Experimental::SYCL const& GraphImpl<Kokkos::Experimental::SYCL>::
 }
 
 inline auto GraphImpl<Kokkos::Experimental::SYCL>::create_root_node_ptr() {
-  KOKKOS_EXPECTS(m_graph);
   KOKKOS_EXPECTS(!m_graph_exec);
   auto rv = std::make_shared<root_node_impl_t>(get_execution_space(),
                                                _graph_node_is_root_ctor_tag{});

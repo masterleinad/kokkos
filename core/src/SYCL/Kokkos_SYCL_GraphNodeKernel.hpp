@@ -129,8 +129,7 @@ auto const& get_sycl_graph_from_kernel(KernelType const& kernel) {
       typename get_graph_node_kernel_type<KernelType>::type;
   auto const& kernel_as_graph_kernel =
       static_cast<graph_node_kernel_t const&>(kernel);
-  sycl::ext::oneapi::experimental::command_graph<> const& graph = kernel_as_graph_kernel.get_sycl_graph();
-  KOKKOS_EXPECTS(graph != nullptr);
+  const auto& graph = kernel_as_graph_kernel.get_sycl_graph();
 
   return graph;
 }

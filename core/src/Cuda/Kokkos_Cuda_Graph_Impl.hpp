@@ -118,9 +118,7 @@ struct GraphImpl<Kokkos::Cuda> {
   //  Also requires that the kernel has the graph node tag in it's policy
   void add_node(std::shared_ptr<NodeImpl> const& arg_node_ptr) {
     static_assert(
-        NodeImpl::kernel_type::Policy::is_graph_kernel::value,
-        "Something has gone horribly wrong, but it's too complicated to "
-        "explain here.  Buy Daisy a coffee and she'll explain it to you.");
+        NodeImpl::kernel_type::Policy::is_graph_kernel::value);
     KOKKOS_EXPECTS(bool(arg_node_ptr));
     // The Kernel launch from the execute() method has been shimmed to insert
     // the node into the graph
