@@ -144,7 +144,7 @@ struct GraphNodeImpl<ExecutionSpace, Kernel,
   template <class KernelDeduced>
   GraphNodeImpl(ExecutionSpace const& ex, _graph_node_kernel_ctor_tag,
                 KernelDeduced&& arg_kernel)
-      : base_t(ex), m_kernel((KernelDeduced &&) arg_kernel) {}
+      : base_t(ex), m_kernel(std::move(arg_kernel)) {}
 
   template <class... Args>
   GraphNodeImpl(ExecutionSpace const& ex, _graph_node_is_root_ctor_tag,
@@ -241,7 +241,7 @@ struct GraphNodeImpl
                 KernelDeduced&& arg_kernel, _graph_node_predecessor_ctor_tag,
                 PredecessorPtrDeduced&& arg_predecessor)
       : base_t(ex, _graph_node_kernel_ctor_tag{},
-               (KernelDeduced &&) arg_kernel),
+               std::forward<KernelDeduced>(arg_kernel)),
         // The backend gets the ability to store (weak, non-owning) references
         // to the kernel in it's final resting place here if it wants. The
         // predecessor is already a pointer, so it doesn't matter that it isn't

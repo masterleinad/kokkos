@@ -151,7 +151,7 @@ class GraphNodeRef {
             typename return_t::node_impl_t>(
             m_node_impl->execution_space_instance(),
             Kokkos::Impl::_graph_node_kernel_ctor_tag{},
-            (NextKernelDeduced &&) arg_kernel,
+            std::forward<NextKernelDeduced>(arg_kernel),
             // *this is the predecessor
             Kokkos::Impl::_graph_node_predecessor_ctor_tag{}, *this));
 

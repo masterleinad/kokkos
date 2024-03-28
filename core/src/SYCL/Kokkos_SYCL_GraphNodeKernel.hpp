@@ -32,58 +32,58 @@ namespace Impl {
 
 template <typename PolicyType, typename Functor, typename PatternTag,
           typename... Args>
-class GraphNodeKernelImpl<Kokkos::SYCL, PolicyType, Functor, PatternTag, Args...>
+class GraphNodeKernelImpl<Kokkos::Experimental::SYCL, PolicyType, Functor, PatternTag, Args...>
     : public PatternImplSpecializationFromTag<PatternTag, Functor, PolicyType,
-                                              Args..., Kokkos::SYCL>::type {
+                                              Args..., Kokkos::Experimental::SYCL>::type {
  public:
   using Policy       = PolicyType;
   using graph_kernel = GraphNodeKernelImpl;
   using base_t =
       typename PatternImplSpecializationFromTag<PatternTag, Functor, Policy,
-                                                Args..., Kokkos::SYCL>::type;
+                                                Args..., Kokkos::Experimental::SYCL>::type;
 
   // TODO use the name and executionspace
   template <typename PolicyDeduced, typename... ArgsDeduced>
-  GraphNodeKernelImpl(std::string, Kokkos::SYCL const&, Functor arg_functor,
+  GraphNodeKernelImpl(std::string, Kokkos::Experimental::SYCL const&, Functor arg_functor,
                       PolicyDeduced&& arg_policy, ArgsDeduced&&... args)
       : base_t(std::move(arg_functor), (PolicyDeduced &&) arg_policy,
                (ArgsDeduced &&) args...) {}
 
   template <typename PolicyDeduced>
-  GraphNodeKernelImpl(Kokkos::SYCL const& exec_space, Functor arg_functor,
+  GraphNodeKernelImpl(Kokkos::Experimental::SYCL const& exec_space, Functor arg_functor,
                       PolicyDeduced&& arg_policy)
       : GraphNodeKernelImpl("", exec_space, std::move(arg_functor),
                             (PolicyDeduced &&) arg_policy) {}
 
   ~GraphNodeKernelImpl() {
     if (m_driver_storage) {
-      Kokkos::SYCLSpace().deallocate(m_driver_storage, sizeof(base_t));
+      Kokkos::Experimental::SYCLDeviceUSMSpace().deallocate(m_driver_storage, sizeof(base_t));
     }
   }
 
-  void set_hip_graph_ptr(hipGraph_t* arg_graph_ptr) {
-    m_graph_ptr = arg_graph_ptr;
+  void set_sycl_graph_ptr(sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable>* arg_graph) {
+    m_graph_ptr = arg_graph;
   }
 
-  void set_hip_graph_node_ptr(hipGraphNode_t* arg_node_ptr) {
-    m_graph_node_ptr = arg_node_ptr;
+  void set_sycl_graph_node_ptr(sycl::ext::oneapi::experimental::node* arg_node) {
+    m_graph_node_ptr = arg_node;
   }
 
-  hipGraphNode_t* get_hip_graph_node_ptr() const { return m_graph_node_ptr; }
+  const sycl::ext::oneapi::experimental::node& get_sycl_graph_node() const { return *m_graph_node_ptr; }
 
-  hipGraph_t const* get_hip_graph_ptr() const { return m_graph_ptr; }
+  sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable> const& get_sycl_graph() const { return *m_graph_ptr; }
 
   Kokkos::ObservingRawPtr<base_t> allocate_driver_memory_buffer() const {
     KOKKOS_EXPECTS(m_driver_storage == nullptr);
-    m_driver_storage = static_cast<base_t*>(Kokkos::SYCLSpace().allocate(
+    m_driver_storage = static_cast<base_t*>(Kokkos::Experimental::SYCLDeviceUSMSpace().allocate(
         "GraphNodeKernel global memory functor storage", sizeof(base_t)));
     KOKKOS_ENSURES(m_driver_storage != nullptr);
     return m_driver_storage;
   }
 
  private:
-  Kokkos::ObservingRawPtr<const hipGraph_t> m_graph_ptr    = nullptr;
-  Kokkos::ObservingRawPtr<hipGraphNode_t> m_graph_node_ptr = nullptr;
+  Kokkos::OwningRawPtr<sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable>> m_graph_ptr = nullptr;
+  Kokkos::OwningRawPtr<sycl::ext::oneapi::experimental::node> m_graph_node_ptr = nullptr;
   Kokkos::OwningRawPtr<base_t> m_driver_storage            = nullptr;
 };
 
@@ -102,13 +102,13 @@ template <typename KernelType,
               typename PatternTagFromImplSpecialization<KernelType>::type>
 struct get_graph_node_kernel_type
     : type_identity<
-          GraphNodeKernelImpl<Kokkos::SYCL, typename KernelType::Policy,
+          GraphNodeKernelImpl<Kokkos::Experimental::SYCL, typename KernelType::Policy,
                               typename KernelType::functor_type, Tag>> {};
 
 template <typename KernelType>
 struct get_graph_node_kernel_type<KernelType, Kokkos::ParallelReduceTag>
     : type_identity<GraphNodeKernelImpl<
-          Kokkos::SYCL, typename KernelType::Policy,
+          Kokkos::Experimental::SYCL, typename KernelType::Policy,
           CombinedFunctorReducer<typename KernelType::functor_type,
                                  typename KernelType::reducer_type>,
           Kokkos::ParallelReduceTag>> {};
@@ -124,27 +124,27 @@ auto* allocate_driver_storage_for_kernel(KernelType const& kernel) {
 }
 
 template <typename KernelType>
-auto const& get_hip_graph_from_kernel(KernelType const& kernel) {
+auto const& get_sycl_graph_from_kernel(KernelType const& kernel) {
   using graph_node_kernel_t =
       typename get_graph_node_kernel_type<KernelType>::type;
   auto const& kernel_as_graph_kernel =
       static_cast<graph_node_kernel_t const&>(kernel);
-  hipGraph_t const* graph_ptr = kernel_as_graph_kernel.get_hip_graph_ptr();
-  KOKKOS_EXPECTS(graph_ptr != nullptr);
+  sycl::ext::oneapi::experimental::command_graph<> const& graph = kernel_as_graph_kernel.get_sycl_graph();
+  KOKKOS_EXPECTS(graph != nullptr);
 
-  return *graph_ptr;
+  return graph;
 }
 
 template <typename KernelType>
-auto& get_hip_graph_node_from_kernel(KernelType const& kernel) {
+auto& get_sycl_graph_node_from_kernel(KernelType const& kernel) {
   using graph_node_kernel_t =
       typename get_graph_node_kernel_type<KernelType>::type;
   auto const& kernel_as_graph_kernel =
       static_cast<graph_node_kernel_t const&>(kernel);
-  auto* graph_node_ptr = kernel_as_graph_kernel.get_hip_graph_node_ptr();
-  KOKKOS_EXPECTS(graph_node_ptr != nullptr);
+  auto* graph_node = kernel_as_graph_kernel.get_sycl_graph_node();
+  KOKKOS_EXPECTS(graph_node != nullptr);
 
-  return *graph_node_ptr;
+  return graph_node;
 }
 }  // namespace Impl
 }  // namespace Kokkos

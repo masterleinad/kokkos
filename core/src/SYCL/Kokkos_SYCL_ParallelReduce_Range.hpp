@@ -369,7 +369,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
 
   // Only let one ParallelReduce instance at a time use the host scratch memory.
   // The constructor acquires the mutex which is released in the destructor.
-  std::scoped_lock<std::mutex> m_scratch_buffers_lock;
+  std::optional<std::scoped_lock<std::mutex>> m_scratch_buffers_lock;
 };
 
 #endif /* KOKKOS_SYCL_PARALLEL_REDUCE_RANGE_HPP */

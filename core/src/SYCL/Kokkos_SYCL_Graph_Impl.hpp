@@ -26,6 +26,8 @@
 
 #include <SYCL/Kokkos_SYCL_GraphNodeKernel.hpp>
 
+#include <optional>
+
 namespace Kokkos {
 namespace Impl {
 template <>
@@ -71,40 +73,25 @@ class GraphImpl<Kokkos::Experimental::SYCL> {
 
  private:
   void instantiate_graph() {
-    constexpr size_t error_log_size = 256;
-    hipGraphNode_t error_node       = nullptr;
-    char error_log[error_log_size];
-    KOKKOS_IMPL_SYCL_SAFE_CALL(hipGraphInstantiate(
-        &m_graph_exec, m_graph, &error_node, error_log, error_log_size));
+    m_graph_exec = m_graph.finalize();
   }
 
   Kokkos::Experimental::SYCL m_execution_space;
-  hipGraph_t m_graph          = nullptr;
-  hipGraphExec_t m_graph_exec = nullptr;
+  sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable> m_graph        ;
+  std::optional<sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::executable>> m_graph_exec;
 };
 
 inline GraphImpl<Kokkos::Experimental::SYCL>::~GraphImpl() {
   m_execution_space.fence("Kokkos::GraphImpl::~GraphImpl: Graph Destruction");
-  KOKKOS_EXPECTS(m_graph);
-  if (m_graph_exec) {
-    KOKKOS_IMPL_SYCL_SAFE_CALL(hipGraphExecDestroy(m_graph_exec));
-  }
-  KOKKOS_IMPL_SYCL_SAFE_CALL(hipGraphDestroy(m_graph));
 }
 
 inline GraphImpl<Kokkos::Experimental::SYCL>::GraphImpl(Kokkos::Experimental::SYCL instance)
-    : m_execution_space(std::move(instance)) {
-  KOKKOS_IMPL_SYCL_SAFE_CALL(hipGraphCreate(&m_graph, 0));
-}
+    : m_execution_space(std::move(instance)),
+      m_graph(m_execution_space.sycl_queue().get_context(), m_execution_space.sycl_queue().get_device()) {}
 
 inline void GraphImpl<Kokkos::Experimental::SYCL>::add_node(
     std::shared_ptr<aggregate_node_impl_t> const& arg_node_ptr) {
-  // All of the predecessors are just added as normal, so all we need to
-  // do here is add an empty node
-  KOKKOS_IMPL_SYCL_SAFE_CALL(
-      hipGraphAddEmptyNode(&(arg_node_ptr->node_details_t::node), m_graph,
-                           /* dependencies = */ nullptr,
-                           /* numDependencies = */ 0));
+  arg_node_ptr->node_details_t::node = m_graph.add();
 }
 
 // Requires NodeImplPtr is a shared_ptr to specialization of GraphNodeImpl
@@ -119,8 +106,8 @@ inline void GraphImpl<Kokkos::Experimental::SYCL>::add_node(
   auto& kernel = arg_node_ptr->get_kernel();
   auto& node   = static_cast<node_details_t*>(arg_node_ptr.get())->node;
   KOKKOS_EXPECTS(!node);
-  kernel.set_hip_graph_ptr(&m_graph);
-  kernel.set_hip_graph_node_ptr(&node);
+  kernel.set_sycl_graph_ptr(&m_graph);
+  kernel.set_sycl_graph_node_ptr(&*node);
   kernel.execute();
   KOKKOS_ENSURES(node);
 }
@@ -135,22 +122,20 @@ inline void GraphImpl<Kokkos::Experimental::SYCL>::add_predecessor(
   auto pred_ptr = GraphAccess::get_node_ptr(arg_pred_ref);
   KOKKOS_EXPECTS(pred_ptr);
 
-  auto const& pred_node = pred_ptr->node_details_t::node;
+  auto& pred_node = pred_ptr->node_details_t::node;
   KOKKOS_EXPECTS(pred_node);
 
-  auto const& node = arg_node_ptr->node_details_t::node;
+  auto& node = arg_node_ptr->node_details_t::node;
   KOKKOS_EXPECTS(node);
 
-  KOKKOS_IMPL_SYCL_SAFE_CALL(
-      hipGraphAddDependencies(m_graph, &pred_node, &node, 1));
+  m_graph.make_edge(*pred_node, *node);
 }
 
 inline void GraphImpl<Kokkos::Experimental::SYCL>::submit() {
   if (!m_graph_exec) {
     instantiate_graph();
   }
-  KOKKOS_IMPL_SYCL_SAFE_CALL(
-      hipGraphLaunch(m_graph_exec, m_execution_space.hip_stream()));
+  m_execution_space.sycl_queue().ext_oneapi_graph(*m_graph_exec);
 }
 
 inline Kokkos::Experimental::SYCL const& GraphImpl<Kokkos::Experimental::SYCL>::get_execution_space() const
@@ -163,10 +148,7 @@ inline auto GraphImpl<Kokkos::Experimental::SYCL>::create_root_node_ptr() {
   KOKKOS_EXPECTS(!m_graph_exec);
   auto rv = std::make_shared<root_node_impl_t>(get_execution_space(),
                                                _graph_node_is_root_ctor_tag{});
-  KOKKOS_IMPL_SYCL_SAFE_CALL(hipGraphAddEmptyNode(&(rv->node_details_t::node),
-                                                 m_graph,
-                                                 /* dependencies = */ nullptr,
-                                                 /* numDependencies = */ 0));
+  rv->node_details_t::node = m_graph.add();
   KOKKOS_ENSURES(rv->node_details_t::node);
   return rv;
 }

@@ -26,8 +26,8 @@
 namespace Kokkos {
 namespace Impl {
 template <>
-struct GraphNodeBackendSpecificDetails<Kokkos::SYCL> {
-  hipGraphNode_t node = nullptr;
+struct GraphNodeBackendSpecificDetails<Kokkos::Experimental::SYCL> {
+  std::optional<sycl::ext::oneapi::experimental::node> node;
 
   explicit GraphNodeBackendSpecificDetails() = default;
 
@@ -36,16 +36,16 @@ struct GraphNodeBackendSpecificDetails<Kokkos::SYCL> {
 };
 
 template <typename Kernel, typename PredecessorRef>
-struct GraphNodeBackendDetailsBeforeTypeErasure<Kokkos::SYCL, Kernel,
+struct GraphNodeBackendDetailsBeforeTypeErasure<Kokkos::Experimental::SYCL, Kernel,
                                                 PredecessorRef> {
  protected:
   GraphNodeBackendDetailsBeforeTypeErasure(
-      Kokkos::SYCL const &, Kernel &, PredecessorRef const &,
-      GraphNodeBackendSpecificDetails<Kokkos::SYCL> &) noexcept {}
+      Kokkos::Experimental::SYCL const &, Kernel &, PredecessorRef const &,
+      GraphNodeBackendSpecificDetails<Kokkos::Experimental::SYCL> &) noexcept {}
 
   GraphNodeBackendDetailsBeforeTypeErasure(
-      Kokkos::SYCL const &, _graph_node_is_root_ctor_tag,
-      GraphNodeBackendSpecificDetails<Kokkos::SYCL> &) noexcept {}
+      Kokkos::Experimental::SYCL const &, _graph_node_is_root_ctor_tag,
+      GraphNodeBackendSpecificDetails<Kokkos::Experimental::SYCL> &) noexcept {}
 };
 
 }  // namespace Impl
