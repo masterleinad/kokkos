@@ -114,16 +114,6 @@ struct get_graph_node_kernel_type<KernelType, Kokkos::ParallelReduceTag>
           Kokkos::ParallelReduceTag>> {};
 
 template <typename KernelType>
-auto* allocate_driver_storage_for_kernel(KernelType const& kernel) {
-  using graph_node_kernel_t =
-      typename get_graph_node_kernel_type<KernelType>::type;
-  auto const& kernel_as_graph_kernel =
-      static_cast<graph_node_kernel_t const&>(kernel);
-
-  return kernel_as_graph_kernel.allocate_driver_memory_buffer();
-}
-
-template <typename KernelType>
 auto& get_sycl_graph_from_kernel(KernelType const& kernel) {
   using graph_node_kernel_t =
       typename get_graph_node_kernel_type<KernelType>::type;
