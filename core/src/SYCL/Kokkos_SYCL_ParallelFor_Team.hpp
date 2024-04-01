@@ -28,7 +28,7 @@ template <typename FunctorType, typename... Properties>
 class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
                                 Kokkos::Experimental::SYCL> {
  public:
-  using Policy = TeamPolicyInternal<Kokkos::Experimental::SYCL, Properties...>;
+  using Policy = TeamPolicy<Properties...>;
   using functor_type = FunctorType;
   using size_type    = ::Kokkos::Experimental::SYCL::size_type;
 
@@ -57,7 +57,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
 
     desul::ensure_sycl_lock_arrays_on_device(q);
 
-    auto parallel_for_event = q.submit([&](sycl::handler& cgh) {
+    auto cgh_lambda = [&](sycl::handler& cgh) {
       // FIXME_SYCL accessors seem to need a size greater than zero at least for
       // host queues
       sycl::local_accessor<char, 1> team_scratch_memory_L0(
@@ -110,11 +110,24 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
               sycl::range<2>(m_team_size, m_league_size * final_vector_size),
               sycl::range<2>(m_team_size, final_vector_size)),
           lambda);
-    });
+    };
+
+   if constexpr(Policy::is_graph_kernel::value) {
+    sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable>& graph = Impl::get_sycl_graph_from_kernel(*this);
+    std::optional<sycl::ext::oneapi::experimental::node>& graph_node = Impl::get_sycl_graph_node_from_kernel(*this);
+KOKKOS_ENSURES(!graph_node);
+    graph_node = graph.add(cgh_lambda);
+    KOKKOS_ENSURES(graph_node);
+ //   KOKKOS_ENSURES(graph_node.get_type() == sycl::ext::oneapi::experimental::node_type::kernel)
+            return {};
+} else {
+ auto parallel_for_event = q.submit(cgh_lambda);
+
 #ifndef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
     q.ext_oneapi_submit_barrier(std::vector<sycl::event>{parallel_for_event});
 #endif
     return parallel_for_event;
+}
   }
 
  public:
