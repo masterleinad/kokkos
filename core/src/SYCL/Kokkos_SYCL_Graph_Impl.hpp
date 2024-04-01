@@ -107,7 +107,7 @@ inline void GraphImpl<Kokkos::Experimental::SYCL>::add_node(
   auto& node   = static_cast<node_details_t*>(arg_node_ptr.get())->node;
   KOKKOS_EXPECTS(!node);
   kernel.set_sycl_graph_ptr(&m_graph);
-  kernel.set_sycl_graph_node_ptr(&*node);
+  kernel.set_sycl_graph_node_ptr(&node);
   kernel.execute();
   KOKKOS_ENSURES(node);
 }

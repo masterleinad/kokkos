@@ -65,13 +65,13 @@ class GraphNodeKernelImpl<Kokkos::Experimental::SYCL, PolicyType, Functor, Patte
     m_graph_ptr = arg_graph;
   }
 
-  void set_sycl_graph_node_ptr(sycl::ext::oneapi::experimental::node* arg_node) {
+  void set_sycl_graph_node_ptr(std::optional<sycl::ext::oneapi::experimental::node>* arg_node) {
     m_graph_node_ptr = arg_node;
   }
 
-  const sycl::ext::oneapi::experimental::node& get_sycl_graph_node() const { return *m_graph_node_ptr; }
+  std::optional<sycl::ext::oneapi::experimental::node>& get_sycl_graph_node() const { return *m_graph_node_ptr; }
 
-  sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable> const& get_sycl_graph() const { return *m_graph_ptr; }
+  sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable>& get_sycl_graph() const { return *m_graph_ptr; }
 
   Kokkos::ObservingRawPtr<base_t> allocate_driver_memory_buffer() const {
     KOKKOS_EXPECTS(m_driver_storage == nullptr);
@@ -83,7 +83,7 @@ class GraphNodeKernelImpl<Kokkos::Experimental::SYCL, PolicyType, Functor, Patte
 
  private:
   Kokkos::OwningRawPtr<sycl::ext::oneapi::experimental::command_graph<sycl::ext::oneapi::experimental::graph_state::modifiable>> m_graph_ptr = nullptr;
-  Kokkos::OwningRawPtr<sycl::ext::oneapi::experimental::node> m_graph_node_ptr = nullptr;
+  Kokkos::OwningRawPtr<std::optional<sycl::ext::oneapi::experimental::node>> m_graph_node_ptr = nullptr;
   Kokkos::OwningRawPtr<base_t> m_driver_storage            = nullptr;
 };
 
@@ -124,12 +124,12 @@ auto* allocate_driver_storage_for_kernel(KernelType const& kernel) {
 }
 
 template <typename KernelType>
-auto const& get_sycl_graph_from_kernel(KernelType const& kernel) {
+auto& get_sycl_graph_from_kernel(KernelType const& kernel) {
   using graph_node_kernel_t =
       typename get_graph_node_kernel_type<KernelType>::type;
   auto const& kernel_as_graph_kernel =
       static_cast<graph_node_kernel_t const&>(kernel);
-  const auto& graph = kernel_as_graph_kernel.get_sycl_graph();
+  auto& graph = kernel_as_graph_kernel.get_sycl_graph();
 
   return graph;
 }
@@ -140,8 +140,7 @@ auto& get_sycl_graph_node_from_kernel(KernelType const& kernel) {
       typename get_graph_node_kernel_type<KernelType>::type;
   auto const& kernel_as_graph_kernel =
       static_cast<graph_node_kernel_t const&>(kernel);
-  auto* graph_node = kernel_as_graph_kernel.get_sycl_graph_node();
-  KOKKOS_EXPECTS(graph_node != nullptr);
+  auto& graph_node = kernel_as_graph_kernel.get_sycl_graph_node();
 
   return graph_node;
 }
