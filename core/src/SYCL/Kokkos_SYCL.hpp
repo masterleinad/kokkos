@@ -160,7 +160,7 @@ std::vector<SYCL> partition_space(const SYCL& sycl_space, Args...) {
   instances.reserve(sizeof...(Args));
   for (unsigned int i = 0; i < sizeof...(Args); ++i)
     instances.emplace_back(
-        sycl::queue(context, device, sycl::property::queue::in_order()));
+        sycl::queue(context, device, sycl::property::queue::in_order(), sycl::ext::intel::property::queue::no_immediate_command_list()));
   return instances;
 }
 
@@ -181,7 +181,7 @@ std::vector<SYCL> partition_space(const SYCL& sycl_space,
   instances.reserve(weights.size());
   for (unsigned int i = 0; i < weights.size(); ++i)
     instances.emplace_back(
-        sycl::queue(context, device, sycl::property::queue::in_order()));
+        sycl::queue(context, device, sycl::property::queue::in_order(), sycl::ext::intel::property::queue::no_immediate_command_list()));
   return instances;
 }
 

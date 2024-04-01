@@ -92,9 +92,9 @@ void SYCLInternal::initialize(const sycl::device& d) {
   };
 #ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
   initialize(
-      sycl::queue{d, exception_handler, sycl::property::queue::in_order()});
+      sycl::queue{d, exception_handler, sycl::property::queue::in_order(), sycl::ext::intel::property::queue::no_immediate_command_list()});
 #else
-  initialize(sycl::queue{d, exception_handler});
+  initialize(sycl::queue{d, exception_handler, sycl::ext::intel::property::queue::no_immediate_command_list()});
 #endif
 }
 
