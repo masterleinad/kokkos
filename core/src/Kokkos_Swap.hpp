@@ -40,13 +40,12 @@ namespace Impl {
 template <class T>
 struct is_swappable {
   template <class U>
-  KOKKOS_FUNCTION
-  static decltype(kokkos_swap(std::declval<T&>(), std::declval<T&>()))
+  KOKKOS_FUNCTION static decltype(kokkos_swap(std::declval<T&>(),
+                                              std::declval<T&>()))
   test_swap(int);
   struct Nope;
   template <class U>
-  KOKKOS_FUNCTION
-  static Nope test_swap(long);
+  KOKKOS_FUNCTION static Nope test_swap(long);
   static constexpr bool value =
       !std::is_same_v<decltype(test_swap<T>(0)), Nope>;
 };
