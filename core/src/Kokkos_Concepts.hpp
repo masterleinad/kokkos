@@ -128,7 +128,7 @@ struct LaunchBounds {
 
 namespace Kokkos {
 
-#define KOKKOS_IMPL_IS_CONCEPT(CONCEPT)                        \
+#define KOKKOS_IMPL_IS_CONCEPT_IMPL(CONCEPT)                   \
   template <typename T>                                        \
   struct is_##CONCEPT {                                        \
    private:                                                    \
@@ -146,27 +146,37 @@ namespace Kokkos {
   template <typename T>                                        \
   inline constexpr bool is_##CONCEPT##_v = is_##CONCEPT<T>::value;
 
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+#define KOKKOS_IMPL_IS_CONCEPT(CONCEPT, CXX20_CONCEPT) \
+  KOKKOS_IMPL_IS_CONCEPT_IMPL(CONCEPT)                 \
+  template <typename T>                                \
+  concept CXX20_CONCEPT = is_##CONCEPT##_v<T>;
+#else
+#define KOKKOS_IMPL_IS_CONCEPT(CONCEPT, CXX20_CONCEPT) \
+  KOKKOS_IMPL_IS_CONCEPT_IMPL(CONCEPT)
+#endif
+
 // Public concept:
 
-KOKKOS_IMPL_IS_CONCEPT(memory_space)
-KOKKOS_IMPL_IS_CONCEPT(memory_traits)
-KOKKOS_IMPL_IS_CONCEPT(execution_space)
-KOKKOS_IMPL_IS_CONCEPT(execution_policy)
-KOKKOS_IMPL_IS_CONCEPT(array_layout)
-KOKKOS_IMPL_IS_CONCEPT(reducer)
-KOKKOS_IMPL_IS_CONCEPT(team_handle)
+KOKKOS_IMPL_IS_CONCEPT(memory_space, MemorySpace)
+KOKKOS_IMPL_IS_CONCEPT_IMPL(memory_traits)
+KOKKOS_IMPL_IS_CONCEPT(execution_space, ExecutionSpace)
+KOKKOS_IMPL_IS_CONCEPT(execution_policy, ExecutionPolicy)
+KOKKOS_IMPL_IS_CONCEPT(array_layout, ArrayLayout)
+KOKKOS_IMPL_IS_CONCEPT(reducer, Reducer)
+KOKKOS_IMPL_IS_CONCEPT(team_handle, TeamHandle)
 namespace Experimental {
-KOKKOS_IMPL_IS_CONCEPT(work_item_property)
-KOKKOS_IMPL_IS_CONCEPT(hooks_policy)
+KOKKOS_IMPL_IS_CONCEPT_IMPL(work_item_property)
+KOKKOS_IMPL_IS_CONCEPT_IMPL(hooks_policy)
 }  // namespace Experimental
 
 namespace Impl {
 
 // Implementation concept:
 
-KOKKOS_IMPL_IS_CONCEPT(thread_team_member)
-KOKKOS_IMPL_IS_CONCEPT(host_thread_team_member)
-KOKKOS_IMPL_IS_CONCEPT(graph_kernel)
+KOKKOS_IMPL_IS_CONCEPT_IMPL(thread_team_member)
+KOKKOS_IMPL_IS_CONCEPT_IMPL(host_thread_team_member)
+KOKKOS_IMPL_IS_CONCEPT_IMPL(graph_kernel)
 
 }  // namespace Impl
 

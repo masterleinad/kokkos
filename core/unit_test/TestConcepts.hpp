@@ -26,11 +26,23 @@ static_assert(Kokkos::is_execution_space<ExecutionSpace>{});
 static_assert(Kokkos::is_execution_space<ExecutionSpace const>{});
 static_assert(!Kokkos::is_execution_space<ExecutionSpace &>{});
 static_assert(!Kokkos::is_execution_space<ExecutionSpace const &>{});
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+static_assert(Kokkos::ExecutionSpace<ExecutionSpace>);
+static_assert(Kokkos::ExecutionSpace<ExecutionSpace const>);
+static_assert(!Kokkos::ExecutionSpace<ExecutionSpace &>);
+static_assert(!Kokkos::ExecutionSpace<ExecutionSpace const &>);
+#endif
 
 static_assert(Kokkos::is_memory_space<MemorySpace>{});
 static_assert(Kokkos::is_memory_space<MemorySpace const>{});
 static_assert(!Kokkos::is_memory_space<MemorySpace &>{});
 static_assert(!Kokkos::is_memory_space<MemorySpace const &>{});
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+static_assert(Kokkos::MemorySpace<MemorySpace>);
+static_assert(Kokkos::MemorySpace<MemorySpace const>);
+static_assert(!Kokkos::MemorySpace<MemorySpace &>);
+static_assert(!Kokkos::MemorySpace<MemorySpace const &>);
+#endif
 
 static_assert(Kokkos::is_device<DeviceType>{});
 static_assert(Kokkos::is_device<DeviceType const>{});
@@ -52,6 +64,39 @@ static_assert(!Kokkos::is_space<DeviceType &>{});
 
 static_assert(Kokkos::is_execution_space_v<ExecutionSpace>);
 static_assert(!Kokkos::is_execution_space_v<ExecutionSpace &>);
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+static_assert(Kokkos::ExecutionSpace<ExecutionSpace>);
+static_assert(!Kokkos::ExecutionSpace<ExecutionSpace &>);
+#endif
+
+static_assert(Kokkos::is_array_layout_v<Kokkos::LayoutLeft>);
+static_assert(Kokkos::is_array_layout_v<Kokkos::LayoutRight>);
+static_assert(Kokkos::is_array_layout_v<Kokkos::LayoutStride>);
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+static_assert(Kokkos::ArrayLayout<Kokkos::LayoutLeft>);
+static_assert(Kokkos::ArrayLayout<Kokkos::LayoutRight>);
+static_assert(Kokkos::ArrayLayout<Kokkos::LayoutStride>);
+#endif
+
+static_assert(
+    Kokkos::is_execution_policy_v<Kokkos::RangePolicy<ExecutionSpace>>);
+static_assert(Kokkos::is_execution_policy_v<
+              Kokkos::MDRangePolicy<ExecutionSpace, Kokkos::Rank<2>>>);
+static_assert(
+    Kokkos::is_execution_policy_v<Kokkos::TeamPolicy<ExecutionSpace>>);
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+static_assert(Kokkos::ExecutionPolicy<Kokkos::RangePolicy<ExecutionSpace>>);
+static_assert(Kokkos::ExecutionPolicy<
+              Kokkos::MDRangePolicy<ExecutionSpace, Kokkos::Rank<2>>>);
+static_assert(Kokkos::ExecutionPolicy<Kokkos::TeamPolicy<ExecutionSpace>>);
+#endif
+
+static_assert(Kokkos::is_reducer_v<Kokkos::Sum<int, Kokkos::HostSpace>>);
+static_assert(!Kokkos::is_reducer_v<int>);
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+static_assert(Kokkos::Reducer<Kokkos::Sum<int, Kokkos::HostSpace>>);
+static_assert(!Kokkos::Reducer<int>);
+#endif
 
 static_assert(
     std::is_same<float, Kokkos::Impl::remove_cvref_t<float const &>>{});
@@ -199,6 +244,16 @@ static_assert(!Kokkos::is_team_handle_v<member_t const &>);
 static_assert(!Kokkos::is_team_handle_v<member_t *>);
 static_assert(!Kokkos::is_team_handle_v<member_t const *>);
 static_assert(!Kokkos::is_team_handle_v<member_t *const>);
+#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+static_assert(Kokkos::TeamHandle<member_t>);
+static_assert(Kokkos::TeamHandle<member_t>);
+static_assert(Kokkos::TeamHandle<member_t const>);
+static_assert(!Kokkos::TeamHandle<member_t &>);
+static_assert(!Kokkos::TeamHandle<member_t const &>);
+static_assert(!Kokkos::TeamHandle<member_t *>);
+static_assert(!Kokkos::TeamHandle<member_t const *>);
+static_assert(!Kokkos::TeamHandle<member_t *const>);
+#endif
 
 // is_team_handle_complete_trait_check uses the FULL trait class above
 static_assert(is_team_handle_complete_trait_check<member_t>::value);
