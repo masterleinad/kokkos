@@ -21,6 +21,8 @@ jobs:
       id: cuda-toolkit
       with:
         cuda: '12.3.0'
+        sub-packages: '["nvcc"]'
+        method: 'network'
     - uses: actions/checkout@v4
     - name: configure
       shell: bash
