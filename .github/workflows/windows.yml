@@ -21,7 +21,7 @@ jobs:
       shell: bash
       run: |
         curl -O https://developer.download.nvidia.com/compute/cuda/12.5.0/network_installers/cuda_12.5.0_windows_network.exe
-        cuda_12.5.0_windows_network.exe -sn nvcc_12.5
+        ./cuda_12.5.0_windows_network.exe -sn nvcc_12.5
     - uses: actions/checkout@v4
     - name: configure
       shell: bash
