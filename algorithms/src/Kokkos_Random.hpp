@@ -671,8 +671,12 @@ struct Random_UniqueIndex<
       View<int**, Kokkos::Device<Kokkos::Experimental::SYCL, MemorySpace>>;
   KOKKOS_FUNCTION
   static int get_state_idx(const locks_view_type& locks_) {
-    auto item = sycl::ext::oneapi::experimental::this_nd_item<3>();
-    std::size_t threadIdx[3] = {item.get_local_id(2), item.get_local_id(1),
+#ifdef SYCL_EXT_ONEAPI_FREE_FUNCTION_QUERIES
+   auto item = sycl::ext::oneapi::this_work_item::get_nd_item<3>(); 
+#else
+   auto item = sycl::ext::oneapi::experimental::this_nd_item<3>();
+#endif 
+   std::size_t threadIdx[3] = {item.get_local_id(2), item.get_local_id(1),
                                 item.get_local_id(0)};
     std::size_t blockIdx[3]  = {item.get_group(2), item.get_group(1),
                                item.get_group(0)};
