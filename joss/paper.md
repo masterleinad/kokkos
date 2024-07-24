@@ -36,6 +36,18 @@ bibliography: paper.bib
 
 # Statement of need
 
+# Applications
+
+Kookos is used in the following applications:
+
+* Trilinos
+* he Flexible Computational Science Infrastructure (FleCSI) is an open-source C++ framework to assist in the development of performance portable multiphysics applications leveraging different task-based run-times, such as Legion or HPX (@Kaiser2020), and making use of Kokkos to offload work to CPU threads and GPUs of all major vendors (@10.1007/978-3-031-06156-1_38).
+* Please add name, put BibTex entry in papper.bib, and cite it here.
+
+# Example code
+
+* Show numerical integration using parallel_reduce 
+
 
 # Acknowledgements
 
