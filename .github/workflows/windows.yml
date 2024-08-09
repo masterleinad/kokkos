@@ -24,8 +24,6 @@ jobs:
     - uses: actions/checkout@v4
     - name: configure
       shell: bash
-      env:
-        CXXFLAGS: /bigobj
       run: |
         mkdir build
         mkdir c:/project

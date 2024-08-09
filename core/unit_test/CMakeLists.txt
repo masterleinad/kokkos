@@ -771,6 +771,10 @@ if(Kokkos_ENABLE_CUDA)
       ${Cuda_SOURCES1}
       cuda/TestCuda_ReducerViewSizeLimit.cpp
     )
+    # MSVC complains about the number of sections exceededing the object file format limit
+    if (MSVC)
+      target_compile_options(Kokkos_CoreUnitTest_Cuda1 PRIVATE /bigobj)
+    endif()
 
     KOKKOS_ADD_EXECUTABLE_AND_TEST(
     CoreUnitTest_Cuda2
