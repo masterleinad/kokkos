@@ -24,11 +24,13 @@ jobs:
     - uses: actions/checkout@v4
     - name: configure
       shell: bash
+      env:
+        CXXFLAGS: /bigobj
       run: |
         mkdir build
         mkdir c:/project
         cd build
-        cmake -DKokkos_ENABLE_CUDA=ON -DCMAKE_CXX_FLAGS="/bigobj" -DKokkos_ARCH_VOLTA70=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON ..
+        cmake -DKokkos_ENABLE_CUDA=ON -DKokkos_ARCH_VOLTA70=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON ..
     - name: build library
       shell: bash
       run: |
