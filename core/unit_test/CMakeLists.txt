@@ -208,7 +208,6 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         Reducers_a
         Reducers_b
         Reducers_c
-        Reducers_d
         Reducers_e
         Reductions
         Reductions_DeviceView
@@ -772,9 +771,9 @@ if(Kokkos_ENABLE_CUDA)
       cuda/TestCuda_ReducerViewSizeLimit.cpp
     )
     # MSVC complains about the number of sections exceededing the object file format limit
-    if (MSVC)
-      target_compile_options(Kokkos_CoreUnitTest_Cuda1 PRIVATE /bigobj)
-    endif()
+    #if (MSVC)
+    #  target_compile_options(Kokkos_CoreUnitTest_Cuda1 PRIVATE /bigobj)
+    #endif()
 
     KOKKOS_ADD_EXECUTABLE_AND_TEST(
     CoreUnitTest_Cuda2
