@@ -86,7 +86,10 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   iterator_type& operator++() {
-    m_data += m_stride;
+    if constexpr (is_contiguous)
+      m_data++;
+    else
+      m_data += m_stride;
     return *this;
   }
 
@@ -99,7 +102,10 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   iterator_type& operator--() {
-    m_data -= m_stride;
+    if constexpr (is_contiguous)
+      m_data--;
+    else
+      m_data -= m_stride;
     return *this;
   }
 
@@ -112,18 +118,27 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   reference operator[](difference_type n) const {
-    return *(m_data + n * m_stride);
+    if constexpr (is_contiguous)
+      return *(m_data + n);
+    else
+      return *(m_data + n * m_stride);
   }
 
   KOKKOS_FUNCTION
   iterator_type& operator+=(difference_type n) {
-    m_data += n * m_stride;
+    if constexpr (is_contiguous)
+      m_data += n;
+    else
+      m_data += n * m_stride;
     return *this;
   }
 
   KOKKOS_FUNCTION
   iterator_type& operator-=(difference_type n) {
-    m_data -= n * m_stride;
+    if constexpr (is_contiguous)
+      m_data -= n;
+    else
+      m_data -= n * m_stride;
     return *this;
   }
 
@@ -143,7 +158,10 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   difference_type operator-(iterator_type it) const {
-    return (m_data - it.m_data) / m_stride;
+    if constexpr (is_contiguous)
+      return m_data - it.m_data;
+    else
+      return (m_data - it.m_data) / m_stride;
   }
 
   KOKKOS_FUNCTION
@@ -176,6 +194,11 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
  private:
   pointer m_data;
   int m_stride;
+  static constexpr bool is_contiguous =
+      (std::is_same_v<typename view_type::traits::array_layout,
+                      Kokkos::LayoutLeft> ||
+       std::is_same_v<typename view_type::traits::array_layout,
+                      Kokkos::LayoutRight>);
 
   // Needed for the converting constructor accepting another iterator
   template <class>
