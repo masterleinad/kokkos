@@ -1,0 +1,9 @@
+test:
+  stage: test
+  tags: [hopper]
+  image: masterleinad/kokkos-nvcc-12.5.0:hopper
+  script:
+    - cmake -B build -DKokkos_ENABLE_CUDA=ON -DKokkos_ENABLE_IMPL_CUDA_UNIFIED_MEMORY=ON -DKokkos_ENABLE_TESTS=ON
+    - cmake --build build -j48
+    - cd build
+    - ctest -V
