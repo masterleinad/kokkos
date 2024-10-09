@@ -13,7 +13,7 @@ INTEL-DATA-CENTER-MAX-1100:
   tags: [intel-data-center-max-1100]
   image: intel/oneapi-basekit:2024.2.1-0-devel-ubuntu22.04
   script:
-    - cmake -B build -DCMAKE_CXX_COMPILER=icpx -DKokkos_ENABLE_SYCL=ON -DKokkos_ARCH_INTEL_PVC=ON -DKokkos_ENABLE_TESTS=ON -DCMAKE_CXX_FLAGS="-fsycl-device-code-split=per_kernel -fp-model=precise"
+    - cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=icpx -DKokkos_ENABLE_SYCL=ON -DKokkos_ARCH_INTEL_PVC=ON -DKokkos_ENABLE_TESTS=ON -DCMAKE_CXX_FLAGS="-fsycl-device-code-split=per_kernel -fp-model=precise"
     - cmake --build build -j48
     - cd build
     - ctest -V
