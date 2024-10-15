@@ -86,7 +86,7 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   iterator_type& operator++() {
-    if constexpr (is_contiguous)
+    if constexpr (is_always_contiguous)
       m_data++;
     else
       m_data += m_stride;
@@ -102,7 +102,7 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   iterator_type& operator--() {
-    if constexpr (is_contiguous)
+    if constexpr (is_always_contiguous)
       m_data--;
     else
       m_data -= m_stride;
@@ -118,7 +118,7 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   reference operator[](difference_type n) const {
-    if constexpr (is_contiguous)
+    if constexpr (is_always_contiguous)
       return *(m_data + n);
     else
       return *(m_data + n * m_stride);
@@ -126,7 +126,7 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   iterator_type& operator+=(difference_type n) {
-    if constexpr (is_contiguous)
+    if constexpr (is_always_contiguous)
       m_data += n;
     else
       m_data += n * m_stride;
@@ -135,7 +135,7 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   iterator_type& operator-=(difference_type n) {
-    if constexpr (is_contiguous)
+    if constexpr (is_always_contiguous)
       m_data -= n;
     else
       m_data -= n * m_stride;
@@ -158,7 +158,7 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
 
   KOKKOS_FUNCTION
   difference_type operator-(iterator_type it) const {
-    if constexpr (is_contiguous)
+    if constexpr (is_always_contiguous)
       return m_data - it.m_data;
     else
       return (m_data - it.m_data) / m_stride;
@@ -194,7 +194,7 @@ class RandomAccessIterator< ::Kokkos::View<DataType, Args...> > {
  private:
   pointer m_data;
   int m_stride;
-  static constexpr bool is_contiguous =
+  static constexpr bool is_always_contiguous =
       (std::is_same_v<typename view_type::traits::array_layout,
                       Kokkos::LayoutLeft> ||
        std::is_same_v<typename view_type::traits::array_layout,
