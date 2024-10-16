@@ -24,7 +24,7 @@ namespace Kokkos {
 namespace Experimental {
 namespace Impl {
 
-template <class T, class Enable = void>
+template <class T>
 class RandomAccessIterator;
 
 template <typename T, typename enable = void>

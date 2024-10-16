@@ -26,12 +26,8 @@ namespace Kokkos {
 namespace Experimental {
 namespace Impl {
 
-template <class T, class Enable>
-class RandomAccessIterator;
-
 template <class ViewType>
-class RandomAccessIterator<ViewType,
-                           std::enable_if_t<Kokkos::is_view_v<ViewType>>> {
+class RandomAccessIterator {
  public:
   using view_type     = ViewType;
   using iterator_type = RandomAccessIterator<view_type>;
@@ -41,6 +37,8 @@ class RandomAccessIterator<ViewType,
   using difference_type   = ptrdiff_t;
   using pointer           = typename view_type::pointer_type;
   using reference         = typename view_type::reference_type;
+
+  static_assert(Kokkos::is_view_v<ViewType>);
 
   static_assert(view_type::rank == 1 &&
                     (std::is_same_v<typename view_type::traits::array_layout,
@@ -189,7 +187,7 @@ class RandomAccessIterator<ViewType,
   ptrdiff_t m_current_index = 0;
 
   // Needed for the converting constructor accepting another iterator
-  template <class, class>
+  template <class>
   friend class RandomAccessIterator;
 };
 
