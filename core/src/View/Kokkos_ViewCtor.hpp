@@ -157,6 +157,7 @@ struct ViewCtorProp<T *> : public ViewCtorProp<void, T *> {
   static constexpr bool has_label           = false;
   static constexpr bool allow_padding       = false;
   static constexpr bool initialize          = true;
+  static constexpr bool sequential_host_init = false;
 
   using memory_space    = void;
   using execution_space = void;
