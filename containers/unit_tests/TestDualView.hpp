@@ -622,6 +622,16 @@ TEST(TEST_CATEGORY,
             const_dv.view<Kokkos::DefaultExecutionSpace>());
 }
 
+TEST(TEST_CATEGORY, dualview_sequential_host_init) {
+  Kokkos::DualView<double*> dv(
+      Kokkos::view_alloc("myView", Kokkos::SequentialHostInit), 100u);
+  dv.resize(Kokkos::view_alloc(Kokkos::SequentialHostInit), 200u);
+  ASSERT_EQ(dv.d_view.size(), 200u);
+  ASSERT_EQ(dv.h_view.size(), 200u);
+  dv.realloc(Kokkos::view_alloc(Kokkos::SequentialHostInit), 300u);
+  ASSERT_EQ(dv.d_view.size(), 300u);
+  ASSERT_EQ(dv.h_view.size(), 300u);
+}
 }  // anonymous namespace
 }  // namespace Test
 

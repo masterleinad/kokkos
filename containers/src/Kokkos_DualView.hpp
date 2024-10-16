@@ -928,11 +928,26 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
     if (sizeMismatch) {
       ::Kokkos::realloc(arg_prop, d_view, n0, n1, n2, n3, n4, n5, n6, n7);
-      if constexpr (alloc_prop_input::initialize) {
-        h_view = create_mirror_view(typename t_host::memory_space(), d_view);
+      if constexpr (alloc_prop_input::sequential_host_init) {
+        if constexpr (alloc_prop_input::initialize) {
+          h_view = create_mirror_view(
+              Kokkos::view_alloc(typename t_host::memory_space(),
+                                 Kokkos::SequentialHostInit),
+              d_view);
+        } else {
+          h_view = create_mirror_view(
+              Kokkos::view_alloc(Kokkos::WithoutInitializing,
+                                 typename t_host::memory_space(),
+                                 Kokkos::SequentialHostInit),
+              d_view);
+        }
       } else {
-        h_view = create_mirror_view(Kokkos::WithoutInitializing,
-                                    typename t_host::memory_space(), d_view);
+        if constexpr (alloc_prop_input::initialize) {
+          h_view = create_mirror_view(typename t_host::memory_space(), d_view);
+        } else {
+          h_view = create_mirror_view(Kokkos::WithoutInitializing,
+                                      typename t_host::memory_space(), d_view);
+        }
       }
     } else if constexpr (alloc_prop_input::initialize) {
       if constexpr (alloc_prop_input::has_execution_space) {
@@ -1047,6 +1062,12 @@ class DualView : public ViewTraits<DataType, Properties...> {
     };
 
     constexpr bool has_execution_space = alloc_prop_input::has_execution_space;
+
+    if constexpr (alloc_prop_input::sequential_host_init) {
+      sync<typename t_host::memory_space>();
+      resize_on_host(arg_prop);
+      return;
+    }
 
     if constexpr (has_execution_space) {
       using ExecSpace = typename alloc_prop_input::execution_space;
