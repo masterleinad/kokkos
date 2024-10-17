@@ -279,19 +279,14 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
 	      if constexpr(Impl::ViewCtorProp<P...>::sequential_host_init){
 	         h_view = t_host(arg_prop, n0, n1, n2, n3, n4, n5, n6, n7);
-
-                // without UVM, host View mirrors
-    if constexpr (Kokkos::Impl::has_type<Impl::WithoutInitializing_t,
-                                         P...>::value)
-      d_view = Kokkos::create_mirror_view(Kokkos::view_alloc(Kokkos::WithoutInitializing, typename traits::memory_space{}), h_view);
-    else
+    static_assert(Impl::ViewCtorProp<P...>::initialize, "DualView: Kokkos::SequentialHostInit isn't compatible with Kokkos::WithoutInitializing!");
+    static_assert(!Impl::ViewCtorProp<P...>::has_execution_space, "DualView: Kokkos::SequentialHostInit isn't compatible with providing an execution space instance!");
+         
       d_view = Kokkos::create_mirror_view(typename traits::memory_space{}, h_view);
       }
 	      else{
         d_view = t_dev(arg_prop, n0, n1, n2, n3, n4, n5, n6, n7);
   
-//static_assert(!Impl::ViewCtorProp<P...>::sequential_host_init);
-	      
 		// without UVM, host View mirrors
     if constexpr (Kokkos::Impl::has_type<Impl::WithoutInitializing_t,
                                          P...>::value)
