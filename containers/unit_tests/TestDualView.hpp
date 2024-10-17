@@ -622,12 +622,43 @@ TEST(TEST_CATEGORY,
             const_dv.view<Kokkos::DefaultExecutionSpace>());
 }
 
+// User-defined types with a View data member
+template <class V>
+class S {
+  V v_;
+
+ public:
+  template <class... Extents>
+  S(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
+  KOKKOS_DEFAULTED_FUNCTION S() = default;
+};
+
+template <class V>
+class N {  // not default constructible
+  V v_;
+
+ public:
+  template <class... Extents>
+  N(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
+};
+
+template <class V>
+class H {  // constructible and destructible only from on the host side
+  V v_;
+
+ public:
+  template <class... Extents>
+  H(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
+  H() {}
+  ~H() {}
+};
+
 TEST(TEST_CATEGORY, dualview_of_view) {
-  Kokkos::DualView<Kokkos::View<double*, TEST_EXECSPACE>*, TEST_EXECSPACE> dv_v(
+  Kokkos::DualView<S<Kokkos::View<double*, TEST_EXECSPACE>>*, TEST_EXECSPACE> dv_v(
   Kokkos::view_alloc("myView", Kokkos::SequentialHostInit), 3u);
 
-  Kokkos::View<double*, TEST_EXECSPACE> v("v", 2);
-  Kokkos::View<double*, TEST_EXECSPACE> w("w", 2);
+  S<Kokkos::View<double*, TEST_EXECSPACE>> v("v", 2);
+  S<Kokkos::View<double*, TEST_EXECSPACE>> w("w", 2);
   dv_v.h_view(0) = v;
   dv_v.h_view(1) = w;
 
