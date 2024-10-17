@@ -277,6 +277,17 @@ class DualView : public ViewTraits<DataType, Properties...> {
            const size_t n7                   = KOKKOS_IMPL_CTOR_DEFAULT_ARG)
       : modified_flags(t_modified_flags("DualView::modified_flags")) {
 
+	      if constexpr(Impl::ViewCtorProp<P...>::sequential_host_init){
+	         h_view = t_host(arg_prop, n0, n1, n2, n3, n4, n5, n6, n7);
+
+                // without UVM, host View mirrors
+    if constexpr (Kokkos::Impl::has_type<Impl::WithoutInitializing_t,
+                                         P...>::value)
+      d_view = Kokkos::create_mirror_view(Kokkos::view_alloc(Kokkos::WithoutInitializing, typename traits::memory_space{}), h_view);
+    else
+      d_view = Kokkos::create_mirror_view(typename traits::memory_space{}, h_view);
+      }
+	      else{
         d_view = t_dev(arg_prop, n0, n1, n2, n3, n4, n5, n6, n7);
   
 //static_assert(!Impl::ViewCtorProp<P...>::sequential_host_init);
@@ -287,6 +298,7 @@ class DualView : public ViewTraits<DataType, Properties...> {
       h_view = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, d_view);
     else
       h_view = Kokkos::create_mirror_view(d_view);
+	      }
   }
 
   //! Copy constructor (shallow copy)
@@ -1071,7 +1083,7 @@ class DualView : public ViewTraits<DataType, Properties...> {
       sync<typename t_host::memory_space>();
       resize_on_host(arg_prop);
       return;
-    }
+    } else
 
     if constexpr (has_execution_space) {
       using ExecSpace = typename alloc_prop_input::execution_space;
