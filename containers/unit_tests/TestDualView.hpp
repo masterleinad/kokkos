@@ -622,7 +622,7 @@ TEST(TEST_CATEGORY,
             const_dv.view<Kokkos::DefaultExecutionSpace>());
 }
 
-TEST(TEST_CATEGORY, dualview_sequential_host_init) {
+TEST(TEST_CATEGORY, dualview_of_view) {
   Kokkos::DualView<Kokkos::View<double*, TEST_EXECSPACE>*, TEST_EXECSPACE> dv_v(
   Kokkos::view_alloc("myView", Kokkos::SequentialHostInit), 3u);
 
@@ -634,14 +634,9 @@ TEST(TEST_CATEGORY, dualview_sequential_host_init) {
   dv_v.modify_host();
   dv_v.sync_device();
   
-  //Kokkos::DualView<double*, TEST_EXECSPACE> dv(
-  //    Kokkos::view_alloc("myView", Kokkos::SequentialHostInit), 1u);
   dv_v.resize(Kokkos::view_alloc(Kokkos::SequentialHostInit), 2u);
   ASSERT_EQ(dv_v.d_view.size(), 2u);
   ASSERT_EQ(dv_v.h_view.size(), 2u);
-  //dv_v.realloc(Kokkos::view_alloc(Kokkos::SequentialHostInit), 3u);
-  //ASSERT_EQ(dv_v.d_view.size(), 3u);
-  //ASSERT_EQ(dv_v.h_view.size(), 3u);
   }
 }  // anonymous namespace
 }  // namespace Test
