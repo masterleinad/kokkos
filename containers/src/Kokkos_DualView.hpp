@@ -277,7 +277,10 @@ class DualView : public ViewTraits<DataType, Properties...> {
            const size_t n7                   = KOKKOS_IMPL_CTOR_DEFAULT_ARG)
       : modified_flags(t_modified_flags("DualView::modified_flags")),
         d_view(arg_prop, n0, n1, n2, n3, n4, n5, n6, n7) {
-    // without UVM, host View mirrors
+  
+//static_assert(!Impl::ViewCtorProp<P...>::sequential_host_init);
+	      
+		// without UVM, host View mirrors
     if constexpr (Kokkos::Impl::has_type<Impl::WithoutInitializing_t,
                                          P...>::value)
       h_view = Kokkos::create_mirror_view(Kokkos::WithoutInitializing, d_view);
