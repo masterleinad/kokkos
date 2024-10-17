@@ -630,7 +630,7 @@ class S {
  public:
   template <class... Extents>
   S(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
-  KOKKOS_DEFAULTED_FUNCTION S() = default;
+  S() : v_("v", 10) {}
 };
 
 template <class V>
