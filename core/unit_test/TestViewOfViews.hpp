@@ -29,7 +29,7 @@ class S {
 // constructor
 template <class V>
 class DA {
-  V v_ = V("v", 5);
+  V v_ = V("v");
 
  public:
   template <class... Extents>
