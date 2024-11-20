@@ -20,7 +20,6 @@ jobs:
         cxx_extra_flags: ['']
         cmake_build_type: ['Release', 'Debug']
         backend: ['OPENMP']
-        clang-tidy: ['-DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"']
         stdcxx: [17]
         include:
           - distro: 'ubuntu:intel'
@@ -109,7 +108,7 @@ jobs:
         run: |
           cmake -B builddir \
             -DCMAKE_INSTALL_PREFIX=/usr \
-            ${{ matrix.clang-tidy }} \
+            -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*" \
             -DBUILD_SHARED_LIBS=ON \
             -Ddesul_ROOT=/usr/desul-install/ \
             -DKokkos_ENABLE_DESUL_ATOMICS_EXTERNAL=ON \
