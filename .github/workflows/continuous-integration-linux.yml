@@ -19,7 +19,7 @@ jobs:
         cxx_extra_flags: ['']
         cmake_build_type: ['Release', 'Debug']
         backend: ['OPENMP']
-        clang-tidy: ['']
+        clang-tidy: ['-DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"']
         stdcxx: [17]
         include:
           - distro: 'ubuntu:intel'
@@ -53,7 +53,6 @@ jobs:
             extra_linker_flags: '-fsanitize=address,undefined -fno-sanitize=function -fno-sanitize=vptr -fno-sanitize-recover=all'
             cmake_build_type: 'RelWithDebInfo'
             backend: 'THREADS'
-            clang-tidy: '-DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"'
             stdcxx: '23'
           - distro: 'ubuntu:latest'
             cxx: 'clang++'
