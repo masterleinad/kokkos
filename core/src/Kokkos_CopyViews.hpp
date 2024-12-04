@@ -861,7 +861,7 @@ struct CommonSubview {
 };
 
 template <bool SequentialHostInit, class DstType, class SrcType,
-          int Rank        = DstType::rank>
+          int Rank = DstType::rank>
 struct ViewRemap;
 
 template <bool SequentialHostInit, class DstType, class SrcType>
@@ -927,8 +927,7 @@ auto create_common_subview_no_match(const DstType& dst, const SrcType& src,
   return common_subview;
 }
 
-template <bool SequentialHostInit, class DstType, class SrcType,
-          int Rank>
+template <bool SequentialHostInit, class DstType, class SrcType, int Rank>
 struct ViewRemap {
   using p_type = Kokkos::pair<int64_t, int64_t>;
 
