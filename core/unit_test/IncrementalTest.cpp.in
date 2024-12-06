@@ -14,8 +14,8 @@
 //
 //@HEADER
 
-#ifndef KOKKOS_TEST_@BACK_END_NAME@_@CURRENT_TEST_NAME@
-#define KOKKOS_TEST_@BACK_END_NAME@_@CURRENT_TEST_NAME@
+#ifndef KOKKOS_TEST_@DEVICE@_@CURRENT_TEST_NAME@
+#define KOKKOS_TEST_@DEVICE@_@CURRENT_TEST_NAME@
 
 #include <gtest/gtest.h>
 #include <Kokkos_Macros.hpp>

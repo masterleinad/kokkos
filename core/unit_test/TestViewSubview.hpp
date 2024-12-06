@@ -27,7 +27,7 @@
 //------------------------------------------------------------------------------
 
 template <class...>
-struct _kokkos____________________static_test_failure_____;
+struct kokkos_static_test_failure;
 
 template <class...>
 struct static_predicate_message {};
@@ -48,8 +48,7 @@ template <template <class...> class predicate, class... message, class... args>
 struct static_assert_predicate_true_impl<
     std::enable_if_t<!predicate<args...>::type::value>, predicate,
     static_predicate_message<message...>, args...> {
-  using type = typename _kokkos____________________static_test_failure_____<
-      message...>::type;
+  using type = typename kokkos_static_test_failure<message...>::type;
 };
 
 template <template <class...> class predicate, class... args>
@@ -66,15 +65,14 @@ struct static_assert_predicate_true<
 //------------------------------------------------------------------------------
 
 // error "messages"
-struct _kokkos__________types_should_be_the_same_____expected_type__ {};
-struct _kokkos__________actual_type_was__ {};
+struct kokkos_types_should_be_the_same_expected_type {};
+struct kokkos_actual_type_was {};
 template <class Expected, class Actual>
 struct static_expect_same {
   using type = typename static_assert_predicate_true<
       std::is_same,
-      static_predicate_message<
-          _kokkos__________types_should_be_the_same_____expected_type__,
-          Expected, _kokkos__________actual_type_was__, Actual>,
+      static_predicate_message<kokkos_types_should_be_the_same_expected_type,
+                               Expected, kokkos_actual_type_was, Actual>,
       Expected, Actual>::type;
 };
 
@@ -2194,11 +2192,8 @@ struct get_view_type<Kokkos::View<T, Args...>> {
 };
 
 template <class T>
-struct
-    ___________________________________TYPE_DISPLAY________________________________________;
-#define TYPE_DISPLAY(...)                                                                           \
-  typename ___________________________________TYPE_DISPLAY________________________________________< \
-      __VA_ARGS__>::type notdefined;
+struct TYPE_DISPLAY;
+#define TYPE_DISPLAY(...) typename TYPE_DISPLAY<__VA_ARGS__>::type notdefined;
 
 template <class Space, class Layout>
 struct TestSubviewStaticSizes {

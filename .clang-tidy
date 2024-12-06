@@ -14,7 +14,6 @@ Checks: >
   -bugprone-multi-level-implicit-pointer-conversion,
   -bugprone-narrowing-conversions,
   -bugprone-non-zero-enum-to-bool-conversion,
-  -bugprone-reserved-identifier,
   -bugprone-return-const-ref-from-parameter,
   -bugprone-signed-char-misuse,
   -bugprone-sizeof-expression,
