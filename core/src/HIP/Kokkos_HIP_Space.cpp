@@ -370,7 +370,7 @@ void Kokkos::Impl::runtime_check_memory_space<Kokkos::HIPHostPinnedSpace>(
 #else
     auto type = attributes.type;
 #endif
-    check_memory_space<Kokkos::HIPHostPinnedSpace>(attributes.type);
+    check_memory_space<Kokkos::HIPHostPinnedSpace>(type);
   }
 #endif
 }
@@ -403,7 +403,7 @@ void Kokkos::Impl::runtime_check_memory_space<Kokkos::HIPManagedSpace>(
 #else
     auto type = attributes.type;
 #endif
-    check_memory_space<Kokkos::HIPManagedSpace>(attributes.type);
+    check_memory_space<Kokkos::HIPManagedSpace>(type);
   }
 #endif
 }
@@ -430,7 +430,7 @@ void Kokkos::Impl::runtime_check_memory_space<Kokkos::HIPSpace>(
 #else
     auto type = attributes.type;
 #endif
-    check_memory_space<Kokkos::HIPSpace>(attributes.type);
+    check_memory_space<Kokkos::HIPSpace>(type);
   }
 #endif
 }
@@ -450,7 +450,7 @@ void Kokkos::Impl::runtime_check_memory_space<Kokkos::HostSpace>(
 #else
     auto type = attributes.type;
 #endif
-    check_memory_space<Kokkos::HostSpace>(attributes.type);
+    check_memory_space<Kokkos::HostSpace>(type);
   }
 #endif
 }
