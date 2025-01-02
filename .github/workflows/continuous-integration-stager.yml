@@ -13,6 +13,8 @@ concurrency:
   group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{github.event_name == 'pull_request'}}
 
+permissions: read-all
+
 jobs:
   # pre-stage
   clang-format-check:
@@ -27,6 +29,15 @@ jobs:
   # primary testing
   codeql:
     needs: [initial-check, clang-format-check, cmake-format-check]
+    # need to set manual permissions since it requires security-events write
+    # but then we have to set everything else manually to read since the
+    # default is overwritten
+    permissions:
+      # required for all workflows
+      security-events: write
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
     uses: ./.github/workflows/codeql.yml
 
   windows-cuda:
