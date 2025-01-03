@@ -34,6 +34,7 @@
 */
 
 #include <Kokkos_Core.hpp>
+#include <charconv>
 
 template <int V>
 struct TestFunctor {
@@ -247,12 +248,20 @@ int main(int argc, char* argv[]) {
       // anything that doesn't start with --
       if (arg.size() < 2 ||
           (arg.size() >= 2 && arg[0] != '-' && arg[1] != '-')) {
+        int parsed_int;
+        auto [ptr, ec] =
+            std::from_chars(arg.data(), arg.data() + arg.size(), parsed_int);
+        if (ec == std::errc::invalid_argument)
+          Kokkos::abort("The argument is not a number!");
+        if (ec == std::errc::result_out_of_range)
+          Kokkos::abort("The argument is larger than an int!");
+
         if (i == 1)
-          N = atoi(arg.data());
+          N = parsed_int;
         else if (i == 2)
-          M = atoi(arg.data());
+          M = parsed_int;
         else if (i == 3)
-          K = atoi(arg.data());
+          K = parsed_int;
         else {
           Kokkos::abort("unexpected argument!");
         }
