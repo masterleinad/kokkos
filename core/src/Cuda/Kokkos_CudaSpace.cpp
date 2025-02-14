@@ -273,6 +273,7 @@ void *CudaUVMSpace::impl_allocate(
     const Kokkos::Tools::SpaceHandle arg_handle) const {
   void *ptr = nullptr;
 
+  std::cout << "label: " << std::string(arg_label) << std::endl;
   Cuda::impl_static_fence(
       "Kokkos::CudaUVMSpace::impl_allocate: Pre UVM Allocation");
   if (arg_alloc_size > 0) {

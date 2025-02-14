@@ -211,7 +211,8 @@ class DualView : public ViewTraits<DataType, Properties...> {
  public:
   // does the DualView have only one device
   static constexpr bool impl_dualview_stores_single_view =
-      std::is_same_v<typename t_host::memory_space, typename t_dev::memory_space>;
+      //std::is_same_v<typename t_host::memory_space, typename t_dev::memory_space>;
+      std::is_same_v<typename t_host::device_type, typename t_dev::device_type>;
 
  public:
   //@}
@@ -586,7 +587,8 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class Device>
   void sync() {
-    if (impl_dualview_stores_single_view) {Kokkos::fence(); return;}
+	  Kokkos::fence();
+    if (impl_dualview_stores_single_view) {return;}
 
     if constexpr (std::is_same_v<typename traits::data_type,
                                  typename traits::non_const_data_type>)
@@ -597,7 +599,8 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class Device, class ExecutionSpace>
   void sync(const ExecutionSpace& exec) {
-    if (impl_dualview_stores_single_view) {Kokkos::fence(); return;}
+	  Kokkos::fence();
+    if (impl_dualview_stores_single_view) {return;}
 
     if constexpr (std::is_same_v<typename traits::data_type,
                                  typename traits::non_const_data_type>)
@@ -745,7 +748,8 @@ class DualView : public ViewTraits<DataType, Properties...> {
   /// data as modified.
   template <class Device>
   void modify() {
-    if (impl_dualview_stores_single_view) {Kokkos::fence(); return;}
+	  Kokkos::fence();
+    if (impl_dualview_stores_single_view) {return;}
 
     if (modified_flags.data() == nullptr) {
       modified_flags = t_modified_flags("DualView::modified_flags");
@@ -783,7 +787,8 @@ class DualView : public ViewTraits<DataType, Properties...> {
   }
 
   inline void modify_host() {
-     if (impl_dualview_stores_single_view) {Kokkos::fence(); return;}
+	  Kokkos::fence();
+     if (impl_dualview_stores_single_view) {return;}
 
     if (modified_flags.data() != nullptr) {
       modified_flags(0) =
@@ -805,7 +810,8 @@ class DualView : public ViewTraits<DataType, Properties...> {
   }
 
   inline void modify_device() {
-    if (impl_dualview_stores_single_view) {Kokkos::fence(); return;}
+	  Kokkos::fence();
+    if (impl_dualview_stores_single_view) {return;}
 
     if (modified_flags.data() != nullptr) {
       modified_flags(1) =
