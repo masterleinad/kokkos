@@ -211,8 +211,8 @@ class DualView : public ViewTraits<DataType, Properties...> {
  public:
   // does the DualView have only one device
   static constexpr bool impl_dualview_stores_single_view =
-      //std::is_same_v<typename t_host::memory_space, typename t_dev::memory_space>;
-      std::is_same_v<typename t_host::device_type, typename t_dev::device_type>;
+      std::is_same_v<typename t_host::memory_space, typename t_dev::memory_space>;
+      //std::is_same_v<typename t_host::device_type, typename t_dev::device_type>;
 
  public:
   //@}
@@ -659,9 +659,12 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class ExecSpace>
   void sync_host(const ExecSpace& exec) {
-    sync_host_impl(exec);
+	  Kokkos::fence();
+       	  sync_host_impl(exec);
   }
-  void sync_host() { sync_host_impl(); }
+  void sync_host() { 
+	            Kokkos::fence();
+	  sync_host_impl(); }
 
   // deliberately passing args by cref as they're used multiple times
   template <typename... Args>
@@ -690,9 +693,10 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class ExecSpace>
   void sync_device(const ExecSpace& exec) {
+	  Kokkos::fence();
     sync_device_impl(exec);
   }
-  void sync_device() { sync_device_impl(); }
+  void sync_device() { Kokkos::fence(); sync_device_impl(); }
 
   template <class Device>
   bool need_sync() const {
