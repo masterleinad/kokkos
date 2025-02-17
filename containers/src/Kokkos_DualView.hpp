@@ -212,7 +212,6 @@ class DualView : public ViewTraits<DataType, Properties...> {
   // does the DualView have only one device
   static constexpr bool impl_dualview_stores_single_view =
       std::is_same_v<typename t_host::memory_space, typename t_dev::memory_space>;
-      //std::is_same_v<typename t_host::device_type, typename t_dev::device_type>;
 
  public:
   //@}
@@ -587,8 +586,7 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class Device>
   void sync() {
-	  Kokkos::fence();
-    if (impl_dualview_stores_single_view) {return;}
+    if (impl_dualview_stores_single_view) { Kokkos::fence(); return;}
 
     if constexpr (std::is_same_v<typename traits::data_type,
                                  typename traits::non_const_data_type>)
@@ -599,8 +597,7 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class Device, class ExecutionSpace>
   void sync(const ExecutionSpace& exec) {
-	  Kokkos::fence();
-    if (impl_dualview_stores_single_view) {return;}
+    if (impl_dualview_stores_single_view) {exec.fence(); return;}
 
     if constexpr (std::is_same_v<typename traits::data_type,
                                  typename traits::non_const_data_type>)
@@ -659,11 +656,11 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class ExecSpace>
   void sync_host(const ExecSpace& exec) {
-	  Kokkos::fence();
+	      if (impl_dualview_stores_single_view) {exec.fence(); return;}
        	  sync_host_impl(exec);
   }
   void sync_host() { 
-	            Kokkos::fence();
+	                if (impl_dualview_stores_single_view) {Kokkos::fence(); return;}
 	  sync_host_impl(); }
 
   // deliberately passing args by cref as they're used multiple times
@@ -693,10 +690,12 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class ExecSpace>
   void sync_device(const ExecSpace& exec) {
-	  Kokkos::fence();
+                        if (impl_dualview_stores_single_view) {exec.fence(); return;}
     sync_device_impl(exec);
   }
-  void sync_device() { Kokkos::fence(); sync_device_impl(); }
+  void sync_device() {
+	                         if (impl_dualview_stores_single_view) {Kokkos::fence(); return;}
+	  sync_device_impl(); }
 
   template <class Device>
   bool need_sync() const {
@@ -752,7 +751,6 @@ class DualView : public ViewTraits<DataType, Properties...> {
   /// data as modified.
   template <class Device>
   void modify() {
-	  Kokkos::fence();
     if (impl_dualview_stores_single_view) {return;}
 
     if (modified_flags.data() == nullptr) {
@@ -791,7 +789,6 @@ class DualView : public ViewTraits<DataType, Properties...> {
   }
 
   inline void modify_host() {
-	  Kokkos::fence();
      if (impl_dualview_stores_single_view) {return;}
 
     if (modified_flags.data() != nullptr) {
@@ -814,7 +811,6 @@ class DualView : public ViewTraits<DataType, Properties...> {
   }
 
   inline void modify_device() {
-	  Kokkos::fence();
     if (impl_dualview_stores_single_view) {return;}
 
     if (modified_flags.data() != nullptr) {
