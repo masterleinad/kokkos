@@ -597,7 +597,7 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class Device, class ExecutionSpace>
   void sync(const ExecutionSpace& exec) {
-    if (impl_dualview_stores_single_view) {exec.fence(); return;}
+    if (impl_dualview_stores_single_view) return;
 
     if constexpr (std::is_same_v<typename traits::data_type,
                                  typename traits::non_const_data_type>)
@@ -656,7 +656,7 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class ExecSpace>
   void sync_host(const ExecSpace& exec) {
-	      if (impl_dualview_stores_single_view) {exec.fence(); return;}
+	      if (impl_dualview_stores_single_view) return;
        	  sync_host_impl(exec);
   }
   void sync_host() { 
@@ -690,7 +690,7 @@ class DualView : public ViewTraits<DataType, Properties...> {
 
   template <class ExecSpace>
   void sync_device(const ExecSpace& exec) {
-                        if (impl_dualview_stores_single_view) {exec.fence(); return;}
+                        if (impl_dualview_stores_single_view) return;
     sync_device_impl(exec);
   }
   void sync_device() {
