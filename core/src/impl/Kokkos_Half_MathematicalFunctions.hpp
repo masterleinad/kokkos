@@ -18,7 +18,7 @@
 #define KOKKOS_HALF_MATHEMATICAL_FUNCTIONS_HPP_
 
 #include <Kokkos_MathematicalFunctions.hpp>  // For the float overloads
-#include <Kokkos_BitManipulation.hpp>        // bit_cast
+#include <Kokkos_BitManipulation.hpp>        // Kokkos::bit_cast
 
 // clang-format off
 namespace Kokkos {
@@ -161,7 +161,7 @@ KOKKOS_IMPL_MATH_HALF_FUNC_WRAPPER(KOKKOS_IMPL_MATH_BINARY_FUNCTION_HALF, copysi
 KOKKOS_INLINE_FUNCTION bool isfinite(Kokkos::Experimental::half_t x) {
   using bit_type = Kokkos::Experimental::half_t::bit_comparison_type;
   constexpr bit_type exponent_mask = Kokkos::Experimental::Impl::exponent_mask<Kokkos::Experimental::half_t>;
-  const bit_type bit_pattern_x = bit_cast<bit_type>(
+  const bit_type bit_pattern_x = Kokkos::bit_cast<bit_type>(
       static_cast<Kokkos::Experimental::half_t::impl_type>(x));
   return (bit_pattern_x.value & exponent_mask.value) != exponent_mask.value;
 }
@@ -171,7 +171,7 @@ KOKKOS_INLINE_FUNCTION bool isfinite(Kokkos::Experimental::half_t x) {
 KOKKOS_INLINE_FUNCTION bool isfinite(Kokkos::Experimental::bhalf_t x) {
   using bit_type = Kokkos::Experimental::bhalf_t::bit_comparison_type;
   constexpr bit_type exponent_mask = Kokkos::Experimental::Impl::exponent_mask<Kokkos::Experimental::bhalf_t>;
-  const bit_type bit_pattern_x = bit_cast<bit_type>(
+  const bit_type bit_pattern_x = Kokkos::bit_cast<bit_type>(
       static_cast<Kokkos::Experimental::bhalf_t::impl_type>(x));
   return (bit_pattern_x.value & exponent_mask.value) != exponent_mask.value;
 }
@@ -182,7 +182,7 @@ KOKKOS_INLINE_FUNCTION bool isinf(Kokkos::Experimental::half_t x) {
   using bit_type = Kokkos::Experimental::half_t::bit_comparison_type;
   constexpr bit_type exponent_mask = Kokkos::Experimental::Impl::exponent_mask<Kokkos::Experimental::half_t>;
   constexpr bit_type fraction_mask = Kokkos::Experimental::Impl::fraction_mask<Kokkos::Experimental::half_t>;
-  const bit_type bit_pattern_x = bit_cast<bit_type>(
+  const bit_type bit_pattern_x = Kokkos::bit_cast<bit_type>(
       static_cast<Kokkos::Experimental::half_t::impl_type>(x));
   return (
       ((bit_pattern_x.value & exponent_mask.value) == exponent_mask.value) &&
@@ -195,7 +195,7 @@ KOKKOS_INLINE_FUNCTION bool isinf(Kokkos::Experimental::bhalf_t x) {
   using bit_type = Kokkos::Experimental::bhalf_t::bit_comparison_type;
   constexpr bit_type exponent_mask = Kokkos::Experimental::Impl::exponent_mask<Kokkos::Experimental::bhalf_t>;
   constexpr bit_type fraction_mask = Kokkos::Experimental::Impl::fraction_mask<Kokkos::Experimental::bhalf_t>;
-  const bit_type bit_pattern_x = bit_cast<bit_type>(
+  const bit_type bit_pattern_x = Kokkos::bit_cast<bit_type>(
       static_cast<Kokkos::Experimental::bhalf_t::impl_type>(x));
   return (
       ((bit_pattern_x.value & exponent_mask.value) == exponent_mask.value) &&
@@ -208,7 +208,7 @@ KOKKOS_INLINE_FUNCTION bool isnan(Kokkos::Experimental::half_t x) {
   using bit_type = Kokkos::Experimental::half_t::bit_comparison_type;
   constexpr bit_type exponent_mask = Kokkos::Experimental::Impl::exponent_mask<Kokkos::Experimental::half_t>;
   constexpr bit_type fraction_mask = Kokkos::Experimental::Impl::fraction_mask<Kokkos::Experimental::half_t>;
-  const bit_type bit_pattern_x = bit_cast<bit_type>(
+  const bit_type bit_pattern_x = Kokkos::bit_cast<bit_type>(
       static_cast<Kokkos::Experimental::half_t::impl_type>(x));
   return (
       ((bit_pattern_x.value & exponent_mask.value) == exponent_mask.value) &&
@@ -221,7 +221,7 @@ KOKKOS_INLINE_FUNCTION bool isnan(Kokkos::Experimental::bhalf_t x) {
   using bit_type = Kokkos::Experimental::bhalf_t::bit_comparison_type;
   constexpr bit_type exponent_mask = Kokkos::Experimental::Impl::exponent_mask<Kokkos::Experimental::bhalf_t>;
   constexpr bit_type fraction_mask = Kokkos::Experimental::Impl::fraction_mask<Kokkos::Experimental::bhalf_t>;
-  const bit_type bit_pattern_x = bit_cast<bit_type>(
+  const bit_type bit_pattern_x = Kokkos::bit_cast<bit_type>(
       static_cast<Kokkos::Experimental::bhalf_t::impl_type>(x));
   return (
       ((bit_pattern_x.value & exponent_mask.value) == exponent_mask.value) &&

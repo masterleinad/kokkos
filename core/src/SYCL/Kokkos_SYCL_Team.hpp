@@ -183,34 +183,7 @@ class SYCLTeamMember {
     // rounds for loading values into the reduction_array, and 16 redundant
     // reduction steps executed by every thread.
     constexpr int step_width = 16;
-    auto tmp_alloc = sycl::ext::oneapi::group_local_memory_for_overwrite<
-        value_type[step_width]>(m_item.get_group());
-    auto& reduction_array = *tmp_alloc;
-
-    const auto id_in_sg = sg.get_local_id()[0];
-
-    // Load values into the first step_width values of the reduction
-    // array in chunks. This means that only sub groups with an id in the
-    // corresponding chunk load values.
-    const int group_id = sg.get_group_id()[0];
-    if (id_in_sg == 0 && group_id < step_width)
-      reduction_array[group_id] = value;
-    sycl::group_barrier(m_item.get_group());
-
-    for (int start = step_width; start < n_subgroups; start += step_width) {
-      if (id_in_sg == 0 && group_id >= start &&
-          group_id < std::min(start + step_width, n_subgroups))
-        wrapped_reducer.join(&reduction_array[group_id - start], &value);
-      sycl::group_barrier(m_item.get_group());
-    }
-
-    // Do the final reduction for all threads redundantly
-    value = reduction_array[0];
-    for (int i = 1; i < std::min(step_width, n_subgroups); ++i)
-      wrapped_reducer.join(&value, &reduction_array[i]);
-
-    // Make sure that every thread is done using the reduction array.
-    sycl::group_barrier(m_item.get_group());
+    std::abort();
   }
 
   //--------------------------------------------------------------------------

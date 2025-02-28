@@ -80,69 +80,15 @@ template <class T, class MemoryOrder, class MemoryScope>
 std::enable_if_t<(sizeof(T) != 8) && (sizeof(T) != 4), T>
 device_atomic_compare_exchange(
     T* const dest, T compare, T value, MemoryOrder, MemoryScope scope) {
-  // This is a way to avoid deadlock in a subgroup
-  T return_val;
-  int done = 0;
-#if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20250000
-  auto sg = sycl::ext::oneapi::this_work_item::get_sub_group();
-#else
-  auto sg = sycl::ext::oneapi::experimental::this_sub_group();
-#endif
-  using sycl::ext::oneapi::group_ballot;
-  using sycl::ext::oneapi::sub_group_mask;
-  sub_group_mask active = group_ballot(sg, 1);
-  sub_group_mask done_active = group_ballot(sg, 0);
-  while (active != done_active) {
-    if (!done) {
-      if (lock_address_sycl((void*)dest, scope)) {
-        if (std::is_same<MemoryOrder, MemoryOrderSeqCst>::value)
-          atomic_thread_fence(MemoryOrderRelease(), scope);
-        atomic_thread_fence(MemoryOrderAcquire(), scope);
-        return_val = *dest;
-        if (return_val == compare) {
-          *dest = value;
-          device_atomic_thread_fence(MemoryOrderRelease(), scope);
-        }
-        unlock_address_sycl((void*)dest, scope);
-        done = 1;
-      }
-    }
-    done_active = group_ballot(sg, done);
-  }
-  return return_val;
+abort();
+return value;
 }
 
 template <class T, class MemoryOrder, class MemoryScope>
 std::enable_if_t<(sizeof(T) != 8) && (sizeof(T) != 4), T> device_atomic_exchange(
     T* const dest, T value, MemoryOrder, MemoryScope scope) {
-  // This is a way to avoid deadlock in a subgroup
-  T return_val;
-  int done = 0;
-#if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20250000
-  auto sg = sycl::ext::oneapi::this_work_item::get_sub_group();
-#else
-  auto sg = sycl::ext::oneapi::experimental::this_sub_group();
-#endif
-  using sycl::ext::oneapi::group_ballot;
-  using sycl::ext::oneapi::sub_group_mask;
-  sub_group_mask active = group_ballot(sg, 1);
-  sub_group_mask done_active = group_ballot(sg, 0);
-  while (active != done_active) {
-    if (!done) {
-      if (lock_address_sycl((void*)dest, scope)) {
-        if (std::is_same<MemoryOrder, MemoryOrderSeqCst>::value)
-          atomic_thread_fence(MemoryOrderRelease(), scope);
-        device_atomic_thread_fence(MemoryOrderAcquire(), scope);
-        return_val = *dest;
-        *dest = value;
-        device_atomic_thread_fence(MemoryOrderRelease(), scope);
-        unlock_address_sycl((void*)dest, scope);
-        done = 1;
-      }
-    }
-    done_active = group_ballot(sg, done);
-  }
-  return return_val;
+abort();
+return value;
 }
 
 }  // namespace Impl

@@ -707,21 +707,6 @@ if(KOKKOS_ENABLE_HIP)
   endif()
 endif()
 
-if(KOKKOS_ENABLE_SYCL)
-  compiler_specific_flags(DEFAULT -fsycl -fno-sycl-id-queries-fit-in-int -fsycl-dead-args-optimization)
-  compiler_specific_options(DEFAULT -fsycl-unnamed-lambda)
-  if(KOKKOS_CXX_COMPILER_ID STREQUAL IntelLLVM AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 2024.1.0)
-    # Before oneAPI 2024.1.0 passing -fno-sycl didn't work properly
-    if(NOT KOKKOS_ENABLE_SYCL_RELOCATABLE_DEVICE_CODE)
-      message(FATAL_ERROR "Kokkos_ENABLE_SYCL_RELOCATABLE_DEVICE_CODE=OFF requires oneAPI 2024.1.0 or later")
-    endif()
-  elseif(KOKKOS_ENABLE_SYCL_RELOCATABLE_DEVICE_CODE)
-    compiler_specific_options(DEFAULT -fsycl-rdc)
-  else()
-    compiler_specific_options(DEFAULT -fno-sycl-rdc)
-  endif()
-endif()
-
 # Check support for device_global variables
 # FIXME_SYCL If SYCL_EXT_ONEAPI_DEVICE_GLOBAL is defined, we can use device
 #   global variables with shared libraries using the "non-separable compilation"

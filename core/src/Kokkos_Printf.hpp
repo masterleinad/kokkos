@@ -35,18 +35,10 @@ using ::printf;
 #else
 template <typename... Args>
 KOKKOS_FORCEINLINE_FUNCTION void printf(const char* format, Args... args) {
-#ifdef KOKKOS_ENABLE_SYCL
-  // Some compilers warn if "args" is empty and format is not a string literal
-  if constexpr (sizeof...(Args) == 0)
-    sycl::ext::oneapi::experimental::printf("%s", format);
-  else
-    sycl::ext::oneapi::experimental::printf(format, args...);
-#else
   if constexpr (sizeof...(Args) == 0)
     ::printf("%s", format);
   else
     ::printf(format, args...);
-#endif
 }
 #endif
 

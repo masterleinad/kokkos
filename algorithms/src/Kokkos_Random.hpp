@@ -672,37 +672,7 @@ struct Random_UniqueIndex<Kokkos::Device<Kokkos::SYCL, MemorySpace>> {
       View<int**, Kokkos::Device<Kokkos::SYCL, MemorySpace>>;
   KOKKOS_FUNCTION
   static int get_state_idx(const locks_view_type& locks_) {
-#if defined(KOKKOS_COMPILER_INTEL_LLVM) && \
-    KOKKOS_COMPILER_INTEL_LLVM >= 20250000
-    auto item = sycl::ext::oneapi::this_work_item::get_nd_item<3>();
-#else
-    auto item = sycl::ext::oneapi::experimental::this_nd_item<3>();
-#endif
-    std::size_t threadIdx[3] = {item.get_local_id(2), item.get_local_id(1),
-                                item.get_local_id(0)};
-    std::size_t blockIdx[3]  = {item.get_group(2), item.get_group(1),
-                                item.get_group(0)};
-    std::size_t blockDim[3] = {item.get_local_range(2), item.get_local_range(1),
-                               item.get_local_range(0)};
-    std::size_t gridDim[3]  = {
-        item.get_global_range(2) / item.get_local_range(2),
-        item.get_global_range(1) / item.get_local_range(1),
-        item.get_global_range(0) / item.get_local_range(0)};
-    const int i_offset =
-        (threadIdx[0] * blockDim[1] + threadIdx[1]) * blockDim[2] +
-        threadIdx[2];
-    int i =
-        (((blockIdx[0] * gridDim[1] + blockIdx[1]) * gridDim[2] + blockIdx[2]) *
-             blockDim[0] * blockDim[1] * blockDim[2] +
-         i_offset) %
-        locks_.extent(0);
-    while (Kokkos::atomic_compare_exchange(&locks_(i, 0), 0, 1)) {
-      i += blockDim[0] * blockDim[1] * blockDim[2];
-      if (i >= static_cast<int>(locks_.extent(0))) {
-        i = i_offset;
-      }
-    }
-    return i;
+	  std::abort();
   }
 };
 #endif

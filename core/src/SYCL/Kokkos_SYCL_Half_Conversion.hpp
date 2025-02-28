@@ -105,20 +105,20 @@ cast_from_half(half_t val) {
 
 template <>
 struct reduction_identity<Kokkos::Experimental::half_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
   sum() noexcept {
     return Kokkos::Experimental::half_t::impl_type(0.0F);
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
   prod() noexcept {
     return Kokkos::Experimental::half_t::impl_type(1.0F);
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
   max() noexcept {
     return std::numeric_limits<
         Kokkos::Experimental::half_t::impl_type>::lowest();
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
   min() noexcept {
     return std::numeric_limits<Kokkos::Experimental::half_t::impl_type>::max();
   }

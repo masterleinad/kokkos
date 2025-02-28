@@ -333,8 +333,6 @@ KOKKOS_IMPL_DEVICE_FUNCTION
   if constexpr (sizeof(T) == sizeof(long long int))
     return __ffsll(reinterpret_cast<long long int&>(x)) - 1;
   return __ffs(reinterpret_cast<int&>(x)) - 1;
-#elif defined(KOKKOS_ENABLE_SYCL)
-  return sycl::ctz(x);
 #else
   return countr_zero_fallback(x);
 #endif

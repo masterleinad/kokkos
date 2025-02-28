@@ -168,7 +168,7 @@ void SYCL::print_configuration(std::ostream& os, bool verbose) const {
       case sycl::info::device_type::host: device_type = "host"; break;
       case sycl::info::device_type::all: device_type = "all"; break;
     }
-    os << "[" << device.get_backend() << "]:" << device_type << ':' << counter
+    os << "[ ]:" << device_type << ':' << counter
        << "] " << device.get_info<sycl::info::device::name>();
     if (counter == active_device) os << " : Selected";
     os << '\n';

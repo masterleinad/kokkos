@@ -25,8 +25,7 @@ namespace Impl {
 
 template <class MemoryOrder, class MemoryScope>
 void device_atomic_thread_fence(MemoryOrder, MemoryScope) {
-  sycl::atomic_fence(SYCLMemoryOrder<MemoryOrder>::value,
-                     SYCLMemoryScope<MemoryScope>::value);
+  abort();
 }
 
 }  // namespace Impl

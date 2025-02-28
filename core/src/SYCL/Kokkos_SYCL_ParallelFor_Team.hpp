@@ -82,18 +82,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
           functor_wrapper.get_functor()(work_tag(), team_member);
       };
 
-      static sycl::kernel kernel = [&] {
-        sycl::kernel_id functor_kernel_id =
-            sycl::get_kernel_id<decltype(lambda)>();
-        auto kernel_bundle =
-            sycl::get_kernel_bundle<sycl::bundle_state::executable>(
-                q.get_context(), std::vector{functor_kernel_id});
-        return kernel_bundle.get_kernel(functor_kernel_id);
-      }();
-      auto max_sg_size =
-          kernel
-              .get_info<sycl::info::kernel_device_specific::max_sub_group_size>(
-                  q.get_device());
+      auto max_sg_size = 64;
       auto final_vector_size = std::min<int>(m_vector_size, max_sg_size);
       // FIXME_SYCL For some reason, explicitly enforcing the kernel bundle to
       // be used gives a runtime error.

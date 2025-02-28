@@ -252,26 +252,13 @@ class Kokkos::Impl::ParallelReduce<
         auto dummy_reduction_lambda =
             reduction_lambda_factory({1, cgh}, num_teams_done, nullptr, 1);
 
-        static sycl::kernel kernel = [&] {
-          sycl::kernel_id functor_kernel_id =
-              sycl::get_kernel_id<decltype(dummy_reduction_lambda)>();
-          auto kernel_bundle =
-              sycl::get_kernel_bundle<sycl::bundle_state::executable>(
-                  q.get_context(), std::vector{functor_kernel_id});
-          return kernel_bundle.get_kernel(functor_kernel_id);
-        }();
-        auto multiple = kernel.get_info<sycl::info::kernel_device_specific::
-                                            preferred_work_group_size_multiple>(
-            q.get_device());
+        auto multiple = 64;
         // FIXME_SYCL The code below queries the kernel for the maximum subgroup
         // size but it turns out that this is not accurate and choosing a larger
         // subgroup size gives better peformance (and is what the oneAPI
         // reduction algorithm does).
 #ifndef KOKKOS_ARCH_INTEL_GPU
-        auto max =
-            kernel
-                .get_info<sycl::info::kernel_device_specific::work_group_size>(
-                    q.get_device());
+        auto max = 1024;
 #else
         auto max =
             q.get_device().get_info<sycl::info::device::max_work_group_size>();

@@ -47,19 +47,10 @@
 
 // FIXME_SYCL Use type directly once it has stabilized in SYCL.
 namespace Kokkos::Impl {
-#ifndef SYCL_EXT_INTEL_USM_ADDRESS_SPACES
-#error SYCL_EXT_INTEL_USM_ADDRESS_SPACES undefined!
-#elif SYCL_EXT_INTEL_USM_ADDRESS_SPACES >= 2
 template <typename T>
-using sycl_device_ptr = sycl::ext::intel::device_ptr<T>;
+using sycl_device_ptr = sycl::global_ptr<T>;
 template <typename T>
-using sycl_host_ptr = sycl::ext::intel::host_ptr<T>;
-#else
-template <typename T>
-using sycl_device_ptr = sycl::device_ptr<T>;
-template <typename T>
-using sycl_host_ptr = sycl::host_ptr<T>;
-#endif
+using sycl_host_ptr = sycl::global_ptr<T>;
 }  // namespace Kokkos::Impl
 
 // clang-format off
