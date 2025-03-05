@@ -34,7 +34,7 @@ jobs:
         mkdir build
         mkdir c:/project
         cd build
-        cmake -DKokkos_ENABLE_CUDA=ON -DKokkos_ARCH_VOLTA70=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON -DCMAKE_CUDA_COMPILER="${CUDA_PATH}/bin/nvcc" ..
+        cmake -DCMAKE_GENERATOR_TOOLSET="cuda=$CUDA_PATH" -DKokkos_ENABLE_CUDA=ON -DKokkos_ARCH_VOLTA70=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON -DCMAKE_CUDA_COMPILER="${CUDA_PATH}/bin/nvcc" ..
     - name: build library
       shell: bash
       run: |
