@@ -29,6 +29,8 @@ jobs:
     - name: configure
       shell: bash
       run: |
+        echo "$CUDA_PATH/bin" >> "$GITHUB_PATH"
+        which nvcc
         mkdir build
         mkdir c:/project
         cd build
