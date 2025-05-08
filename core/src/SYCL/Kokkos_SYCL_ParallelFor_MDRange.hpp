@@ -63,7 +63,12 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
 #else
       (void)memcpy_event;
 #endif
-      cgh.parallel_for(sycl_swapped_range, [lower_bound, upper_bound, extent,
+      cgh.parallel_for(sycl_swapped_range, 
+		      #ifdef KOKKOS_ENABLE_SYCL_VIRTUAL_FUNCTIONS
+          sycl::ext::oneapi::experimental::properties{
+              sycl::ext::oneapi::experimental::assume_indirect_calls},
+#endif
+		      [lower_bound, upper_bound, extent,
                                             functor_wrapper](
                                                sycl::nd_item<3> item) {
         // swap back for correct index calculations in DeviceIterateTile
