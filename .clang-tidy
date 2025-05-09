@@ -13,7 +13,12 @@ Checks: >
   modernize-type-traits,
   modernize-use-nullptr,
   modernize-use-using,
+  performance-unnecessary-value-param,
   kokkos-*
+
+CheckOptions:
+  - key:             performance-unnecessary-value-param.AllowedTypes
+    value:           'View$'
 
 FormatStyle: file
 HeaderFilterRegex: '(algorithms|benchmarks|containers|core|example|simd).*\.hpp'
