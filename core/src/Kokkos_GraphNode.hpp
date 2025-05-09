@@ -300,7 +300,7 @@ class GraphNodeRef {
           is_execution_policy<Kokkos::Impl::remove_cvref_t<Policy>>::value,
           // --------------------
           int> = 0>
-  auto then_parallel_for(std::string arg_name, Policy&& arg_policy,
+  auto then_parallel_for(const std::string& arg_name, Policy&& arg_policy,
                          Functor&& functor) const {
     //----------------------------------------
     KOKKOS_EXPECTS(!m_graph_impl.expired())
@@ -347,7 +347,7 @@ class GraphNodeRef {
   }
 
   template <class Functor>
-  auto then_parallel_for(std::string name, std::size_t n,
+  auto then_parallel_for(const std::string& name, std::size_t n,
                          Functor&& functor) const {
     // needs to static assert constraint: DataParallelFunctor<Functor>
     return this->then_parallel_for(std::move(name),
@@ -385,7 +385,7 @@ class GraphNodeRef {
           is_execution_policy<Kokkos::Impl::remove_cvref_t<Policy>>::value,
           // --------------------
           int> = 0>
-  auto then_parallel_reduce(std::string arg_name, Policy&& arg_policy,
+  auto then_parallel_reduce(const std::string& arg_name, Policy&& arg_policy,
                             Functor&& functor,
                             ReturnType&& return_value) const {
     auto graph_impl_ptr = m_graph_impl.lock();
@@ -510,7 +510,7 @@ class GraphNodeRef {
   }
 
   template <class Functor, class ReturnType>
-  auto then_parallel_reduce(std::string label,
+  auto then_parallel_reduce(const std::string& label,
                             typename execution_space::size_type idx_end,
                             Functor&& functor,
                             ReturnType&& return_value) const {

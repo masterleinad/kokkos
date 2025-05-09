@@ -28,6 +28,7 @@
 
 #include <Kokkos_Core.hpp>
 #include <cstdio>
+#include <utility>
 
 // A Kokkos::View is an array of zero or more dimensions.  The number
 // of dimensions is specified at compile time, as part of the type of
@@ -51,7 +52,7 @@ struct InitView {
   // operator= only do shallow copies.  Thus, you can pass View
   // objects around by "value"; they won't do a deep copy unless you
   // explicitly ask for a deep copy.
-  InitView(view_type a_) : a(a_) {}
+  InitView(view_type a_) : a(std::move(a_)) {}
 
   // Fill the View with some data.  The parallel_for loop will iterate
   // over the View's first dimension N.
@@ -71,7 +72,7 @@ struct ReduceFunctor {
   view_type a;
 
   // Constructor takes View by "value"; this does a shallow copy.
-  ReduceFunctor(view_type a_) : a(a_) {}
+  ReduceFunctor(view_type a_) : a(std::move(a_)) {}
 
   // If you write a functor to do a reduction, you must specify the
   // type of the reduction result via a public 'value_type' alias.

@@ -64,7 +64,7 @@ struct ExclusiveScanDefaultFunctorWithValueWrapper {
   FirstDest m_first_dest;
 
   KOKKOS_FUNCTION
-  ExclusiveScanDefaultFunctorWithValueWrapper(ValueType init,
+  ExclusiveScanDefaultFunctorWithValueWrapper(const ValueType& init,
                                               FirstFrom first_from,
                                               FirstDest first_dest)
       : m_init_value(std::move(init)),
@@ -119,7 +119,7 @@ struct TransformExclusiveScanFunctorWithValueWrapper {
   UnaryOpType m_unary_op;
 
   KOKKOS_FUNCTION
-  TransformExclusiveScanFunctorWithValueWrapper(ValueType init,
+  TransformExclusiveScanFunctorWithValueWrapper(const ValueType& init,
                                                 FirstFrom first_from,
                                                 FirstDest first_dest,
                                                 BinaryOpType bop,

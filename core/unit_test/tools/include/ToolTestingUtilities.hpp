@@ -377,7 +377,7 @@ struct BeginParallelForEvent final
     static std::string value = "BeginParallelFor";
     return value;
   }
-  BeginParallelForEvent(std::string n, const uint32_t devID, uint64_t k)
+  BeginParallelForEvent(const std::string& n, const uint32_t devID, uint64_t k)
       : BeginOperation<BeginParallelForEvent>(n, devID, k) {}
 };
 struct BeginParallelReduceEvent final
@@ -387,7 +387,8 @@ struct BeginParallelReduceEvent final
     return value;
   }
 
-  BeginParallelReduceEvent(std::string n, const uint32_t devID, uint64_t k)
+  BeginParallelReduceEvent(const std::string& n, const uint32_t devID,
+                           uint64_t k)
       : BeginOperation<BeginParallelReduceEvent>(n, devID, k) {}
 };
 struct BeginParallelScanEvent final
@@ -397,7 +398,7 @@ struct BeginParallelScanEvent final
     return value;
   }
 
-  BeginParallelScanEvent(std::string n, const uint32_t devID, uint64_t k)
+  BeginParallelScanEvent(const std::string& n, const uint32_t devID, uint64_t k)
       : BeginOperation<BeginParallelScanEvent>(n, devID, k) {}
 };
 struct BeginFenceEvent final : public BeginOperation<BeginFenceEvent> {
@@ -406,7 +407,7 @@ struct BeginFenceEvent final : public BeginOperation<BeginFenceEvent> {
     return value;
   }
 
-  BeginFenceEvent(std::string n, const uint32_t devID, uint64_t k)
+  BeginFenceEvent(const std::string& n, const uint32_t devID, uint64_t k)
       : BeginOperation<BeginFenceEvent>(n, devID, k) {}
 };
 
@@ -498,7 +499,7 @@ struct PushRegionEvent final
   std::string descriptor() const override {
     return "PushRegionEvent { Region Name: \"" + name + "\" }";
   }
-  PushRegionEvent(std::string n) : name(n) {}
+  PushRegionEvent(std::string n) : name(std::move(n)) {}
 };
 struct PopRegionEvent final
     : public UniquelyIdentifiableEventType<PopRegionEvent> {
@@ -524,7 +525,7 @@ struct DataEvent : public UniquelyIdentifiableEventType<Derived> {
  private:
   DataEvent(SpaceHandleType h, std::string n, EventBase::PtrHandle p,
             uint64_t s)
-      : handle(h), name(n), ptr(p), size(s) {}
+      : handle(h), name(std::move(n)), ptr(p), size(s) {}
   friend Derived;
 };
 
@@ -532,13 +533,13 @@ struct AllocateDataEvent final : public DataEvent<AllocateDataEvent> {
   static std::string event_name() { return "AllocateDataEvent"; }
   AllocateDataEvent(DataEvent::SpaceHandleType h, std::string n,
                     EventBase::PtrHandle p, uint64_t s)
-      : DataEvent<AllocateDataEvent>(h, n, p, s) {}
+      : DataEvent<AllocateDataEvent>(h, std::move(n), p, s) {}
 };
 struct DeallocateDataEvent final : public DataEvent<DeallocateDataEvent> {
   static std::string event_name() { return "DeallocateDataEvent"; }
   DeallocateDataEvent(DataEvent::SpaceHandleType h, std::string n,
                       EventBase::PtrHandle p, uint64_t s)
-      : DataEvent<DeallocateDataEvent>(h, n, p, s) {}
+      : DataEvent<DeallocateDataEvent>(h, std::move(n), p, s) {}
 };
 
 struct CreateProfileSectionEvent final
@@ -549,7 +550,8 @@ struct CreateProfileSectionEvent final
     return "CreateProfileSectionEvent {\"" + name + "\", " +
            std::to_string(id) + "}";
   }
-  CreateProfileSectionEvent(std::string n, uint32_t s_i) : name(n), id(s_i) {}
+  CreateProfileSectionEvent(std::string n, uint32_t s_i)
+      : name(std::move(n)), id(s_i) {}
 };
 
 template <class Derived>
@@ -591,7 +593,7 @@ struct ProfileEvent final : public UniquelyIdentifiableEventType<ProfileEvent> {
   std::string descriptor() const override {
     return "ProfileEvent {\"" + name + "\"}";
   }
-  ProfileEvent(std::string n) : name(n) {}
+  ProfileEvent(std::string n) : name(std::move(n)) {}
 };
 
 struct BeginDeepCopyEvent final
@@ -618,10 +620,10 @@ struct BeginDeepCopyEvent final
                      EventBase::PtrHandle s_p, SpaceHandleType d_h,
                      std::string d_n, EventBase::PtrHandle d_p, uint64_t s)
       : src_handle(s_h),
-        src_name(s_n),
+        src_name(std::move(s_n)),
         src_ptr(s_p),
         dst_handle(d_h),
-        dst_name(d_n),
+        dst_name(std::move(d_n)),
         dst_ptr(d_p),
         size(s) {}
 };
@@ -644,18 +646,18 @@ struct DualViewEvent : public UniquelyIdentifiableEventType<Derived> {
 
  private:
   DualViewEvent(std::string n, EventBase::PtrHandle p, bool i_d)
-      : name(n), ptr(p), is_device(i_d) {}
+      : name(std::move(n)), ptr(p), is_device(i_d) {}
   friend Derived;
 };
 struct DualViewModifyEvent final : public DualViewEvent<DualViewModifyEvent> {
   static std::string event_name() { return "DualViewModifyEvent"; }
   DualViewModifyEvent(std::string n, EventBase::PtrHandle p, bool i_d)
-      : DualViewEvent(n, p, i_d) {}
+      : DualViewEvent(std::move(n), p, i_d) {}
 };
 struct DualViewSyncEvent final : public DualViewEvent<DualViewSyncEvent> {
   static std::string event_name() { return "DualViewSyncEvent"; }
   DualViewSyncEvent(std::string n, EventBase::PtrHandle p, bool i_d)
-      : DualViewEvent(n, p, i_d) {}
+      : DualViewEvent(std::move(n), p, i_d) {}
 };
 
 struct DeclareMetadataEvent final
@@ -665,7 +667,8 @@ struct DeclareMetadataEvent final
   std::string descriptor() const override {
     return "DeclareMetadataEvent {\"" + key + "\", \"" + value + "\"}";
   }
-  DeclareMetadataEvent(std::string k, std::string v) : key(k), value(v) {}
+  DeclareMetadataEvent(std::string k, std::string v)
+      : key(std::move(k)), value(std::move(v)) {}
 };
 
 struct ProvideToolProgrammingInterfaceEvent final
@@ -708,7 +711,7 @@ struct TypeDeclarationEvent : public UniquelyIdentifiableEventType<Derived> {
  private:
   TypeDeclarationEvent(std::string n, size_t v_i,
                        Kokkos::Tools::Experimental::VariableInfo i)
-      : name(n), variable_id(v_i), info(i) {}
+      : name(std::move(n)), variable_id(v_i), info(i) {}
   friend Derived;
 };
 struct DeclareOutputTypeEvent final
@@ -716,14 +719,14 @@ struct DeclareOutputTypeEvent final
   static std::string event_name() { return "DeclarateOutputTypeEvent"; }
   DeclareOutputTypeEvent(std::string n, size_t v_i,
                          Kokkos::Tools::Experimental::VariableInfo i)
-      : TypeDeclarationEvent(n, v_i, i) {}
+      : TypeDeclarationEvent(std::move(n), v_i, i) {}
 };
 struct DeclareInputTypeEvent final
     : public TypeDeclarationEvent<DeclareInputTypeEvent> {
   static std::string event_name() { return "DeclareInputTypeEvent"; }
   DeclareInputTypeEvent(std::string n, size_t v_i,
                         Kokkos::Tools::Experimental::VariableInfo i)
-      : TypeDeclarationEvent(n, v_i, i) {}
+      : TypeDeclarationEvent(std::move(n), v_i, i) {}
 };
 
 struct RequestOutputValuesEvent final
@@ -744,7 +747,11 @@ struct RequestOutputValuesEvent final
       size_t c, size_t n_i,
       std::vector<Kokkos::Tools::Experimental::VariableValue> i, size_t n_o,
       std::vector<Kokkos::Tools::Experimental::VariableValue> o)
-      : context(c), num_inputs(n_i), inputs(i), num_outputs(n_o), outputs(o) {}
+      : context(c),
+        num_inputs(n_i),
+        inputs(std::move(i)),
+        num_outputs(n_o),
+        outputs(std::move(o)) {}
 };
 
 struct BeginContextEvent final

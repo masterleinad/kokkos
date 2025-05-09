@@ -1523,7 +1523,8 @@ struct TestTeamBroadcast<ExecSpace, ScheduleType, T,
 
   template <class ScalarType>
   static inline std::enable_if_t<!std::is_integral_v<ScalarType>, void>
-  compare_test(ScalarType A, ScalarType B, double epsilon_factor) {
+  compare_test(const ScalarType &A, const ScalarType &B,
+               double epsilon_factor) {
     if (std::is_same_v<ScalarType, double> ||
         std::is_same_v<ScalarType, float>) {
       ASSERT_NEAR((double)A, (double)B,

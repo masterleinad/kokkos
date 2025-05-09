@@ -27,7 +27,8 @@ class S {
 
  public:
   template <class... Extents>
-  S(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
+  S(const std::string& label, Extents... extents)
+      : v_(std::move(label), extents...) {}
   KOKKOS_DEFAULTED_FUNCTION S() = default;
 };
 
@@ -37,7 +38,8 @@ class N {  // not default constructible
 
  public:
   template <class... Extents>
-  N(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
+  N(const std::string& label, Extents... extents)
+      : v_(std::move(label), extents...) {}
 };
 
 template <class V>
@@ -46,7 +48,8 @@ class H {  // constructible and destructible only from on the host side
 
  public:
   template <class... Extents>
-  H(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
+  H(const std::string& label, Extents... extents)
+      : v_(std::move(label), extents...) {}
   H() {}
   ~H() {}
 };

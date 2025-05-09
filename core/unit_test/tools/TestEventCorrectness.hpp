@@ -44,7 +44,8 @@ struct FencePayload {
 
 std::vector<FencePayload> found_payloads;
 template <typename Lambda>
-void expect_fence_events(std::vector<FencePayload>& expected, Lambda lam) {
+void expect_fence_events(std::vector<FencePayload>& expected,
+                         const Lambda& lam) {
   found_payloads = {};
   Kokkos::Tools::Experimental::set_begin_fence_callback(
       [](const char* name, const uint32_t dev_id, uint64_t*) {

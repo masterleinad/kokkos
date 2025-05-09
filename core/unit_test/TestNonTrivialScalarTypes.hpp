@@ -231,19 +231,19 @@ struct point_t {
   explicit operator int() const { return static_cast<int>(x + y + z); }
 
   KOKKOS_FUNCTION
-  bool operator==(const point_t rhs) const {
+  bool operator==(const point_t &rhs) const {
     return (x == rhs.x && y == rhs.y && z == rhs.z);
   }
 
   KOKKOS_FUNCTION
-  void operator=(point_t rhs) {
+  void operator=(const point_t &rhs) {
     x = rhs.x;
     y = rhs.y;
     z = rhs.z;
   }
 
   KOKKOS_FUNCTION
-  point_t operator+=(const point_t rhs) {
+  point_t operator+=(const point_t &rhs) {
     x += rhs.x;
     y += rhs.y;
     z += rhs.z;

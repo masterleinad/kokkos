@@ -90,7 +90,7 @@ template <typename ExecutionSpace, typename IteratorType, typename ValueType,
           std::enable_if_t<::Kokkos::is_execution_space<ExecutionSpace>::value,
                            int> = 0>
 ValueType reduce(const ExecutionSpace& ex, IteratorType first,
-                 IteratorType last, ValueType init_reduction_value) {
+                 IteratorType last, const ValueType& init_reduction_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -104,7 +104,7 @@ template <typename ExecutionSpace, typename IteratorType, typename ValueType,
                            int> = 0>
 ValueType reduce(const std::string& label, const ExecutionSpace& ex,
                  IteratorType first, IteratorType last,
-                 ValueType init_reduction_value) {
+                 const ValueType& init_reduction_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -118,7 +118,7 @@ template <typename ExecutionSpace, typename DataType, typename... Properties,
                            int> = 0>
 ValueType reduce(const ExecutionSpace& ex,
                  const ::Kokkos::View<DataType, Properties...>& view,
-                 ValueType init_reduction_value) {
+                 const ValueType& init_reduction_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -136,7 +136,7 @@ template <typename ExecutionSpace, typename DataType, typename... Properties,
                            int> = 0>
 ValueType reduce(const std::string& label, const ExecutionSpace& ex,
                  const ::Kokkos::View<DataType, Properties...>& view,
-                 ValueType init_reduction_value) {
+                 const ValueType& init_reduction_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -155,7 +155,7 @@ template <typename ExecutionSpace, typename IteratorType, typename ValueType,
           std::enable_if_t<::Kokkos::is_execution_space<ExecutionSpace>::value,
                            int> = 0>
 ValueType reduce(const ExecutionSpace& ex, IteratorType first,
-                 IteratorType last, ValueType init_reduction_value,
+                 IteratorType last, const ValueType& init_reduction_value,
                  BinaryOp joiner) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
@@ -171,7 +171,7 @@ template <typename ExecutionSpace, typename IteratorType, typename ValueType,
                            int> = 0>
 ValueType reduce(const std::string& label, const ExecutionSpace& ex,
                  IteratorType first, IteratorType last,
-                 ValueType init_reduction_value, BinaryOp joiner) {
+                 const ValueType& init_reduction_value, BinaryOp joiner) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -185,7 +185,7 @@ template <typename ExecutionSpace, typename DataType, typename... Properties,
                            int> = 0>
 ValueType reduce(const ExecutionSpace& ex,
                  const ::Kokkos::View<DataType, Properties...>& view,
-                 ValueType init_reduction_value, BinaryOp joiner) {
+                 const ValueType& init_reduction_value, BinaryOp joiner) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -203,7 +203,7 @@ template <typename ExecutionSpace, typename DataType, typename... Properties,
                            int> = 0>
 ValueType reduce(const std::string& label, const ExecutionSpace& ex,
                  const ::Kokkos::View<DataType, Properties...>& view,
-                 ValueType init_reduction_value, BinaryOp joiner) {
+                 const ValueType& init_reduction_value, BinaryOp joiner) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 

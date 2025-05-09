@@ -339,12 +339,12 @@ struct Functor2 {
 template <class ExecSpace = Kokkos::DefaultExecutionSpace>
 struct TestReduceCombinatoricalInstantiation {
   template <class... Args>
-  static void CallParallelReduce(Args... args) {
+  static void CallParallelReduce(const Args&... args) {
     Kokkos::parallel_reduce(args...);
   }
 
   template <class... Args>
-  static void AddReturnArgument(int N, Args... args) {
+  static void AddReturnArgument(int N, const Args&... args) {
     Kokkos::View<double, Kokkos::HostSpace> result_view("ResultViewHost");
     Kokkos::View<double, ExecSpace> result_view_device("ResultViewDevice");
     double expected_result = (1.0 * N) * (1.0 * N - 1.0) / 2.0;
@@ -415,13 +415,13 @@ struct TestReduceCombinatoricalInstantiation {
   }
 
   template <class... Args>
-  static void AddLambdaRange(int N, void*, Args... args) {
+  static void AddLambdaRange(int N, void*, const Args&... args) {
     AddReturnArgument(
         N, args..., KOKKOS_LAMBDA(const int& i, double& lsum) { lsum += i; });
   }
 
   template <class... Args>
-  static void AddLambdaTeam(int N, void*, Args... args) {
+  static void AddLambdaTeam(int N, void*, const Args&... args) {
     AddReturnArgument(
         N, args...,
         KOKKOS_LAMBDA(const Kokkos::TeamPolicy<>::member_type& team,
@@ -437,7 +437,7 @@ struct TestReduceCombinatoricalInstantiation {
   static void AddLambdaTeam(int, Kokkos::InvalidType, Args... /*args*/) {}
 
   template <int ISTEAM, class... Args>
-  static void AddFunctor(int N, Args... args) {
+  static void AddFunctor(int N, const Args&... args) {
     Kokkos::View<double, ExecSpace> result_view("FunctorView");
     auto h_r = Kokkos::create_mirror_view(result_view);
     Test::ReduceCombinatorical::FunctorScalar<ISTEAM> functor(result_view);
@@ -490,7 +490,7 @@ struct TestReduceCombinatoricalInstantiation {
   }
 
   template <class... Args>
-  static void AddFunctorLambdaRange(int N, Args... args) {
+  static void AddFunctorLambdaRange(int N, const Args&... args) {
     AddFunctor<0, Args...>(N, args...);
     AddLambdaRange(N,
                    std::conditional_t<
@@ -500,7 +500,7 @@ struct TestReduceCombinatoricalInstantiation {
   }
 
   template <class... Args>
-  static void AddFunctorLambdaTeam(int N, Args... args) {
+  static void AddFunctorLambdaTeam(int N, const Args&... args) {
     AddFunctor<1, Args...>(N, args...);
     AddLambdaTeam(N,
                   std::conditional_t<
@@ -510,7 +510,7 @@ struct TestReduceCombinatoricalInstantiation {
   }
 
   template <class... Args>
-  static void AddPolicy_1(int N, Args... args) {
+  static void AddPolicy_1(int N, const Args&... args) {
     Kokkos::RangePolicy<ExecSpace> policy(0, N);
 
     AddFunctorLambdaRange(1000, args..., 1000);
@@ -519,7 +519,7 @@ struct TestReduceCombinatoricalInstantiation {
   }
 
   template <class... Args>
-  static void AddPolicy_2(int N, Args... args) {
+  static void AddPolicy_2(int N, const Args&... args) {
     AddFunctorLambdaRange(N, args..., Kokkos::RangePolicy<ExecSpace>(0, N));
     AddFunctorLambdaRange(
         N, args...,
@@ -536,7 +536,7 @@ struct TestReduceCombinatoricalInstantiation {
   }
 
   template <class... Args>
-  static void AddPolicy_3(int N, Args... args) {
+  static void AddPolicy_3(int N, const Args&... args) {
     AddFunctorLambdaTeam(N, args...,
                          Kokkos::TeamPolicy<ExecSpace>(N, Kokkos::AUTO));
     AddFunctorLambdaTeam(

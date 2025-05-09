@@ -719,7 +719,8 @@ class S {
 
  public:
   template <class... Extents>
-  S(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
+  S(const std::string& label, Extents... extents)
+      : v_(std::move(label), extents...) {}
   S() : v_("v", 10) {}
 };
 

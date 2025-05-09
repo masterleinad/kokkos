@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <utility>
 
 // Type of a one-dimensional length-N array of int.
 using view_type      = Kokkos::View<int*>;
@@ -41,7 +42,9 @@ struct findprimes {
   count_type count;
 
   findprimes(view_type data_, view_type result_, count_type count_)
-      : data(data_), result(result_), count(count_) {}
+      : data(std::move(data_)),
+        result(std::move(result_)),
+        count(std::move(count_)) {}
 
   // Test if data(i) is prime.  If it is, increment the count of
   // primes (stored in the zero-dimensional View 'count') and add the

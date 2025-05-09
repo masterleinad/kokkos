@@ -153,7 +153,7 @@ struct VerifyData {
   template <class ViewType1, class ViewType2, class ValueType, class BinaryOp>
   void operator()(ViewType1 data_view,  // contains data
                   ViewType2 test_view,  // the view to test
-                  ValueType init_value, BinaryOp bop) {
+                  const ValueType& init_value, BinaryOp bop) {
     //! always careful because views might not be deep copyable
 
     auto data_view_dc = create_deep_copyable_compatible_clone(data_view);
@@ -187,7 +187,7 @@ struct VerifyData {
   template <class ViewType1, class ViewType2, class ValueType>
   void operator()(ViewType1 data_view,  // contains data
                   ViewType2 test_view,  // the view to test
-                  ValueType init_value) {
+                  const ValueType& init_value) {
     (*this)(data_view, test_view, init_value, SumFunctor<ValueType>());
   }
 };
@@ -197,7 +197,8 @@ std::string value_type_to_string(int) { return "int"; }
 std::string value_type_to_string(double) { return "double"; }
 
 template <class Tag, class ValueType, class InfoType, class... OpOrEmpty>
-void run_single_scenario(const InfoType& scenario_info, ValueType init_value,
+void run_single_scenario(const InfoType& scenario_info,
+                         const ValueType& init_value,
                          OpOrEmpty... empty_or_op) {
   const auto name            = std::get<0>(scenario_info);
   const std::size_t view_ext = std::get<1>(scenario_info);
@@ -247,7 +248,7 @@ void run_single_scenario(const InfoType& scenario_info, ValueType init_value,
 
 template <class Tag, class ValueType, class InfoType, class... OpOrEmpty>
 void run_single_scenario_inplace(const InfoType& scenario_info,
-                                 ValueType init_value,
+                                 const ValueType& init_value,
                                  OpOrEmpty... empty_or_op) {
   const auto name            = std::get<0>(scenario_info);
   const std::size_t view_ext = std::get<1>(scenario_info);

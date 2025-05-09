@@ -25,6 +25,7 @@
 
 #include <Kokkos_Core.hpp>
 #include <impl/Kokkos_Error.hpp>
+#include <utility>
 
 namespace Kokkos {
 namespace Experimental {
@@ -138,7 +139,7 @@ struct ChunkedArrayManager {
     Destroy(std::string label, value_type** arg_chunk,
             const unsigned arg_chunk_max, const unsigned arg_chunk_size,
             value_type** arg_linked)
-        : m_label(label),
+        : m_label(std::move(label)),
           m_chunks(arg_chunk),
           m_linked(arg_linked),
           m_chunk_max(arg_chunk_max),

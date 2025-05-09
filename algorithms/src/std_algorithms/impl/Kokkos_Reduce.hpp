@@ -87,7 +87,8 @@ template <class ExecutionSpace, class IteratorType, class ValueType,
           class JoinerType>
 ValueType reduce_custom_functors_exespace_impl(
     const std::string& label, const ExecutionSpace& ex, IteratorType first,
-    IteratorType last, ValueType init_reduction_value, JoinerType joiner) {
+    IteratorType last, const ValueType& init_reduction_value,
+    JoinerType joiner) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first);
   Impl::static_assert_is_not_openmptarget(ex);
@@ -118,7 +119,7 @@ ValueType reduce_custom_functors_exespace_impl(
 template <class ExecutionSpace, class IteratorType, class ValueType>
 ValueType reduce_default_functors_exespace_impl(
     const std::string& label, const ExecutionSpace& ex, IteratorType first,
-    IteratorType last, ValueType init_reduction_value) {
+    IteratorType last, const ValueType& init_reduction_value) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first);
   Impl::static_assert_is_not_openmptarget(ex);

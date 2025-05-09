@@ -55,7 +55,7 @@ struct localsum {
   idx_type::const_type idx;
   DestType dest;
   SrcType src;
-  localsum(idx_type idx_, DestType dest_, SrcType src_)
+  localsum(const idx_type& idx_, DestType dest_, SrcType src_)
       : idx(idx_), dest(dest_), src(src_) {}
 
   // Calculate a local sum of values

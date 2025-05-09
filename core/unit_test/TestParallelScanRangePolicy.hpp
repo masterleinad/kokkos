@@ -204,7 +204,7 @@ struct TestParallelScanRangePolicy {
 
   // Run test_scan() for a collection of work size
   template <typename... Args>
-  void test_scan(const std::vector<size_t> work_sizes) {
+  void test_scan(const std::vector<size_t>& work_sizes) {
     for (size_t i = 0; i < work_sizes.size(); ++i) {
       test_scan<Args...>(work_sizes[i]);
     }

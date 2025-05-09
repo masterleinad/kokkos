@@ -164,7 +164,7 @@ struct VerifyData {
   template <class ViewType1, class ViewType2, class BinaryOp, class... Args>
   void operator()(ViewType1 data_view,  // contains data
                   ViewType2 test_view,  // the view to test
-                  BinaryOp bop, Args... args /* copy on purpose */) {
+                  BinaryOp bop, const Args&... args /* copy on purpose */) {
     //! always careful because views might not be deep copyable
 
     auto data_view_dc = create_deep_copyable_compatible_clone(data_view);
@@ -211,7 +211,7 @@ std::string value_type_to_string(double) { return "double"; }
 
 template <class Tag, class ValueType, class InfoType, class... Args>
 void run_single_scenario(const InfoType& scenario_info,
-                         Args... args /* copy on purpose */) {
+                         const Args&... args /* copy on purpose */) {
   const auto name            = std::get<0>(scenario_info);
   const std::size_t view_ext = std::get<1>(scenario_info);
 
@@ -259,7 +259,7 @@ void run_single_scenario(const InfoType& scenario_info,
 
 template <class Tag, class ValueType, class InfoType, class... Args>
 void run_single_scenario_inplace(const InfoType& scenario_info,
-                                 Args... args /* copy on purpose */) {
+                                 const Args&... args /* copy on purpose */) {
   const auto name            = std::get<0>(scenario_info);
   const std::size_t view_ext = std::get<1>(scenario_info);
 

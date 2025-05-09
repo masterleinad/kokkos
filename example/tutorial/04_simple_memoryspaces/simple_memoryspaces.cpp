@@ -16,6 +16,7 @@
 
 #include <Kokkos_Core.hpp>
 #include <cstdio>
+#include <utility>
 
 // The type of a two-dimensional N x 3 array of double.
 // It lives in Kokkos' default memory space.
@@ -37,7 +38,7 @@ using host_view_type = view_type::HostMirror;
 
 struct ReduceFunctor {
   view_type a;
-  ReduceFunctor(view_type a_) : a(a_) {}
+  ReduceFunctor(view_type a_) : a(std::move(a_)) {}
   using value_type = int;  // Specify type for reduction value, lsum
 
   KOKKOS_INLINE_FUNCTION

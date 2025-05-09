@@ -364,7 +364,8 @@ struct TestReducers {
     return 1024;
   }
 
-  static void test_sum_team_policy(int N, SumFunctor f, Scalar reference_sum) {
+  static void test_sum_team_policy(int N, SumFunctor f,
+                                   const Scalar& reference_sum) {
 #ifdef KOKKOS_ENABLE_OPENACC
     if constexpr (std::is_same_v<ExecSpace, Kokkos::Experimental::OpenACC> &&
                   (std::is_same_v<Scalar, size_t> ||

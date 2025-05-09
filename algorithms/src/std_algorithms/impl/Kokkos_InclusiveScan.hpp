@@ -326,7 +326,7 @@ OutputIteratorType inclusive_scan_custom_binary_op_exespace_impl(
     const std::string& label, const ExecutionSpace& ex,
     InputIteratorType first_from, InputIteratorType last_from,
     OutputIteratorType first_dest, BinaryOpType binary_op,
-    ValueType init_value) {
+    const ValueType& init_value) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first_from, first_dest);
   Impl::static_assert_iterators_have_matching_difference_type(first_from,

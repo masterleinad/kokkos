@@ -57,7 +57,7 @@ void test_view_memory_access_violation(View v, ExecutionSpace const& s,
 }
 
 template <class View, class LblOrPtr, std::size_t... Is>
-auto make_view_impl(LblOrPtr x, std::index_sequence<Is...>) {
+auto make_view_impl(const LblOrPtr& x, std::index_sequence<Is...>) {
   return View(x, (Is + 1)...);
 }
 

@@ -38,7 +38,7 @@ template <typename ExecutionSpace, typename IteratorType1,
                            int> = 0>
 ValueType transform_reduce(const ExecutionSpace& ex, IteratorType1 first1,
                            IteratorType1 last1, IteratorType2 first2,
-                           ValueType init_reduction_value) {
+                           const ValueType& init_reduction_value) {
   return Impl::transform_reduce_default_functors_exespace_impl(
       "Kokkos::transform_reduce_default_functors_iterator_api", ex, first1,
       last1, first2, std::move(init_reduction_value));
@@ -51,7 +51,7 @@ template <typename ExecutionSpace, typename IteratorType1,
 ValueType transform_reduce(const std::string& label, const ExecutionSpace& ex,
                            IteratorType1 first1, IteratorType1 last1,
                            IteratorType2 first2,
-                           ValueType init_reduction_value) {
+                           const ValueType& init_reduction_value) {
   return Impl::transform_reduce_default_functors_exespace_impl(
       label, ex, first1, last1, first2, std::move(init_reduction_value));
 }
@@ -65,7 +65,7 @@ ValueType transform_reduce(
     const ExecutionSpace& ex,
     const ::Kokkos::View<DataType1, Properties1...>& first_view,
     const ::Kokkos::View<DataType2, Properties2...>& second_view,
-    ValueType init_reduction_value) {
+    const ValueType& init_reduction_value) {
   namespace KE = ::Kokkos::Experimental;
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(first_view);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(second_view);
@@ -84,7 +84,7 @@ ValueType transform_reduce(
     const std::string& label, const ExecutionSpace& ex,
     const ::Kokkos::View<DataType1, Properties1...>& first_view,
     const ::Kokkos::View<DataType2, Properties2...>& second_view,
-    ValueType init_reduction_value) {
+    const ValueType& init_reduction_value) {
   namespace KE = ::Kokkos::Experimental;
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(first_view);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(second_view);
@@ -114,7 +114,7 @@ template <
         0>
 ValueType transform_reduce(const ExecutionSpace& ex, IteratorType1 first1,
                            IteratorType1 last1, IteratorType2 first2,
-                           ValueType init_reduction_value,
+                           const ValueType& init_reduction_value,
                            BinaryJoinerType joiner,
                            BinaryTransform transformer) {
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -133,7 +133,8 @@ template <
         0>
 ValueType transform_reduce(const std::string& label, const ExecutionSpace& ex,
                            IteratorType1 first1, IteratorType1 last1,
-                           IteratorType2 first2, ValueType init_reduction_value,
+                           IteratorType2 first2,
+                           const ValueType& init_reduction_value,
                            BinaryJoinerType joiner,
                            BinaryTransform transformer) {
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -154,7 +155,7 @@ ValueType transform_reduce(
     const ExecutionSpace& ex,
     const ::Kokkos::View<DataType1, Properties1...>& first_view,
     const ::Kokkos::View<DataType2, Properties2...>& second_view,
-    ValueType init_reduction_value, BinaryJoinerType joiner,
+    const ValueType& init_reduction_value, BinaryJoinerType joiner,
     BinaryTransform transformer) {
   namespace KE = ::Kokkos::Experimental;
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -179,7 +180,7 @@ ValueType transform_reduce(
     const std::string& label, const ExecutionSpace& ex,
     const ::Kokkos::View<DataType1, Properties1...>& first_view,
     const ::Kokkos::View<DataType2, Properties2...>& second_view,
-    ValueType init_reduction_value, BinaryJoinerType joiner,
+    const ValueType& init_reduction_value, BinaryJoinerType joiner,
     BinaryTransform transformer) {
   namespace KE = ::Kokkos::Experimental;
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -205,7 +206,8 @@ template <typename ExecutionSpace, typename IteratorType, typename ValueType,
                                is_execution_space<ExecutionSpace>::value,
                            int> = 0>
 ValueType transform_reduce(const ExecutionSpace& ex, IteratorType first1,
-                           IteratorType last1, ValueType init_reduction_value,
+                           IteratorType last1,
+                           const ValueType& init_reduction_value,
                            BinaryJoinerType joiner,
                            UnaryTransform transformer) {
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -225,7 +227,7 @@ template <typename ExecutionSpace, typename IteratorType, typename ValueType,
                            int> = 0>
 ValueType transform_reduce(const std::string& label, const ExecutionSpace& ex,
                            IteratorType first1, IteratorType last1,
-                           ValueType init_reduction_value,
+                           const ValueType& init_reduction_value,
                            BinaryJoinerType joiner,
                            UnaryTransform transformer) {
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -244,7 +246,7 @@ template <
         0>
 ValueType transform_reduce(const ExecutionSpace& ex,
                            const ::Kokkos::View<DataType, Properties...>& view,
-                           ValueType init_reduction_value,
+                           const ValueType& init_reduction_value,
                            BinaryJoinerType joiner,
                            UnaryTransform transformer) {
   namespace KE = ::Kokkos::Experimental;
@@ -266,7 +268,7 @@ template <
         0>
 ValueType transform_reduce(const std::string& label, const ExecutionSpace& ex,
                            const ::Kokkos::View<DataType, Properties...>& view,
-                           ValueType init_reduction_value,
+                           const ValueType& init_reduction_value,
                            BinaryJoinerType joiner,
                            UnaryTransform transformer) {
   namespace KE = ::Kokkos::Experimental;

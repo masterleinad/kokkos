@@ -96,7 +96,7 @@ struct ExeSpaceTransformInclusiveScanWithInitValueFunctor {
                                                      FirstDest first_dest,
                                                      BinaryOpType bop,
                                                      UnaryOpType uop,
-                                                     ValueType init)
+                                                     const ValueType& init)
       : m_first_from(std::move(first_from)),
         m_first_dest(std::move(first_dest)),
         m_binary_op(std::move(bop)),

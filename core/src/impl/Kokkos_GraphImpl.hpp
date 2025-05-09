@@ -79,7 +79,7 @@ struct GraphAccess {
   template <class GraphImplWeakPtr, class ExecutionSpace, class Kernel,
             class Predecessor>
   static auto make_graph_node_ref(
-      GraphImplWeakPtr graph_impl,
+      const GraphImplWeakPtr& graph_impl,
       std::shared_ptr<
           Kokkos::Impl::GraphNodeImpl<ExecutionSpace, Kernel, Predecessor>>
           pred_impl) {

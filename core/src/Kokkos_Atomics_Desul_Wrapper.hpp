@@ -162,7 +162,7 @@ KOKKOS_FUNCTION T atomic_load(const T* const src, MemoryOrder order) {
 }
 
 template <class T, class MemoryOrder>
-KOKKOS_FUNCTION void atomic_store(T* const src, const T val,
+KOKKOS_FUNCTION void atomic_store(T* const src, const T& val,
                                   MemoryOrder order) {
   return desul::atomic_store(src, val, order, KOKKOS_DESUL_MEM_SCOPE);
 }

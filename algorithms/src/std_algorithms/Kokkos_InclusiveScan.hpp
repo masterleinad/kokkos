@@ -164,7 +164,8 @@ OutputIteratorType inclusive_scan(const ExecutionSpace& ex,
                                   InputIteratorType first,
                                   InputIteratorType last,
                                   OutputIteratorType first_dest,
-                                  BinaryOp binary_op, ValueType init_value) {
+                                  BinaryOp binary_op,
+                                  const ValueType& init_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -179,12 +180,10 @@ template <typename ExecutionSpace, typename InputIteratorType,
               Impl::are_iterators_v<InputIteratorType, OutputIteratorType>&& ::
                   Kokkos::is_execution_space_v<ExecutionSpace>,
               int> = 0>
-OutputIteratorType inclusive_scan(const std::string& label,
-                                  const ExecutionSpace& ex,
-                                  InputIteratorType first,
-                                  InputIteratorType last,
-                                  OutputIteratorType first_dest,
-                                  BinaryOp binary_op, ValueType init_value) {
+OutputIteratorType inclusive_scan(
+    const std::string& label, const ExecutionSpace& ex, InputIteratorType first,
+    InputIteratorType last, OutputIteratorType first_dest, BinaryOp binary_op,
+    const ValueType& init_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
 
@@ -200,7 +199,7 @@ template <
 auto inclusive_scan(const ExecutionSpace& ex,
                     const ::Kokkos::View<DataType1, Properties1...>& view_from,
                     const ::Kokkos::View<DataType2, Properties2...>& view_dest,
-                    BinaryOp binary_op, ValueType init_value) {
+                    BinaryOp binary_op, const ValueType& init_value) {
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_from);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_dest);
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -221,7 +220,7 @@ template <
 auto inclusive_scan(const std::string& label, const ExecutionSpace& ex,
                     const ::Kokkos::View<DataType1, Properties1...>& view_from,
                     const ::Kokkos::View<DataType2, Properties2...>& view_dest,
-                    BinaryOp binary_op, ValueType init_value) {
+                    BinaryOp binary_op, const ValueType& init_value) {
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_from);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_dest);
   static_assert(std::is_move_constructible_v<ValueType>,

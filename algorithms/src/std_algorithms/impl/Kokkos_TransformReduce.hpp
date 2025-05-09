@@ -118,7 +118,7 @@ template <class ExecutionSpace, class IteratorType, class ValueType,
           class JoinerType, class UnaryTransformerType>
 ValueType transform_reduce_custom_functors_exespace_impl(
     const std::string& label, const ExecutionSpace& ex, IteratorType first,
-    IteratorType last, ValueType init_reduction_value, JoinerType joiner,
+    IteratorType last, const ValueType& init_reduction_value, JoinerType joiner,
     UnaryTransformerType transformer) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first);
@@ -157,8 +157,9 @@ template <class ExecutionSpace, class IteratorType1, class IteratorType2,
           class ValueType, class JoinerType, class BinaryTransformerType>
 ValueType transform_reduce_custom_functors_exespace_impl(
     const std::string& label, const ExecutionSpace& ex, IteratorType1 first1,
-    IteratorType1 last1, IteratorType2 first2, ValueType init_reduction_value,
-    JoinerType joiner, BinaryTransformerType transformer) {
+    IteratorType1 last1, IteratorType2 first2,
+    const ValueType& init_reduction_value, JoinerType joiner,
+    BinaryTransformerType transformer) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first1, first2);
   Impl::static_assert_is_not_openmptarget(ex);
@@ -197,7 +198,8 @@ template <class ExecutionSpace, class IteratorType1, class IteratorType2,
           class ValueType>
 ValueType transform_reduce_default_functors_exespace_impl(
     const std::string& label, const ExecutionSpace& ex, IteratorType1 first1,
-    IteratorType1 last1, IteratorType2 first2, ValueType init_reduction_value) {
+    IteratorType1 last1, IteratorType2 first2,
+    const ValueType& init_reduction_value) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first1, first2);
   Impl::static_assert_is_not_openmptarget(ex);

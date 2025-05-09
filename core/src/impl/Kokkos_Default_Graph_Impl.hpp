@@ -97,7 +97,8 @@ struct GraphImpl : private ExecutionSpaceInstanceStorage<ExecutionSpace> {
   // requires PredecessorRef is a specialization of GraphNodeRef that has
   // already been added to this graph and NodeImpl is a specialization of
   // GraphNodeImpl that has already been added to this graph.
-  void add_predecessor(NodeImplPtr arg_node_ptr, PredecessorRef arg_pred_ref) {
+  void add_predecessor(const NodeImplPtr& arg_node_ptr,
+                       PredecessorRef arg_pred_ref) {
     auto node_ptr_spot = m_sinks.find(arg_node_ptr);
     auto pred_ptr      = GraphAccess::get_node_ptr(arg_pred_ref);
     auto pred_ref_spot = m_sinks.find(pred_ptr);

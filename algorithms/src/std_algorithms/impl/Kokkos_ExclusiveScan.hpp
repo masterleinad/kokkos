@@ -39,7 +39,7 @@ template <class ExecutionSpace, class InputIteratorType,
 OutputIteratorType exclusive_scan_default_op_exespace_impl(
     const std::string& label, const ExecutionSpace& ex,
     InputIteratorType first_from, InputIteratorType last_from,
-    OutputIteratorType first_dest, ValueType init_value) {
+    OutputIteratorType first_dest, const ValueType& init_value) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first_from, first_dest);
   Impl::static_assert_iterators_have_matching_difference_type(first_from,
@@ -94,7 +94,8 @@ template <class ExecutionSpace, class InputIteratorType,
 OutputIteratorType exclusive_scan_custom_op_exespace_impl(
     const std::string& label, const ExecutionSpace& ex,
     InputIteratorType first_from, InputIteratorType last_from,
-    OutputIteratorType first_dest, ValueType init_value, BinaryOpType bop) {
+    OutputIteratorType first_dest, const ValueType& init_value,
+    BinaryOpType bop) {
   // checks
   Impl::static_assert_random_access_and_accessible(ex, first_from, first_dest);
   Impl::static_assert_iterators_have_matching_difference_type(first_from,

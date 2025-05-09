@@ -41,7 +41,7 @@ void run_threaded_test(const Lambda1 l1, const Lambda2 l2) {
 // we cannot launch a thread from inside another thread
 #elif !defined(KOKKOS_ENABLE_THREADS) && !defined(KOKKOS_ENABLE_HPX)
 template <class Lambda1, class Lambda2>
-void run_threaded_test(const Lambda1 l1, const Lambda2 l2) {
+void run_threaded_test(const Lambda1 &l1, const Lambda2 &l2) {
   std::thread t1(l1);
   std::thread t2(l2);
   t1.join();

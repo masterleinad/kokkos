@@ -17,6 +17,7 @@
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Timer.hpp>
 #include <cstdio>
+#include <utility>
 
 // These two View types are both 2-D arrays of double.  However, they
 // have different layouts in memory.  left_type has "layout left,"
@@ -67,7 +68,7 @@ struct contraction {
   typename ViewType1::const_type v1;
   typename ViewType2::const_type v2;
   contraction(view_type a_, ViewType1 v1_, ViewType2 v2_)
-      : a(a_), v1(v1_), v2(v2_) {}
+      : a(std::move(a_)), v1(v1_), v2(v2_) {}
 
   using size_type = typename view_type::size_type;
 
@@ -89,7 +90,7 @@ struct contraction {
 // Compute a dot product. This is used for result verification.
 struct dot {
   view_type a;
-  dot(view_type a_) : a(a_) {}
+  dot(view_type a_) : a(std::move(a_)) {}
   using value_type = double;  // Specify type for reduction target, lsum
   KOKKOS_INLINE_FUNCTION
   void operator()(const view_type::size_type i, double& lsum) const {

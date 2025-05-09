@@ -38,7 +38,7 @@ OutputIteratorType exclusive_scan(const ExecutionSpace& ex,
                                   InputIteratorType first,
                                   InputIteratorType last,
                                   OutputIteratorType first_dest,
-                                  ValueType init_value) {
+                                  const ValueType& init_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
   return Impl::exclusive_scan_default_op_exespace_impl(
@@ -57,7 +57,7 @@ OutputIteratorType exclusive_scan(const std::string& label,
                                   InputIteratorType first,
                                   InputIteratorType last,
                                   OutputIteratorType first_dest,
-                                  ValueType init_value) {
+                                  const ValueType& init_value) {
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
   return Impl::exclusive_scan_default_op_exespace_impl(
@@ -71,7 +71,7 @@ template <
 auto exclusive_scan(const ExecutionSpace& ex,
                     const ::Kokkos::View<DataType1, Properties1...>& view_from,
                     const ::Kokkos::View<DataType2, Properties2...>& view_dest,
-                    ValueType init_value) {
+                    const ValueType& init_value) {
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_from);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_dest);
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -90,7 +90,7 @@ template <
 auto exclusive_scan(const std::string& label, const ExecutionSpace& ex,
                     const ::Kokkos::View<DataType1, Properties1...>& view_from,
                     const ::Kokkos::View<DataType2, Properties2...>& view_dest,
-                    ValueType init_value) {
+                    const ValueType& init_value) {
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_from);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_dest);
   static_assert(std::is_move_constructible_v<ValueType>,
@@ -113,7 +113,8 @@ OutputIteratorType exclusive_scan(const ExecutionSpace& ex,
                                   InputIteratorType first,
                                   InputIteratorType last,
                                   OutputIteratorType first_dest,
-                                  ValueType init_value, BinaryOpType bop) {
+                                  const ValueType& init_value,
+                                  BinaryOpType bop) {
   Impl::static_assert_is_not_openmptarget(ex);
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
@@ -129,12 +130,10 @@ template <typename ExecutionSpace, typename InputIteratorType,
               Impl::are_iterators_v<InputIteratorType, OutputIteratorType>&& ::
                   Kokkos::is_execution_space_v<ExecutionSpace>,
               int> = 0>
-OutputIteratorType exclusive_scan(const std::string& label,
-                                  const ExecutionSpace& ex,
-                                  InputIteratorType first,
-                                  InputIteratorType last,
-                                  OutputIteratorType first_dest,
-                                  ValueType init_value, BinaryOpType bop) {
+OutputIteratorType exclusive_scan(
+    const std::string& label, const ExecutionSpace& ex, InputIteratorType first,
+    InputIteratorType last, OutputIteratorType first_dest,
+    const ValueType& init_value, BinaryOpType bop) {
   Impl::static_assert_is_not_openmptarget(ex);
   static_assert(std::is_move_constructible_v<ValueType>,
                 "ValueType must be move constructible.");
@@ -150,7 +149,7 @@ template <
 auto exclusive_scan(const ExecutionSpace& ex,
                     const ::Kokkos::View<DataType1, Properties1...>& view_from,
                     const ::Kokkos::View<DataType2, Properties2...>& view_dest,
-                    ValueType init_value, BinaryOpType bop) {
+                    const ValueType& init_value, BinaryOpType bop) {
   Impl::static_assert_is_not_openmptarget(ex);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_from);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_dest);
@@ -171,7 +170,7 @@ template <
 auto exclusive_scan(const std::string& label, const ExecutionSpace& ex,
                     const ::Kokkos::View<DataType1, Properties1...>& view_from,
                     const ::Kokkos::View<DataType2, Properties2...>& view_dest,
-                    ValueType init_value, BinaryOpType bop) {
+                    const ValueType& init_value, BinaryOpType bop) {
   Impl::static_assert_is_not_openmptarget(ex);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_from);
   Impl::static_assert_is_admissible_to_kokkos_std_algorithms(view_dest);

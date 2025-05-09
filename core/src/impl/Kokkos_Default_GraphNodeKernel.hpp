@@ -66,7 +66,7 @@ class GraphNodeKernelImpl
   // TODO @graph kernel name info propagation
   template <class PolicyDeduced, class... ArgsDeduced>
   GraphNodeKernelImpl(std::string const &, ExecutionSpace const &,
-                      Functor arg_functor, PolicyDeduced &&arg_policy,
+                      const Functor &arg_functor, PolicyDeduced &&arg_policy,
                       ArgsDeduced &&...args)
       : execute_kernel_vtable_base_t(arg_policy.space()),
         base_t(std::move(arg_functor), (PolicyDeduced &&)arg_policy,

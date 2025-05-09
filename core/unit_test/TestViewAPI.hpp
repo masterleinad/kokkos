@@ -19,6 +19,7 @@
 #include <Kokkos_Core.hpp>
 #include <sstream>
 #include <iostream>
+#include <utility>
 
 namespace Test {
 
@@ -1340,7 +1341,8 @@ class TestViewAPI {
 
   struct test_refcount_poison_copy_functor {
     using view_type = Kokkos::View<double *>;
-    explicit test_refcount_poison_copy_functor(view_type v) : view(v) {}
+    explicit test_refcount_poison_copy_functor(view_type v)
+        : view(std::move(v)) {}
 
     test_refcount_poison_copy_functor(
         const test_refcount_poison_copy_functor &other)

@@ -141,8 +141,8 @@ template <class ExecutionSpace, class ViewType1, class ViewType2,
           class ValueType>
 void run_and_check_transform_reduce_default(ViewType1 first_view,
                                             ViewType2 second_view,
-                                            ValueType init_value,
-                                            ValueType result_value) {
+                                            const ValueType& init_value,
+                                            const ValueType& result_value) {
   // trivial cases
   const auto r1 = KE::transform_reduce(ExecutionSpace(), KE::cbegin(first_view),
                                        KE::cbegin(first_view),
@@ -241,8 +241,8 @@ template <class ExecutionSpace, class ViewType1, class ViewType2,
           class ValueType, class... Args>
 void run_and_check_transform_reduce_overloadA(ViewType1 first_view,
                                               ViewType2 second_view,
-                                              ValueType init_value,
-                                              ValueType result_value,
+                                              const ValueType& init_value,
+                                              const ValueType& result_value,
                                               Args const&... args) {
   // trivial cases
   const auto r1 = KE::transform_reduce(
@@ -358,8 +358,8 @@ TEST_F(std_algorithms_numerics_test,
 
 template <class ExecutionSpace, class ViewType, class ValueType, class... Args>
 void run_and_check_transform_reduce_overloadB(ViewType view,
-                                              ValueType init_value,
-                                              ValueType result_value,
+                                              const ValueType& init_value,
+                                              const ValueType& result_value,
                                               Args const&... args) {
   // trivial
   const auto r1 = KE::transform_reduce(ExecutionSpace(), KE::cbegin(view),
@@ -435,8 +435,9 @@ TEST_F(std_algorithms_numerics_test,
 // test for both POD types and custom scalar types
 // -------------------------------------------------------------------
 template <class ExecutionSpace, class ViewType, class ValueType>
-void run_and_check_reduce_overloadA(ViewType view, ValueType non_trivial_result,
-                                    ValueType trivial_result) {
+void run_and_check_reduce_overloadA(ViewType view,
+                                    const ValueType& non_trivial_result,
+                                    const ValueType& trivial_result) {
   // trivial cases
   const auto r1 =
       KE::reduce(ExecutionSpace(), KE::cbegin(view), KE::cbegin(view));
@@ -491,8 +492,9 @@ TEST_F(std_algorithms_numerics_test,
 // test for both POD types and custom scalar types
 // -------------------------------------------------------------------
 template <class ExecutionSpace, class ViewType, class ValueType>
-void run_and_check_reduce_overloadB(ViewType view, ValueType result_value,
-                                    ValueType init_value) {
+void run_and_check_reduce_overloadB(ViewType view,
+                                    const ValueType& result_value,
+                                    const ValueType& init_value) {
   // trivial cases
   const auto r1 = KE::reduce(ExecutionSpace(), KE::cbegin(view),
                              KE::cbegin(view), init_value);
@@ -541,8 +543,10 @@ TEST_F(std_algorithms_numerics_test,
 // test for both POD types and custom scalar types
 // -------------------------------------------------------------------
 template <class ExecutionSpace, class ViewType, class ValueType, class BinaryOp>
-void run_and_check_reduce_overloadC(ViewType view, ValueType result_value,
-                                    ValueType init_value, BinaryOp joiner) {
+void run_and_check_reduce_overloadC(ViewType view,
+                                    const ValueType& result_value,
+                                    const ValueType& init_value,
+                                    BinaryOp joiner) {
   // trivial cases
   const auto r1 = KE::reduce(ExecutionSpace(), KE::cbegin(view),
                              KE::cbegin(view), init_value, joiner);
