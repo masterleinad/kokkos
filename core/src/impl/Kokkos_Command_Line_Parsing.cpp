@@ -211,14 +211,14 @@ bool Kokkos::Impl::check_arg_str(char const* arg, char const* name,
 }
 
 void Kokkos::Impl::warn_deprecated_environment_variable(
-    std::string deprecated) {
+    const std::string& deprecated) {
   std::cerr << "Warning: environment variable '" << deprecated
             << "' is deprecated."
             << " Raised by Kokkos::initialize()." << std::endl;
 }
 
 void Kokkos::Impl::warn_deprecated_environment_variable(
-    std::string deprecated, std::string use_instead) {
+    const std::string& deprecated, const std::string& use_instead) {
   std::cerr << "Warning: environment variable '" << deprecated
             << "' is deprecated."
             << " Use '" << use_instead << "' instead."
@@ -226,14 +226,14 @@ void Kokkos::Impl::warn_deprecated_environment_variable(
 }
 
 void Kokkos::Impl::warn_deprecated_command_line_argument(
-    std::string deprecated) {
+    const std::string& deprecated) {
   std::cerr << "Warning: command line argument '" << deprecated
             << "' is deprecated."
             << " Raised by Kokkos::initialize()." << std::endl;
 }
 
 void Kokkos::Impl::warn_deprecated_command_line_argument(
-    std::string deprecated, std::string use_instead) {
+    const std::string& deprecated, const std::string& use_instead) {
   std::cerr << "Warning: command line argument '" << deprecated
             << "' is deprecated."
             << " Use '" << use_instead << "' instead."
@@ -252,7 +252,7 @@ void Kokkos::Impl::do_not_warn_not_recognized_command_line_argument(
 }
 
 void Kokkos::Impl::warn_not_recognized_command_line_argument(
-    std::string not_recognized) {
+    const std::string& not_recognized) {
   for (auto const& ignore : do_not_warn_regular_expressions) {
     if (std::regex_match(not_recognized, ignore)) {
       return;

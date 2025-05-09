@@ -133,7 +133,7 @@ void finalize();
  * just like std::atexit, if any of your functions throws but does not
  * catch an exception, Kokkos::finalize will call std::terminate.
  */
-void push_finalize_hook(std::function<void()> f);
+void push_finalize_hook(const std::function<void()>& f);
 
 void fence(const std::string& name /*= "Kokkos::fence: Unnamed Global Fence"*/);
 

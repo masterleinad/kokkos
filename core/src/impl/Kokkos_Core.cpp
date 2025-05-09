@@ -217,7 +217,7 @@ Kokkos::Impl::ExecSpaceManager& Kokkos::Impl::ExecSpaceManager::get_instance() {
 }
 
 void Kokkos::Impl::ExecSpaceManager::register_space_factory(
-    const std::string name, std::unique_ptr<ExecSpaceBase> space) {
+    const std::string& name, std::unique_ptr<ExecSpaceBase> space) {
   exec_space_factory_list[name] = std::move(space);
 }
 
@@ -1039,7 +1039,7 @@ void Kokkos::Impl::pre_finalize() { pre_finalize_internal(); }
 
 void Kokkos::Impl::post_finalize() { post_finalize_internal(); }
 
-void Kokkos::push_finalize_hook(std::function<void()> f) {
+void Kokkos::push_finalize_hook(const std::function<void()>& f) {
   finalize_hooks.push(f);
 }
 

@@ -30,7 +30,7 @@ class InitializationSettings {
   std::optional<TYPE> m_##NAME;                                            \
                                                                            \
  public:                                                                   \
-  InitializationSettings& set_##NAME(TYPE NAME) {                          \
+  InitializationSettings& set_##NAME(const TYPE& NAME) {                   \
     m_##NAME = NAME;                                                       \
     return *this;                                                          \
   }                                                                        \
@@ -41,21 +41,21 @@ class InitializationSettings {
   static_assert(true, "no-op to require trailing semicolon")
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-#define KOKKOS_IMPL_DECLARE_DEPRECATED(TYPE, NAME)                     \
- private:                                                              \
-  std::optional<TYPE> m_##NAME;                                        \
-                                                                       \
- public:                                                               \
-  KOKKOS_DEPRECATED InitializationSettings& set_##NAME(TYPE NAME) {    \
-    m_##NAME = NAME;                                                   \
-    return *this;                                                      \
-  }                                                                    \
-  KOKKOS_DEPRECATED bool has_##NAME() const noexcept {                 \
-    return static_cast<bool>(m_##NAME);                                \
-  }                                                                    \
-  KOKKOS_DEPRECATED TYPE get_##NAME() const noexcept {                 \
-    return *m_##NAME; /* NOLINT(bugprone-unchecked-optional-access) */ \
-  }                                                                    \
+#define KOKKOS_IMPL_DECLARE_DEPRECATED(TYPE, NAME)                         \
+ private:                                                                  \
+  std::optional<TYPE> m_##NAME;                                            \
+                                                                           \
+ public:                                                                   \
+  KOKKOS_DEPRECATED InitializationSettings& set_##NAME(const TYPE& NAME) { \
+    m_##NAME = NAME;                                                       \
+    return *this;                                                          \
+  }                                                                        \
+  KOKKOS_DEPRECATED bool has_##NAME() const noexcept {                     \
+    return static_cast<bool>(m_##NAME);                                    \
+  }                                                                        \
+  KOKKOS_DEPRECATED TYPE get_##NAME() const noexcept {                     \
+    return *m_##NAME; /* NOLINT(bugprone-unchecked-optional-access) */     \
+  }                                                                        \
   static_assert(true, "no-op to require trailing semicolon")
 #else
 #define KOKKOS_IMPL_DECLARE_DEPRECATED(TYPE, NAME) \

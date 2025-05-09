@@ -145,7 +145,7 @@ class ExecSpaceManager {
   ExecSpaceManager() = default;
 
  public:
-  void register_space_factory(std::string name,
+  void register_space_factory(const std::string& name,
                               std::unique_ptr<ExecSpaceBase> ptr);
   void initialize_spaces(const Kokkos::InitializationSettings& settings);
   void finalize_spaces();
@@ -155,7 +155,7 @@ class ExecSpaceManager {
 };
 
 template <class ExecutionSpace>
-int initialize_space_factory(std::string name) {
+int initialize_space_factory(const std::string& name) {
   auto space_ptr = std::make_unique<ExecSpaceDerived<ExecutionSpace>>();
   ExecSpaceManager::get_instance().register_space_factory(name,
                                                           std::move(space_ptr));

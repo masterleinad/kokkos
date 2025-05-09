@@ -404,7 +404,8 @@ struct ExtendableTunerMixin {
 template <size_t MaxDimensionSize = 100, template <class...> class Container,
           class... TemplateArguments>
 auto make_multidimensional_sparse_tuning_problem(
-    const Container<TemplateArguments...>& in, std::vector<std::string> names) {
+    const Container<TemplateArguments...>& in,
+    const std::vector<std::string>& names) {
   return MultidimensionalSparseTuningProblem<Container, MaxDimensionSize,
                                              TemplateArguments...>(in, names);
 }
@@ -714,7 +715,7 @@ struct CategoricalTuner {
   choice_list choices;
   size_t context;
   size_t tuning_variable_id;
-  CategoricalTuner(std::string name, choice_list m_choices)
+  CategoricalTuner(const std::string& name, choice_list m_choices)
       : choices(m_choices) {
     std::vector<int64_t> indices;
     for (typename decltype(choices)::size_type x = 0; x < choices.size(); ++x) {

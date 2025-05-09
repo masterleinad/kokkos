@@ -207,12 +207,12 @@ struct ViewValueFunctorSequentialHostInit {
   ViewValueFunctorSequentialHostInit(ExecSpace const& /*arg_space*/,
                                      ValueType* const arg_ptr,
                                      size_t const arg_n,
-                                     std::string /*arg_name*/)
+                                     const std::string& /*arg_name*/)
       : ptr(arg_ptr), n(arg_n) {}
 
   ViewValueFunctorSequentialHostInit(ValueType* const arg_ptr,
                                      size_t const arg_n,
-                                     std::string /*arg_name*/)
+                                     const std::string& /*arg_name*/)
       : ptr(arg_ptr), n(arg_n) {}
 
   void construct_shared_allocation() {
@@ -242,7 +242,7 @@ template <class ElementType, class MemorySpace, class ExecutionSpace,
 Kokkos::Impl::SharedAllocationRecord<void, void>* make_shared_allocation_record(
     const size_t& required_span_size, std::string_view label,
     const MemorySpace& memory_space,
-    const std::optional<ExecutionSpace> exec_space,
+    const std::optional<ExecutionSpace>& exec_space,
     std::bool_constant<Initialize>, std::bool_constant<SequentialInit>) {
   static_assert(SpaceAccessibility<ExecutionSpace, MemorySpace>::accessible);
 

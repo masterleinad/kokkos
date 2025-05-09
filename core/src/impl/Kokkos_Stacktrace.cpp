@@ -32,6 +32,7 @@
 #include <exception>
 #include <iostream>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 namespace Kokkos {
@@ -240,7 +241,7 @@ void kokkos_terminate_handler() {
 }
 
 void set_kokkos_terminate_handler(std::function<void()> user_post) {
-  user_terminate_handler_post_ = user_post;
+  user_terminate_handler_post_ = std::move(user_post);
   std::set_terminate(kokkos_terminate_handler);
 }
 

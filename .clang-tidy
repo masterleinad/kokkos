@@ -18,7 +18,7 @@ Checks: >
 
 CheckOptions:
   - key:             performance-unnecessary-value-param.AllowedTypes
-    value:           'View$'
+    value:           'Kokkos::.*'
 
 FormatStyle: file
 HeaderFilterRegex: '(algorithms|benchmarks|containers|core|example|simd).*\.hpp'
