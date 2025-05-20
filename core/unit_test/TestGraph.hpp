@@ -274,7 +274,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), submit_six) {
     GTEST_SKIP() << "skipping since OpenMPTarget can't use team_size 1";
 #endif
 #if defined(KOKKOS_ENABLE_SYCL) && \
-    !defined(SYCL_EXT_ONEAPI_GRAPH)  // FIXME_SYCL
+    !defined(KOKKOS_IMPL_SYCL_GRAPH_SUPPORT)  // FIXME_SYCL
   if (std::is_same_v<TEST_EXECSPACE, Kokkos::SYCL>)
     GTEST_SKIP() << "skipping since test case is known to fail with SYCL";
 #endif
@@ -382,7 +382,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), zero_work_reduce) {
         root.then_parallel_reduce(Kokkos::RangePolicy<TEST_EXECSPACE>(0, 0),
                                   no_op_functor, count)
 #if !defined(KOKKOS_ENABLE_SYCL) || \
-    defined(SYCL_EXT_ONEAPI_GRAPH)  // FIXME_SYCL
+    defined(KOKKOS_IMPL_SYCL_GRAPH_SUPPORT)  // FIXME_SYCL
 #if !defined(KOKKOS_ENABLE_CUDA) && \
     !defined(KOKKOS_ENABLE_HIP)  // FIXME_CUDA FIXME_HIP
             .then_parallel_reduce(
