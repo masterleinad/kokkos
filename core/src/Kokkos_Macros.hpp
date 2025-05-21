@@ -374,8 +374,8 @@
 #define KOKKOS_IMPL_RELOCATABLE_FUNCTION
 #endif
 
-#if !defined(KOKKOS_VIRTUAL)
-#define KOKKOS_VIRTUAL virtual
+#if !defined(KOKKOS_EXPERIMENTAL_VIRTUAL)
+#define KOKKOS_EXPERIMENTAL_VIRTUAL virtual
 #endif
 
 //----------------------------------------------------------------------------

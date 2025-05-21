@@ -23,9 +23,9 @@
 #endif
 
 #ifdef KOKKOS_ENABLE_SYCL_VIRTUAL_FUNCTIONS
-#define KOKKOS_VIRTUAL SYCL_EXT_ONEAPI_FUNCTION_PROPERTY(sycl::ext::oneapi::experimental::indirectly_callable) virtual
+#define KOKKOS_EXPERIMENTAL_VIRTUAL SYCL_EXT_ONEAPI_FUNCTION_PROPERTY(sycl::ext::oneapi::experimental::indirectly_callable) virtual
 #else
-#define KOKKOS_VIRTUAL @"KOKKOS_VIRTUAL requires Kokkos_ENABLE_SYCL_VIRTUAL_FUNCTIONS=ON"
+#define KOKKOS_EXPERIMENTAL_VIRTUAL @"KOKKOS_EXPERIMENTAL_VIRTUAL requires Kokkos_ENABLE_SYCL_VIRTUAL_FUNCTIONS=ON"
 #endif
 // clang-format on
 
