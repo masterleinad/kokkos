@@ -54,7 +54,6 @@ KOKKOS_IMPL_DISABLE_DEPRECATED_WARNINGS_PUSH()
 
 namespace Kokkos {
 namespace Impl {
-namespace {
 
 template <typename TaskType>
 __global__ void set_cuda_task_base_apply_function_pointer(
@@ -69,8 +68,6 @@ __global__ void cuda_task_queue_execute(Scheduler scheduler,
                                         int32_t shmem_size) {
   TaskQueueSpecialization<Scheduler>::driver(std::move(scheduler), shmem_size);
 }
-
-}  // namespace
 
 template <class, class>
 class TaskExec;
