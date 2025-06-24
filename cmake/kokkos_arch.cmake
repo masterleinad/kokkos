@@ -133,7 +133,7 @@ foreach(ARCH IN LISTS SUPPORTED_AMD_ARCHS)
   kokkos_arch_option(${ARCH} GPU "AMD GPU ${GPU} ${FLAG}" "KOKKOS_SHOW_HIP_ARCHS")
 endforeach()
 
-if(Kokkos_ENABLE_SYCL OR Kokkos_ENABLE_OPENMPTARGET)
+if(Kokkos_ENABLE_SYCL)
   set(KOKKOS_SHOW_SYCL_ARCHS ON)
 endif()
 
@@ -150,6 +150,7 @@ if(KOKKOS_ENABLE_COMPILER_WARNINGS)
   set(COMMON_WARNINGS
       "-Wall"
       "-Wextra"
+      "-Wextra-semi"
       "-Wunused-parameter"
       "-Wshadow"
       "-pedantic"
@@ -170,6 +171,11 @@ if(KOKKOS_ENABLE_COMPILER_WARNINGS)
     if(KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)
       list(REMOVE_ITEM COMMON_WARNINGS "-Wtype-limits")
     endif()
+  endif()
+
+  # nvcc raises internal warnings about extra semicolons
+  if(KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA)
+    list(REMOVE_ITEM COMMON_WARNINGS "-Wextra-semi")
   endif()
 
   if(KOKKOS_CXX_COMPILER_ID STREQUAL Clang)
@@ -1077,40 +1083,16 @@ endif()
 if(KOKKOS_ENABLE_OPENMPTARGET)
   set(CLANG_CUDA_ARCH ${KOKKOS_CUDA_ARCH_FLAG})
   if(CLANG_CUDA_ARCH)
-    if(KOKKOS_CLANG_IS_CRAY)
-      compiler_specific_flags(Cray -fopenmp)
-    else()
-      string(REPLACE "sm_" "cc" NVHPC_CUDA_ARCH ${CLANG_CUDA_ARCH})
-      compiler_specific_flags(
-        Clang -Xopenmp-target -march=${CLANG_CUDA_ARCH} -fopenmp-targets=nvptx64 NVHPC -gpu=${NVHPC_CUDA_ARCH}
-      )
-    endif()
+    string(REPLACE "sm_" "cc" NVHPC_CUDA_ARCH ${CLANG_CUDA_ARCH})
+    compiler_specific_flags(
+      Clang -Xopenmp-target -march=${CLANG_CUDA_ARCH} -fopenmp-targets=nvptx64 NVHPC -gpu=${NVHPC_CUDA_ARCH}
+    )
   endif()
   set(CLANG_AMDGPU_ARCH ${KOKKOS_AMDGPU_ARCH_FLAG})
   if(CLANG_AMDGPU_ARCH)
     compiler_specific_flags(
       Clang -Xopenmp-target=amdgcn-amd-amdhsa -march=${CLANG_AMDGPU_ARCH} -fopenmp-targets=amdgcn-amd-amdhsa
     )
-  endif()
-  if(KOKKOS_ARCH_INTEL_GEN)
-    compiler_specific_flags(IntelLLVM -fopenmp-targets=spir64 -D__STRICT_ANSI__)
-  else()
-    compiler_specific_options(IntelLLVM -fopenmp-targets=spir64_gen -D__STRICT_ANSI__)
-    if(KOKKOS_ARCH_INTEL_GEN9)
-      compiler_specific_link_options(IntelLLVM -fopenmp-targets=spir64_gen -Xopenmp-target-backend "-device gen9")
-    elseif(KOKKOS_ARCH_INTEL_GEN11)
-      compiler_specific_link_options(IntelLLVM -fopenmp-targets=spir64_gen -Xopenmp-target-backend "-device gen11")
-    elseif(KOKKOS_ARCH_INTEL_GEN12LP)
-      compiler_specific_link_options(IntelLLVM -fopenmp-targets=spir64_gen -Xopenmp-target-backend "-device gen12lp")
-    elseif(KOKKOS_ARCH_INTEL_DG1)
-      compiler_specific_link_options(IntelLLVM -fopenmp-targets=spir64_gen -Xopenmp-target-backend "-device dg1")
-    elseif(KOKKOS_ARCH_INTEL_DG2)
-      compiler_specific_link_options(IntelLLVM -fopenmp-targets=spir64_gen -Xopenmp-target-backend "-device dg2")
-    elseif(KOKKOS_ARCH_INTEL_XEHP)
-      compiler_specific_link_options(IntelLLVM -fopenmp-targets=spir64_gen -Xopenmp-target-backend "-device 12.50.4")
-    elseif(KOKKOS_ARCH_INTEL_PVC)
-      compiler_specific_link_options(IntelLLVM -fopenmp-targets=spir64_gen -Xopenmp-target-backend "-device 12.60.7")
-    endif()
   endif()
 endif()
 
