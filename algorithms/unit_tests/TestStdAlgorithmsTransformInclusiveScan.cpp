@@ -15,10 +15,9 @@
 //@HEADER
 
 #include <TestStdAlgorithmsCommon.hpp>
-#include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULE
-import kokkos.std_algorithms_impl;
-#endif
+#include <std_algorithms/impl/Kokkos_ValueWrapperForNoNeutralElement.hpp>
+#include <std_algorithms/impl/Kokkos_IdentityReferenceUnaryFunctor.hpp>
+#include <std_algorithms/impl/Kokkos_TransformInclusiveScan.hpp>
 #include <utility>
 #include <iomanip>
 

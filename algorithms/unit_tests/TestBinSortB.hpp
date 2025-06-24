@@ -27,7 +27,6 @@ import kokkos.std_algorithms;
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Random.hpp>
 #include <Kokkos_Sort.hpp>
-#include <Kokkos_StdAlgorithms.hpp>
 #include <TestStdAlgorithmsCommon.hpp>
 #include <random>
 #include <numeric>  //needed for iota

@@ -25,7 +25,6 @@ import kokkos.std_algorithms;
 #include <Kokkos_StdAlgorithms.hpp>
 #endif
 #include <Kokkos_Core.hpp>
-#include <Kokkos_StdAlgorithms.hpp>
 #include <Kokkos_Random.hpp>
 #include <TestStdAlgorithmsHelperFunctors.hpp>
 #include <utility>
