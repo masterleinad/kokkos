@@ -56,7 +56,7 @@ pipeline {
                                 -DKokkos_ENABLE_EXAMPLES=ON \
                                 -DKokkos_ENABLE_SERIAL=ON && \
                               cmake --build build --target install -j 8 && \
-                              ctest --test-dir build --no-compress-output -T Test --verbose && \
+                              ctest --test-dir build --no-compress-output -T Test --verbose'''
                     }
                     post {
                         always {
