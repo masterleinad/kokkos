@@ -19,7 +19,6 @@
 
 #include "impl/Kokkos_NestedSortImpl.hpp"
 #include <Kokkos_Core.hpp>
-#include <Kokkos_Macros.hpp>
 #include <std_algorithms/impl/Kokkos_HelperPredicates.hpp>
 
 namespace Kokkos {

@@ -23,7 +23,6 @@ import kokkos.std_algorithms;
 #include <Kokkos_StdAlgorithms.hpp>
 #endif
 #include <std_algorithms/impl/Kokkos_Constraints.hpp>
-#include <Kokkos_Core.hpp>
 
 namespace Test {
 namespace stdalgos {
