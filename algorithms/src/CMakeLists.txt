@@ -9,7 +9,7 @@ file(GLOB ALGO_SOURCES *.cpp)
 append_glob(ALGO_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/std_algorithms/*.hpp)
 append_glob(ALGO_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/std_algorithms/impl/*.hpp)
 
-set(ALGO_MODULES Kokkos_StdAlgorithms.ccm)
+set(ALGO_MODULES Kokkos_StdAlgorithms.cppm)
 
 install(
   DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"

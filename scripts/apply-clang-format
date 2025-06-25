@@ -30,7 +30,7 @@ TRACKED_FILES="$(git ls-files)"
 
 echo "***   Running clang-format"
 find ${TRACKED_FILES} \
-  -type f -name '*.cpp' -o -name '*.hpp' -o -name '*.cc' -o -name '*.h' -o -name '*.ccm' \
+  -type f -name '*.cpp' -o -name '*.hpp' -o -name '*.cc' -o -name '*.h' -o -name '*.cppm' \
   -exec ${CLANG_FORMAT_EXECUTABLE} -i {} \;
 echo "***   Running clang-format - done"
 
