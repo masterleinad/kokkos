@@ -39,7 +39,7 @@ echo "***   Running clang-format - done"
 echo "***   Running whitespace check"
 TRACKED_FILES="$(git ls-tree HEAD --name-only)"
 find ${TRACKED_FILES} \
-  -type f \( -name "*.md" -o -name "*.cc" -o -name "*.h" -o -name "*.txt" -o -name "*.cmake" \) -exec bash -c "sed -i -e 's/\s\+$//g' {} && rm -f '{}-e'" \;
+  -type f \( -name "*.md" -o -name "*.cc" -o -name "*.h" -o -name "*.txt" -o -name "*.cmake" \) -exec bash -c "sed -i -e 's/[[:space:]]*$//g' {} && rm -f '{}-e'" \;
 echo "***   Running whitespace check - done"
 
 # Check that we do not introduce any file with the old copyright
