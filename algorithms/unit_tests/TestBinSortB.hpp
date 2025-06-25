@@ -19,7 +19,7 @@
 
 #include <gtest/gtest.h>
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULE
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.std_algorithms;
 #else
 #include <Kokkos_StdAlgorithms.hpp>

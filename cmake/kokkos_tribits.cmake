@@ -33,7 +33,7 @@ macro(KOKKOS_INTERNAL_ADD_LIBRARY_INSTALL LIBRARY_NAME)
   kokkos_lib_type(${LIBRARY_NAME} INCTYPE)
   target_include_directories(${LIBRARY_NAME} ${INCTYPE} $<INSTALL_INTERFACE:${KOKKOS_HEADER_DIR}>)
 
-  if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULE)
+  if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
     install(
       TARGETS ${LIBRARY_NAME}
       EXPORT KokkosTargets
@@ -106,7 +106,7 @@ function(KOKKOS_ADD_EXECUTABLE_AND_TEST ROOT_NAME)
   endif()
   if(NOT
      (Kokkos_INSTALL_TESTING
-      OR Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULE
+      OR Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES
       OR Kokkos_ENABLE_SYCL
       OR Kokkos_ENABLE_HPX
       OR Kokkos_ENABLE_IMPL_SKIP_NO_RTTI_FLAG
@@ -365,7 +365,7 @@ function(KOKKOS_ADD_LIBRARY LIBRARY_NAME)
   # MSVC and other platforms want to have the headers included as source files for better dependency detection
   add_library(${LIBRARY_NAME} ${LINK_TYPE} ${PARSE_HEADERS} ${PARSE_SOURCES})
 
-  if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULE)
+  if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
     if(PARSE_MODULE_FILES)
       target_sources(
         ${LIBRARY_NAME} PUBLIC FILE_SET ${LIBRARY_NAME}_file_set TYPE CXX_MODULES FILES ${PARSE_MODULE_FILES}

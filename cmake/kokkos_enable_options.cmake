@@ -107,13 +107,13 @@ kokkos_enable_option(
 )
 mark_as_advanced(Kokkos_ENABLE_IMPL_VIEW_OF_VIEWS_DESTRUCTOR_PRECONDITION_VIOLATION_WORKAROUND)
 
-kokkos_enable_option(EXPERIMENTAL_CXX20_MODULE OFF "Whether to build a kokkos C++20 module")
-if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULE)
+kokkos_enable_option(EXPERIMENTAL_CXX20_MODULES OFF "Whether to build a kokkos C++20 module")
+if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
   if(CMAKE_VERSION VERSION_LESS 3.28.2)
-    message(FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULE requires at least CMake 3.28.2")
+    message(FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES requires at least CMake 3.28.2")
   endif()
   if(Kokkos_ENABLE_DEPRECATED_CODE_4)
-    message(FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULE requires Kokkos_ENABLE_DEPRECATED_CODE_4=OFF")
+    message(FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES requires Kokkos_ENABLE_DEPRECATED_CODE_4=OFF")
   endif()
 endif()
 
