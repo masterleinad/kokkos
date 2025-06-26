@@ -24,7 +24,7 @@ kokkos_add_library(
   kokkosalgorithms
   HEADERS
   ${ALGO_HEADERS}
-  MODULE_FILES
+  MODULE_INTERFACE
   ${ALGO_MODULES}
   SOURCES
   ${ALGO_SOURCES}
