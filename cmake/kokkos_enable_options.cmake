@@ -113,7 +113,9 @@ if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
     message(FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES requires at least CMake 3.28.2")
   endif()
   if(Kokkos_ENABLE_DEPRECATED_CODE_4)
-    message(FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES requires Kokkos_ENABLE_DEPRECATED_CODE_4=OFF")
+    message(
+      FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES requires Kokkos_ENABLE_DEPRECATED_CODE_4=OFF"
+    )
   endif()
 endif()
 
