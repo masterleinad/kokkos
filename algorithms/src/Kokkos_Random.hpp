@@ -23,6 +23,7 @@
 
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Complex.hpp>
+#include <Kokkos_DynRankView.hpp>  // DynRankView::apply_to_view_of_static_rank
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
