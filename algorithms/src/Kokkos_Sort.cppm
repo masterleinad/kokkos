@@ -38,4 +38,3 @@ export {
   }  // namespace Experimental
   }  // namespace Kokkos
 }
-

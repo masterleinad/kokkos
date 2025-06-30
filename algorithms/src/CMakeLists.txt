@@ -32,7 +32,7 @@ kokkos_add_library(
 kokkos_lib_include_directories(
   kokkosalgorithms ${KOKKOS_TOP_BUILD_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
 )
-target_link_libraries(kokkosalgorithms PUBLIC kokkoscore kokkoscontainers)
+target_link_libraries(kokkosalgorithms PUBLIC kokkoscore)
 
 kokkos_link_tpl(kokkosalgorithms PUBLIC ROCTHRUST)
 kokkos_link_tpl(kokkosalgorithms PUBLIC ONEDPL)

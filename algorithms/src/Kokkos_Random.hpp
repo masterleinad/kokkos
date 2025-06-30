@@ -23,7 +23,6 @@
 
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Complex.hpp>
-#include <Kokkos_DynRankView.hpp>  // DynRankView::apply_to_view_of_static_rank
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -1627,7 +1626,7 @@ template <class ExecutionSpace, class ViewType, class RandomPool,
 void fill_random(const ExecutionSpace& exec, ViewType a, RandomPool g,
                  typename ViewType::const_value_type begin,
                  typename ViewType::const_value_type end) {
-  Impl::apply_to_view_of_static_rank(
+  Impl::ApplyToViewOfStaticRank<ViewType>::apply(
       [&](auto dst) { Kokkos::Impl::fill_random(exec, dst, g, begin, end); },
       a);
 }
