@@ -15,12 +15,7 @@
 //@HEADER
 
 #include <Kokkos_Core.hpp>
-#include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
-import kokkos.random;
-#else
 #include <Kokkos_Random.hpp>
-#endif
 #include <Kokkos_DualView.hpp>
 #include <Kokkos_Timer.hpp>
 #include <cstdlib>
