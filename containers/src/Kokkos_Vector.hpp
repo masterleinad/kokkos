@@ -38,7 +38,12 @@ static auto do_not_include = emit_warning_kokkos_vector_deprecated();
 #endif
 
 #include <Kokkos_Core_fwd.hpp>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.dual_view;
+#else
 #include <Kokkos_DualView.hpp>
+#endif
 
 /* Drop in replacement for std::vector based on Kokkos::DualView
  * Most functions only work on the host (it will not compile if called from

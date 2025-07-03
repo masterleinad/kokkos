@@ -23,7 +23,12 @@
 
 #include <Kokkos_Core.hpp>
 #include <Kokkos_BitManipulation.hpp>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.functional;
+#else
 #include <Kokkos_Functional.hpp>
+#endif
 
 #include <impl/Kokkos_Bitset_impl.hpp>
 
