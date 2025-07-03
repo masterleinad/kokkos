@@ -74,14 +74,26 @@ export {
   using ::Kokkos::Experimental::simd_mask;
   using ::Kokkos::Experimental::where;
 
+  namespace simd_abi {
+#if defined(KOKKOS_ARCH_AVX2)
+  using ::Kokkos::Experimental::simd_abi::avx2_fixed_size;
+#endif
+#if defined(KOKKOS_ARCH_AVX512XEON)
+  using ::Kokkos::Experimental::simd_abi::avx512_fixed_size;
+#endif
+#if defined(KOKKOS_ARCH_ARM_NEON)
+  using ::Kokkos::Experimental::simd_abi::neon_fixed_size;
+#endif
+  using ::Kokkos::Experimental::simd_abi::scalar;
+#if defined(KOKKOS_ARCH_ARM_SVE)
+  using ::Kokkos::Experimental::simd_abi::sve_fixed_size;
+#endif
+  }  // namespace simd_abi
+
   namespace simd_abi::Impl {  // FIXME
   using ::Kokkos::Experimental::simd_abi::Impl::native_abi;
   using ::Kokkos::Experimental::simd_abi::Impl::native_fixed_abi;
   }  // namespace simd_abi::Impl
-
-  namespace simd_abi {
-  using ::Kokkos::Experimental::simd_abi::scalar;
-  }
 
   namespace Impl {  // FIXME
   using ::Kokkos::Experimental::Impl::abi_set;
