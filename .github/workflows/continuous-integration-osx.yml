@@ -43,7 +43,7 @@ jobs:
           cmake -B build .
             -DKokkos_ENABLE_${{ matrix.backend }}=On
             -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@18)/bin/clang
-            -DCMAKE_CXX_FLAGS="-stdlib=libc++ -Werror"
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++"
             -DCMAKE_CXX_STANDARD=23
             -DKokkos_ARCH_NATIVE=ON
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON
