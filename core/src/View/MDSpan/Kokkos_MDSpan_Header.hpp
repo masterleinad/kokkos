@@ -22,11 +22,6 @@ static_assert(false,
 #ifndef KOKKOS_EXPERIMENTAL_MDSPAN_HPP
 #define KOKKOS_EXPERIMENTAL_MDSPAN_HPP
 
-// Look for the right mdspan
-#if __cplusplus >= 202002L
-#include <version>
-#endif
-
 // Opt in for Kokkos::pair to submdspan/subview
 // submdspan does only take index_pair_like which is derived from tuple_like
 // tuple_like is an enumerated list:
