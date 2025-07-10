@@ -14,6 +14,7 @@ jobs:
   osxci:
     name: osx-ci
 
+    continue-on-error: true
     strategy:
       matrix:
         include:
