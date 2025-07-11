@@ -27,6 +27,8 @@ void test_moving_view_does_not_change_use_count(ViewType v) {
   auto* const ptr = v.data();
   auto const cnt  = v.use_count();
 
+  // NOLINTBEGIN(bugprone-use-after-move)
+
   ViewType w(std::move(v));  // move construction
   EXPECT_EQ(w.use_count(), cnt);
   EXPECT_EQ(w.data(), ptr);
@@ -38,6 +40,8 @@ void test_moving_view_does_not_change_use_count(ViewType v) {
   EXPECT_EQ(v.data(), ptr);
   EXPECT_EQ(w.use_count(), 0);
   // EXPECT_EQ(w.data(), nullptr);
+
+  // NOLINTEND(bugprone-use-after-move)
 }
 
 TEST(TEST_CATEGORY, view_move_and_use_count) {
@@ -66,6 +70,8 @@ template <class ViewType>
 KOKKOS_FUNCTION int check_moved_from_view_state(ViewType v) {
   int err = 0;
 
+  // NOLINTBEGIN(bugprone-use-after-move)
+
   ViewType w(std::move(v));  // move construction
   if (v != ViewType()) {
     Kokkos::printf("failed moved-from view after calling move constructor\n");
@@ -78,6 +84,8 @@ KOKKOS_FUNCTION int check_moved_from_view_state(ViewType v) {
         "failed moved-from view after calling move assignment operator\n");
     ++err;
   }
+
+  // NOLINTEND(bugprone-use-after-move)
 
   return err;
 }
