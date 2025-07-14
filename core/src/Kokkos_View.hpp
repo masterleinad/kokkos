@@ -757,10 +757,9 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
       const std::string& alloc_name =
           Impl::get_property<Impl::LabelTag>(prop_copy);
 
-      Impl::runtime_check_rank(
-          *this, std::is_same_v<typename traits::specialize, void>, arg_N0,
-          arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6, arg_N7,
-          alloc_name.c_str());
+      Impl::runtime_check_rank(*this, !traits::impl_is_customized, arg_N0,
+                               arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6,
+                               arg_N7, alloc_name.c_str());
     }
 #endif
     static_assert(traits::array_layout::is_extent_constructible,
@@ -794,9 +793,9 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
                                  Kokkos::LayoutRight> ||
                   std::is_same_v<typename traits::array_layout,
                                  Kokkos::LayoutStride>) {
-      Impl::runtime_check_rank(
-          *this, std::is_same_v<typename traits::specialize, void>, arg_N0,
-          arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6, arg_N7, "UNMANAGED");
+      Impl::runtime_check_rank(*this, !traits::impl_is_customized, arg_N0,
+                               arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6,
+                               arg_N7, "UNMANAGED");
     }
 #endif
     static_assert(traits::array_layout::is_extent_constructible,
