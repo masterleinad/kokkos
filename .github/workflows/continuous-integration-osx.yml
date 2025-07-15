@@ -46,7 +46,7 @@ jobs:
             -DCMAKE_CXX_STANDARD=17
             -DKokkos_ARCH_NATIVE=ON
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON
-            -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"
+            -DCMAKE_CXX_CLANG_TIDY="/opt/homebrew/opt/llvm/bin/clang-tidy;-warnings-as-errors=*"
             -DKokkos_ENABLE_DEPRECATED_CODE_4=OFF
             -DKokkos_ENABLE_TESTS=On
             -DKokkos_ENABLE_DEBUG_BOUNDS_CHECK=ON
