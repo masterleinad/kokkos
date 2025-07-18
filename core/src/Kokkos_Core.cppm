@@ -1,0 +1,657 @@
+//@HEADER
+// ************************************************************************
+//
+//                        Kokkos v. 4.0
+//       Copyright (2022) National Technology & Engineering
+//               Solutions of Sandia, LLC (NTESS).
+//
+// Under the terms of Contract DE-NA0003525 with NTESS,
+// the U.S. Government retains certain rights in this software.
+//
+// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
+// See https://kokkos.org/LICENSE for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//@HEADER
+
+module;
+
+#include <Kokkos_Core.hpp>
+#include <KokkosExp_InterOp.hpp>
+
+export module kokkos.core;
+
+export {
+  namespace Kokkos {
+  // hwloc
+  namespace hwloc {
+  using ::Kokkos::hwloc::available;
+  using ::Kokkos::hwloc::get_available_cores_per_numa;
+  using ::Kokkos::hwloc::get_available_numa_count;
+  using ::Kokkos::hwloc::get_available_threads_per_core;
+  }  // namespace hwloc
+
+  // execution/memory spaces
+#ifdef KOKKOS_ENABLE_SERIAL
+  using ::Kokkos::NewInstance;
+  using ::Kokkos::Serial;
+#endif
+#ifdef KOKKOS_ENABLE_OPENMP
+  using ::Kokkos::OpenMP;
+#endif
+#ifdef KOKKOS_ENABLE_THREADS
+  using ::Kokkos::Threads;
+#endif
+#ifdef KOKKOS_ENABLE_CUDA
+  using ::Kokkos::Cuda;
+#endif
+#ifdef KOKKOS_ENABLE_HIP
+  using ::Kokkos::HIP;
+#endif
+#ifdef KOKKOS_ENABLE_SYCL
+  using ::Kokkos::SYCL;
+#endif
+  namespace Experimental {
+#ifdef KOKKOS_ENABLE_HPX
+  using ::Kokkos::Experimental::HPX;
+#endif
+#ifdef KOKKOS_ENABLE_OPENMPTARGET
+  using ::Kokkos::Experimental::OpenMPTarget;
+#endif
+#ifdef KOKKOS_ENABLE_OPENACC
+  using ::Kokkos::Experimental::OpenACC;
+#endif
+  }  // namespace Experimental
+  namespace Experimental {
+  using ::Kokkos::Experimental::partition_space;
+  }  // namespace Experimental
+  namespace Impl {
+  using ::Kokkos::Impl::ExecutionSpaceTag;
+  using ::Kokkos::Impl::make_shared_allocation_record;
+  using ::Kokkos::Impl::MemorySpaceAccess;
+  }  // namespace Impl
+  using ::Kokkos::AnonymousSpace;
+  using ::Kokkos::DefaultExecutionSpace;
+  using ::Kokkos::DefaultHostExecutionSpace;
+  using ::Kokkos::Device;
+  using ::Kokkos::has_shared_host_pinned_space;
+  using ::Kokkos::has_shared_space;
+  using ::Kokkos::HostSpace;
+  using ::Kokkos::is_device;
+  using ::Kokkos::is_device_v;
+  using ::Kokkos::is_execution_space;
+  using ::Kokkos::is_execution_space_v;
+  using ::Kokkos::is_memory_space;
+  using ::Kokkos::is_memory_space_v;
+  using ::Kokkos::is_space;
+#ifdef KOKKOS_HAS_SHARED_SPACE
+  using ::Kokkos::SharedSpace;
+#endif
+  using ::Kokkos::fence;
+  using ::Kokkos::kokkos_free;
+  using ::Kokkos::kokkos_malloc;
+  using ::Kokkos::kokkos_realloc;
+  using ::Kokkos::MemoryPool;  // FIXME
+  using ::Kokkos::SpaceAccessibility;
+#ifdef KOKKOS_HAS_SHARED_HOST_PINNED_SPACE
+  using ::Kokkos::SharedHostPinnedSpace;
+#endif
+
+  // View-related
+  namespace Impl {
+  using ::Kokkos::Impl::append_formatted_multidimensional_index;
+  using ::Kokkos::Impl::is_view_label;
+  using ::Kokkos::Impl::LabelTag;
+  using ::Kokkos::Impl::SubviewExtents;
+  }  // namespace Impl
+  using ::Kokkos::ALL_t;
+  using ::Kokkos::AllowPadding;
+  using ::Kokkos::InvalidType;
+  using ::Kokkos::rank;
+  using ::Kokkos::Experimental::Extents;
+  namespace Impl {
+  namespace BV {
+  using ::Kokkos::Impl::BV::BasicView;
+  }
+  using ::Kokkos::Impl::ApplyToViewOfStaticRank;
+  using ::Kokkos::Impl::are_integral;
+  using ::Kokkos::Impl::as_view_of_rank_n;
+  using ::Kokkos::Impl::CheckedReferenceCountedAccessor;
+  using ::Kokkos::Impl::CheckedReferenceCountedRelaxedAtomicAccessor;
+  using ::Kokkos::Impl::CheckedRelaxedAtomicAccessor;
+  using ::Kokkos::Impl::choose_create_mirror;
+  using ::Kokkos::Impl::DataTypeFromExtents;
+  using ::Kokkos::Impl::ExtentsFromDataType;
+  using ::Kokkos::Impl::has_type;
+  using ::Kokkos::Impl::is_view_ctor_property;
+  using ::Kokkos::Impl::ParseViewExtents;
+  using ::Kokkos::Impl::rank_dynamic;
+  using ::Kokkos::Impl::RankDataType;
+  using ::Kokkos::Impl::ReferenceCountedAccessor;
+  using ::Kokkos::Impl::ReferenceCountedDataHandle;
+  using ::Kokkos::Impl::size_mismatch;
+  using ::Kokkos::Impl::SubviewLegalArgsCompileTime;
+  using ::Kokkos::Impl::ViewArrayAnalysis;
+  using ::Kokkos::Impl::ViewCopy;
+  using ::Kokkos::Impl::ViewDataAnalysis;
+  using ::Kokkos::Impl::ViewDataHandle;
+  using ::Kokkos::Impl::ViewDimension;
+  using ::Kokkos::Impl::ViewMapping;
+  using ::Kokkos::Impl::ViewOffset;
+  using ::Kokkos::Impl::ViewRemap;
+  using ::Kokkos::Impl::with_properties_if_unset;
+  }  // namespace Impl
+  using ::Kokkos::create_mirror;
+  using ::Kokkos::create_mirror_view;
+  using ::Kokkos::create_mirror_view_and_copy;
+  using ::Kokkos::deep_copy;
+  using ::Kokkos::LayoutLeft;
+  using ::Kokkos::LayoutRight;
+  using ::Kokkos::LayoutStride;
+  using ::Kokkos::Rank;
+  using ::Kokkos::realloc;
+  using ::Kokkos::resize;
+  using ::Kokkos::subview;
+  using ::Kokkos::Subview;
+  using ::Kokkos::Unmanaged;
+  using ::Kokkos::View;
+  using ::Kokkos::view_alloc;
+  using ::Kokkos::view_wrap;
+  using ::Kokkos::ViewTraits;
+  using ::Kokkos::WithoutInitializing;
+  namespace Experimental {
+  using ::Kokkos::Experimental::local_deep_copy;
+  }
+  using ::Kokkos::ALL;
+  using ::Kokkos::is_always_assignable;
+  using ::Kokkos::is_always_assignable_v;
+  using ::Kokkos::is_assignable;
+  using ::Kokkos::is_view;
+  using ::Kokkos::is_view_v;
+  using ::Kokkos::MemoryRandomAccess;
+  using ::Kokkos::MemoryTraits;
+  using ::Kokkos::MemoryTraitsFlags;
+  using ::Kokkos::MemoryUnmanaged;
+  using ::Kokkos::SequentialHostInit;
+  namespace Impl {  // FIXME
+  using ::Kokkos::Impl::AtomicAccessorRelaxed;
+  using ::Kokkos::Impl::check_view_ctor_args_create_mirror;
+  using ::Kokkos::Impl::check_view_ctor_args_create_mirror_view_and_copy;
+  using ::Kokkos::Impl::CommonSubview;
+  using ::Kokkos::Impl::DeepCopy;
+  using ::Kokkos::Impl::get_property;
+  using ::Kokkos::Impl::HostMirror;
+  using ::Kokkos::Impl::MDSpanViewTraits;
+  using ::Kokkos::Impl::runtime_check_memory_access_violation;
+  using ::Kokkos::Impl::SharedAllocationRecord;
+  using ::Kokkos::Impl::SharedAllocationTracker;
+  using ::Kokkos::Impl::SpaceAwareAccessor;
+  using ::Kokkos::Impl::ViewCtorProp;
+  using ::Kokkos::Impl::WithoutInitializing_t;
+  }  // namespace Impl
+
+  // execution policies
+  using ::Kokkos::AUTO;
+  using ::Kokkos::Dynamic;
+  using ::Kokkos::IndexType;
+  using ::Kokkos::is_team_handle;
+  using ::Kokkos::is_team_handle_v;
+  using ::Kokkos::Iterate;
+  using ::Kokkos::LaunchBounds;
+  using ::Kokkos::ParallelForTag;
+  using ::Kokkos::ParallelReduceTag;
+  using ::Kokkos::ParallelScanTag;
+  using ::Kokkos::Schedule;
+  using ::Kokkos::Static;
+  namespace Experimental {
+  using ::Kokkos::Experimental::DesiredOccupancy;
+  using ::Kokkos::Experimental::MaximizeOccupancy;
+  using ::Kokkos::Experimental::partition_space;
+  using ::Kokkos::Experimental::prefer;
+  using ::Kokkos::Experimental::require;
+  using ::Kokkos::Experimental::WorkItemProperty;
+  }  // namespace Experimental
+  namespace Impl {
+  using ::Kokkos::Impl::ParallelConstructName;
+  using ::Kokkos::Impl::PolicyTraits;
+  using ::Kokkos::Impl::WorkTagTrait;
+  }  // namespace Impl
+  using ::Kokkos::ChunkSize;
+  using ::Kokkos::MDRangePolicy;
+  using ::Kokkos::parallel_for;
+  using ::Kokkos::parallel_reduce;
+  using ::Kokkos::parallel_scan;
+  using ::Kokkos::PerTeam;
+  using ::Kokkos::PerThread;
+  using ::Kokkos::RangePolicy;
+  using ::Kokkos::single;
+  using ::Kokkos::TeamPolicy;
+  using ::Kokkos::TeamThreadMDRange;
+  using ::Kokkos::TeamThreadRange;
+  using ::Kokkos::TeamVectorMDRange;
+  using ::Kokkos::TeamVectorRange;
+  using ::Kokkos::ThreadVectorMDRange;
+  using ::Kokkos::ThreadVectorRange;
+  using ::Kokkos::WorkGraphPolicy;
+
+  // miscellaneous
+  using ::Kokkos::detected_t;
+  using ::Kokkos::is_detected;
+  using ::Kokkos::is_detected_exact_v;
+  using ::Kokkos::is_detected_v;
+  using ::Kokkos::num_devices;
+  using ::Kokkos::print_configuration;
+  using ::Kokkos::Timer;
+  namespace Experimental {
+  using ::Kokkos::Experimental::python_view_type;
+  }
+  namespace Impl {
+  using ::Kokkos::Impl::python_view_type_impl_t;
+  using ::Kokkos::Impl::throw_runtime_exception;
+  }  // namespace Impl
+
+  // initialization/finalization
+  namespace Impl {  // FIXME
+  using ::Kokkos::Impl::post_finalize;
+  using ::Kokkos::Impl::post_initialize;
+  using ::Kokkos::Impl::pre_finalize;
+  using ::Kokkos::Impl::pre_initialize;
+  }  // namespace Impl
+  using ::Kokkos::finalize;
+  using ::Kokkos::InitializationSettings;
+  using ::Kokkos::initialize;
+  using ::Kokkos::is_finalized;
+  using ::Kokkos::is_initialized;
+  using ::Kokkos::push_finalize_hook;
+  using ::Kokkos::ScopeGuard;
+  using ::Kokkos::show_warnings;
+
+  // std replacements (other than math)
+  using ::Kokkos::abort;
+  using ::Kokkos::Array;
+  using ::Kokkos::clamp;
+  using ::Kokkos::complex;
+  using ::Kokkos::conj;
+  using ::Kokkos::get;
+  using ::Kokkos::imag;
+  using ::Kokkos::kokkos_swap;
+  using ::Kokkos::make_pair;
+  using ::Kokkos::max;
+  using ::Kokkos::min;
+  using ::Kokkos::minmax;
+  using ::Kokkos::pair;
+  using ::Kokkos::printf;
+  using ::Kokkos::real;
+  using ::Kokkos::tie;
+
+  // reducers
+  using ::Kokkos::BAnd;
+  using ::Kokkos::BOr;
+  using ::Kokkos::FirstLoc;
+  using ::Kokkos::FirstLocScalar;
+  using ::Kokkos::LAnd;
+  using ::Kokkos::LastLoc;
+  using ::Kokkos::LastLocScalar;
+  using ::Kokkos::LOr;
+  using ::Kokkos::Max;
+  using ::Kokkos::MaxFirstLoc;
+  using ::Kokkos::MaxFirstLocCustomComparator;
+  using ::Kokkos::MaxLoc;
+  using ::Kokkos::Min;
+  using ::Kokkos::MinFirstLoc;
+  using ::Kokkos::MinFirstLocCustomComparator;
+  using ::Kokkos::MinLoc;
+  using ::Kokkos::MinMax;
+  using ::Kokkos::MinMaxFirstLastLoc;
+  using ::Kokkos::MinMaxFirstLastLocCustomComparator;
+  using ::Kokkos::MinMaxLoc;
+  using ::Kokkos::MinMaxLocScalar;
+  using ::Kokkos::MinMaxScalar;
+  using ::Kokkos::Prod;
+  using ::Kokkos::reduction_identity;
+  using ::Kokkos::StdIsPartitioned;    // FIXME Move to algorithms
+  using ::Kokkos::StdIsPartScalar;     // FIXME Move to algorithms
+  using ::Kokkos::StdPartitionPoint;   // FIXME Move to algorithms
+  using ::Kokkos::StdPartPointScalar;  // FIXME Move to algorithms
+  using ::Kokkos::Sum;
+  using ::Kokkos::ValLocScalar;
+
+  // half types
+  using ::Kokkos::test_fallback_bhalf;  // FIXME
+  using ::Kokkos::test_fallback_half;   // FIXME
+  namespace Experimental {
+  using ::Kokkos::Experimental::bhalf_t;
+  using ::Kokkos::Experimental::cast_from_bhalf;
+  using ::Kokkos::Experimental::cast_from_half;
+  using ::Kokkos::Experimental::cast_to_bhalf;
+  using ::Kokkos::Experimental::cast_to_half;
+  using ::Kokkos::Experimental::half_t;
+  }  // namespace Experimental
+
+  // bit
+  namespace Experimental {
+  using ::Kokkos::Experimental::bit_cast_builtin;
+  using ::Kokkos::Experimental::bit_ceil_builtin;
+  using ::Kokkos::Experimental::bit_floor_builtin;
+  using ::Kokkos::Experimental::bit_width_builtin;
+  using ::Kokkos::Experimental::byteswap_builtin;
+  using ::Kokkos::Experimental::countl_one_builtin;
+  using ::Kokkos::Experimental::countl_zero_builtin;
+  using ::Kokkos::Experimental::countr_one_builtin;
+  using ::Kokkos::Experimental::countr_zero_builtin;
+  using ::Kokkos::Experimental::has_single_bit_builtin;
+  using ::Kokkos::Experimental::popcount_builtin;
+  using ::Kokkos::Experimental::rotl_builtin;
+  using ::Kokkos::Experimental::rotr_builtin;
+  }  // namespace Experimental
+  using ::Kokkos::bit_cast;
+  using ::Kokkos::bit_ceil;
+  using ::Kokkos::bit_floor;
+  using ::Kokkos::bit_width;
+  using ::Kokkos::countl_one;
+  using ::Kokkos::countl_zero;
+  using ::Kokkos::countr_one;
+  using ::Kokkos::countr_zero;
+  using ::Kokkos::has_single_bit;
+  using ::Kokkos::popcount;
+  using ::Kokkos::rotl;
+  using ::Kokkos::rotr;
+
+  // numeric limits
+  namespace Experimental {
+  using ::Kokkos::Experimental::denorm_min;
+  using ::Kokkos::Experimental::denorm_min_v;
+  using ::Kokkos::Experimental::digits;
+  using ::Kokkos::Experimental::digits10;
+  using ::Kokkos::Experimental::digits10_v;
+  using ::Kokkos::Experimental::digits_v;
+  using ::Kokkos::Experimental::epsilon;
+  using ::Kokkos::Experimental::epsilon_v;
+  using ::Kokkos::Experimental::finite_max;
+  using ::Kokkos::Experimental::finite_max_v;
+  using ::Kokkos::Experimental::finite_min;
+  using ::Kokkos::Experimental::finite_min_v;
+  using ::Kokkos::Experimental::infinity;
+  using ::Kokkos::Experimental::infinity_v;
+  using ::Kokkos::Experimental::max_digits10;
+  using ::Kokkos::Experimental::max_digits10_v;
+  using ::Kokkos::Experimental::max_exponent;
+  using ::Kokkos::Experimental::max_exponent10;
+  using ::Kokkos::Experimental::max_exponent10_v;
+  using ::Kokkos::Experimental::max_exponent_v;
+  using ::Kokkos::Experimental::min_exponent;
+  using ::Kokkos::Experimental::min_exponent10;
+  using ::Kokkos::Experimental::min_exponent10_v;
+  using ::Kokkos::Experimental::min_exponent_v;
+  using ::Kokkos::Experimental::norm_min;
+  using ::Kokkos::Experimental::norm_min_v;
+  using ::Kokkos::Experimental::quiet_NaN;
+  using ::Kokkos::Experimental::quiet_NaN_v;
+  using ::Kokkos::Experimental::radix;
+  using ::Kokkos::Experimental::radix_v;
+  using ::Kokkos::Experimental::round_error;
+  using ::Kokkos::Experimental::round_error_v;
+  using ::Kokkos::Experimental::signaling_NaN;
+  using ::Kokkos::Experimental::signaling_NaN_v;
+  }  // namespace Experimental
+
+  // atomics
+  using ::Kokkos::atomic_add;
+  using ::Kokkos::atomic_add_fetch;
+  using ::Kokkos::atomic_and;
+  using ::Kokkos::atomic_and_fetch;
+  using ::Kokkos::atomic_compare_exchange;
+  using ::Kokkos::atomic_dec;
+  using ::Kokkos::atomic_dec_fetch;
+  using ::Kokkos::atomic_div;
+  using ::Kokkos::atomic_div_fetch;
+  using ::Kokkos::atomic_exchange;
+  using ::Kokkos::atomic_fetch_add;
+  using ::Kokkos::atomic_fetch_and;
+  using ::Kokkos::atomic_fetch_dec;
+  using ::Kokkos::atomic_fetch_div;
+  using ::Kokkos::atomic_fetch_inc;
+  using ::Kokkos::atomic_fetch_lshift;
+  using ::Kokkos::atomic_fetch_max;
+  using ::Kokkos::atomic_fetch_min;
+  using ::Kokkos::atomic_fetch_mod;
+  using ::Kokkos::atomic_fetch_mul;
+  using ::Kokkos::atomic_fetch_nand;
+  using ::Kokkos::atomic_fetch_or;
+  using ::Kokkos::atomic_fetch_rshift;
+  using ::Kokkos::atomic_fetch_sub;
+  using ::Kokkos::atomic_fetch_xor;
+  using ::Kokkos::atomic_inc;
+  using ::Kokkos::atomic_inc_fetch;
+  using ::Kokkos::atomic_load;
+  using ::Kokkos::atomic_lshift;
+  using ::Kokkos::atomic_lshift_fetch;
+  using ::Kokkos::atomic_max;
+  using ::Kokkos::atomic_max_fetch;
+  using ::Kokkos::atomic_min;
+  using ::Kokkos::atomic_min_fetch;
+  using ::Kokkos::atomic_mod;
+  using ::Kokkos::atomic_mod_fetch;
+  using ::Kokkos::atomic_mul;
+  using ::Kokkos::atomic_mul_fetch;
+  using ::Kokkos::atomic_nand;
+  using ::Kokkos::atomic_nand_fetch;
+  using ::Kokkos::atomic_or;
+  using ::Kokkos::atomic_or_fetch;
+  using ::Kokkos::atomic_rshift;
+  using ::Kokkos::atomic_rshift_fetch;
+  using ::Kokkos::atomic_store;
+  using ::Kokkos::atomic_sub;
+  using ::Kokkos::atomic_sub_fetch;
+  using ::Kokkos::atomic_xor;
+  using ::Kokkos::atomic_xor_fetch;
+  using ::Kokkos::memory_fence;
+  using ::Kokkos::volatile_load;
+
+  // math functions
+  using ::Kokkos::abs;
+  using ::Kokkos::acos;
+  using ::Kokkos::acosh;
+  using ::Kokkos::asin;
+  using ::Kokkos::asinh;
+  using ::Kokkos::atan;
+  using ::Kokkos::atan2;
+  using ::Kokkos::atanh;
+  using ::Kokkos::cbrt;
+  using ::Kokkos::ceil;
+  using ::Kokkos::copysign;
+  using ::Kokkos::cos;
+  using ::Kokkos::cosh;
+  using ::Kokkos::erf;
+  using ::Kokkos::erfc;
+  using ::Kokkos::exp;
+  using ::Kokkos::exp2;
+  using ::Kokkos::expm1;
+  using ::Kokkos::fabs;
+  using ::Kokkos::floor;
+  using ::Kokkos::fma;
+  using ::Kokkos::fmax;
+  using ::Kokkos::fmin;
+  using ::Kokkos::fmod;
+  using ::Kokkos::hypot;
+  using ::Kokkos::isfinite;
+  using ::Kokkos::isinf;
+  using ::Kokkos::isnan;
+  using ::Kokkos::lgamma;
+  using ::Kokkos::log;
+  using ::Kokkos::log10;
+  using ::Kokkos::log1p;
+  using ::Kokkos::log2;
+  using ::Kokkos::logb;
+  using ::Kokkos::nearbyint;
+  using ::Kokkos::nextafter;
+  using ::Kokkos::pow;
+  using ::Kokkos::remainder;
+  using ::Kokkos::round;
+  using ::Kokkos::rsqrt;
+  using ::Kokkos::sin;
+  using ::Kokkos::sinh;
+  using ::Kokkos::sqrt;
+  using ::Kokkos::tan;
+  using ::Kokkos::tanh;
+  using ::Kokkos::tgamma;
+  using ::Kokkos::trunc;
+
+  // numbers
+  namespace numbers {
+  using ::Kokkos::numbers::e_v;
+  using ::Kokkos::numbers::egamma_v;
+  using ::Kokkos::numbers::inv_pi_v;
+  using ::Kokkos::numbers::inv_sqrt3_v;
+  using ::Kokkos::numbers::inv_sqrtpi_v;
+  using ::Kokkos::numbers::ln10_v;
+  using ::Kokkos::numbers::ln2_v;
+  using ::Kokkos::numbers::log10e;
+  using ::Kokkos::numbers::log10e_v;
+  using ::Kokkos::numbers::log2e_v;
+  using ::Kokkos::numbers::phi_v;
+  using ::Kokkos::numbers::pi;
+  using ::Kokkos::numbers::pi_v;
+  using ::Kokkos::numbers::sqrt2_v;
+  using ::Kokkos::numbers::sqrt3_v;
+  }  // namespace numbers
+
+  // profiling
+  namespace Profiling {
+  using ::Kokkos::Profiling::createProfileSection;
+  using ::Kokkos::Profiling::destroyProfileSection;
+  using ::Kokkos::Profiling::KokkosPDeviceInfo;
+  using ::Kokkos::Profiling::markEvent;
+  using ::Kokkos::Profiling::popRegion;
+  using ::Kokkos::Profiling::pushRegion;
+  using ::Kokkos::Profiling::SpaceHandle;
+  using ::Kokkos::Profiling::startSection;
+  using ::Kokkos::Profiling::stopSection;
+  namespace Experimental {
+  using ::Kokkos::Profiling::Experimental::set_begin_parallel_for_callback;
+  using ::Kokkos::Profiling::Experimental::set_begin_parallel_reduce_callback;
+  using ::Kokkos::Profiling::Experimental::set_begin_parallel_scan_callback;
+  using ::Kokkos::Profiling::Experimental::set_create_profile_section_callback;
+  using ::Kokkos::Profiling::Experimental::set_destroy_profile_section_callback;
+  using ::Kokkos::Profiling::Experimental::set_end_deep_copy_callback;
+  using ::Kokkos::Profiling::Experimental::set_end_parallel_for_callback;
+  using ::Kokkos::Profiling::Experimental::set_end_parallel_reduce_callback;
+  using ::Kokkos::Profiling::Experimental::set_end_parallel_scan_callback;
+  using ::Kokkos::Profiling::Experimental::set_finalize_callback;
+  using ::Kokkos::Profiling::Experimental::set_pop_region_callback;
+  using ::Kokkos::Profiling::Experimental::set_profile_event_callback;
+  using ::Kokkos::Profiling::Experimental::set_push_region_callback;
+  using ::Kokkos::Profiling::Experimental::set_start_profile_section_callback;
+  using ::Kokkos::Profiling::Experimental::set_stop_profile_section_callback;
+  }  // namespace Experimental
+  }  // namespace Profiling
+
+  // tuning
+  using ::Kokkos::tune_internals;
+  // namespace Experimental {
+  // using ::Kokkos::Tools::Experimental::end_context;
+  // }
+
+  // tools
+  namespace Tools {
+  namespace Experimental {
+
+  using ::Kokkos::Tools::Experimental::begin_context;
+  using ::Kokkos::Tools::Experimental::CandidateValueType;
+  using ::Kokkos::Tools::Experimental::declare_input_type;
+  using ::Kokkos::Tools::Experimental::declare_output_type;
+  using ::Kokkos::Tools::Experimental::get_new_context_id;
+  using ::Kokkos::Tools::Experimental::make_candidate_set;
+  using ::Kokkos::Tools::Experimental::make_categorical_tuner;
+  using ::Kokkos::Tools::Experimental::make_variable_value;
+  using ::Kokkos::Tools::Experimental::request_output_values;
+  using ::Kokkos::Tools::Experimental::set_input_values;
+  using ::Kokkos::Tools::Experimental::SetOrRange;
+  using ::Kokkos::Tools::Experimental::StatisticalCategory;
+  using ::Kokkos::Tools::Experimental::ValueType;
+
+  using ::Kokkos::Tools::Experimental::end_context;
+  using ::Kokkos::Tools::Experimental::get_callbacks;
+  using ::Kokkos::Tools::Experimental::OptimizationGoal;
+  using ::Kokkos::Tools::Experimental::pause_tools;
+  using ::Kokkos::Tools::Experimental::set_allocate_data_callback;
+  using ::Kokkos::Tools::Experimental::set_begin_context_callback;
+  using ::Kokkos::Tools::Experimental::set_begin_deep_copy_callback;
+  using ::Kokkos::Tools::Experimental::set_begin_fence_callback;
+  using ::Kokkos::Tools::Experimental::set_begin_parallel_for_callback;
+  using ::Kokkos::Tools::Experimental::set_begin_parallel_reduce_callback;
+  using ::Kokkos::Tools::Experimental::set_begin_parallel_scan_callback;
+  using ::Kokkos::Tools::Experimental::set_create_profile_section_callback;
+  using ::Kokkos::Tools::Experimental::set_deallocate_data_callback;
+  using ::Kokkos::Tools::Experimental::set_declare_input_type_callback;
+  using ::Kokkos::Tools::Experimental::set_declare_metadata_callback;
+  using ::Kokkos::Tools::Experimental::set_declare_output_type_callback;
+  using ::Kokkos::Tools::Experimental::set_destroy_profile_section_callback;
+  using ::Kokkos::Tools::Experimental::set_dual_view_modify_callback;
+  using ::Kokkos::Tools::Experimental::set_dual_view_sync_callback;
+  using ::Kokkos::Tools::Experimental::set_end_context_callback;
+  using ::Kokkos::Tools::Experimental::set_end_deep_copy_callback;
+  using ::Kokkos::Tools::Experimental::set_end_fence_callback;
+  using ::Kokkos::Tools::Experimental::set_end_parallel_for_callback;
+  using ::Kokkos::Tools::Experimental::set_end_parallel_reduce_callback;
+  using ::Kokkos::Tools::Experimental::set_end_parallel_scan_callback;
+  using ::Kokkos::Tools::Experimental::set_finalize_callback;
+  using ::Kokkos::Tools::Experimental::set_init_callback;
+  using ::Kokkos::Tools::Experimental::set_pop_region_callback;
+  using ::Kokkos::Tools::Experimental::set_profile_event_callback;
+  using ::Kokkos::Tools::Experimental::
+      set_provide_tool_programming_interface_callback;
+  using ::Kokkos::Tools::Experimental::set_push_region_callback;
+  using ::Kokkos::Tools::Experimental::set_request_output_values_callback;
+  using ::Kokkos::Tools::Experimental::set_request_tool_settings_callback;
+  using ::Kokkos::Tools::Experimental::set_start_profile_section_callback;
+  using ::Kokkos::Tools::Experimental::set_stop_profile_section_callback;
+  using ::Kokkos::Tools::Experimental::ToolProgrammingInterface;
+  using ::Kokkos::Tools::Experimental::ToolSettings;
+  using ::Kokkos::Tools::Experimental::VariableInfo;
+  using ::Kokkos::Tools::Experimental::VariableValue;
+  }  // namespace Experimental
+  using ::Kokkos::Tools::declareMetadata;
+  using ::Kokkos::Tools::modifyDualView;
+  using ::Kokkos::Tools::SpaceHandle;
+  using ::Kokkos::Tools::syncDualView;
+  }  // namespace Tools
+
+  // Crs
+  using ::Kokkos::count_and_fill_crs;
+  using ::Kokkos::Crs;
+  using ::Kokkos::transpose_crs;
+
+  // mdspan
+  using ::Kokkos::default_accessor;
+  using ::Kokkos::dextents;
+  using ::Kokkos::dynamic_extent;
+  using ::Kokkos::extents;
+  using ::Kokkos::layout_left;
+  using ::Kokkos::layout_right;
+  using ::Kokkos::mdspan;
+  namespace Experimental {
+  using ::Kokkos::Experimental::Extents;
+  using ::Kokkos::Experimental::layout_left_padded;
+  using ::Kokkos::Experimental::layout_right_padded;
+  }  // namespace Experimental
+
+  // UniqueToken
+  namespace Experimental {
+  using ::Kokkos::Experimental::AcquireTeamUniqueToken;
+  using ::Kokkos::Experimental::AcquireUniqueToken;
+  using ::Kokkos::Experimental::UniqueToken;
+  using ::Kokkos::Experimental::UniqueTokenScope;
+  }  // namespace Experimental
+
+  // operators
+  using ::Kokkos::operator+;
+  using ::Kokkos::operator-;
+  using ::Kokkos::operator*;
+  using ::Kokkos::operator/;
+  using ::Kokkos::operator<<;
+  using ::Kokkos::operator>>;
+  using ::Kokkos::operator==;
+  using ::Kokkos::operator!=;
+  }  // namespace Kokkos
+}
