@@ -55,6 +55,9 @@ export {
   using ::Kokkos::tanh;
   using ::Kokkos::tgamma;
   using ::Kokkos::trunc;
+
+  using ::Kokkos::max;
+  using ::Kokkos::min;
   }  // namespace Kokkos
 
   namespace Kokkos::Experimental {
@@ -73,6 +76,17 @@ export {
   using ::Kokkos::Experimental::simd_flag_default;
   using ::Kokkos::Experimental::simd_mask;
   using ::Kokkos::Experimental::where;
+
+  using ::Kokkos::Experimental::operator+=;
+  using ::Kokkos::Experimental::operator*=;
+  using ::Kokkos::Experimental::operator-=;
+  using ::Kokkos::Experimental::operator/=;
+  using ::Kokkos::Experimental::operator+;
+  using ::Kokkos::Experimental::operator*;
+  using ::Kokkos::Experimental::operator-;
+  using ::Kokkos::Experimental::operator/;
+  using ::Kokkos::Experimental::operator>>=;
+  using ::Kokkos::Experimental::operator<<=;
 
   namespace simd_abi {
 #if defined(KOKKOS_ARCH_AVX2)
