@@ -260,6 +260,7 @@ export {
   using ::Kokkos::push_finalize_hook;
   using ::Kokkos::ScopeGuard;
   using ::Kokkos::show_warnings;
+  using ::Kokkos::tune_internals;
 
   // std replacements (other than math)
   using ::Kokkos::abort;
@@ -540,12 +541,6 @@ export {
   using ::Kokkos::Profiling::Experimental::set_stop_profile_section_callback;
   }  // namespace Experimental
   }  // namespace Profiling
-
-  // tuning
-  using ::Kokkos::tune_internals;
-  // namespace Experimental {
-  // using ::Kokkos::Tools::Experimental::end_context;
-  // }
 
   // tools
   namespace Tools {
