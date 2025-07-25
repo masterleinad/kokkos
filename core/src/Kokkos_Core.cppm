@@ -98,59 +98,31 @@ export {
 #endif
 
   // View-related
-  namespace Impl {
-  using ::Kokkos::Impl::append_formatted_multidimensional_index;
-  using ::Kokkos::Impl::is_view_label;
-  using ::Kokkos::Impl::LabelTag;
-  using ::Kokkos::Impl::SubviewExtents;
-  }  // namespace Impl
+  using ::Kokkos::ALL;
   using ::Kokkos::ALL_t;
   using ::Kokkos::AllowPadding;
-  using ::Kokkos::InvalidType;
-  using ::Kokkos::rank;
-  using ::Kokkos::Experimental::Extents;
-  namespace Impl {
-  namespace BV {
-  using ::Kokkos::Impl::BV::BasicView;
-  }
-  using ::Kokkos::Impl::ApplyToViewOfStaticRank;
-  using ::Kokkos::Impl::are_integral;
-  using ::Kokkos::Impl::as_view_of_rank_n;
-  using ::Kokkos::Impl::CheckedReferenceCountedAccessor;
-  using ::Kokkos::Impl::CheckedReferenceCountedRelaxedAtomicAccessor;
-  using ::Kokkos::Impl::CheckedRelaxedAtomicAccessor;
-  using ::Kokkos::Impl::choose_create_mirror;
-  using ::Kokkos::Impl::DataTypeFromExtents;
-  using ::Kokkos::Impl::ExtentsFromDataType;
-  using ::Kokkos::Impl::has_type;
-  using ::Kokkos::Impl::is_view_ctor_property;
-  using ::Kokkos::Impl::ParseViewExtents;
-  using ::Kokkos::Impl::rank_dynamic;
-  using ::Kokkos::Impl::RankDataType;
-  using ::Kokkos::Impl::ReferenceCountedAccessor;
-  using ::Kokkos::Impl::ReferenceCountedDataHandle;
-  using ::Kokkos::Impl::size_mismatch;
-  using ::Kokkos::Impl::SubviewLegalArgsCompileTime;
-  using ::Kokkos::Impl::ViewArrayAnalysis;
-  using ::Kokkos::Impl::ViewCopy;
-  using ::Kokkos::Impl::ViewDataAnalysis;
-  using ::Kokkos::Impl::ViewDataHandle;
-  using ::Kokkos::Impl::ViewDimension;
-  using ::Kokkos::Impl::ViewMapping;
-  using ::Kokkos::Impl::ViewOffset;
-  using ::Kokkos::Impl::ViewRemap;
-  using ::Kokkos::Impl::with_properties_if_unset;
-  }  // namespace Impl
   using ::Kokkos::create_mirror;
   using ::Kokkos::create_mirror_view;
   using ::Kokkos::create_mirror_view_and_copy;
   using ::Kokkos::deep_copy;
+  using ::Kokkos::InvalidType;
+  using ::Kokkos::is_always_assignable;
+  using ::Kokkos::is_always_assignable_v;
+  using ::Kokkos::is_assignable;
+  using ::Kokkos::is_view;
+  using ::Kokkos::is_view_v;
   using ::Kokkos::LayoutLeft;
   using ::Kokkos::LayoutRight;
   using ::Kokkos::LayoutStride;
+  using ::Kokkos::MemoryRandomAccess;
+  using ::Kokkos::MemoryTraits;
+  using ::Kokkos::MemoryTraitsFlags;
+  using ::Kokkos::MemoryUnmanaged;
+  using ::Kokkos::rank;
   using ::Kokkos::Rank;
   using ::Kokkos::realloc;
   using ::Kokkos::resize;
+  using ::Kokkos::SequentialHostInit;
   using ::Kokkos::subview;
   using ::Kokkos::Subview;
   using ::Kokkos::Unmanaged;
@@ -162,47 +134,87 @@ export {
   namespace Experimental {
   using ::Kokkos::Experimental::local_deep_copy;
   }
-  using ::Kokkos::ALL;
-  using ::Kokkos::is_always_assignable;
-  using ::Kokkos::is_always_assignable_v;
-  using ::Kokkos::is_assignable;
-  using ::Kokkos::is_view;
-  using ::Kokkos::is_view_v;
-  using ::Kokkos::MemoryRandomAccess;
-  using ::Kokkos::MemoryTraits;
-  using ::Kokkos::MemoryTraitsFlags;
-  using ::Kokkos::MemoryUnmanaged;
-  using ::Kokkos::SequentialHostInit;
-  namespace Impl {  // FIXME
+  namespace Impl {
+  namespace BV {
+  using ::Kokkos::Impl::BV::BasicView;
+  }
+  using ::Kokkos::Impl::append_formatted_multidimensional_index;
+  using ::Kokkos::Impl::ApplyToViewOfStaticRank;
+  using ::Kokkos::Impl::are_integral;
+  using ::Kokkos::Impl::as_view_of_rank_n;
   using ::Kokkos::Impl::AtomicAccessorRelaxed;
   using ::Kokkos::Impl::check_view_ctor_args_create_mirror;
   using ::Kokkos::Impl::check_view_ctor_args_create_mirror_view_and_copy;
+  using ::Kokkos::Impl::CheckedReferenceCountedAccessor;
+  using ::Kokkos::Impl::CheckedReferenceCountedRelaxedAtomicAccessor;
+  using ::Kokkos::Impl::CheckedRelaxedAtomicAccessor;
+  using ::Kokkos::Impl::choose_create_mirror;
   using ::Kokkos::Impl::CommonSubview;
+  using ::Kokkos::Impl::DataTypeFromExtents;
   using ::Kokkos::Impl::DeepCopy;
+  using ::Kokkos::Impl::ExtentsFromDataType;
   using ::Kokkos::Impl::get_property;
+  using ::Kokkos::Impl::has_type;
   using ::Kokkos::Impl::HostMirror;
+  using ::Kokkos::Impl::is_view_ctor_property;
+  using ::Kokkos::Impl::is_view_label;
+  using ::Kokkos::Impl::LabelTag;
   using ::Kokkos::Impl::MDSpanViewTraits;
+  using ::Kokkos::Impl::ParseViewExtents;
+  using ::Kokkos::Impl::rank_dynamic;
+  using ::Kokkos::Impl::RankDataType;
+  using ::Kokkos::Impl::ReferenceCountedAccessor;
+  using ::Kokkos::Impl::ReferenceCountedDataHandle;
   using ::Kokkos::Impl::runtime_check_memory_access_violation;
   using ::Kokkos::Impl::SharedAllocationRecord;
   using ::Kokkos::Impl::SharedAllocationTracker;
+  using ::Kokkos::Impl::size_mismatch;
   using ::Kokkos::Impl::SpaceAwareAccessor;
+  using ::Kokkos::Impl::SubviewExtents;
+  using ::Kokkos::Impl::SubviewLegalArgsCompileTime;
+  using ::Kokkos::Impl::ViewArrayAnalysis;
+  using ::Kokkos::Impl::ViewCopy;
   using ::Kokkos::Impl::ViewCtorProp;
+  using ::Kokkos::Impl::ViewDataAnalysis;
+  using ::Kokkos::Impl::ViewDataHandle;
+  using ::Kokkos::Impl::ViewDimension;
+  using ::Kokkos::Impl::ViewMapping;
+  using ::Kokkos::Impl::ViewOffset;
+  using ::Kokkos::Impl::ViewRemap;
+  using ::Kokkos::Impl::with_properties_if_unset;
   using ::Kokkos::Impl::WithoutInitializing_t;
   }  // namespace Impl
 
   // execution policies
   using ::Kokkos::AUTO;
+  using ::Kokkos::ChunkSize;
   using ::Kokkos::Dynamic;
   using ::Kokkos::IndexType;
   using ::Kokkos::is_team_handle;
   using ::Kokkos::is_team_handle_v;
   using ::Kokkos::Iterate;
   using ::Kokkos::LaunchBounds;
+  using ::Kokkos::MDRangePolicy;
+  using ::Kokkos::parallel_for;
+  using ::Kokkos::parallel_reduce;
+  using ::Kokkos::parallel_scan;
   using ::Kokkos::ParallelForTag;
   using ::Kokkos::ParallelReduceTag;
   using ::Kokkos::ParallelScanTag;
+  using ::Kokkos::PerTeam;
+  using ::Kokkos::PerThread;
+  using ::Kokkos::RangePolicy;
   using ::Kokkos::Schedule;
+  using ::Kokkos::single;
   using ::Kokkos::Static;
+  using ::Kokkos::TeamPolicy;
+  using ::Kokkos::TeamThreadMDRange;
+  using ::Kokkos::TeamThreadRange;
+  using ::Kokkos::TeamVectorMDRange;
+  using ::Kokkos::TeamVectorRange;
+  using ::Kokkos::ThreadVectorMDRange;
+  using ::Kokkos::ThreadVectorRange;
+  using ::Kokkos::WorkGraphPolicy;
   namespace Experimental {
   using ::Kokkos::Experimental::DesiredOccupancy;
   using ::Kokkos::Experimental::MaximizeOccupancy;
@@ -216,23 +228,6 @@ export {
   using ::Kokkos::Impl::PolicyTraits;
   using ::Kokkos::Impl::WorkTagTrait;
   }  // namespace Impl
-  using ::Kokkos::ChunkSize;
-  using ::Kokkos::MDRangePolicy;
-  using ::Kokkos::parallel_for;
-  using ::Kokkos::parallel_reduce;
-  using ::Kokkos::parallel_scan;
-  using ::Kokkos::PerTeam;
-  using ::Kokkos::PerThread;
-  using ::Kokkos::RangePolicy;
-  using ::Kokkos::single;
-  using ::Kokkos::TeamPolicy;
-  using ::Kokkos::TeamThreadMDRange;
-  using ::Kokkos::TeamThreadRange;
-  using ::Kokkos::TeamVectorMDRange;
-  using ::Kokkos::TeamVectorRange;
-  using ::Kokkos::ThreadVectorMDRange;
-  using ::Kokkos::ThreadVectorRange;
-  using ::Kokkos::WorkGraphPolicy;
 
   // miscellaneous
   using ::Kokkos::detected_t;
