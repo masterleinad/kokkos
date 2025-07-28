@@ -23,6 +23,7 @@ if(NOT GTest_FOUND) # fallback to internal gtest
   if(TARGET Threads::Threads)
     set_target_properties(kokkos_gtest PROPERTIES INTERFACE_LINK_LIBRARIES Threads::Threads)
   endif()
+  target_compile_definitions(kokkos_gtest INTERFACE GTEST_LINKED_AS_SHARED_LIBRARY=1)
 endif()
 
 #
