@@ -17,7 +17,12 @@
 #ifndef KOKKOS_TEST_SIMD_SHIFT_OPS_HPP
 #define KOKKOS_TEST_SIMD_SHIFT_OPS_HPP
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.simd;
+#else
 #include <Kokkos_SIMD.hpp>
+#endif
 #include <SIMDTesting_Utilities.hpp>
 
 template <typename Abi, typename Loader, typename ShiftOp, typename DataType>
@@ -108,7 +113,7 @@ inline void host_check_shift_op_all_loaders(ShiftOp shift_op,
 
 template <typename Abi, typename DataType>
 inline void host_check_shift_ops() {
-  if constexpr (is_type_v<Kokkos::Experimental::basic_simd<DataType, Abi>>) {
+  if constexpr (is_simd_avail_v<DataType, Abi>) {
     if constexpr (std::is_integral_v<DataType>) {
       using simd_type = Kokkos::Experimental::basic_simd<DataType, Abi>;
       constexpr std::size_t width     = simd_type::size();

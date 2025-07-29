@@ -18,7 +18,12 @@
 #define KOKKOS_SIMD_TESTING_UTILITIES_HPP
 
 #include <gtest/gtest.h>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.simd;
+#else
 #include <Kokkos_SIMD.hpp>
+#endif
 #include <SIMDTesting_Ops.hpp>
 
 class gtest_checker {
@@ -188,5 +193,12 @@ constexpr bool is_type_v = false;
 
 template <typename T>
 constexpr bool is_type_v<T, decltype(void(sizeof(T)))> = true;
+
+// We consider a fully-implemented 'simd' type is always accompanied by the
+// same-capability 'simd_mask' type
+template <typename DataType, typename Abi>
+constexpr bool is_simd_avail_v =
+    is_type_v<Kokkos::Experimental::basic_simd<DataType, Abi>> &&
+    is_type_v<Kokkos::Experimental::basic_simd_mask<DataType, Abi>>;
 
 #endif

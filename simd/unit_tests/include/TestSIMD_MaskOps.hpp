@@ -17,12 +17,17 @@
 #ifndef KOKKOS_TEST_SIMD_MASK_OPS_HPP
 #define KOKKOS_TEST_SIMD_MASK_OPS_HPP
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.simd;
+#else
 #include <Kokkos_SIMD.hpp>
+#endif
 #include <SIMDTesting_Utilities.hpp>
 
 template <typename Abi, typename DataType>
 inline void host_check_mask_ops() {
-  if constexpr (is_type_v<Kokkos::Experimental::basic_simd<DataType, Abi>>) {
+  if constexpr (is_simd_avail_v<DataType, Abi>) {
     using mask_type = Kokkos::Experimental::basic_simd_mask<DataType, Abi>;
 
     EXPECT_FALSE(none_of(mask_type(true)));

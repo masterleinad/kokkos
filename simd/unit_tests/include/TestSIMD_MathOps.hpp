@@ -17,7 +17,12 @@
 #ifndef KOKKOS_TEST_SIMD_MATH_OPS_HPP
 #define KOKKOS_TEST_SIMD_MATH_OPS_HPP
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.simd;
+#else
 #include <Kokkos_SIMD.hpp>
+#endif
 #include <SIMDTesting_Utilities.hpp>
 
 template <class Abi, class Loader, class TernaryOp, class T>
@@ -230,7 +235,7 @@ inline void host_check_abi_size() {
 
 template <typename Abi, typename DataType>
 inline void host_check_math_ops() {
-  if constexpr (is_type_v<Kokkos::Experimental::basic_simd<DataType, Abi>>) {
+  if constexpr (is_simd_avail_v<DataType, Abi>) {
     constexpr size_t alignment =
         Kokkos::Experimental::basic_simd<DataType, Abi>::size() *
         sizeof(DataType);
