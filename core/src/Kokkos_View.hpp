@@ -569,10 +569,119 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   // Compatible subview constructor
   // may assign unmanaged from managed.
 
+ private:
+  template <class RT, class... RP, class Arg0, class... Args>
+  KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
+      const View<RT, RP...>& src_view, const Arg0 arg0, Args... args) {
+    constexpr int rank = View<RT, RP...>::rank;
+    if (arg0 >= src_view.extent(rank - 1 - sizeof...(Args))) return false;
+    if constexpr (sizeof...(Args) == 0)
+      return true;
+    else
+      return subview_extents_valid(src_view, args...);
+  }
+
+  template <class RT, class... RP, class T, class... Args>
+  KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
+      const View<RT, RP...>& src_view, const std::pair<T, T> arg,
+      Args... args) {
+    constexpr int rank = View<RT, RP...>::rank;
+    if (arg.second > src_view.extent(rank - 1 - sizeof...(Args)) ||
+        arg.first < 0)
+      return false;
+    if constexpr (sizeof...(Args) == 0)
+      return true;
+    else
+      return subview_extents_valid(src_view, args...);
+  }
+
+  template <class RT, class... RP, class T, class... Args>
+  KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
+      const View<RT, RP...>& src_view, const Kokkos::pair<T, T> arg,
+      Args... args) {
+    constexpr int rank = View<RT, RP...>::rank;
+    if (arg.second > src_view.extent(rank - 1 - sizeof...(Args)) ||
+        arg.first < 0)
+      return false;
+    if constexpr (sizeof...(Args) == 0)
+      return true;
+    else
+      return subview_extents_valid(src_view, args...);
+  }
+
+  template <class RT, class... RP, class... Args>
+  KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
+      const View<RT, RP...>& src_view, const ALL_t, Args... args) {
+    if constexpr (sizeof...(Args) == 0)
+      return true;
+    else
+      return subview_extents_valid(src_view, args...);
+  }
+
+  template <class RT, class... RP, class Arg0, class... Args>
+  static void generate_error_message(std::stringstream& ss,
+                                     const View<RT, RP...>& src_view,
+                                     const Arg0 arg0, Args... args) {
+    constexpr int rank = View<RT, RP...>::rank;
+    ss << arg0 << " < " << src_view.extent(rank - 1 - sizeof...(Args));
+    if constexpr (sizeof...(Args) > 0) {
+      ss << ", ";
+      generate_error_message(ss, src_view, args...);
+    }
+  }
+
+  template <class RT, class... RP, class T, class... Args>
+  static void generate_error_message(std::stringstream& ss,
+                                     const View<RT, RP...>& src_view,
+                                     const std::pair<T, T> arg, Args... args) {
+    constexpr int rank = View<RT, RP...>::rank;
+    ss << arg.first << " <= " << src_view.extent(rank - 1 - sizeof...(Args))
+       << " <= " << arg.second;
+    if constexpr (sizeof...(Args) > 0)
+      generate_error_message(ss, src_view, args...);
+  }
+
+  template <class RT, class... RP, class T, class... Args>
+  static void generate_error_message(std::stringstream& ss,
+                                     const View<RT, RP...>& src_view,
+                                     const Kokkos::pair<T, T> arg,
+                                     Args... args) {
+    constexpr int rank = View<RT, RP...>::rank;
+    ss << arg.first << " <= " << src_view.extent(rank - 1 - sizeof...(Args))
+       << " <= " << arg.second;
+    if constexpr (sizeof...(Args) > 0) {
+      ss << ", ";
+      generate_error_message(ss, src_view, args...);
+    }
+  }
+
+  template <class RT, class... RP, class... Args>
+  static void generate_error_message(std::stringstream& ss,
+                                     const View<RT, RP...>& src_view,
+                                     const ALL_t, Args... args) {
+    ss << "Kokkos::ALL";
+    if constexpr (sizeof...(Args) > 0) {
+      ss << ", ";
+      generate_error_message(ss, src_view, args...);
+    }
+  }
+
+ public:
   template <class RT, class... RP, class Arg0, class... Args>
   KOKKOS_INLINE_FUNCTION View(const View<RT, RP...>& src_view, const Arg0 arg0,
                               Args... args)
-      : base_t(Impl::subview_ctor_tag, src_view, arg0, args...) {}
+      : base_t(Impl::subview_ctor_tag, src_view, arg0, args...) {
+#ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
+    bool valid = subview_extents_valid(src_view, arg0, args...);
+    if (!valid) {
+      KOKKOS_IF_ON_HOST(std::stringstream ss;
+                        ss << "Kokkos::subview bounds error: (";
+                        generate_error_message(ss, src_view, arg0, args...);
+                        ss << ")"; Kokkos::abort(ss.str().c_str());)
+      KOKKOS_IF_ON_DEVICE(Kokkos::abort("Kokkos::subview bounds error");)
+    }
+#endif
+  }
 
   //----------------------------------------
   // Allocation according to allocation properties and array layout
