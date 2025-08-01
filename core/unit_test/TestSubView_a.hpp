@@ -84,14 +84,14 @@ TEST(TEST_CATEGORY_DEATH, view_subview_wrong_extents) {
 #endif
 #endif
 
-  TestViewSubview::test_subview_extents<1>();
-  TestViewSubview::test_subview_extents<2>();
-  TestViewSubview::test_subview_extents<3>();
-  TestViewSubview::test_subview_extents<4>();
-  TestViewSubview::test_subview_extents<5>();
-  TestViewSubview::test_subview_extents<6>();
-  TestViewSubview::test_subview_extents<7>();
-  TestViewSubview::test_subview_extents<8>();
+  TestViewSubview::test_subview_extents<1, TEST_EXECSPACE>();
+  TestViewSubview::test_subview_extents<2, TEST_EXECSPACE>();
+  TestViewSubview::test_subview_extents<3, TEST_EXECSPACE>();
+  TestViewSubview::test_subview_extents<4, TEST_EXECSPACE>();
+  TestViewSubview::test_subview_extents<5, TEST_EXECSPACE>();
+  TestViewSubview::test_subview_extents<6, TEST_EXECSPACE>();
+  TestViewSubview::test_subview_extents<7, TEST_EXECSPACE>();
+  TestViewSubview::test_subview_extents<8, TEST_EXECSPACE>();
 }
 
 }  // namespace Test
