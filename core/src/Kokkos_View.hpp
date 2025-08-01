@@ -570,11 +570,13 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   // may assign unmanaged from managed.
 
  private:
-  template <class RT, class... RP, class Arg0, class... Args>
+  template <class RT, class... RP, class Arg, class... Args>
   KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
-      const View<RT, RP...>& src_view, const Arg0 arg0, Args... args) {
-    constexpr int rank = View<RT, RP...>::rank;
-    if (arg0 >= src_view.extent(rank - 1 - sizeof...(Args))) return false;
+      const View<RT, RP...>& src_view, const Arg arg, Args... args) {
+    constexpr int src_rank = View<RT, RP...>::rank;
+    if (static_cast<std::size_t>(arg) >=
+        src_view.extent(src_rank - 1 - sizeof...(Args)))
+      return false;
     if constexpr (sizeof...(Args) == 0)
       return true;
     else
@@ -585,8 +587,9 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
       const View<RT, RP...>& src_view, const std::pair<T, T> arg,
       Args... args) {
-    constexpr int rank = View<RT, RP...>::rank;
-    if (arg.second > src_view.extent(rank - 1 - sizeof...(Args)) ||
+    constexpr int src_rank = View<RT, RP...>::rank;
+    if (static_cast<std::size_t>(arg.second) >
+            src_view.extent(src_rank - 1 - sizeof...(Args)) ||
         arg.first < 0)
       return false;
     if constexpr (sizeof...(Args) == 0)
@@ -599,8 +602,9 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
       const View<RT, RP...>& src_view, const Kokkos::pair<T, T> arg,
       Args... args) {
-    constexpr int rank = View<RT, RP...>::rank;
-    if (arg.second > src_view.extent(rank - 1 - sizeof...(Args)) ||
+    constexpr int src_rank = View<RT, RP...>::rank;
+    if (static_cast<std::size_t>(arg.second) >
+            src_view.extent(src_rank - 1 - sizeof...(Args)) ||
         arg.first < 0)
       return false;
     if constexpr (sizeof...(Args) == 0)
@@ -618,12 +622,12 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
       return subview_extents_valid(src_view, args...);
   }
 
-  template <class RT, class... RP, class Arg0, class... Args>
+  template <class RT, class... RP, class Arg, class... Args>
   static void generate_error_message(std::stringstream& ss,
                                      const View<RT, RP...>& src_view,
-                                     const Arg0 arg0, Args... args) {
-    constexpr int rank = View<RT, RP...>::rank;
-    ss << arg0 << " < " << src_view.extent(rank - 1 - sizeof...(Args));
+                                     const Arg arg, Args... args) {
+    constexpr int src_rank = View<RT, RP...>::rank;
+    ss << arg << " < " << src_view.extent(src_rank - 1 - sizeof...(Args));
     if constexpr (sizeof...(Args) > 0) {
       ss << ", ";
       generate_error_message(ss, src_view, args...);
@@ -634,8 +638,8 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   static void generate_error_message(std::stringstream& ss,
                                      const View<RT, RP...>& src_view,
                                      const std::pair<T, T> arg, Args... args) {
-    constexpr int rank = View<RT, RP...>::rank;
-    ss << arg.first << " <= " << src_view.extent(rank - 1 - sizeof...(Args))
+    constexpr int src_rank = View<RT, RP...>::rank;
+    ss << arg.first << " <= " << src_view.extent(src_rank - 1 - sizeof...(Args))
        << " <= " << arg.second;
     if constexpr (sizeof...(Args) > 0)
       generate_error_message(ss, src_view, args...);
@@ -646,8 +650,8 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
                                      const View<RT, RP...>& src_view,
                                      const Kokkos::pair<T, T> arg,
                                      Args... args) {
-    constexpr int rank = View<RT, RP...>::rank;
-    ss << arg.first << " <= " << src_view.extent(rank - 1 - sizeof...(Args))
+    constexpr int src_rank = View<RT, RP...>::rank;
+    ss << arg.first << " <= " << src_view.extent(src_rank - 1 - sizeof...(Args))
        << " <= " << arg.second;
     if constexpr (sizeof...(Args) > 0) {
       ss << ", ";
