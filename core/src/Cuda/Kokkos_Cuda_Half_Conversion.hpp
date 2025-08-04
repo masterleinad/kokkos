@@ -484,10 +484,10 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
     return 1.0F;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
-    return -Kokkos::Experimental::infinity_v<float>;
+    return -0x7f7f;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
-    return Kokkos::Experimental::infinity_v<float>;
+    return 0x7f7f;
   }
 };
 #endif  // CUDA_VERSION >= 11000
@@ -503,10 +503,10 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
     return 1.0F;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
-    return -Kokkos::Experimental::infinity_v<float>;
+    return -65504.0F;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
-    return Kokkos::Experimental::infinity_v<float>;
+    return 65504.0F;
   }
 };
 
