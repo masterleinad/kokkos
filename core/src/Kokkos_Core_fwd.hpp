@@ -27,6 +27,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Printf.hpp>
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Utilities.hpp>
 
@@ -257,7 +258,7 @@ KOKKOS_FUNCTION void runtime_check_memory_access_violation(
 //----------------------------------------------------------------------------
 
 namespace Kokkos {
-void fence(const std::string &name = "Kokkos::fence: Unnamed Global Fence");
+KOKKOSCORE_EXPORT void fence(const std::string &name = "Kokkos::fence: Unnamed Global Fence");
 }  // namespace Kokkos
 
 //----------------------------------------------------------------------------

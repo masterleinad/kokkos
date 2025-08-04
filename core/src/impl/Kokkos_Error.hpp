@@ -21,13 +21,14 @@
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Abort.hpp>
 #include <Kokkos_Assert.hpp>
+#include "kokkoscore_export.h"
 
 namespace Kokkos::Impl {
 
-[[noreturn]] void throw_runtime_exception(const std::string &msg);
+[[noreturn]] KOKKOSCORE_EXPORT void throw_runtime_exception(const std::string &msg);
 [[noreturn]] void throw_bad_alloc(std::string_view memory_space_name,
                                   std::size_t size, std::string_view label);
-void log_warning(const std::string &msg);
+KOKKOSCORE_EXPORT void log_warning(const std::string &msg);
 
 std::string human_memory_size(size_t bytes);
 

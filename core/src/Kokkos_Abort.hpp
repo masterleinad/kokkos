@@ -19,6 +19,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Printf.hpp>
+#include "kokkoscore_export.h"
 #ifdef KOKKOS_ENABLE_CUDA
 #include <Cuda/Kokkos_Cuda_abort.hpp>
 #endif
@@ -32,7 +33,7 @@
 namespace Kokkos {
 namespace Impl {
 
-[[noreturn]] void host_abort(const char *const);
+[[noreturn]] KOKKOSCORE_EXPORT void host_abort(const char *const);
 
 #if defined(KOKKOS_ENABLE_CUDA) && defined(__CUDA_ARCH__)
 

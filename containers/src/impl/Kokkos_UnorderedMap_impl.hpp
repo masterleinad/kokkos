@@ -18,6 +18,7 @@
 #define KOKKOS_UNORDERED_MAP_IMPL_HPP
 
 #include <Kokkos_Core.hpp>
+#include "kokkoscontainers_export.h"
 #include <cstdint>
 
 #include <cstdio>
@@ -39,7 +40,7 @@ auto append_to_label(const ViewCtorProp<P...>& view_ctor_prop,
   return new_ctor_props;
 }
 
-uint32_t find_hash_size(uint32_t size);
+KOKKOSCONTAINERS_EXPORT uint32_t find_hash_size(uint32_t size);
 
 template <typename Map>
 struct UnorderedMapRehash {

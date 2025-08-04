@@ -23,6 +23,7 @@
 #include <Cuda/Kokkos_Cuda_Error.hpp>
 #include <cuda_runtime_api.h>
 #include "Kokkos_CudaSpace.hpp"
+#include "kokkoscore_export.h"
 
 #include <set>
 #include <map>
@@ -63,11 +64,11 @@ struct CudaTraits {
 
 //----------------------------------------------------------------------------
 
-CudaSpace::size_type* cuda_internal_scratch_flags(const Cuda&,
+KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_flags(const Cuda&,
                                                   const std::size_t size);
-CudaSpace::size_type* cuda_internal_scratch_space(const Cuda&,
+KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_space(const Cuda&,
                                                   const std::size_t size);
-CudaSpace::size_type* cuda_internal_scratch_unified(const Cuda&,
+KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_unified(const Cuda&,
                                                     const std::size_t size);
 
 }  // namespace Impl
@@ -94,7 +95,7 @@ class CudaInternal {
   static int m_cudaArch;
   static int concurrency();
 
-  static cudaDeviceProp m_deviceProp;
+  KOKKOSCORE_EXPORT static cudaDeviceProp m_deviceProp;
 
   // Scratch Spaces for Reductions
   mutable std::size_t m_scratchSpaceCount;
@@ -121,13 +122,13 @@ class CudaInternal {
   bool was_finalized   = false;
 
   static std::set<int> cuda_devices;
-  static std::map<int, unsigned long*> constantMemHostStagingPerDevice;
-  static std::map<int, cudaEvent_t> constantMemReusablePerDevice;
-  static std::map<int, std::mutex> constantMemMutexPerDevice;
+  KOKKOSCORE_EXPORT static std::map<int, unsigned long*> constantMemHostStagingPerDevice;
+  KOKKOSCORE_EXPORT static std::map<int, cudaEvent_t> constantMemReusablePerDevice;
+  KOKKOSCORE_EXPORT static std::map<int, std::mutex> constantMemMutexPerDevice;
 
   static CudaInternal& singleton();
 
-  int verify_is_initialized(const char* const label) const;
+  KOKKOSCORE_EXPORT int verify_is_initialized(const char* const label) const;
 
   int is_initialized() const {
     return nullptr != m_scratchSpace && nullptr != m_scratchFlags;
@@ -357,11 +358,11 @@ class CudaInternal {
   size_type* scratch_unified(const std::size_t size) const;
   size_type* scratch_functor(const std::size_t size) const;
   uint32_t impl_get_instance_id() const;
-  int acquire_team_scratch_space();
+  KOKKOSCORE_EXPORT int acquire_team_scratch_space();
   // Resizing of team level 1 scratch
-  void* resize_team_scratch_space(int scratch_pool_id, std::int64_t bytes,
+  KOKKOSCORE_EXPORT void* resize_team_scratch_space(int scratch_pool_id, std::int64_t bytes,
                                   bool force_shrink = false);
-  void release_team_scratch_space(int scratch_pool_id);
+  KOKKOSCORE_EXPORT void release_team_scratch_space(int scratch_pool_id);
 };
 }  // Namespace Impl
 

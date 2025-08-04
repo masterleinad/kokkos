@@ -18,6 +18,7 @@
 #define KOKKOS_CUDA_ERROR_HPP
 
 #include <Kokkos_Macros.hpp>
+#include "kokkoscore_export.h"
 #ifdef KOKKOS_ENABLE_CUDA
 
 #include <impl/Kokkos_Error.hpp>
@@ -30,14 +31,14 @@ void cuda_device_synchronize(const std::string& name);
 void cuda_stream_synchronize(const cudaStream_t stream,
                              const std::string& name);
 
-[[noreturn]] void cuda_internal_error_throw(cudaError e, const char* name,
+[[noreturn]] KOKKOSCORE_EXPORT void cuda_internal_error_throw(cudaError e, const char* name,
                                             const char* file = nullptr,
                                             const int line   = 0);
 
 #ifndef KOKKOS_COMPILER_NVHPC
 [[noreturn]]
 #endif
-             void cuda_internal_error_abort(cudaError e, const char* name,
+             KOKKOSCORE_EXPORT void cuda_internal_error_abort(cudaError e, const char* name,
                                             const char* file = nullptr,
                                             const int line   = 0);
 

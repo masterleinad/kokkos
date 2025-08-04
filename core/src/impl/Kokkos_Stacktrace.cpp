@@ -20,6 +20,7 @@
 
 #include "Kokkos_Macros.hpp"
 #include "Kokkos_Stacktrace.hpp"
+#include "kokkoscore_export.h"
 
 #ifdef KOKKOS_IMPL_ENABLE_STACKTRACE
 // backtrace() function for retrieving the stacktrace
@@ -112,7 +113,7 @@ class Stacktrace {
 int Stacktrace::length = 0;
 void* Stacktrace::buffer[Stacktrace::capacity];
 
-void save_stacktrace() {
+KOKKOSCORE_EXPORT void save_stacktrace() {
   Stacktrace::length = backtrace(Stacktrace::buffer, Stacktrace::capacity);
 }
 
@@ -208,14 +209,14 @@ void demangle_and_print_traceback(std::ostream& out,
   }
 }
 
-void print_saved_stacktrace(std::ostream& out) {
+KOKKOSCORE_EXPORT void print_saved_stacktrace(std::ostream& out) {
   auto lines = Stacktrace::lines();
   for (auto&& entry : lines) {
     out << entry << std::endl;
   }
 }
 
-void print_demangled_saved_stacktrace(std::ostream& out) {
+KOKKOSCORE_EXPORT void print_demangled_saved_stacktrace(std::ostream& out) {
   demangle_and_print_traceback(out, Stacktrace::lines());
 }
 
@@ -239,7 +240,7 @@ void kokkos_terminate_handler() {
   }
 }
 
-void set_kokkos_terminate_handler(std::function<void()> user_post) {
+KOKKOSCORE_EXPORT void set_kokkos_terminate_handler(std::function<void()> user_post) {
   user_terminate_handler_post_ = user_post;
   std::set_terminate(kokkos_terminate_handler);
 }

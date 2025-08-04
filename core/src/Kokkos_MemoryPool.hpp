@@ -25,6 +25,7 @@ static_assert(false,
 #include <Kokkos_Core_fwd.hpp>
 #include <Kokkos_Parallel.hpp>
 #include <Kokkos_Atomic.hpp>
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_ConcurrentBitset.hpp>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_SharedAlloc.hpp>
@@ -40,7 +41,7 @@ namespace Impl {
  *   min_superblock_size  <= min_block_alloc_size *
  *                           max_block_per_superblock
  */
-void memory_pool_bounds_verification(size_t min_block_alloc_size,
+KOKKOSCORE_EXPORT void memory_pool_bounds_verification(size_t min_block_alloc_size,
                                      size_t max_block_alloc_size,
                                      size_t min_superblock_size,
                                      size_t max_superblock_size,
@@ -53,7 +54,7 @@ namespace Kokkos {
 
 namespace Impl {
 
-void _print_memory_pool_state(std::ostream &s, uint32_t const *sb_state_ptr,
+KOKKOSCORE_EXPORT void _print_memory_pool_state(std::ostream &s, uint32_t const *sb_state_ptr,
                               int32_t sb_count, uint32_t sb_size_lg2,
                               uint32_t sb_state_size, uint32_t state_shift,
                               uint32_t state_used_mask);

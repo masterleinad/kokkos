@@ -63,6 +63,7 @@
 #include <Kokkos_hwloc.hpp>
 #include <Kokkos_Timer.hpp>
 #include <Kokkos_Tuners.hpp>
+#include "kokkoscore_export.h"
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 #include <Kokkos_TaskScheduler.hpp>
 #endif
@@ -79,20 +80,20 @@
 
 namespace Kokkos {
 
-void initialize(int& argc, char* argv[]);
+KOKKOSCORE_EXPORT void initialize(int& argc, char* argv[]);
 
-void initialize(
+KOKKOSCORE_EXPORT void initialize(
     InitializationSettings const& settings = InitializationSettings());
 
 namespace Impl {
 
-void pre_initialize(const InitializationSettings& settings);
+KOKKOSCORE_EXPORT void pre_initialize(const InitializationSettings& settings);
 
-void post_initialize(const InitializationSettings& settings);
+KOKKOSCORE_EXPORT void post_initialize(const InitializationSettings& settings);
 
-void pre_finalize();
+KOKKOSCORE_EXPORT void pre_finalize();
 
-void post_finalize();
+KOKKOSCORE_EXPORT void post_finalize();
 
 void declare_configuration_metadata(const std::string& category,
                                     const std::string& key,
@@ -100,18 +101,18 @@ void declare_configuration_metadata(const std::string& category,
 
 }  // namespace Impl
 
-[[nodiscard]] bool is_initialized() noexcept;
-[[nodiscard]] bool is_finalized() noexcept;
+[[nodiscard]] KOKKOSCORE_EXPORT bool is_initialized() noexcept;
+[[nodiscard]] KOKKOSCORE_EXPORT bool is_finalized() noexcept;
 
-[[nodiscard]] int device_id() noexcept;
-[[nodiscard]] int num_devices() noexcept;
-[[nodiscard]] int num_threads() noexcept;
+[[nodiscard]] KOKKOSCORE_EXPORT int device_id() noexcept;
+[[nodiscard]] KOKKOSCORE_EXPORT int num_devices() noexcept;
+[[nodiscard]] KOKKOSCORE_EXPORT int num_threads() noexcept;
 
-bool show_warnings() noexcept;
-bool tune_internals() noexcept;
+KOKKOSCORE_EXPORT bool show_warnings() noexcept;
+KOKKOSCORE_EXPORT bool tune_internals() noexcept;
 
 /** \brief  Finalize the spaces that were initialized via Kokkos::initialize */
-void finalize();
+KOKKOSCORE_EXPORT void finalize();
 
 /**
  * \brief Push a user-defined function to be called in
@@ -133,9 +134,9 @@ void finalize();
  * just like std::atexit, if any of your functions throws but does not
  * catch an exception, Kokkos::finalize will call std::terminate.
  */
-void push_finalize_hook(std::function<void()> f);
+KOKKOSCORE_EXPORT void push_finalize_hook(std::function<void()> f);
 
-void fence(const std::string& name /*= "Kokkos::fence: Unnamed Global Fence"*/);
+KOKKOSCORE_EXPORT void fence(const std::string& name /*= "Kokkos::fence: Unnamed Global Fence"*/);
 
 /** \brief Print "Bill of Materials" */
 void print_configuration(std::ostream& os, bool verbose = false);

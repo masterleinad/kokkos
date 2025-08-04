@@ -35,7 +35,7 @@
 namespace Kokkos {
 namespace Impl {
 
-void HostBarrier::impl_backoff_wait_until_equal(
+KOKKOSCORE_EXPORT void HostBarrier::impl_backoff_wait_until_equal(
     int* ptr, const int v, const bool active_wait) noexcept {
   unsigned count = 0u;
 

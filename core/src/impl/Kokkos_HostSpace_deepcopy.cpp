@@ -19,23 +19,24 @@
 #endif
 
 #include "Kokkos_Core.hpp"
+#include "kokkoscore_export.h"
 #include "Kokkos_HostSpace_deepcopy.hpp"
 
 namespace Kokkos {
 
 namespace Impl {
 
-void hostspace_fence(const DefaultHostExecutionSpace& exec) {
+KOKKOSCORE_EXPORT void hostspace_fence(const DefaultHostExecutionSpace& exec) {
   exec.fence("HostSpace fence");
 }
 
-void hostspace_parallel_deepcopy(void* dst, const void* src, ptrdiff_t n) {
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy(void* dst, const void* src, ptrdiff_t n) {
   Kokkos::DefaultHostExecutionSpace exec;
   hostspace_parallel_deepcopy_async(exec, dst, src, n);
 }
 
 // DeepCopy called with an execution space that can't access HostSpace
-void hostspace_parallel_deepcopy_async(void* dst, const void* src,
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(void* dst, const void* src,
                                        ptrdiff_t n) {
   Kokkos::DefaultHostExecutionSpace exec;
   hostspace_parallel_deepcopy_async(exec, dst, src, n);
@@ -44,7 +45,7 @@ void hostspace_parallel_deepcopy_async(void* dst, const void* src,
 }
 
 template <typename ExecutionSpace>
-void hostspace_parallel_deepcopy_async(const ExecutionSpace& exec, void* dst,
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(const ExecutionSpace& exec, void* dst,
                                        const void* src, ptrdiff_t n) {
   using policy_t = Kokkos::RangePolicy<ExecutionSpace>;
 
@@ -191,7 +192,7 @@ template void hostspace_parallel_zeromemset<DefaultHostExecutionSpace>(
      defined(KOKKOS_ENABLE_HPX))
 // Instantiate only if both the Serial backend and some other host parallel
 // backend are enabled
-template void hostspace_parallel_deepcopy_async<Kokkos::Serial>(
+template KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async<Kokkos::Serial>(
     const Kokkos::Serial&, void*, const void*, ptrdiff_t);
 #endif
 }  // namespace Impl

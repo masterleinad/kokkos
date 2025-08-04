@@ -17,6 +17,8 @@
 #ifndef KOKKOS_THREADS_SPINWAIT_HPP
 #define KOKKOS_THREADS_SPINWAIT_HPP
 
+#include "kokkoscore_export.h"
+
 #include <Threads/Kokkos_Threads_State.hpp>
 
 #include <cstdint>
@@ -35,7 +37,7 @@ enum class WaitMode : int {
 
 void host_thread_yield(const uint32_t i, const WaitMode mode);
 
-void spinwait_while_equal(std::atomic<ThreadState> const& flag,
+KOKKOSCORE_EXPORT void spinwait_while_equal(std::atomic<ThreadState> const& flag,
                           ThreadState const value);
 
 }  // namespace Impl

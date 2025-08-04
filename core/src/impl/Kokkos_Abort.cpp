@@ -21,12 +21,13 @@
 #include <cstdlib>
 #include <iostream>
 #include <Kokkos_Abort.hpp>
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_Stacktrace.hpp>
 
 namespace Kokkos {
 namespace Impl {
 
-void host_abort(const char *const message) {
+KOKKOSCORE_EXPORT void host_abort(const char *const message) {
   std::cerr << message;
 
 #ifdef KOKKOS_IMPL_ENABLE_STACKTRACE

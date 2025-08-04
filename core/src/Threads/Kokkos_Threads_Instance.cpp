@@ -20,6 +20,7 @@
 #endif
 
 #include <Kokkos_Macros.hpp>
+#include "kokkoscore_export.h"
 
 #include <utility>
 #include <iostream>
@@ -197,7 +198,7 @@ ThreadsInternal::~ThreadsInternal() {
   }
 }
 
-ThreadsInternal *ThreadsInternal::get_thread(const int init_thread_rank) {
+KOKKOSCORE_EXPORT ThreadsInternal *ThreadsInternal::get_thread(const int init_thread_rank) {
   ThreadsInternal *const th =
       init_thread_rank < s_thread_pool_size[0]
           ? s_threads_exec[s_thread_pool_size[0] - (init_thread_rank + 1)]
@@ -244,7 +245,7 @@ void ThreadsInternal::verify_is_process(const std::string &name,
 }
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-KOKKOS_DEPRECATED int ThreadsInternal::in_parallel() {
+KOKKOSCORE_EXPORT KOKKOS_DEPRECATED int ThreadsInternal::in_parallel() {
   // A thread function is in execution and
   // the function argument is not the special threads process argument and
   // the master process is a worker or is not the master process.
@@ -252,10 +253,10 @@ KOKKOS_DEPRECATED int ThreadsInternal::in_parallel() {
          (s_threads_process.m_pool_base || !is_process());
 }
 #endif
-void ThreadsInternal::fence() {
+KOKKOSCORE_EXPORT void ThreadsInternal::fence() {
   fence("Kokkos::ThreadsInternal::fence: Unnamed Instance Fence");
 }
-void ThreadsInternal::fence(const std::string &name) {
+KOKKOSCORE_EXPORT void ThreadsInternal::fence(const std::string &name) {
   Kokkos::Tools::Experimental::Impl::profile_fence_event<Kokkos::Threads>(
       name, Kokkos::Tools::Experimental::Impl::DirectFenceIDHandle{1},
       internal_fence);
@@ -278,7 +279,7 @@ void ThreadsInternal::internal_fence() {
 }
 
 /** \brief  Begin execution of the asynchronous functor */
-void ThreadsInternal::start(void (*func)(ThreadsInternal &, const void *),
+KOKKOSCORE_EXPORT void ThreadsInternal::start(void (*func)(ThreadsInternal &, const void *),
                             const void *arg) {
   verify_is_process("ThreadsInternal::start", true);
 
@@ -354,7 +355,7 @@ void ThreadsInternal::execute_resize_scratch_in_serial() {
 
 //----------------------------------------------------------------------------
 
-void *ThreadsInternal::root_reduce_scratch() {
+KOKKOSCORE_EXPORT void *ThreadsInternal::root_reduce_scratch() {
   return s_threads_process.reduce_memory();
 }
 
@@ -381,7 +382,7 @@ void ThreadsInternal::first_touch_allocate_thread_private_scratch(
   }
 }
 
-void *ThreadsInternal::resize_scratch(size_t reduce_size, size_t thread_size) {
+KOKKOSCORE_EXPORT void *ThreadsInternal::resize_scratch(size_t reduce_size, size_t thread_size) {
   enum { ALIGN_MASK = Kokkos::Impl::MEMORY_ALIGNMENT - 1 };
 
   fence();
@@ -413,7 +414,7 @@ void *ThreadsInternal::resize_scratch(size_t reduce_size, size_t thread_size) {
 
 //----------------------------------------------------------------------------
 
-void ThreadsInternal::print_configuration(std::ostream &s, const bool detail) {
+KOKKOSCORE_EXPORT void ThreadsInternal::print_configuration(std::ostream &s, const bool detail) {
   verify_is_process("ThreadsInternal::print_configuration", false);
 
   fence();
@@ -472,9 +473,9 @@ void ThreadsInternal::print_configuration(std::ostream &s, const bool detail) {
 
 //----------------------------------------------------------------------------
 
-int ThreadsInternal::is_initialized() { return nullptr != s_threads_exec[0]; }
+KOKKOSCORE_EXPORT int ThreadsInternal::is_initialized() { return nullptr != s_threads_exec[0]; }
 
-void ThreadsInternal::initialize(int thread_count_arg) {
+KOKKOSCORE_EXPORT void ThreadsInternal::initialize(int thread_count_arg) {
   unsigned thread_count = thread_count_arg == -1 ? 0 : thread_count_arg;
 
   const bool is_initialized = 0 != s_thread_pool_size[0];
@@ -622,7 +623,7 @@ void ThreadsInternal::initialize(int thread_count_arg) {
 
 //----------------------------------------------------------------------------
 
-void ThreadsInternal::finalize() {
+KOKKOSCORE_EXPORT void ThreadsInternal::finalize() {
   verify_is_process("ThreadsInternal::finalize", false);
 
   fence();
@@ -675,12 +676,12 @@ void ThreadsInternal::finalize() {
 namespace Kokkos {
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-int Threads::concurrency() { return impl_thread_pool_size(0); }
+KOKKOSCORE_EXPORT int Threads::concurrency() { return impl_thread_pool_size(0); }
 #else
-int Threads::concurrency() const { return impl_thread_pool_size(0); }
+KOKKOSCORE_EXPORT int Threads::concurrency() const { return impl_thread_pool_size(0); }
 #endif
 
-void Threads::fence(const std::string &name) const {
+KOKKOSCORE_EXPORT void Threads::fence(const std::string &name) const {
   Impl::ThreadsInternal::fence(name);
 }
 
@@ -689,7 +690,7 @@ Threads &Threads::impl_instance(int) {
   return t;
 }
 
-int Threads::impl_thread_pool_rank_host() {
+KOKKOSCORE_EXPORT int Threads::impl_thread_pool_rank_host() {
   const std::thread::id pid = std::this_thread::get_id();
   int i                     = 0;
   while ((i < Impl::s_thread_pool_size[0]) && (pid != Impl::s_threads_pid[i])) {
@@ -698,11 +699,11 @@ int Threads::impl_thread_pool_rank_host() {
   return i;
 }
 
-int Threads::impl_thread_pool_size(int depth) {
+KOKKOSCORE_EXPORT int Threads::impl_thread_pool_size(int depth) {
   return Impl::s_thread_pool_size[depth];
 }
 
-const char *Threads::name() { return "Threads"; }
+KOKKOSCORE_EXPORT const char *Threads::name() { return "Threads"; }
 
 namespace Impl {
 

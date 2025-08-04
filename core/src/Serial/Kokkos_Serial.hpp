@@ -65,7 +65,7 @@ class SerialInternal {
   static std::mutex all_instances_mutex;
 
   // Resize thread team data scratch memory
-  void resize_thread_team_data(size_t pool_reduce_bytes,
+  KOKKOSCORE_EXPORT void resize_thread_team_data(size_t pool_reduce_bytes,
                                size_t team_reduce_bytes,
                                size_t team_shared_bytes,
                                size_t thread_local_bytes);
@@ -113,9 +113,9 @@ class Serial {
 
   //@}
 
-  Serial();
+  KOKKOSCORE_EXPORT Serial();
 
-  explicit Serial(NewInstance);
+  KOKKOSCORE_EXPORT explicit Serial(NewInstance);
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
   template <typename T = void>
@@ -199,11 +199,11 @@ class Serial {
 #endif
 
   //! Print configuration information to the given output stream.
-  void print_configuration(std::ostream& os, bool verbose = false) const;
+  KOKKOSCORE_EXPORT void print_configuration(std::ostream& os, bool verbose = false) const;
 
   static void impl_initialize(InitializationSettings const&);
 
-  static bool impl_is_initialized();
+  KOKKOSCORE_EXPORT static bool impl_is_initialized();
 
   //! Free any resources being consumed by the device.
   static void impl_finalize();
@@ -224,7 +224,7 @@ class Serial {
 
   uint32_t impl_instance_id() const noexcept { return 1; }
 
-  static const char* name();
+  KOKKOSCORE_EXPORT static const char* name();
 
   Impl::SerialInternal* impl_internal_space_instance() const {
     return m_space_instance.get();

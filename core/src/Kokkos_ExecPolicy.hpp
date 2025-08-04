@@ -543,8 +543,8 @@ inline std::enable_if_t<!std::is_integral_v<iType>, int> extract_vector_length(
 
 }  // namespace Impl
 
-Impl::PerTeamValue PerTeam(const size_t& arg);
-Impl::PerThreadValue PerThread(const size_t& arg);
+KOKKOSCORE_EXPORT Impl::PerTeamValue PerTeam(const size_t& arg);
+KOKKOSCORE_EXPORT Impl::PerThreadValue PerThread(const size_t& arg);
 
 struct ScratchRequest {
   int level;
@@ -583,7 +583,7 @@ struct ScratchRequest {
 };
 
 // Causes abnormal program termination if level is not `0` or `1`
-void team_policy_check_valid_storage_level_argument(int level);
+KOKKOSCORE_EXPORT void team_policy_check_valid_storage_level_argument(int level);
 
 /** \brief  Execution policy for parallel work over a league of teams of
  * threads.

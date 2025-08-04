@@ -27,6 +27,7 @@
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Core.hpp>
 #include <Kokkos_hwloc.hpp>
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_Error.hpp>
 
 /*--------------------------------------------------------------------------*/
@@ -514,19 +515,19 @@ Sentinel::Sentinel() {
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 
-bool available() { return true; }
+KOKKOSCORE_EXPORT bool available() { return true; }
 
-unsigned get_available_numa_count() {
+KOKKOSCORE_EXPORT unsigned get_available_numa_count() {
   sentinel();
   return s_core_topology.first;
 }
 
-unsigned get_available_cores_per_numa() {
+KOKKOSCORE_EXPORT unsigned get_available_cores_per_numa() {
   sentinel();
   return s_core_topology.second;
 }
 
-unsigned get_available_threads_per_core() {
+KOKKOSCORE_EXPORT unsigned get_available_threads_per_core() {
   sentinel();
   return s_core_capacity;
 }
@@ -694,12 +695,12 @@ std::pair<unsigned, unsigned> get_this_thread_coordinate() {
 namespace Kokkos {
 namespace hwloc {
 
-bool available() { return false; }
+KOKKOSCORE_EXPORT bool available() { return false; }
 bool can_bind_threads() { return false; }
 
-unsigned get_available_numa_count() { return 1; }
-unsigned get_available_cores_per_numa() { return 1; }
-unsigned get_available_threads_per_core() { return 1; }
+KOKKOSCORE_EXPORT unsigned get_available_numa_count() { return 1; }
+KOKKOSCORE_EXPORT unsigned get_available_cores_per_numa() { return 1; }
+KOKKOSCORE_EXPORT unsigned get_available_threads_per_core() { return 1; }
 
 unsigned bind_this_thread(const unsigned, std::pair<unsigned, unsigned>[]) {
   return ~0;

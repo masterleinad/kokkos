@@ -87,7 +87,7 @@ SerialInternal& SerialInternal::singleton() {
 }
 
 // Resize thread team data scratch memory
-void SerialInternal::resize_thread_team_data(size_t pool_reduce_bytes,
+KOKKOSCORE_EXPORT void SerialInternal::resize_thread_team_data(size_t pool_reduce_bytes,
                                              size_t team_reduce_bytes,
                                              size_t team_shared_bytes,
                                              size_t thread_local_bytes) {
@@ -153,11 +153,11 @@ void SerialInternal::resize_thread_team_data(size_t pool_reduce_bytes,
 }
 }  // namespace Impl
 
-Serial::Serial()
+KOKKOSCORE_EXPORT Serial::Serial()
     : m_space_instance(&Impl::SerialInternal::singleton(),
                        [](Impl::SerialInternal*) {}) {}
 
-Serial::Serial(NewInstance)
+KOKKOSCORE_EXPORT Serial::Serial(NewInstance)
     : m_space_instance(new Impl::SerialInternal, [](Impl::SerialInternal* ptr) {
         ptr->finalize();
         delete ptr;
@@ -165,7 +165,7 @@ Serial::Serial(NewInstance)
   m_space_instance->initialize();
 }
 
-void Serial::print_configuration(std::ostream& os, bool /*verbose*/) const {
+KOKKOSCORE_EXPORT void Serial::print_configuration(std::ostream& os, bool /*verbose*/) const {
   os << "Host Serial Execution Space:\n";
   os << "  KOKKOS_ENABLE_SERIAL: yes\n";
 
@@ -176,7 +176,7 @@ void Serial::print_configuration(std::ostream& os, bool /*verbose*/) const {
   os << "\nSerial Runtime Configuration:\n";
 }
 
-bool Serial::impl_is_initialized() {
+KOKKOSCORE_EXPORT bool Serial::impl_is_initialized() {
   return Impl::SerialInternal::singleton().is_initialized();
 }
 
@@ -186,7 +186,7 @@ void Serial::impl_initialize(InitializationSettings const&) {
 
 void Serial::impl_finalize() { Impl::SerialInternal::singleton().finalize(); }
 
-const char* Serial::name() { return "Serial"; }
+KOKKOSCORE_EXPORT const char* Serial::name() { return "Serial"; }
 
 namespace Impl {
 

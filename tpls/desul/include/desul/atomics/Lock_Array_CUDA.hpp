@@ -6,11 +6,13 @@ Source: https://github.com/desul/desul
 SPDX-License-Identifier: (BSD-3-Clause)
 */
 
+
 #ifndef DESUL_ATOMICS_LOCK_ARRAY_CUDA_HPP_
 #define DESUL_ATOMICS_LOCK_ARRAY_CUDA_HPP_
 
 #include <cstdint>
 
+#include "kokkoscore_export.h"
 #include "desul/atomics/Common.hpp"
 #include "desul/atomics/Macros.hpp"
 
@@ -19,8 +21,8 @@ namespace Impl {
 
 /// \brief This global variable in Host space is the central definition
 ///        of these arrays.
-extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_DEVICE_h;
-extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_NODE_h;
+KOKKOSCORE_EXPORT extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_DEVICE_h;
+KOKKOSCORE_EXPORT extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_NODE_h;
 
 /// \brief After this call, the g_host_cuda_lock_arrays variable has
 ///        valid, initialized arrays.

@@ -19,6 +19,7 @@
 #endif
 
 #include <Kokkos_Core.hpp>
+#include "kokkoscore_export.h"
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -27,7 +28,7 @@ namespace Kokkos {
 namespace Impl {
 
 #ifdef KOKKOS_ENABLE_DEBUG
-bool SharedAllocationRecord<void, void>::is_sane(
+KOKKOSCORE_EXPORT bool SharedAllocationRecord<void, void>::is_sane(
     SharedAllocationRecord<void, void>* arg_record) {
   SharedAllocationRecord* const root =
       arg_record ? arg_record->m_root : nullptr;
@@ -95,7 +96,7 @@ bool SharedAllocationRecord<void, void>::is_sane(
 
 #else
 
-bool SharedAllocationRecord<void, void>::is_sane(
+KOKKOSCORE_EXPORT bool SharedAllocationRecord<void, void>::is_sane(
     SharedAllocationRecord<void, void>*) {
   Kokkos::abort(
       "Kokkos::Impl::SharedAllocationRecord::is_sane only works with "
@@ -147,7 +148,7 @@ SharedAllocationRecord<void, void>* SharedAllocationRecord<void, void>::find(
 /**\brief  Construct and insert into 'arg_root' tracking set.
  *         use_count is zero.
  */
-SharedAllocationRecord<void, void>::SharedAllocationRecord(
+KOKKOSCORE_EXPORT SharedAllocationRecord<void, void>::SharedAllocationRecord(
 #ifdef KOKKOS_ENABLE_DEBUG
     SharedAllocationRecord<void, void>* arg_root,
 #endif
@@ -198,7 +199,7 @@ SharedAllocationRecord<void, void>::SharedAllocationRecord(
   }
 }
 
-void SharedAllocationRecord<void, void>::increment(
+KOKKOSCORE_EXPORT void SharedAllocationRecord<void, void>::increment(
     SharedAllocationRecord<void, void>* arg_record) {
   const int old_count = Kokkos::atomic_fetch_add(&arg_record->m_count, 1);
 
@@ -207,7 +208,7 @@ void SharedAllocationRecord<void, void>::increment(
   }
 }
 
-SharedAllocationRecord<void, void>* SharedAllocationRecord<
+KOKKOSCORE_EXPORT SharedAllocationRecord<void, void>* SharedAllocationRecord<
     void, void>::decrement(SharedAllocationRecord<void, void>* arg_record) {
   const int old_count = Kokkos::atomic_fetch_sub(&arg_record->m_count, 1);
 
@@ -320,7 +321,7 @@ void SharedAllocationRecord<void, void>::print_host_accessible_records(
 }
 #endif
 
-void fill_host_accessible_header_info(
+KOKKOSCORE_EXPORT void fill_host_accessible_header_info(
     SharedAllocationRecord<void, void>* arg_record,
     SharedAllocationHeader& arg_header, std::string const& arg_label) {
   // Fill in the Header information, directly accessible on the host

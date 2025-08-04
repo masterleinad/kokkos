@@ -19,6 +19,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Core_fwd.hpp>
+#include "kokkoscore_export.h"
 
 #include <impl/Kokkos_SharedAlloc.hpp>
 
@@ -33,7 +34,7 @@ namespace Impl {
 
 // NOLINTBEGIN(bugprone-exception-escape)
 template <class MemorySpace>
-SharedAllocationRecordCommon<MemorySpace>::~SharedAllocationRecordCommon() {
+KOKKOSCORE_EXPORT SharedAllocationRecordCommon<MemorySpace>::~SharedAllocationRecordCommon() {
   auto alloc_ptr  = SharedAllocationRecord<void, void>::m_alloc_ptr;
   auto alloc_size = SharedAllocationRecord<void, void>::m_alloc_size;
   auto label      = SharedAllocationRecord<void, void>::m_label;
@@ -41,7 +42,7 @@ SharedAllocationRecordCommon<MemorySpace>::~SharedAllocationRecordCommon() {
                      alloc_size - sizeof(SharedAllocationHeader));
 }
 template <class MemorySpace>
-HostInaccessibleSharedAllocationRecordCommon<
+KOKKOSCORE_EXPORT HostInaccessibleSharedAllocationRecordCommon<
     MemorySpace>::~HostInaccessibleSharedAllocationRecordCommon() {
   auto alloc_ptr  = SharedAllocationRecord<void, void>::m_alloc_ptr;
   auto alloc_size = SharedAllocationRecord<void, void>::m_alloc_size;
@@ -52,7 +53,7 @@ HostInaccessibleSharedAllocationRecordCommon<
 // NOLINTEND(bugprone-exception-escape)
 
 template <class MemorySpace>
-SharedAllocationRecordCommon<MemorySpace>::SharedAllocationRecordCommon(
+KOKKOSCORE_EXPORT SharedAllocationRecordCommon<MemorySpace>::SharedAllocationRecordCommon(
     MemorySpace const& space, std::string const& label, std::size_t alloc_size,
     SharedAllocationRecord<void, void>::function_type dealloc)
     : SharedAllocationRecord<void, void>(
@@ -94,14 +95,14 @@ HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::
 }
 
 template <class MemorySpace>
-auto SharedAllocationRecordCommon<MemorySpace>::allocate(
+KOKKOSCORE_EXPORT auto SharedAllocationRecordCommon<MemorySpace>::allocate(
     MemorySpace const& arg_space, std::string const& arg_label,
     size_t arg_alloc_size) -> derived_t* {
   return new derived_t(arg_space, arg_label, arg_alloc_size);
 }
 
 template <class MemorySpace>
-void* SharedAllocationRecordCommon<MemorySpace>::allocate_tracked(
+KOKKOSCORE_EXPORT void* SharedAllocationRecordCommon<MemorySpace>::allocate_tracked(
     const MemorySpace& arg_space, const std::string& arg_alloc_label,
     size_t arg_alloc_size) {
   if (!arg_alloc_size) return nullptr;
@@ -121,7 +122,7 @@ void SharedAllocationRecordCommon<MemorySpace>::deallocate(
 }
 
 template <class MemorySpace>
-void SharedAllocationRecordCommon<MemorySpace>::deallocate_tracked(
+KOKKOSCORE_EXPORT void SharedAllocationRecordCommon<MemorySpace>::deallocate_tracked(
     void* arg_alloc_ptr) {
   if (arg_alloc_ptr != nullptr) {
     SharedAllocationRecord* const r = derived_t::get_record(arg_alloc_ptr);
@@ -130,14 +131,14 @@ void SharedAllocationRecordCommon<MemorySpace>::deallocate_tracked(
 }
 
 template <class MemorySpace>
-auto HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::allocate(
+KOKKOSCORE_EXPORT auto HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::allocate(
     MemorySpace const& arg_space, std::string const& arg_label,
     size_t arg_alloc_size) -> derived_t* {
   return new derived_t(arg_space, arg_label, arg_alloc_size);
 }
 
 template <class MemorySpace>
-void* HostInaccessibleSharedAllocationRecordCommon<
+KOKKOSCORE_EXPORT void* HostInaccessibleSharedAllocationRecordCommon<
     MemorySpace>::allocate_tracked(const MemorySpace& arg_space,
                                    const std::string& arg_alloc_label,
                                    size_t arg_alloc_size) {
@@ -158,7 +159,7 @@ void HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::deallocate(
 }
 
 template <class MemorySpace>
-void HostInaccessibleSharedAllocationRecordCommon<
+KOKKOSCORE_EXPORT void HostInaccessibleSharedAllocationRecordCommon<
     MemorySpace>::deallocate_tracked(void* arg_alloc_ptr) {
   if (arg_alloc_ptr != nullptr) {
     SharedAllocationRecord* const r = derived_t::get_record(arg_alloc_ptr);
@@ -167,7 +168,7 @@ void HostInaccessibleSharedAllocationRecordCommon<
 }
 
 template <class MemorySpace>
-auto SharedAllocationRecordCommon<MemorySpace>::get_record(void* alloc_ptr)
+KOKKOSCORE_EXPORT auto SharedAllocationRecordCommon<MemorySpace>::get_record(void* alloc_ptr)
     -> derived_t* {
   using Header = SharedAllocationHeader;
 
@@ -184,7 +185,7 @@ auto SharedAllocationRecordCommon<MemorySpace>::get_record(void* alloc_ptr)
 }
 
 template <class MemorySpace>
-std::string SharedAllocationRecordCommon<MemorySpace>::get_label() const {
+KOKKOSCORE_EXPORT std::string SharedAllocationRecordCommon<MemorySpace>::get_label() const {
   return record_base_t::m_label;
 }
 
@@ -294,7 +295,7 @@ void HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::print_records(
 }
 
 template <class MemorySpace>
-auto HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::get_record(
+KOKKOSCORE_EXPORT auto HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::get_record(
     void* alloc_ptr) -> derived_t* {
   // Copy the header from the allocation
   SharedAllocationHeader head;
@@ -325,7 +326,7 @@ auto HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::get_record(
 }
 
 template <class MemorySpace>
-std::string
+KOKKOSCORE_EXPORT std::string
 HostInaccessibleSharedAllocationRecordCommon<MemorySpace>::get_label() const {
   return record_base_t::m_label;
 }

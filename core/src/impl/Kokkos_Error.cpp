@@ -23,9 +23,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <Kokkos_Core.hpp>  // show_warnings
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_Error.hpp>
 
-void Kokkos::Impl::throw_runtime_exception(const std::string &msg) {
+KOKKOSCORE_EXPORT void Kokkos::Impl::throw_runtime_exception(const std::string &msg) {
   throw std::runtime_error(msg);
 }
 
@@ -38,7 +39,7 @@ void Kokkos::Impl::throw_bad_alloc(std::string_view memory_space_name,
   throw std::runtime_error(ss.str());
 }
 
-void Kokkos::Impl::log_warning(const std::string &msg) {
+KOKKOSCORE_EXPORT void Kokkos::Impl::log_warning(const std::string &msg) {
   if (show_warnings()) {
     std::cerr << msg << std::flush;
   }

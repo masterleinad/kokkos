@@ -19,11 +19,12 @@
 #endif
 
 #include <Kokkos_UnorderedMap.hpp>
+#include "kokkoscontainers_export.h"
 
 namespace Kokkos {
 namespace Impl {
 
-uint32_t find_hash_size(uint32_t size) {
+KOKKOSCONTAINERS_EXPORT uint32_t find_hash_size(uint32_t size) {
   if (size == 0u) return 0u;
 
   // these primes try to preserve randomness of hash

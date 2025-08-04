@@ -19,6 +19,7 @@
 #endif
 
 #include <Kokkos_Macros.hpp>
+#include "kokkoscore_export.h"
 
 #include <Kokkos_Atomic.hpp>
 #include <Threads/Kokkos_Threads_Spinwait.hpp>
@@ -108,7 +109,7 @@ void host_thread_yield(const uint32_t i, const WaitMode mode) {
 #endif /* defined( KOKKOS_ENABLE_ASM ) */
 }
 
-void spinwait_while_equal(std::atomic<ThreadState> const& flag,
+KOKKOSCORE_EXPORT void spinwait_while_equal(std::atomic<ThreadState> const& flag,
                           ThreadState const value) {
   Kokkos::store_fence();
   uint32_t i = 0;

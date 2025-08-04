@@ -43,7 +43,7 @@
 
 namespace Kokkos {
 
-extern bool show_warnings() noexcept;
+KOKKOSCORE_EXPORT extern bool show_warnings() noexcept;
 
 namespace Impl {
 

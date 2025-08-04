@@ -23,6 +23,7 @@ static_assert(false,
 #define KOKKOS_CUDA_HPP
 
 #include <Kokkos_Macros.hpp>
+#include "kokkoscore_export.h"
 #if defined(KOKKOS_ENABLE_CUDA)
 
 #include <Kokkos_Core_fwd.hpp>
@@ -139,24 +140,24 @@ class Cuda {
   /// device have completed.
   static void impl_static_fence(const std::string& name);
 
-  void fence(const std::string& name =
+  KOKKOSCORE_EXPORT void fence(const std::string& name =
                  "Kokkos::Cuda::fence(): Unnamed Instance Fence") const;
 
   /** \brief  Return the maximum amount of concurrency.  */
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  static int concurrency();
+  KOKKOSCORE_EXPORT static int concurrency();
 #else
-  int concurrency() const;
+  KOKKOSCORE_EXPORT int concurrency() const;
 #endif
 
   //! Print configuration information to the given output stream.
-  void print_configuration(std::ostream& os, bool verbose = false) const;
+  KOKKOSCORE_EXPORT void print_configuration(std::ostream& os, bool verbose = false) const;
 
   //@}
   //--------------------------------------------------
   //! \name  Cuda space instances
 
-  Cuda();
+  KOKKOSCORE_EXPORT Cuda();
 
   explicit Cuda(cudaStream_t stream) : Cuda(stream, Impl::ManageStream::no) {}
 
@@ -168,19 +169,19 @@ class Cuda {
       : Cuda(stream) {}
 #endif
 
-  Cuda(cudaStream_t stream, Impl::ManageStream manage_stream);
+  KOKKOSCORE_EXPORT Cuda(cudaStream_t stream, Impl::ManageStream manage_stream);
 
   KOKKOS_DEPRECATED Cuda(cudaStream_t stream, bool manage_stream);
 
   //--------------------------------------------------------------------------
   //! Free any resources being consumed by the device.
-  static void impl_finalize();
+  KOKKOSCORE_EXPORT static void impl_finalize();
 
   //! Has been initialized
-  static int impl_is_initialized();
+  KOKKOSCORE_EXPORT static int impl_is_initialized();
 
   //! Initialize, telling the CUDA run-time library which device to use.
-  static void impl_initialize(InitializationSettings const&);
+  KOKKOSCORE_EXPORT static void impl_initialize(InitializationSettings const&);
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
   /// \brief Cuda device architecture of the selected device.
@@ -214,19 +215,19 @@ class Cuda {
   }
 #endif
 
-  cudaStream_t cuda_stream() const;
-  int cuda_device() const;
-  const cudaDeviceProp& cuda_device_prop() const;
+  KOKKOSCORE_EXPORT cudaStream_t cuda_stream() const;
+  KOKKOSCORE_EXPORT int cuda_device() const;
+  KOKKOSCORE_EXPORT const cudaDeviceProp& cuda_device_prop() const;
 
   //@}
   //--------------------------------------------------------------------------
 
-  static const char* name();
+  KOKKOSCORE_EXPORT static const char* name();
 
   inline Impl::CudaInternal* impl_internal_space_instance() const {
     return m_space_instance.get();
   }
-  uint32_t impl_instance_id() const noexcept;
+  KOKKOSCORE_EXPORT uint32_t impl_instance_id() const noexcept;
 
  private:
   friend bool operator==(Cuda const& lhs, Cuda const& rhs) {

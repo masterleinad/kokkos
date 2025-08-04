@@ -17,6 +17,7 @@
 #ifndef KOKKOS_STACKTRACE_HPP
 #define KOKKOS_STACKTRACE_HPP
 
+#include "kokkoscore_export.h"
 #include <functional>
 #include <ostream>
 #include <string>
@@ -33,17 +34,17 @@ std::string demangle(const std::string& name);
 /// You may only save one stacktrace at a time.  If you call this
 /// twice, the second call will overwrite the result of the first
 /// call.
-void save_stacktrace();
+KOKKOSCORE_EXPORT void save_stacktrace();
 
 /// \brief Print the raw form of the currently saved stacktrace, if
 ///   any, to the given output stream.
-void print_saved_stacktrace(std::ostream& out);
+KOKKOSCORE_EXPORT void print_saved_stacktrace(std::ostream& out);
 
 /// \brief Print the currently saved, demangled stacktrace, if any, to
 ///   the given output stream.
 ///
 /// Demangling is best effort only.
-void print_demangled_saved_stacktrace(std::ostream& out);
+KOKKOSCORE_EXPORT void print_demangled_saved_stacktrace(std::ostream& out);
 
 /// \brief Set the std::terminate handler so that it prints the
 ///   currently saved stack trace, then calls user_post.
@@ -53,7 +54,7 @@ void print_demangled_saved_stacktrace(std::ostream& out);
 /// without including their header file, and Kokkos does not depend on
 /// MPI, so there's no way for Kokkos to depend on MPI_Abort in a
 /// portable way.
-void set_kokkos_terminate_handler(std::function<void()> user_post = nullptr);
+KOKKOSCORE_EXPORT void set_kokkos_terminate_handler(std::function<void()> user_post = nullptr);
 
 }  // namespace Impl
 }  // namespace Kokkos

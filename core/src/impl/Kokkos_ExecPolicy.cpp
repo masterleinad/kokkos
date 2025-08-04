@@ -19,6 +19,7 @@
 #endif
 
 #include <Kokkos_Core.hpp>
+#include "kokkoscore_export.h"
 #include <sstream>
 
 namespace Kokkos {
@@ -28,15 +29,15 @@ PerTeamValue::PerTeamValue(size_t arg) : value(arg) {}
 PerThreadValue::PerThreadValue(size_t arg) : value(arg) {}
 }  // namespace Impl
 
-Impl::PerTeamValue PerTeam(const size_t& arg) {
+KOKKOSCORE_EXPORT Impl::PerTeamValue PerTeam(const size_t& arg) {
   return Impl::PerTeamValue(arg);
 }
 
-Impl::PerThreadValue PerThread(const size_t& arg) {
+KOKKOSCORE_EXPORT Impl::PerThreadValue PerThread(const size_t& arg) {
   return Impl::PerThreadValue(arg);
 }
 
-void team_policy_check_valid_storage_level_argument(int level) {
+KOKKOSCORE_EXPORT void team_policy_check_valid_storage_level_argument(int level) {
   if (!(level == 0 || level == 1)) {
     std::stringstream ss;
     ss << "TeamPolicy::set_scratch_size(/*level*/ " << level

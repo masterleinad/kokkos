@@ -18,6 +18,7 @@
 #define KOKKOS_SHARED_ALLOC_HPP
 
 #include <Kokkos_Macros.hpp>
+#include "kokkoscore_export.h"
 #include <Kokkos_Core_fwd.hpp>
 #include <impl/Kokkos_Error.hpp>  // Impl::throw_runtime_exception
 
@@ -51,7 +52,7 @@ class SharedAllocationHeader {
   friend class SharedAllocationRecordCommon;
   template <class>
   friend class HostInaccessibleSharedAllocationRecordCommon;
-  friend void fill_host_accessible_header_info(
+  KOKKOSCORE_EXPORT friend void fill_host_accessible_header_info(
       SharedAllocationRecord<void, void>*, SharedAllocationHeader&,
       std::string const&);
 
@@ -109,7 +110,7 @@ class SharedAllocationRecord<void, void> {
   /**\brief  Construct and insert into 'arg_root' tracking set.
    *         use_count is zero.
    */
-  SharedAllocationRecord(
+  KOKKOSCORE_EXPORT SharedAllocationRecord(
 #ifdef KOKKOS_ENABLE_DEBUG
       SharedAllocationRecord* arg_root,
 #endif
@@ -119,7 +120,7 @@ class SharedAllocationRecord<void, void> {
   static inline thread_local int t_tracking_enabled = 1;
 
  public:
-  virtual std::string get_label() const { return std::string("Unmanaged"); }
+  KOKKOSCORE_EXPORT virtual std::string get_label() const { return std::string("Unmanaged"); }
 
 #if defined(__EDG__)
 #pragma push
@@ -174,11 +175,11 @@ class SharedAllocationRecord<void, void> {
   int use_count() const { return *static_cast<const volatile int*>(&m_count); }
 
   /* Increment use count */
-  static void increment(SharedAllocationRecord*);
+  KOKKOSCORE_EXPORT static void increment(SharedAllocationRecord*);
 
   /* Decrement use count. If 1->0 then remove from the tracking list and invoke
    * m_dealloc */
-  static SharedAllocationRecord* decrement(SharedAllocationRecord*);
+  KOKKOSCORE_EXPORT static SharedAllocationRecord* decrement(SharedAllocationRecord*);
 
   /* Given a root record and data pointer find the record */
   static SharedAllocationRecord* find(SharedAllocationRecord* const,
@@ -188,7 +189,7 @@ class SharedAllocationRecord<void, void> {
    * belongs. Locks the set's insert/erase operations until the sanity check is
    * complete.
    */
-  static bool is_sane(SharedAllocationRecord*);
+  KOKKOSCORE_EXPORT static bool is_sane(SharedAllocationRecord*);
 
   /*  Print host-accessible records */
   static void print_host_accessible_records(
@@ -234,7 +235,7 @@ class SharedAllocationRecordCommon : public SharedAllocationRecord<void, void> {
   static void deallocate(record_base_t* arg_rec);
 
  public:
-  ~SharedAllocationRecordCommon();
+  KOKKOSCORE_EXPORT ~SharedAllocationRecordCommon();
   template <class ExecutionSpace>
   SharedAllocationRecordCommon(
       ExecutionSpace const& exec, MemorySpace const& space,
@@ -250,19 +251,19 @@ class SharedAllocationRecordCommon : public SharedAllocationRecord<void, void> {
     auto& header = *SharedAllocationRecord<void, void>::m_alloc_ptr;
     fill_host_accessible_header_info(this, header, label);
   }
-  SharedAllocationRecordCommon(
+  KOKKOSCORE_EXPORT SharedAllocationRecordCommon(
       MemorySpace const& space, std::string const& label, std::size_t size,
       record_base_t::function_type dealloc = &deallocate);
 
-  static auto allocate(MemorySpace const& arg_space,
+  KOKKOSCORE_EXPORT static auto allocate(MemorySpace const& arg_space,
                        std::string const& arg_label, size_t arg_alloc_size)
       -> derived_t*;
   /**\brief  Allocate tracked memory in the space */
-  static void* allocate_tracked(MemorySpace const& arg_space,
+  KOKKOSCORE_EXPORT static void* allocate_tracked(MemorySpace const& arg_space,
                                 std::string const& arg_alloc_label,
                                 size_t arg_alloc_size);
   /**\brief  Deallocate tracked memory in the space */
-  static void deallocate_tracked(void* arg_alloc_ptr);
+  KOKKOSCORE_EXPORT static void deallocate_tracked(void* arg_alloc_ptr);
   /**\brief  Reallocate tracked memory in the space
    * \note The ExecutionSpace template parameter is used to force
    * templatization of the method to delay its definition. Otherwise, the
@@ -270,8 +271,8 @@ class SharedAllocationRecordCommon : public SharedAllocationRecord<void, void> {
    */
   template <class ExecutionSpace = typename MemorySpace::execution_space>
   static void* reallocate_tracked(void* arg_alloc_ptr, size_t arg_alloc_size);
-  static auto get_record(void* alloc_ptr) -> derived_t*;
-  std::string get_label() const override;
+  KOKKOSCORE_EXPORT static auto get_record(void* alloc_ptr) -> derived_t*;
+  KOKKOSCORE_EXPORT std::string get_label() const override;
   static void print_records(std::ostream& s, MemorySpace const&,
                             bool detail = false);
 };
@@ -318,7 +319,7 @@ class HostInaccessibleSharedAllocationRecordCommon
   static void deallocate(record_base_t* arg_rec);
 
  public:
-  ~HostInaccessibleSharedAllocationRecordCommon();
+  KOKKOSCORE_EXPORT ~HostInaccessibleSharedAllocationRecordCommon();
   template <class ExecutionSpace>
   HostInaccessibleSharedAllocationRecordCommon(
       ExecutionSpace const& exec, MemorySpace const& space,
@@ -339,19 +340,19 @@ class HostInaccessibleSharedAllocationRecordCommon
         exec, SharedAllocationRecord<void, void>::m_alloc_ptr, &header,
         sizeof(SharedAllocationHeader));
   }
-  HostInaccessibleSharedAllocationRecordCommon(
+  KOKKOSCORE_EXPORT HostInaccessibleSharedAllocationRecordCommon(
       MemorySpace const& space, std::string const& label, std::size_t size,
       record_base_t::function_type dealloc = &deallocate);
 
-  static auto allocate(MemorySpace const& arg_space,
+  KOKKOSCORE_EXPORT static auto allocate(MemorySpace const& arg_space,
                        std::string const& arg_label, size_t arg_alloc_size)
       -> derived_t*;
   /**\brief  Allocate tracked memory in the space */
-  static void* allocate_tracked(MemorySpace const& arg_space,
+  KOKKOSCORE_EXPORT static void* allocate_tracked(MemorySpace const& arg_space,
                                 std::string const& arg_alloc_label,
                                 size_t arg_alloc_size);
   /**\brief  Deallocate tracked memory in the space */
-  static void deallocate_tracked(void* arg_alloc_ptr);
+  KOKKOSCORE_EXPORT static void deallocate_tracked(void* arg_alloc_ptr);
   /**\brief  Reallocate tracked memory in the space
    * \note The ExecutionSpace template parameter is used to force
    * templatization of the method to delay its definition. Otherwise, the
@@ -368,8 +369,8 @@ class HostInaccessibleSharedAllocationRecordCommon
   template <class ExecutionSpace = Kokkos::DefaultHostExecutionSpace>
   static void print_records(std::ostream& s, MemorySpace const&,
                             bool detail = false);
-  static auto get_record(void* alloc_ptr) -> derived_t*;
-  std::string get_label() const override;
+  KOKKOSCORE_EXPORT static auto get_record(void* alloc_ptr) -> derived_t*;
+  KOKKOSCORE_EXPORT std::string get_label() const override;
 };
 
 /**
@@ -481,7 +482,7 @@ class SharedAllocationRecord
             &Kokkos::Impl::deallocate<MemorySpace, DestroyFunctor>),
         m_destroy() {}
 
-  SharedAllocationRecord()                                         = delete;
+  KOKKOSCORE_EXPORT SharedAllocationRecord()                       = delete;
   SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 

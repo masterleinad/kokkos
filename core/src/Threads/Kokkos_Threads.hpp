@@ -26,6 +26,7 @@ static_assert(false,
 #if defined(KOKKOS_ENABLE_THREADS)
 
 #include <Kokkos_Core_fwd.hpp>
+#include "kokkoscore_export.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -79,14 +80,14 @@ class Threads {
   /// device have completed.
   static void impl_static_fence(const std::string& name);
 
-  void fence(const std::string& name =
+  KOKKOSCORE_EXPORT void fence(const std::string& name =
                  "Kokkos::Threads::fence: Unnamed Instance Fence") const;
 
   /** \brief  Return the maximum amount of concurrency.  */
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  static int concurrency();
+  KOKKOSCORE_EXPORT static int concurrency();
 #else
-  int concurrency() const;
+  KOKKOSCORE_EXPORT int concurrency() const;
 #endif
 
   /// \brief Free any resources being consumed by the device.
@@ -108,9 +109,9 @@ class Threads {
 
   //----------------------------------------
 
-  static int impl_thread_pool_size(int depth = 0);
+  KOKKOSCORE_EXPORT static int impl_thread_pool_size(int depth = 0);
 
-  static int impl_thread_pool_rank_host();
+  KOKKOSCORE_EXPORT static int impl_thread_pool_rank_host();
 
   static KOKKOS_FUNCTION int impl_thread_pool_rank() {
     KOKKOS_IF_ON_HOST((return impl_thread_pool_rank_host();))
@@ -127,7 +128,7 @@ class Threads {
 
   uint32_t impl_instance_id() const noexcept { return 1; }
 
-  static const char* name();
+  KOKKOSCORE_EXPORT static const char* name();
   //@}
   //----------------------------------------
  private:

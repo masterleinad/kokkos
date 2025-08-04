@@ -19,6 +19,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Atomic.hpp>
+#include "kokkoscore_export.h"
 
 namespace Kokkos {
 namespace Impl {
@@ -214,7 +215,7 @@ class HostBarrier {
     }
   }
 
-  static void impl_backoff_wait_until_equal(int* ptr, const int v,
+  KOKKOSCORE_EXPORT static void impl_backoff_wait_until_equal(int* ptr, const int v,
                                             const bool active_wait) noexcept;
 
  private:

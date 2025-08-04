@@ -22,6 +22,7 @@
 #ifdef KOKKOS_ENABLE_CUDA
 
 #include <Kokkos_Core.hpp>
+#include "kokkoscore_export.h"
 #include <Cuda/Kokkos_Cuda.hpp>
 #include <Cuda/Kokkos_CudaSpace.hpp>
 
@@ -47,7 +48,7 @@ cudaStream_t Kokkos::Impl::cuda_get_deep_copy_stream() {
   return s;
 }
 
-const std::unique_ptr<Kokkos::Cuda> &Kokkos::Impl::cuda_get_deep_copy_space(
+KOKKOSCORE_EXPORT const std::unique_ptr<Kokkos::Cuda> &Kokkos::Impl::cuda_get_deep_copy_space(
     bool initialize) {
   static std::unique_ptr<Cuda> space = nullptr;
   if (!space && initialize)
@@ -58,19 +59,19 @@ const std::unique_ptr<Kokkos::Cuda> &Kokkos::Impl::cuda_get_deep_copy_space(
 namespace Kokkos {
 namespace Impl {
 
-void DeepCopyCuda(void *dst, const void *src, size_t n) {
+KOKKOSCORE_EXPORT void DeepCopyCuda(void *dst, const void *src, size_t n) {
   KOKKOS_IMPL_CUDA_SAFE_CALL((CudaInternal::singleton().cuda_memcpy_wrapper(
       dst, src, n, cudaMemcpyDefault)));
 }
 
-void DeepCopyAsyncCuda(const Cuda &instance, void *dst, const void *src,
+KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(const Cuda &instance, void *dst, const void *src,
                        size_t n) {
   KOKKOS_IMPL_CUDA_SAFE_CALL(
       (instance.impl_internal_space_instance()->cuda_memcpy_async_wrapper(
           dst, src, n, cudaMemcpyDefault)));
 }
 
-void DeepCopyAsyncCuda(void *dst, const void *src, size_t n) {
+KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(void *dst, const void *src, size_t n) {
   cudaStream_t s = cuda_get_deep_copy_stream();
   KOKKOS_IMPL_CUDA_SAFE_CALL(
       cudaMemcpyAsync(dst, src, n, cudaMemcpyDefault, s));
@@ -126,19 +127,19 @@ void kokkos_impl_cuda_set_pin_uvm_to_host(bool val) {
 
 namespace Kokkos {
 
-CudaSpace::CudaSpace()
+KOKKOSCORE_EXPORT CudaSpace::CudaSpace()
     : m_device(Kokkos::Cuda().cuda_device()),
       m_stream(Kokkos::Cuda().cuda_stream()) {}
-CudaSpace::CudaSpace(int device_id, cudaStream_t stream)
+KOKKOSCORE_EXPORT CudaSpace::CudaSpace(int device_id, cudaStream_t stream)
     : m_device(device_id), m_stream(stream) {}
 
-CudaUVMSpace::CudaUVMSpace()
+KOKKOSCORE_EXPORT CudaUVMSpace::CudaUVMSpace()
     : m_device(Kokkos::Cuda().cuda_device()),
       m_stream(Kokkos::Cuda().cuda_stream()) {}
 CudaUVMSpace::CudaUVMSpace(int device_id, cudaStream_t stream)
     : m_device(device_id), m_stream(stream) {}
 
-CudaHostPinnedSpace::CudaHostPinnedSpace()
+KOKKOSCORE_EXPORT CudaHostPinnedSpace::CudaHostPinnedSpace()
     : m_device(Kokkos::Cuda().cuda_device()),
       m_stream(Kokkos::Cuda().cuda_stream()) {}
 CudaHostPinnedSpace::CudaHostPinnedSpace(int device_id, cudaStream_t stream)
@@ -153,12 +154,12 @@ void *CudaSpace::allocate(const size_t arg_alloc_size) const {
   return allocate("[unlabeled]", arg_alloc_size);
 }
 
-void *CudaSpace::allocate(const Cuda &exec_space, const char *arg_label,
+KOKKOSCORE_EXPORT void *CudaSpace::allocate(const Cuda &exec_space, const char *arg_label,
                           const size_t arg_alloc_size,
                           const size_t arg_logical_size) const {
   return impl_allocate(exec_space, arg_label, arg_alloc_size, arg_logical_size);
 }
-void *CudaSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
+KOKKOSCORE_EXPORT void *CudaSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
                           const size_t arg_logical_size) const {
   return impl_allocate(arg_label, arg_alloc_size, arg_logical_size);
 }
@@ -262,7 +263,7 @@ void *CudaSpace::impl_allocate(
 void *CudaUVMSpace::allocate(const size_t arg_alloc_size) const {
   return allocate("[unlabeled]", arg_alloc_size);
 }
-void *CudaUVMSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
+KOKKOSCORE_EXPORT void *CudaUVMSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
                              const size_t arg_logical_size) const {
   return impl_allocate(arg_label, arg_alloc_size, arg_logical_size);
 }
@@ -306,7 +307,7 @@ void *CudaUVMSpace::impl_allocate(
 void *CudaHostPinnedSpace::allocate(const size_t arg_alloc_size) const {
   return allocate("[unlabeled]", arg_alloc_size);
 }
-void *CudaHostPinnedSpace::allocate(const char *arg_label,
+KOKKOSCORE_EXPORT void *CudaHostPinnedSpace::allocate(const char *arg_label,
                                     const size_t arg_alloc_size,
                                     const size_t arg_logical_size) const {
   return impl_allocate(arg_label, arg_alloc_size, arg_logical_size);
@@ -341,7 +342,7 @@ void CudaSpace::deallocate(void *const arg_alloc_ptr,
                            const size_t arg_alloc_size) const {
   deallocate("[unlabeled]", arg_alloc_ptr, arg_alloc_size);
 }
-void CudaSpace::deallocate(const char *arg_label, void *const arg_alloc_ptr,
+KOKKOSCORE_EXPORT void CudaSpace::deallocate(const char *arg_label, void *const arg_alloc_ptr,
                            const size_t arg_alloc_size,
                            const size_t arg_logical_size) const {
   impl_deallocate(arg_label, arg_alloc_ptr, arg_alloc_size, arg_logical_size);
@@ -443,7 +444,7 @@ void CudaHostPinnedSpace::impl_deallocate(
 namespace Kokkos {
 namespace Impl {
 
-void cuda_prefetch_pointer(const Cuda &space, const void *ptr, size_t bytes,
+KOKKOSCORE_EXPORT void cuda_prefetch_pointer(const Cuda &space, const void *ptr, size_t bytes,
                            bool to_device) {
   if ((ptr == nullptr) || (bytes == 0)) return;
   cudaPointerAttributes attr;

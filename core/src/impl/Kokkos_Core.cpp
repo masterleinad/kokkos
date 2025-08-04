@@ -19,6 +19,7 @@
 #endif
 
 #include <Kokkos_Core.hpp>
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Command_Line_Parsing.hpp>
 #include <impl/Kokkos_ParseCommandLineArgumentsAndEnvironmentVariables.hpp>
@@ -175,7 +176,7 @@ std::vector<int> const& Kokkos::Impl::get_visible_devices() {
 }
 
 // NOLINTNEXTLINE(bugprone-exception-escape)
-[[nodiscard]] int Kokkos::device_id() noexcept {
+[[nodiscard]] KOKKOSCORE_EXPORT int Kokkos::device_id() noexcept {
 #if defined(KOKKOS_ENABLE_CUDA)
   int device = Cuda().cuda_device();
 #elif defined(KOKKOS_ENABLE_HIP)
@@ -200,7 +201,7 @@ std::vector<int> const& Kokkos::Impl::get_visible_devices() {
   return -1;
 }
 
-[[nodiscard]] int Kokkos::num_devices() noexcept {
+[[nodiscard]] KOKKOSCORE_EXPORT int Kokkos::num_devices() noexcept {
   if constexpr (std::is_same_v<DefaultExecutionSpace,
                                DefaultHostExecutionSpace>) {
     return -1;  // no GPU backend enabled
@@ -209,7 +210,7 @@ std::vector<int> const& Kokkos::Impl::get_visible_devices() {
   }
 }
 
-[[nodiscard]] int Kokkos::num_threads() noexcept {
+[[nodiscard]] KOKKOSCORE_EXPORT int Kokkos::num_threads() noexcept {
   return DefaultHostExecutionSpace().concurrency();
 }
 
@@ -252,7 +253,7 @@ void Kokkos::Impl::ExecSpaceManager::print_configuration(std::ostream& os,
   }
 }
 
-int Kokkos::Impl::get_ctest_gpu(int local_rank) {
+KOKKOSCORE_EXPORT int Kokkos::Impl::get_ctest_gpu(int local_rank) {
   auto const* ctest_kokkos_device_type =
       std::getenv("CTEST_KOKKOS_DEVICE_TYPE");
   if (!ctest_kokkos_device_type) {
@@ -341,7 +342,7 @@ int Kokkos::Impl::get_ctest_gpu(int local_rank) {
   return std::stoi(id.c_str());
 }
 
-std::vector<int> Kokkos::Impl::get_visible_devices(int device_count) {
+KOKKOSCORE_EXPORT std::vector<int> Kokkos::Impl::get_visible_devices(int device_count) {
   std::vector<int> visible_devices;
   char* env_visible_devices = std::getenv("KOKKOS_VISIBLE_DEVICES");
   if (env_visible_devices) {
@@ -853,7 +854,7 @@ Kokkos is a Linux Foundation Project.
 
 }  // namespace
 
-void Kokkos::Impl::parse_command_line_arguments(
+KOKKOSCORE_EXPORT void Kokkos::Impl::parse_command_line_arguments(
     int& argc, char* argv[], InitializationSettings& settings) {
   Tools::InitArguments tools_init_arguments;
   combine(tools_init_arguments, settings);
@@ -952,7 +953,7 @@ void Kokkos::Impl::parse_command_line_arguments(
   }
 }
 
-void Kokkos::Impl::parse_environment_variables(
+KOKKOSCORE_EXPORT void Kokkos::Impl::parse_environment_variables(
     InitializationSettings& settings) {
   Tools::InitArguments tools_init_arguments;
   combine(tools_init_arguments, settings);
@@ -1052,19 +1053,19 @@ void Kokkos::initialize(InitializationSettings const& settings) {
   initialize_internal(tmp);
 }
 
-void Kokkos::Impl::pre_initialize(const InitializationSettings& settings) {
+KOKKOSCORE_EXPORT void Kokkos::Impl::pre_initialize(const InitializationSettings& settings) {
   pre_initialize_internal(settings);
 }
 
-void Kokkos::Impl::post_initialize(const InitializationSettings& settings) {
+KOKKOSCORE_EXPORT void Kokkos::Impl::post_initialize(const InitializationSettings& settings) {
   post_initialize_internal(settings);
 }
 
-void Kokkos::Impl::pre_finalize() { pre_finalize_internal(); }
+KOKKOSCORE_EXPORT void Kokkos::Impl::pre_finalize() { pre_finalize_internal(); }
 
-void Kokkos::Impl::post_finalize() { post_finalize_internal(); }
+KOKKOSCORE_EXPORT void Kokkos::Impl::post_finalize() { post_finalize_internal(); }
 
-void Kokkos::push_finalize_hook(std::function<void()> f) {
+KOKKOSCORE_EXPORT void Kokkos::push_finalize_hook(std::function<void()> f) {
   finalize_hooks.push(f);
 }
 
@@ -1117,12 +1118,12 @@ void Kokkos::print_configuration(std::ostream& os, bool verbose) {
   Impl::ExecSpaceManager::get_instance().print_configuration(os, verbose);
 }
 
-[[nodiscard]] bool Kokkos::is_initialized() noexcept {
+[[nodiscard]] KOKKOSCORE_EXPORT bool Kokkos::is_initialized() noexcept {
   return g_is_initialized;
 }
 
-[[nodiscard]] bool Kokkos::is_finalized() noexcept { return g_is_finalized; }
+[[nodiscard]] KOKKOSCORE_EXPORT bool Kokkos::is_finalized() noexcept { return g_is_finalized; }
 
-bool Kokkos::show_warnings() noexcept { return g_show_warnings; }
+KOKKOSCORE_EXPORT bool Kokkos::show_warnings() noexcept { return g_show_warnings; }
 
-bool Kokkos::tune_internals() noexcept { return g_tune_internals; }
+KOKKOSCORE_EXPORT bool Kokkos::tune_internals() noexcept { return g_tune_internals; }

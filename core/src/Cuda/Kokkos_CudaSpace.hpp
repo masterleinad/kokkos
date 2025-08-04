@@ -23,6 +23,7 @@ static_assert(false,
 #define KOKKOS_CUDASPACE_HPP
 
 #include <Kokkos_Macros.hpp>
+#include "kokkoscore_export.h"
 #if defined(KOKKOS_ENABLE_CUDA)
 
 #include <Kokkos_Core_fwd.hpp>
@@ -67,10 +68,10 @@ class CudaSpace {
 
   /*--------------------------------*/
 
-  CudaSpace();
+  KOKKOSCORE_EXPORT CudaSpace();
 
  private:
-  CudaSpace(int device_id, cudaStream_t stream);
+  KOKKOSCORE_EXPORT CudaSpace(int device_id, cudaStream_t stream);
 
  public:
   CudaSpace(CudaSpace&& rhs)                 = default;
@@ -81,11 +82,11 @@ class CudaSpace {
 
   /**\brief  Allocate untracked memory in the cuda space */
   void* allocate(const Cuda& exec_space, const size_t arg_alloc_size) const;
-  void* allocate(const Cuda& exec_space, const char* arg_label,
+  KOKKOSCORE_EXPORT void* allocate(const Cuda& exec_space, const char* arg_label,
                  const size_t arg_alloc_size,
                  const size_t arg_logical_size = 0) const;
   void* allocate(const size_t arg_alloc_size) const;
-  void* allocate(const char* arg_label, const size_t arg_alloc_size,
+  KOKKOSCORE_EXPORT void* allocate(const char* arg_label, const size_t arg_alloc_size,
                  const size_t arg_logical_size = 0) const;
 
 #if defined(KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY)
@@ -103,7 +104,7 @@ class CudaSpace {
 
   /**\brief  Deallocate untracked memory in the cuda space */
   void deallocate(void* const arg_alloc_ptr, const size_t arg_alloc_size) const;
-  void deallocate(const char* arg_label, void* const arg_alloc_ptr,
+  KOKKOSCORE_EXPORT void deallocate(const char* arg_label, void* const arg_alloc_ptr,
                   const size_t arg_alloc_size,
                   const size_t arg_logical_size = 0) const;
 
@@ -168,7 +169,7 @@ class CudaUVMSpace {
 
   /*--------------------------------*/
 
-  CudaUVMSpace();
+  KOKKOSCORE_EXPORT CudaUVMSpace();
 
  private:
   CudaUVMSpace(int device_id, cudaStream_t stream);
@@ -192,7 +193,7 @@ class CudaUVMSpace {
     return allocate(arg_label, arg_alloc_size, arg_logical_size);
   }
   void* allocate(const size_t arg_alloc_size) const;
-  void* allocate(const char* arg_label, const size_t arg_alloc_size,
+  KOKKOSCORE_EXPORT void* allocate(const char* arg_label, const size_t arg_alloc_size,
                  const size_t arg_logical_size = 0) const;
 
   /**\brief  Deallocate untracked memory in the cuda space */
@@ -260,7 +261,7 @@ class CudaHostPinnedSpace {
 
   /*--------------------------------*/
 
-  CudaHostPinnedSpace();
+  KOKKOSCORE_EXPORT CudaHostPinnedSpace();
 
  private:
   CudaHostPinnedSpace(int device_id, cudaStream_t stream);
@@ -284,7 +285,7 @@ class CudaHostPinnedSpace {
     return allocate(arg_label, arg_alloc_size, arg_logical_size);
   }
   void* allocate(const size_t arg_alloc_size) const;
-  void* allocate(const char* arg_label, const size_t arg_alloc_size,
+  KOKKOSCORE_EXPORT void* allocate(const char* arg_label, const size_t arg_alloc_size,
                  const size_t arg_logical_size = 0) const;
 
   /**\brief  Deallocate untracked memory in the space */
@@ -334,7 +335,7 @@ namespace Impl {
 
 cudaStream_t cuda_get_deep_copy_stream();
 
-const std::unique_ptr<Kokkos::Cuda>& cuda_get_deep_copy_space(
+KOKKOSCORE_EXPORT const std::unique_ptr<Kokkos::Cuda>& cuda_get_deep_copy_space(
     bool initialize = true);
 
 static_assert(Kokkos::Impl::MemorySpaceAccess<Kokkos::CudaSpace,
@@ -465,10 +466,10 @@ struct MemorySpaceAccess<Kokkos::CudaHostPinnedSpace, Kokkos::CudaUVMSpace> {
 namespace Kokkos {
 namespace Impl {
 
-void DeepCopyCuda(void* dst, const void* src, size_t n);
-void DeepCopyAsyncCuda(const Cuda& instance, void* dst, const void* src,
+KOKKOSCORE_EXPORT void DeepCopyCuda(void* dst, const void* src, size_t n);
+KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(const Cuda& instance, void* dst, const void* src,
                        size_t n);
-void DeepCopyAsyncCuda(void* dst, const void* src, size_t n);
+KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(void* dst, const void* src, size_t n);
 
 template <class MemSpace>
 struct DeepCopy<MemSpace, HostSpace, Cuda,
