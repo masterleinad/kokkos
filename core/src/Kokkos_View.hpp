@@ -565,75 +565,6 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
     base_t::check_basic_view_constructibility(other.mapping());
   }
 
-#ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
- private:
-  template <class Arg>
-  KOKKOS_INLINE_FUNCTION static bool is_in_bounds(size_t extent,
-                                                  const Arg arg) {
-    return static_cast<std::size_t>(arg) < extent;
-  }
-
-  template <class T>
-  KOKKOS_INLINE_FUNCTION static bool is_in_bounds(size_t extent,
-                                                  const std::pair<T, T> arg) {
-    return static_cast<std::size_t>(arg.second) <= extent && arg.first >= 0;
-  }
-
-  template <class T>
-  static bool is_in_bounds(size_t extent, const Kokkos::pair<T, T> arg) {
-    return static_cast<std::size_t>(arg.second) <= extent && arg.first >= 0 &&
-           arg.first <= arg.second;
-  }
-
-  KOKKOS_INLINE_FUNCTION static bool is_in_bounds(size_t /*extent*/,
-                                                  const ALL_t) {
-    return true;
-  }
-
-  template <class RT, class... RP, size_t... Idx, class... Args>
-  KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
-      const View<RT, RP...>& src_view, std::index_sequence<Idx...>,
-      Args... args) {
-    return (is_in_bounds(src_view.extent(Idx), args) && ... && true);
-  }
-
-  template <class Arg>
-  static void append_error_message(std::stringstream& ss, size_t extent,
-                                   const Arg arg) {
-    ss << arg << " < " << extent;
-  }
-
-  template <class T>
-  static void append_error_message(std::stringstream& ss, size_t extent,
-                                   const std::pair<T, T> arg) {
-    ss << arg.first << " <= " << arg.second << " <= " << extent;
-  }
-
-  template <class T>
-  static void append_error_message(std::stringstream& ss, size_t extent,
-                                   const Kokkos::pair<T, T> arg) {
-    ss << arg.first << " <= " << arg.second << " <= " << extent;
-  }
-
-  static void append_error_message(std::stringstream& ss, size_t /*extent*/,
-                                   const ALL_t) {
-    ss << "Kokkos::ALL";
-  }
-
-  template <class RT, class... RP, size_t... Idx, class Arg0, class... Args>
-  static std::stringstream generate_error_message(
-      const View<RT, RP...>& src_view, std::index_sequence<Idx...>, Arg0 arg0,
-      Args... args) {
-    std::stringstream ss;
-    ss << "Kokkos::subview bounds error (";
-    append_error_message(ss, src_view.extent(0), arg0);
-    ((ss << ", ", append_error_message(ss, src_view.extent(Idx), args)), ...);
-    ss << ')';
-    return ss;
-  }
-#endif
-
- public:
   //----------------------------------------
   // Compatible subview constructor
   // may assign unmanaged from managed.
@@ -641,23 +572,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   template <class RT, class... RP, class Arg0, class... Args>
   KOKKOS_INLINE_FUNCTION View(const View<RT, RP...>& src_view, const Arg0 arg0,
                               Args... args)
-      : base_t(Impl::subview_ctor_tag, src_view, arg0, args...) {
-#ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
-    bool valid = subview_extents_valid(
-        src_view, std::make_index_sequence<sizeof...(Args) + 1>{}, arg0,
-        args...);
-    if (!valid) {
-      KOKKOS_IF_ON_HOST(
-          Kokkos::abort(generate_error_message(
-                            src_view,
-                            std::make_index_sequence<sizeof...(Args)>{}, arg0,
-                            args...)
-                            .str()
-                            .c_str());)
-      KOKKOS_IF_ON_DEVICE(Kokkos::abort("Kokkos::subview bounds error");)
-    }
-#endif
-  }
+      : base_t(Impl::subview_ctor_tag, src_view, arg0, args...) {}
 
   //----------------------------------------
   // Allocation according to allocation properties and array layout
