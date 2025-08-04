@@ -212,6 +212,7 @@ struct TestNumericTraits<
 #endif
 
 // NOLINTBEGIN(bugprone-unused-raii)
+#ifndef __FINITE_MATH_ONLY__
 TEST(TEST_CATEGORY, numeric_traits_infinity) {
   TestNumericTraits<TEST_EXECSPACE, Kokkos::Experimental::half_t, Infinity>();
   TestNumericTraits<TEST_EXECSPACE, Kokkos::Experimental::bhalf_t, Infinity>();
@@ -219,6 +220,7 @@ TEST(TEST_CATEGORY, numeric_traits_infinity) {
   TestNumericTraits<TEST_EXECSPACE, double, Infinity>();
   TestNumericTraits<TEST_EXECSPACE, long double, Infinity>();
 }
+#endif
 
 TEST(TEST_CATEGORY, numeric_traits_epsilon) {
   TestNumericTraits<TEST_EXECSPACE, Kokkos::Experimental::half_t, Epsilon>();
@@ -467,9 +469,11 @@ struct AssertIntEquality<V, V> {
                     std::numeric_limits<T>::TRAIT(),           \
                 "")
 
+#ifndef __FINITE_MATH_ONLY__
 CHECK_SAME_AS_NUMERIC_LIMITS_MEMBER_FUNCTION(float, infinity);
 CHECK_SAME_AS_NUMERIC_LIMITS_MEMBER_FUNCTION(double, infinity);
 CHECK_SAME_AS_NUMERIC_LIMITS_MEMBER_FUNCTION(long double, infinity);
+#endif
 CHECK_SAME_AS_NUMERIC_LIMITS_MEMBER_FUNCTION(float, epsilon);
 CHECK_SAME_AS_NUMERIC_LIMITS_MEMBER_FUNCTION(double, epsilon);
 CHECK_SAME_AS_NUMERIC_LIMITS_MEMBER_FUNCTION(long double, epsilon);
@@ -631,7 +635,9 @@ CHECK_NAN_SAME_AS_NUMERIC_LIMITS_MEMBER_FUNCTION(long double, signaling_NaN);
   CHECK_INSTANTIATED_ON_CV_QUALIFIED_TYPES(long long int, TRAIT);     \
   CHECK_INSTANTIATED_ON_CV_QUALIFIED_TYPES(unsigned long long int, TRAIT)
 
+#ifndef __FINITE_MATH_ONLY__
 CHECK_INSTANTIATED_ON_CV_QUALIFIED_TYPES_FLOATING_POINT(infinity);
+#endif
 CHECK_INSTANTIATED_ON_CV_QUALIFIED_TYPES_FLOATING_POINT(finite_min);
 CHECK_INSTANTIATED_ON_CV_QUALIFIED_TYPES_INTEGRAL(finite_min);
 CHECK_INSTANTIATED_ON_CV_QUALIFIED_TYPES_FLOATING_POINT(finite_max);

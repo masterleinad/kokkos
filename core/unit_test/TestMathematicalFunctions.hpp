@@ -1344,6 +1344,7 @@ struct TestAbsoluteValueFunction {
       Kokkos::printf("failed abs(long double)\n");
     }
 #endif
+#ifndef __FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1351,6 +1352,7 @@ struct TestAbsoluteValueFunction {
       ++e;
       Kokkos::printf("failed abs(floating_point) special values\n");
     }
+#endif
 
     static_assert(std::is_same_v<decltype(abs(1)), int>);
     static_assert(std::is_same_v<decltype(abs(2l)), long>);
@@ -1405,6 +1407,7 @@ struct TestFloatingPointAbsoluteValueFunction {
       Kokkos::printf("failed fabs(long double)\n");
     }
 #endif
+#ifndef __FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1412,6 +1415,7 @@ struct TestFloatingPointAbsoluteValueFunction {
       ++e;
       Kokkos::printf("failed fabs(floating_point) special values\n");
     }
+#endif
 
     static_assert(std::is_same_v<decltype(fabs(static_cast<KE::half_t>(4.f))),
                                  KE::half_t>);
@@ -1473,6 +1477,7 @@ struct TestFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed fmod(long double)\n");
     }
 #endif
+#ifndef __FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1481,6 +1486,7 @@ struct TestFloatingPointRemainderFunction : FloatingPointComparison {
       ++e;
       Kokkos::printf("failed fmod(floating_point) special values\n");
     }
+#endif
 
     static_assert(std::is_same_v<decltype(fmod(static_cast<KE::half_t>(4.f),
                                                static_cast<KE::half_t>(4.f))),
@@ -1547,6 +1553,7 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed remainder(long double)\n");
     }
 #endif
+#ifndef __FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1556,6 +1563,7 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf(
           "failed remainder(floating_point) special values\n");
     }
+#endif
 
     static_assert(
         std::is_same<decltype(remainder(static_cast<KE::half_t>(4.f),
@@ -1582,6 +1590,7 @@ TEST(TEST_CATEGORY, mathematical_functions_ieee_remainder_function) {
 // TODO: TestFpClassify, see https://github.com/kokkos/kokkos/issues/6279
 
 #ifndef KOKKOS_MATHEMATICAL_FUNCTIONS_SKIP_2
+#ifndef __FINITE_MATH_ONLY__
 template <class Space>
 struct TestIsFinite {
   TestIsFinite() { run(); }
@@ -1599,12 +1608,14 @@ struct TestIsFinite {
       ++e;
       Kokkos::printf("failed isfinite(integral)\n");
     }
+#ifndef __FINITE_MATH_ONLY__
     if (!isfinite(2.f) || isfinite(quiet_NaN<float>::value) ||
         isfinite(signaling_NaN<float>::value) ||
         isfinite(infinity<float>::value)) {
       ++e;
       Kokkos::printf("failed isfinite(float)\n");
     }
+#endif
 #if !(defined(KOKKOS_ENABLE_CUDA) && defined(KOKKOS_COMPILER_MSVC))
     if (!isfinite(static_cast<KE::half_t>(2.f)) ||
         isfinite(quiet_NaN<KE::half_t>::value) ||
@@ -1653,7 +1664,9 @@ struct TestIsFinite {
 TEST(TEST_CATEGORY, mathematical_functions_isfinite) {
   TestIsFinite<TEST_EXECSPACE>();
 }
+#endif
 
+#ifndef __FINITE_MATH_ONLY__
 template <class Space>
 struct TestIsInf {
   TestIsInf() { run(); }
@@ -1724,7 +1737,9 @@ struct TestIsInf {
 TEST(TEST_CATEGORY, mathematical_functions_isinf) {
   TestIsInf<TEST_EXECSPACE>();
 }
+#endif
 
+#ifndef __FINITE_MATH_ONLY__
 template <class Space>
 struct TestIsNaN {
   TestIsNaN() { run(); }
@@ -1777,11 +1792,13 @@ struct TestIsNaN {
       Kokkos::printf("failed isnan(long double)\n");
     }
 #endif
+#ifndef __FINITE_MATH_ONLY__
     // special values
     if (isnan(INFINITY) || !isnan(NAN)) {
       ++e;
       Kokkos::printf("failed isnan(floating_point) special values\n");
     }
+#endif
 
     static_assert(std::is_same_v<decltype(isnan(1)), bool>);
     static_assert(std::is_same_v<decltype(isnan(2.f)), bool>);
@@ -1795,6 +1812,7 @@ struct TestIsNaN {
 TEST(TEST_CATEGORY, mathematical_functions_isnan) {
   TestIsNaN<TEST_EXECSPACE>();
 }
+#endif
 
 KE::half_t ref_test_fallback_half(KE::half_t) {
 #if defined(KOKKOS_ENABLE_SYCL) && defined(KOKKOS_IMPL_SYCL_HALF_TYPE_DEFINED)
