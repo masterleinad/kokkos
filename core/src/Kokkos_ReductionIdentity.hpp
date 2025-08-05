@@ -365,14 +365,14 @@ struct reduction_identity<float> {
     return static_cast<float>(1.0f);
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() {
-#ifdef __FINITE_MATH_ONLY__
+#ifndef __FINITE_MATH_ONLY__
     return -HUGE_VALF;
 #else
     return -FLT_MAX;
 #endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() {
-#ifdef __FINITE_MATH_ONLY__
+#ifndef __FINITE_MATH_ONLY__
     return HUGE_VALF;
 #else
     return FLT_MAX;
@@ -389,14 +389,14 @@ struct reduction_identity<double> {
     return static_cast<double>(1.0);
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static double max() {
-#ifdef __FINITE_MATH_ONLY__
+#ifndef __FINITE_MATH_ONLY__
     return -HUGE_VAL;
 #else
     return -DBL_MAX;
 #endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static double min() {
-#ifdef __FINITE_MATH_ONLY__
+#ifndef __FINITE_MATH_ONLY__
     return HUGE_VAL;
 #else
     return DBL_MAX;
@@ -412,14 +412,14 @@ struct reduction_identity<long double> {
   constexpr static long double prod() { return static_cast<long double>(1.0); }
 
   constexpr static long double max() {
-#ifdef __FINITE_MATH_ONLY__
+#ifndef __FINITE_MATH_ONLY__
     return -HUGE_VALL;
 #else
     return -LDBL_MAX;
 #endif
   }
   constexpr static long double min() {
-#ifdef __FINITE_MATH_ONLY__
+#ifndef __FINITE_MATH_ONLY__
     return -HUGE_VALL;
 #else
     return LDBL_MAX;

@@ -1996,6 +1996,7 @@ struct TestComplexBesselH2Function {
   }
 };
 
+#ifndef __FINITE_MATH_ONLY__
 TEST(TEST_CATEGORY, mathspecialfunc_expint1) {
   TestExponentialIntergral1Function<TEST_EXECSPACE> test;
   test.testit();
@@ -2010,7 +2011,6 @@ TEST(TEST_CATEGORY, mathspecialfunc_errorfunc) {
 }
 #endif
 
-#ifndef __FINITE_MATH_ONLY__
 TEST(TEST_CATEGORY, mathspecialfunc_cbesselj0y0) {
   TestComplexBesselJ0Y0Function<TEST_EXECSPACE> test;
   test.testit();
