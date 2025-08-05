@@ -17,7 +17,7 @@
 #ifndef KOKKOS_CUDA_FWD_HPP_
 #define KOKKOS_CUDA_FWD_HPP_
 #if defined(KOKKOS_ENABLE_CUDA)
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 namespace Kokkos {
 

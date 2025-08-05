@@ -17,7 +17,7 @@
 #ifndef KOKKOS_IMPL_HOSTSPACE_DEEPCOPY_HPP
 #define KOKKOS_IMPL_HOSTSPACE_DEEPCOPY_HPP
 
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #include <cstdint>
 
 namespace Kokkos {
@@ -33,7 +33,7 @@ template <typename ExecutionSpace>
 KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(const ExecutionSpace& exec, void* dst,
                                        const void* src, ptrdiff_t n);
 template <typename ExecutionSpace>
-void hostspace_parallel_zeromemset(const ExecutionSpace& exec, void* dst,
+KOKKOSCORE_EXPORT void hostspace_parallel_zeromemset(const ExecutionSpace& exec, void* dst,
                                    size_t n);
 }  // namespace Impl
 

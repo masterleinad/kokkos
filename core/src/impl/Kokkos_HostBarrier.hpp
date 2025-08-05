@@ -19,7 +19,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Atomic.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 namespace Kokkos {
 namespace Impl {

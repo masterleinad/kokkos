@@ -29,7 +29,7 @@ static_assert(false,
 #include <Kokkos_BitManipulation.hpp>
 #include <Kokkos_Concepts.hpp>
 #include <Kokkos_TypeInfo.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #ifndef KOKKOS_ENABLE_IMPL_TYPEINFO
 #include <typeinfo>
 #endif

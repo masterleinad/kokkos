@@ -63,7 +63,7 @@
 #include <Kokkos_hwloc.hpp>
 #include <Kokkos_Timer.hpp>
 #include <Kokkos_Tuners.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 #include <Kokkos_TaskScheduler.hpp>
 #endif

@@ -21,7 +21,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <Kokkos_Abort.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #include <impl/Kokkos_Stacktrace.hpp>
 
 namespace Kokkos {

@@ -20,7 +20,7 @@
 
 #include "Kokkos_Macros.hpp"
 #include "Kokkos_Stacktrace.hpp"
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 #ifdef KOKKOS_IMPL_ENABLE_STACKTRACE
 // backtrace() function for retrieving the stacktrace

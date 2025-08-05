@@ -23,7 +23,7 @@ static_assert(false,
 #define KOKKOS_HWLOC_HPP
 
 #include <Kokkos_Macros.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 #include <utility>
 

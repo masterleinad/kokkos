@@ -22,7 +22,7 @@
 
 #include <impl/Kokkos_HostBarrier.hpp>
 #include <Kokkos_BitManipulation.hpp>  // bit_width
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 #include <thread>
 #if defined(_WIN32)

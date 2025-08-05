@@ -19,7 +19,7 @@
 #endif
 
 #include "Kokkos_Core.hpp"
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #include "Kokkos_HostSpace_deepcopy.hpp"
 
 namespace Kokkos {
@@ -139,7 +139,7 @@ KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(const ExecutionSpace& e
 }
 
 template <typename ExecutionSpace>
-void hostspace_parallel_zeromemset(const ExecutionSpace& exec, void* dst,
+KOKKOSCORE_EXPORT void hostspace_parallel_zeromemset(const ExecutionSpace& exec, void* dst,
                                    size_t n) {
   constexpr uint8_t z_u8 = 0x00;
   using policy_t =

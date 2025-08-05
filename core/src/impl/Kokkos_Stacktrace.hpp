@@ -17,7 +17,7 @@
 #ifndef KOKKOS_STACKTRACE_HPP
 #define KOKKOS_STACKTRACE_HPP
 
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #include <functional>
 #include <ostream>
 #include <string>

@@ -19,7 +19,7 @@
 #endif
 
 #include <impl/Kokkos_Error.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 #include <ostream>
 #include <sstream>

@@ -19,7 +19,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Printf.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #ifdef KOKKOS_ENABLE_CUDA
 #include <Cuda/Kokkos_Cuda_abort.hpp>
 #endif

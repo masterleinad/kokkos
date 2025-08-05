@@ -18,7 +18,7 @@
 #define KOKKOS_SHARED_ALLOC_HPP
 
 #include <Kokkos_Macros.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #include <Kokkos_Core_fwd.hpp>
 #include <impl/Kokkos_Error.hpp>  // Impl::throw_runtime_exception
 

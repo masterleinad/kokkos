@@ -19,7 +19,7 @@
 #endif
 
 #include <Kokkos_Core.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 #include <Serial/Kokkos_Serial.hpp>
 #include <impl/Kokkos_Traits.hpp>

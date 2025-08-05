@@ -17,7 +17,7 @@
 #ifndef KOKKOS_THREADS_SPINWAIT_HPP
 #define KOKKOS_THREADS_SPINWAIT_HPP
 
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 #include <Threads/Kokkos_Threads_State.hpp>
 

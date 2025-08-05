@@ -20,7 +20,7 @@
 #include <Kokkos_Macros.hpp>
 #ifdef KOKKOS_ENABLE_CUDA
 
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Profiling.hpp>
 

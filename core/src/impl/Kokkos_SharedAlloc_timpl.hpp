@@ -19,7 +19,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Core_fwd.hpp>
-#include "kokkoscore_export.h"
+#include "Kokkos_Core_Export.h"
 
 #include <impl/Kokkos_SharedAlloc.hpp>
 
