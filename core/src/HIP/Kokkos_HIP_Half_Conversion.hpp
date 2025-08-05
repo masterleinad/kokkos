@@ -206,10 +206,18 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
     return 1.0F;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+#ifndef __FINITE_MATH_ONLY__
+    return -Kokkos::Experimental::infinity_v<float>;
+#else
     return -65504.0F;
+#endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+#ifndef __FINITE_MATH_ONLY__
+    return Kokkos::Experimental::infinity_v<float>;
+#else
     return 65504.0F;
+#endif
   }
 };
 
