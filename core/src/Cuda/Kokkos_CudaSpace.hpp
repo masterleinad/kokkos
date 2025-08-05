@@ -23,10 +23,10 @@ static_assert(false,
 #define KOKKOS_CUDASPACE_HPP
 
 #include <Kokkos_Macros.hpp>
-#include "kokkoscore_export.h"
 #if defined(KOKKOS_ENABLE_CUDA)
 
 #include <Kokkos_Core_fwd.hpp>
+#include "kokkoscore_export.h"
 
 #include <iosfwd>
 #include <typeinfo>

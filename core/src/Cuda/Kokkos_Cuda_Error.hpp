@@ -18,9 +18,9 @@
 #define KOKKOS_CUDA_ERROR_HPP
 
 #include <Kokkos_Macros.hpp>
-#include "kokkoscore_export.h"
 #ifdef KOKKOS_ENABLE_CUDA
 
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Profiling.hpp>
 

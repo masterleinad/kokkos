@@ -18,6 +18,7 @@
 #define KOKKOS_IMPL_PUBLIC_INCLUDE
 #endif
 
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_Command_Line_Parsing.hpp>
 #include <impl/Kokkos_Error.hpp>
 

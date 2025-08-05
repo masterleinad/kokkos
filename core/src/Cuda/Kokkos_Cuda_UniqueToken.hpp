@@ -22,6 +22,7 @@
 
 #include <Cuda/Kokkos_CudaSpace.hpp>
 #include <Kokkos_UniqueToken.hpp>
+#include "kokkoscore_export.h"
 
 namespace Kokkos {
 

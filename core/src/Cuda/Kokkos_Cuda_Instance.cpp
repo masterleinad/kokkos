@@ -22,10 +22,10 @@
 #endif
 
 #include <Kokkos_Macros.hpp>
-#include "kokkoscore_export.h"
 #ifdef KOKKOS_ENABLE_CUDA
 
 #include <Kokkos_Core.hpp>
+#include "kokkoscore_export.h"
 
 // #include <Cuda/Kokkos_Cuda_Error.hpp>
 // #include <Cuda/Kokkos_Cuda_BlockSize_Deduction.hpp>

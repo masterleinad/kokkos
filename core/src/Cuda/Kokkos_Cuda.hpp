@@ -23,7 +23,6 @@ static_assert(false,
 #define KOKKOS_CUDA_HPP
 
 #include <Kokkos_Macros.hpp>
-#include "kokkoscore_export.h"
 #if defined(KOKKOS_ENABLE_CUDA)
 
 #include <Kokkos_Core_fwd.hpp>
@@ -39,6 +38,7 @@ static_assert(false,
 #include <Kokkos_Layout.hpp>
 #include <Kokkos_ScratchSpace.hpp>
 #include <Kokkos_MemoryTraits.hpp>
+#include "kokkoscore_export.h"
 #include <impl/Kokkos_HostSharedPtr.hpp>
 #include <impl/Kokkos_InitializationSettings.hpp>
 
