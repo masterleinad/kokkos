@@ -117,11 +117,9 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
 #ifndef __FINITE_MATH_ONLY__
-    // sycl::half doesn't have constexpr constructors so we return
-    // bit_comparison_type which doesn't have a unitary minus operator.
-    // -inf
-    return Kokkos::Experimental::half_t::bit_comparison_type{
-        0b1'11111'0000000000};
+    return -std::numeric_limits<
+        Kokkos::Experimental::half_t::impl_type>::infinity();
+bla
 #else
     return std::numeric_limits<
         Kokkos::Experimental::half_t::impl_type>::lowest();
@@ -129,9 +127,8 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
 #ifndef __FINITE_MATH_ONLY__
-    // sycl::half doesn't have constexpr constructors so we return
-    // bit_comparison_type
-    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
+    return std::numeric_limits<
+        Kokkos::Experimental::half_t::impl_type>::infinity();
 #else
     return std::numeric_limits<Kokkos::Experimental::half_t::impl_type>::max();
 #endif
@@ -235,18 +232,21 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
     return 1.0f;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
 #ifndef __FINITE_MATH_ONLY__
-    return -Kokkos::Experimental::infinity_v<float>;
+    return -std::numeric_limits<
+        Kokkos::Experimental::bhalf_t::impl_type>::infinity();
 #else
-    return -0x7f7f;
+    return std::numeric_limits<
+        Kokkos::Experimental::bhalf_t::impl_type>::lowest();
 #endif
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
 #ifndef __FINITE_MATH_ONLY__
-    return Kokkos::Experimental::infinity_v<float>;
+    return std::numeric_limits<
+        Kokkos::Experimental::bhalf_t::impl_type>::infinity();
 #else
-    return 0x7f7f;
+    return std::numeric_limits<Kokkos::Experimental::bhalf_t::impl_type>::max();
 #endif
   }
 };
