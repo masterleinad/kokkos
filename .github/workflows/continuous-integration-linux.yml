@@ -165,6 +165,7 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.extra_linker_flags }}" \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
             ${{ matrix.cmake_extra_opts }} \
             -DCMAKE_BUILD_TYPE=${{ matrix.cmake_build_type }}
       - name: Build
