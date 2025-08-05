@@ -26,7 +26,7 @@ jobs:
           - arch: 'x64'
             distro: 'ubuntu:intel'
             cxx: 'icpx'
-            cxx_extra_flags: '-fp-model=precise -Wno-pass-failed -fsanitize=address,undefined -fno-sanitize=function -fno-sanitize=vptr -fno-sanitize-recover=all'
+            cxx_extra_flags: '-ffinite-math-only -Wno-pass-failed -fsanitize=address,undefined -fno-sanitize=function -fno-sanitize=vptr -fno-sanitize-recover=all'
             extra_linker_flags: '-fsanitize=address,undefined -fno-sanitize=function -fno-sanitize=vptr -fno-sanitize-recover=all'
             cmake_build_type: 'Release'
             backend: 'OPENMP'
