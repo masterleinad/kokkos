@@ -584,7 +584,8 @@ struct ScratchRequest {
 };
 
 // Causes abnormal program termination if level is not `0` or `1`
-KOKKOSCORE_EXPORT void team_policy_check_valid_storage_level_argument(int level);
+KOKKOSCORE_EXPORT void team_policy_check_valid_storage_level_argument(
+    int level);
 
 /** \brief  Execution policy for parallel work over a league of teams of
  * threads.

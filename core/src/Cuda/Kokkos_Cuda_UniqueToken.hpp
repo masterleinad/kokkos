@@ -27,8 +27,8 @@
 namespace Kokkos {
 
 namespace Impl {
-KOKKOSCORE_EXPORT Kokkos::View<uint32_t*, Kokkos::CudaSpace> cuda_global_unique_token_locks(
-    bool deallocate = false);
+KOKKOSCORE_EXPORT Kokkos::View<uint32_t*, Kokkos::CudaSpace>
+cuda_global_unique_token_locks(bool deallocate = false);
 }
 
 namespace Experimental {

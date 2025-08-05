@@ -26,7 +26,8 @@
 #include "Kokkos_Core_Export.h"
 #include <impl/Kokkos_Error.hpp>
 
-KOKKOSCORE_EXPORT void Kokkos::Impl::throw_runtime_exception(const std::string &msg) {
+KOKKOSCORE_EXPORT void Kokkos::Impl::throw_runtime_exception(
+    const std::string &msg) {
   throw std::runtime_error(msg);
 }
 

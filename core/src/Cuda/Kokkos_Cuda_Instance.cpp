@@ -126,8 +126,8 @@ std::size_t scratch_count(const std::size_t size) {
 
 }  // namespace
 
-KOKKOSCORE_EXPORT Kokkos::View<uint32_t *, Kokkos::CudaSpace> cuda_global_unique_token_locks(
-    bool deallocate) {
+KOKKOSCORE_EXPORT Kokkos::View<uint32_t *, Kokkos::CudaSpace>
+cuda_global_unique_token_locks(bool deallocate) {
   static Kokkos::View<uint32_t *, Kokkos::CudaSpace> locks =
       Kokkos::View<uint32_t *, Kokkos::CudaSpace>();
   if (!deallocate && locks.extent(0) == 0)
@@ -166,8 +166,9 @@ void cuda_stream_synchronize(const cudaStream_t stream, const CudaInternal *ptr,
       [stream] { KOKKOS_IMPL_CUDA_SAFE_CALL(cudaStreamSynchronize(stream)); });
 }
 
-KOKKOSCORE_EXPORT void cuda_internal_error_throw(cudaError e, const char *name, const char *file,
-                               const int line) {
+KOKKOSCORE_EXPORT void cuda_internal_error_throw(cudaError e, const char *name,
+                                                 const char *file,
+                                                 const int line) {
   std::ostringstream out;
   out << name << " error( " << cudaGetErrorName(e)
       << "): " << cudaGetErrorString(e);
@@ -177,8 +178,9 @@ KOKKOSCORE_EXPORT void cuda_internal_error_throw(cudaError e, const char *name, 
   throw_runtime_exception(out.str());
 }
 
-KOKKOSCORE_EXPORT void cuda_internal_error_abort(cudaError e, const char *name, const char *file,
-                               const int line) {
+KOKKOSCORE_EXPORT void cuda_internal_error_abort(cudaError e, const char *name,
+                                                 const char *file,
+                                                 const int line) {
   std::ostringstream out;
   out << name << " error( " << cudaGetErrorName(e)
       << "): " << cudaGetErrorString(e);
@@ -249,7 +251,8 @@ CudaInternal::~CudaInternal() {
   }
 }
 
-KOKKOSCORE_EXPORT int CudaInternal::verify_is_initialized(const char *const label) const {
+KOKKOSCORE_EXPORT int CudaInternal::verify_is_initialized(
+    const char *const label) const {
   if (m_cudaDev < 0) {
     Kokkos::abort((std::string("Kokkos::Cuda::") + label +
                    " : ERROR device not initialized\n")
@@ -432,9 +435,8 @@ KOKKOSCORE_EXPORT int CudaInternal::acquire_team_scratch_space() {
   return current_team_scratch;
 }
 
-KOKKOSCORE_EXPORT void *CudaInternal::resize_team_scratch_space(int scratch_pool_id,
-                                              std::int64_t bytes,
-                                              bool force_shrink) {
+KOKKOSCORE_EXPORT void *CudaInternal::resize_team_scratch_space(
+    int scratch_pool_id, std::int64_t bytes, bool force_shrink) {
   // Multiple ParallelFor/Reduce Teams can call this function at the same time
   // and invalidate the m_team_scratch_ptr. We use a pool to avoid any race
   // condition.
@@ -457,7 +459,8 @@ KOKKOSCORE_EXPORT void *CudaInternal::resize_team_scratch_space(int scratch_pool
   return m_team_scratch_ptr[scratch_pool_id];
 }
 
-KOKKOSCORE_EXPORT void CudaInternal::release_team_scratch_space(int scratch_pool_id) {
+KOKKOSCORE_EXPORT void CudaInternal::release_team_scratch_space(
+    int scratch_pool_id) {
   m_team_scratch_pool[scratch_pool_id] = 0;
 }
 
@@ -509,18 +512,18 @@ void CudaInternal::finalize() {
 
 //----------------------------------------------------------------------------
 
-KOKKOSCORE_EXPORT Cuda::size_type *cuda_internal_scratch_space(const Cuda &instance,
-                                             const std::size_t size) {
+KOKKOSCORE_EXPORT Cuda::size_type *cuda_internal_scratch_space(
+    const Cuda &instance, const std::size_t size) {
   return instance.impl_internal_space_instance()->scratch_space(size);
 }
 
-KOKKOSCORE_EXPORT Cuda::size_type *cuda_internal_scratch_flags(const Cuda &instance,
-                                             const std::size_t size) {
+KOKKOSCORE_EXPORT Cuda::size_type *cuda_internal_scratch_flags(
+    const Cuda &instance, const std::size_t size) {
   return instance.impl_internal_space_instance()->scratch_flags(size);
 }
 
-KOKKOSCORE_EXPORT Cuda::size_type *cuda_internal_scratch_unified(const Cuda &instance,
-                                               const std::size_t size) {
+KOKKOSCORE_EXPORT Cuda::size_type *cuda_internal_scratch_unified(
+    const Cuda &instance, const std::size_t size) {
   return instance.impl_internal_space_instance()->scratch_unified(size);
 }
 
@@ -543,7 +546,8 @@ KOKKOSCORE_EXPORT int Cuda::impl_is_initialized() {
   return Impl::CudaInternal::singleton().is_initialized();
 }
 
-KOKKOSCORE_EXPORT void Cuda::impl_initialize(InitializationSettings const &settings) {
+KOKKOSCORE_EXPORT void Cuda::impl_initialize(
+    InitializationSettings const &settings) {
   const std::vector<int> &visible_devices = Impl::get_visible_devices();
   const int cuda_device_id =
       Impl::get_gpu(settings).value_or(visible_devices[0]);
@@ -679,7 +683,8 @@ KOKKOS_DEPRECATED Cuda::Cuda(cudaStream_t stream, bool manage_stream)
     : Cuda(stream,
            manage_stream ? Impl::ManageStream::yes : Impl::ManageStream::no) {}
 
-KOKKOSCORE_EXPORT Cuda::Cuda(cudaStream_t stream, Impl::ManageStream manage_stream)
+KOKKOSCORE_EXPORT Cuda::Cuda(cudaStream_t stream,
+                             Impl::ManageStream manage_stream)
     : m_space_instance(
           new Impl::CudaInternal, [manage_stream](Impl::CudaInternal *ptr) {
             ptr->finalize();
@@ -693,7 +698,8 @@ KOKKOSCORE_EXPORT Cuda::Cuda(cudaStream_t stream, Impl::ManageStream manage_stre
   m_space_instance->initialize(stream);
 }
 
-KOKKOSCORE_EXPORT void Cuda::print_configuration(std::ostream &os, bool /*verbose*/) const {
+KOKKOSCORE_EXPORT void Cuda::print_configuration(std::ostream &os,
+                                                 bool /*verbose*/) const {
   os << "Device Execution Space:\n";
   os << "  KOKKOS_ENABLE_CUDA: yes\n";
 
@@ -739,8 +745,12 @@ KOKKOSCORE_EXPORT uint32_t Cuda::impl_instance_id() const noexcept {
   return m_space_instance->impl_get_instance_id();
 }
 
-KOKKOSCORE_EXPORT cudaStream_t Cuda::cuda_stream() const { return m_space_instance->m_stream; }
-KOKKOSCORE_EXPORT int Cuda::cuda_device() const { return m_space_instance->m_cudaDev; }
+KOKKOSCORE_EXPORT cudaStream_t Cuda::cuda_stream() const {
+  return m_space_instance->m_stream;
+}
+KOKKOSCORE_EXPORT int Cuda::cuda_device() const {
+  return m_space_instance->m_cudaDev;
+}
 KOKKOSCORE_EXPORT const cudaDeviceProp &Cuda::cuda_device_prop() const {
   return m_space_instance->m_deviceProp;
 }
@@ -753,10 +763,12 @@ int g_cuda_space_factory_initialized =
 int CudaInternal::m_cudaArch = -1;
 KOKKOSCORE_EXPORT cudaDeviceProp CudaInternal::m_deviceProp;
 std::set<int> CudaInternal::cuda_devices = {};
-KOKKOSCORE_EXPORT std::map<int, unsigned long *> CudaInternal::constantMemHostStagingPerDevice =
-    {};
-KOKKOSCORE_EXPORT std::map<int, cudaEvent_t> CudaInternal::constantMemReusablePerDevice = {};
-KOKKOSCORE_EXPORT std::map<int, std::mutex> CudaInternal::constantMemMutexPerDevice     = {};
+KOKKOSCORE_EXPORT std::map<int, unsigned long *>
+    CudaInternal::constantMemHostStagingPerDevice = {};
+KOKKOSCORE_EXPORT std::map<int, cudaEvent_t>
+    CudaInternal::constantMemReusablePerDevice = {};
+KOKKOSCORE_EXPORT std::map<int, std::mutex>
+    CudaInternal::constantMemMutexPerDevice = {};
 
 }  // namespace Impl
 

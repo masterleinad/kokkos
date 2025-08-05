@@ -48,8 +48,8 @@ cudaStream_t Kokkos::Impl::cuda_get_deep_copy_stream() {
   return s;
 }
 
-KOKKOSCORE_EXPORT const std::unique_ptr<Kokkos::Cuda> &Kokkos::Impl::cuda_get_deep_copy_space(
-    bool initialize) {
+KOKKOSCORE_EXPORT const std::unique_ptr<Kokkos::Cuda> &
+Kokkos::Impl::cuda_get_deep_copy_space(bool initialize) {
   static std::unique_ptr<Cuda> space = nullptr;
   if (!space && initialize)
     space = std::make_unique<Cuda>(Kokkos::Impl::cuda_get_deep_copy_stream());
@@ -64,8 +64,8 @@ KOKKOSCORE_EXPORT void DeepCopyCuda(void *dst, const void *src, size_t n) {
       dst, src, n, cudaMemcpyDefault)));
 }
 
-KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(const Cuda &instance, void *dst, const void *src,
-                       size_t n) {
+KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(const Cuda &instance, void *dst,
+                                         const void *src, size_t n) {
   KOKKOS_IMPL_CUDA_SAFE_CALL(
       (instance.impl_internal_space_instance()->cuda_memcpy_async_wrapper(
           dst, src, n, cudaMemcpyDefault)));
@@ -154,13 +154,14 @@ void *CudaSpace::allocate(const size_t arg_alloc_size) const {
   return allocate("[unlabeled]", arg_alloc_size);
 }
 
-KOKKOSCORE_EXPORT void *CudaSpace::allocate(const Cuda &exec_space, const char *arg_label,
-                          const size_t arg_alloc_size,
-                          const size_t arg_logical_size) const {
+KOKKOSCORE_EXPORT void *CudaSpace::allocate(
+    const Cuda &exec_space, const char *arg_label, const size_t arg_alloc_size,
+    const size_t arg_logical_size) const {
   return impl_allocate(exec_space, arg_label, arg_alloc_size, arg_logical_size);
 }
-KOKKOSCORE_EXPORT void *CudaSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
-                          const size_t arg_logical_size) const {
+KOKKOSCORE_EXPORT void *CudaSpace::allocate(
+    const char *arg_label, const size_t arg_alloc_size,
+    const size_t arg_logical_size) const {
   return impl_allocate(arg_label, arg_alloc_size, arg_logical_size);
 }
 
@@ -263,8 +264,9 @@ void *CudaSpace::impl_allocate(
 void *CudaUVMSpace::allocate(const size_t arg_alloc_size) const {
   return allocate("[unlabeled]", arg_alloc_size);
 }
-KOKKOSCORE_EXPORT void *CudaUVMSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
-                             const size_t arg_logical_size) const {
+KOKKOSCORE_EXPORT void *CudaUVMSpace::allocate(
+    const char *arg_label, const size_t arg_alloc_size,
+    const size_t arg_logical_size) const {
   return impl_allocate(arg_label, arg_alloc_size, arg_logical_size);
 }
 void *CudaUVMSpace::impl_allocate(
@@ -307,9 +309,9 @@ void *CudaUVMSpace::impl_allocate(
 void *CudaHostPinnedSpace::allocate(const size_t arg_alloc_size) const {
   return allocate("[unlabeled]", arg_alloc_size);
 }
-KOKKOSCORE_EXPORT void *CudaHostPinnedSpace::allocate(const char *arg_label,
-                                    const size_t arg_alloc_size,
-                                    const size_t arg_logical_size) const {
+KOKKOSCORE_EXPORT void *CudaHostPinnedSpace::allocate(
+    const char *arg_label, const size_t arg_alloc_size,
+    const size_t arg_logical_size) const {
   return impl_allocate(arg_label, arg_alloc_size, arg_logical_size);
 }
 void *CudaHostPinnedSpace::impl_allocate(
@@ -342,9 +344,9 @@ void CudaSpace::deallocate(void *const arg_alloc_ptr,
                            const size_t arg_alloc_size) const {
   deallocate("[unlabeled]", arg_alloc_ptr, arg_alloc_size);
 }
-KOKKOSCORE_EXPORT void CudaSpace::deallocate(const char *arg_label, void *const arg_alloc_ptr,
-                           const size_t arg_alloc_size,
-                           const size_t arg_logical_size) const {
+KOKKOSCORE_EXPORT void CudaSpace::deallocate(
+    const char *arg_label, void *const arg_alloc_ptr,
+    const size_t arg_alloc_size, const size_t arg_logical_size) const {
   impl_deallocate(arg_label, arg_alloc_ptr, arg_alloc_size, arg_logical_size);
 }
 void CudaSpace::impl_deallocate(
@@ -444,8 +446,8 @@ void CudaHostPinnedSpace::impl_deallocate(
 namespace Kokkos {
 namespace Impl {
 
-KOKKOSCORE_EXPORT void cuda_prefetch_pointer(const Cuda &space, const void *ptr, size_t bytes,
-                           bool to_device) {
+KOKKOSCORE_EXPORT void cuda_prefetch_pointer(const Cuda &space, const void *ptr,
+                                             size_t bytes, bool to_device) {
   if ((ptr == nullptr) || (bytes == 0)) return;
   cudaPointerAttributes attr;
   KOKKOS_IMPL_CUDA_SAFE_CALL((

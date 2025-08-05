@@ -30,14 +30,16 @@ KOKKOSCORE_EXPORT void hostspace_fence(const DefaultHostExecutionSpace& exec) {
   exec.fence("HostSpace fence");
 }
 
-KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy(void* dst, const void* src, ptrdiff_t n) {
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy(void* dst, const void* src,
+                                                   ptrdiff_t n) {
   Kokkos::DefaultHostExecutionSpace exec;
   hostspace_parallel_deepcopy_async(exec, dst, src, n);
 }
 
 // DeepCopy called with an execution space that can't access HostSpace
-KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(void* dst, const void* src,
-                                       ptrdiff_t n) {
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(void* dst,
+                                                         const void* src,
+                                                         ptrdiff_t n) {
   Kokkos::DefaultHostExecutionSpace exec;
   hostspace_parallel_deepcopy_async(exec, dst, src, n);
   exec.fence(
@@ -45,8 +47,8 @@ KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(void* dst, const void* 
 }
 
 template <typename ExecutionSpace>
-KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(const ExecutionSpace& exec, void* dst,
-                                       const void* src, ptrdiff_t n) {
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(
+    const ExecutionSpace& exec, void* dst, const void* src, ptrdiff_t n) {
   using policy_t = Kokkos::RangePolicy<ExecutionSpace>;
 
   // If the asynchronous HPX backend is enabled, do *not* copy anything
@@ -139,8 +141,8 @@ KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(const ExecutionSpace& e
 }
 
 template <typename ExecutionSpace>
-KOKKOSCORE_EXPORT void hostspace_parallel_zeromemset(const ExecutionSpace& exec, void* dst,
-                                   size_t n) {
+KOKKOSCORE_EXPORT void hostspace_parallel_zeromemset(const ExecutionSpace& exec,
+                                                     void* dst, size_t n) {
   constexpr uint8_t z_u8 = 0x00;
   using policy_t =
       Kokkos::RangePolicy<ExecutionSpace, Kokkos::IndexType<size_t>>;
@@ -192,8 +194,9 @@ template void hostspace_parallel_zeromemset<DefaultHostExecutionSpace>(
      defined(KOKKOS_ENABLE_HPX))
 // Instantiate only if both the Serial backend and some other host parallel
 // backend are enabled
-template KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async<Kokkos::Serial>(
-    const Kokkos::Serial&, void*, const void*, ptrdiff_t);
+template KOKKOSCORE_EXPORT void
+hostspace_parallel_deepcopy_async<Kokkos::Serial>(const Kokkos::Serial&, void*,
+                                                  const void*, ptrdiff_t);
 #endif
 }  // namespace Impl
 

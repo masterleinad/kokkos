@@ -81,7 +81,7 @@ const std::string InitArguments::unset_string_option = {
 
 namespace Impl {
 KOKKOSCORE_EXPORT void parse_command_line_arguments(int& argc, char* argv[],
-                                  InitArguments& arguments) {
+                                                    InitArguments& arguments) {
   int iarg = 0;
   using Kokkos::Impl::check_arg;
   using Kokkos::Impl::check_arg_str;
@@ -142,8 +142,8 @@ KOKKOSCORE_EXPORT void parse_command_line_arguments(int& argc, char* argv[],
       args = argv[0];
   }
 }
-KOKKOSCORE_EXPORT Kokkos::Tools::Impl::InitializationStatus parse_environment_variables(
-    InitArguments& arguments) {
+KOKKOSCORE_EXPORT Kokkos::Tools::Impl::InitializationStatus
+parse_environment_variables(InitArguments& arguments) {
   auto& libs               = arguments.lib;
   auto& args               = arguments.args;
   auto env_profile_library = std::getenv("KOKKOS_PROFILE_LIBRARY");
@@ -306,8 +306,9 @@ static void updateProfileLibraryState() {
                                     Experimental::no_profiling);
 }
 
-KOKKOSCORE_EXPORT void beginParallelFor(const std::string& kernelPrefix, const uint32_t devID,
-                      uint64_t* kernelID) {
+KOKKOSCORE_EXPORT void beginParallelFor(const std::string& kernelPrefix,
+                                        const uint32_t devID,
+                                        uint64_t* kernelID) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::Yes,
       Experimental::current_callbacks.begin_parallel_for, kernelPrefix.c_str(),
@@ -337,8 +338,9 @@ KOKKOSCORE_EXPORT void endParallelFor(const uint64_t kernelID) {
 #endif
 }
 
-KOKKOSCORE_EXPORT void beginParallelScan(const std::string& kernelPrefix, const uint32_t devID,
-                       uint64_t* kernelID) {
+KOKKOSCORE_EXPORT void beginParallelScan(const std::string& kernelPrefix,
+                                         const uint32_t devID,
+                                         uint64_t* kernelID) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::Yes,
       Experimental::current_callbacks.begin_parallel_scan, kernelPrefix.c_str(),
@@ -368,8 +370,9 @@ KOKKOSCORE_EXPORT void endParallelScan(const uint64_t kernelID) {
 #endif
 }
 
-KOKKOSCORE_EXPORT void beginParallelReduce(const std::string& kernelPrefix, const uint32_t devID,
-                         uint64_t* kernelID) {
+KOKKOSCORE_EXPORT void beginParallelReduce(const std::string& kernelPrefix,
+                                           const uint32_t devID,
+                                           uint64_t* kernelID) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::Yes,
       Experimental::current_callbacks.begin_parallel_reduce,
@@ -427,10 +430,12 @@ void deallocateData(const SpaceHandle space, const std::string& label,
       ptr, size);
 }
 
-KOKKOSCORE_EXPORT void beginDeepCopy(const SpaceHandle dst_space, const std::string& dst_label,
-                   const void* dst_ptr, const SpaceHandle src_space,
-                   const std::string& src_label, const void* src_ptr,
-                   const uint64_t size) {
+KOKKOSCORE_EXPORT void beginDeepCopy(const SpaceHandle dst_space,
+                                     const std::string& dst_label,
+                                     const void* dst_ptr,
+                                     const SpaceHandle src_space,
+                                     const std::string& src_label,
+                                     const void* src_ptr, const uint64_t size) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::No,
       Experimental::current_callbacks.begin_deep_copy, dst_space,
@@ -465,8 +470,8 @@ KOKKOSCORE_EXPORT void endDeepCopy() {
 #endif
 }
 
-KOKKOSCORE_EXPORT void beginFence(const std::string& name, const uint32_t deviceId,
-                uint64_t* handle) {
+KOKKOSCORE_EXPORT void beginFence(const std::string& name,
+                                  const uint32_t deviceId, uint64_t* handle) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::No,
       Experimental::current_callbacks.begin_fence, name.c_str(), deviceId,
@@ -479,7 +484,8 @@ KOKKOSCORE_EXPORT void endFence(const uint64_t handle) {
       Experimental::current_callbacks.end_fence, handle);
 }
 
-KOKKOSCORE_EXPORT void createProfileSection(const std::string& sectionName, uint32_t* secID) {
+KOKKOSCORE_EXPORT void createProfileSection(const std::string& sectionName,
+                                            uint32_t* secID) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::No,
       Experimental::current_callbacks.create_profile_section,
@@ -824,22 +830,23 @@ void finalize() {
 #endif
 }
 
-KOKKOSCORE_EXPORT void syncDualView(const std::string& label, const void* const ptr,
-                  bool to_device) {
+KOKKOSCORE_EXPORT void syncDualView(const std::string& label,
+                                    const void* const ptr, bool to_device) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::No,
       Experimental::current_callbacks.sync_dual_view, label.c_str(), ptr,
       to_device);
 }
-KOKKOSCORE_EXPORT void modifyDualView(const std::string& label, const void* const ptr,
-                    bool on_device) {
+KOKKOSCORE_EXPORT void modifyDualView(const std::string& label,
+                                      const void* const ptr, bool on_device) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::No,
       Experimental::current_callbacks.modify_dual_view, label.c_str(), ptr,
       on_device);
 }
 
-KOKKOSCORE_EXPORT void declareMetadata(const std::string& key, const std::string& value) {
+KOKKOSCORE_EXPORT void declareMetadata(const std::string& key,
+                                       const std::string& value) {
   Experimental::invoke_kokkosp_callback(
       Experimental::MayRequireGlobalFencing::No,
       Experimental::current_callbacks.declare_metadata, key.c_str(),
@@ -874,7 +881,8 @@ KOKKOSCORE_EXPORT void set_end_parallel_for_callback(endFunction callback) {
   current_callbacks.end_parallel_for = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_begin_parallel_reduce_callback(beginFunction callback) {
+KOKKOSCORE_EXPORT void set_begin_parallel_reduce_callback(
+    beginFunction callback) {
   current_callbacks.begin_parallel_reduce = callback;
   updateProfileLibraryState();
 }
@@ -882,7 +890,8 @@ KOKKOSCORE_EXPORT void set_end_parallel_reduce_callback(endFunction callback) {
   current_callbacks.end_parallel_reduce = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_begin_parallel_scan_callback(beginFunction callback) {
+KOKKOSCORE_EXPORT void set_begin_parallel_scan_callback(
+    beginFunction callback) {
   current_callbacks.begin_parallel_scan = callback;
   updateProfileLibraryState();
 }
@@ -898,11 +907,13 @@ KOKKOSCORE_EXPORT void set_pop_region_callback(popFunction callback) {
   current_callbacks.pop_region = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_allocate_data_callback(allocateDataFunction callback) {
+KOKKOSCORE_EXPORT void set_allocate_data_callback(
+    allocateDataFunction callback) {
   current_callbacks.allocate_data = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_deallocate_data_callback(deallocateDataFunction callback) {
+KOKKOSCORE_EXPORT void set_deallocate_data_callback(
+    deallocateDataFunction callback) {
   current_callbacks.deallocate_data = callback;
   updateProfileLibraryState();
 }
@@ -911,11 +922,13 @@ KOKKOSCORE_EXPORT void set_create_profile_section_callback(
   current_callbacks.create_profile_section = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_start_profile_section_callback(startProfileSectionFunction callback) {
+KOKKOSCORE_EXPORT void set_start_profile_section_callback(
+    startProfileSectionFunction callback) {
   current_callbacks.start_profile_section = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_stop_profile_section_callback(stopProfileSectionFunction callback) {
+KOKKOSCORE_EXPORT void set_stop_profile_section_callback(
+    stopProfileSectionFunction callback) {
   current_callbacks.stop_profile_section = callback;
   updateProfileLibraryState();
 }
@@ -924,15 +937,18 @@ KOKKOSCORE_EXPORT void set_destroy_profile_section_callback(
   current_callbacks.destroy_profile_section = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_profile_event_callback(profileEventFunction callback) {
+KOKKOSCORE_EXPORT void set_profile_event_callback(
+    profileEventFunction callback) {
   current_callbacks.profile_event = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_begin_deep_copy_callback(beginDeepCopyFunction callback) {
+KOKKOSCORE_EXPORT void set_begin_deep_copy_callback(
+    beginDeepCopyFunction callback) {
   current_callbacks.begin_deep_copy = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_end_deep_copy_callback(endDeepCopyFunction callback) {
+KOKKOSCORE_EXPORT void set_end_deep_copy_callback(
+    endDeepCopyFunction callback) {
   current_callbacks.end_deep_copy = callback;
   updateProfileLibraryState();
 }
@@ -945,19 +961,23 @@ KOKKOSCORE_EXPORT void set_end_fence_callback(endFenceFunction callback) {
   updateProfileLibraryState();
 }
 
-KOKKOSCORE_EXPORT void set_dual_view_sync_callback(dualViewSyncFunction callback) {
+KOKKOSCORE_EXPORT void set_dual_view_sync_callback(
+    dualViewSyncFunction callback) {
   current_callbacks.sync_dual_view = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_dual_view_modify_callback(dualViewModifyFunction callback) {
+KOKKOSCORE_EXPORT void set_dual_view_modify_callback(
+    dualViewModifyFunction callback) {
   current_callbacks.modify_dual_view = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_declare_metadata_callback(declareMetadataFunction callback) {
+KOKKOSCORE_EXPORT void set_declare_metadata_callback(
+    declareMetadataFunction callback) {
   current_callbacks.declare_metadata = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_request_tool_settings_callback(requestToolSettingsFunction callback) {
+KOKKOSCORE_EXPORT void set_request_tool_settings_callback(
+    requestToolSettingsFunction callback) {
   current_callbacks.request_tool_settings = callback;
   updateProfileLibraryState();
 }
@@ -982,11 +1002,13 @@ KOKKOSCORE_EXPORT void set_request_output_values_callback(
   current_callbacks.request_output_values = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_end_context_callback(Experimental::contextEndFunction callback) {
+KOKKOSCORE_EXPORT void set_end_context_callback(
+    Experimental::contextEndFunction callback) {
   current_callbacks.end_tuning_context = callback;
   updateProfileLibraryState();
 }
-KOKKOSCORE_EXPORT void set_begin_context_callback(Experimental::contextBeginFunction callback) {
+KOKKOSCORE_EXPORT void set_begin_context_callback(
+    Experimental::contextBeginFunction callback) {
   current_callbacks.begin_tuning_context = callback;
   updateProfileLibraryState();
 }

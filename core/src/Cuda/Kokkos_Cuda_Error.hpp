@@ -31,16 +31,16 @@ void cuda_device_synchronize(const std::string& name);
 void cuda_stream_synchronize(const cudaStream_t stream,
                              const std::string& name);
 
-[[noreturn]] KOKKOSCORE_EXPORT void cuda_internal_error_throw(cudaError e, const char* name,
-                                            const char* file = nullptr,
-                                            const int line   = 0);
+[[noreturn]] KOKKOSCORE_EXPORT void cuda_internal_error_throw(
+    cudaError e, const char* name, const char* file = nullptr,
+    const int line = 0);
 
 #ifndef KOKKOS_COMPILER_NVHPC
 [[noreturn]]
 #endif
-             KOKKOSCORE_EXPORT void cuda_internal_error_abort(cudaError e, const char* name,
-                                            const char* file = nullptr,
-                                            const int line   = 0);
+KOKKOSCORE_EXPORT void
+cuda_internal_error_abort(cudaError e, const char* name,
+                          const char* file = nullptr, const int line = 0);
 
 inline void cuda_internal_safe_call(cudaError e, const char* name,
                                     const char* file = nullptr,

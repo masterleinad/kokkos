@@ -215,8 +215,8 @@ class HostBarrier {
     }
   }
 
-  KOKKOSCORE_EXPORT static void impl_backoff_wait_until_equal(int* ptr, const int v,
-                                            const bool active_wait) noexcept;
+  KOKKOSCORE_EXPORT static void impl_backoff_wait_until_equal(
+      int* ptr, const int v, const bool active_wait) noexcept;
 
  private:
   int m_size{0};

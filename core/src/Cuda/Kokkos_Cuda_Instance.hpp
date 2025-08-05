@@ -64,12 +64,12 @@ struct CudaTraits {
 
 //----------------------------------------------------------------------------
 
-KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_flags(const Cuda&,
-                                                  const std::size_t size);
-KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_space(const Cuda&,
-                                                  const std::size_t size);
-KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_unified(const Cuda&,
-                                                    const std::size_t size);
+KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_flags(
+    const Cuda&, const std::size_t size);
+KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_space(
+    const Cuda&, const std::size_t size);
+KOKKOSCORE_EXPORT CudaSpace::size_type* cuda_internal_scratch_unified(
+    const Cuda&, const std::size_t size);
 
 }  // namespace Impl
 }  // namespace Kokkos
@@ -122,8 +122,10 @@ class CudaInternal {
   bool was_finalized   = false;
 
   static std::set<int> cuda_devices;
-  KOKKOSCORE_EXPORT static std::map<int, unsigned long*> constantMemHostStagingPerDevice;
-  KOKKOSCORE_EXPORT static std::map<int, cudaEvent_t> constantMemReusablePerDevice;
+  KOKKOSCORE_EXPORT static std::map<int, unsigned long*>
+      constantMemHostStagingPerDevice;
+  KOKKOSCORE_EXPORT static std::map<int, cudaEvent_t>
+      constantMemReusablePerDevice;
   KOKKOSCORE_EXPORT static std::map<int, std::mutex> constantMemMutexPerDevice;
 
   static CudaInternal& singleton();
@@ -360,8 +362,9 @@ class CudaInternal {
   uint32_t impl_get_instance_id() const;
   KOKKOSCORE_EXPORT int acquire_team_scratch_space();
   // Resizing of team level 1 scratch
-  KOKKOSCORE_EXPORT void* resize_team_scratch_space(int scratch_pool_id, std::int64_t bytes,
-                                  bool force_shrink = false);
+  KOKKOSCORE_EXPORT void* resize_team_scratch_space(int scratch_pool_id,
+                                                    std::int64_t bytes,
+                                                    bool force_shrink = false);
   KOKKOSCORE_EXPORT void release_team_scratch_space(int scratch_pool_id);
 };
 }  // Namespace Impl

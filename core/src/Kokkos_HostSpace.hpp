@@ -105,14 +105,17 @@ class HostSpace {
     return allocate(arg_label, arg_alloc_size, arg_logical_size);
   }
   KOKKOSCORE_EXPORT void* allocate(const size_t arg_alloc_size) const;
-  KOKKOSCORE_EXPORT void* allocate(const char* arg_label, const size_t arg_alloc_size,
-                 const size_t arg_logical_size = 0) const;
+  KOKKOSCORE_EXPORT void* allocate(const char* arg_label,
+                                   const size_t arg_alloc_size,
+                                   const size_t arg_logical_size = 0) const;
 
   /**\brief  Deallocate untracked memory in the space */
-  KOKKOSCORE_EXPORT void deallocate(void* const arg_alloc_ptr, const size_t arg_alloc_size) const;
-  KOKKOSCORE_EXPORT void deallocate(const char* arg_label, void* const arg_alloc_ptr,
-                  const size_t arg_alloc_size,
-                  const size_t arg_logical_size = 0) const;
+  KOKKOSCORE_EXPORT void deallocate(void* const arg_alloc_ptr,
+                                    const size_t arg_alloc_size) const;
+  KOKKOSCORE_EXPORT void deallocate(const char* arg_label,
+                                    void* const arg_alloc_ptr,
+                                    const size_t arg_alloc_size,
+                                    const size_t arg_logical_size = 0) const;
 
   void* impl_allocate(const char* arg_label, const size_t arg_alloc_size,
                       const size_t arg_logical_size = 0,

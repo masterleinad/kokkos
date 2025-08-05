@@ -140,8 +140,9 @@ class Cuda {
   /// device have completed.
   static void impl_static_fence(const std::string& name);
 
-  KOKKOSCORE_EXPORT void fence(const std::string& name =
-                 "Kokkos::Cuda::fence(): Unnamed Instance Fence") const;
+  KOKKOSCORE_EXPORT void fence(
+      const std::string& name =
+          "Kokkos::Cuda::fence(): Unnamed Instance Fence") const;
 
   /** \brief  Return the maximum amount of concurrency.  */
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -151,7 +152,8 @@ class Cuda {
 #endif
 
   //! Print configuration information to the given output stream.
-  KOKKOSCORE_EXPORT void print_configuration(std::ostream& os, bool verbose = false) const;
+  KOKKOSCORE_EXPORT void print_configuration(std::ostream& os,
+                                             bool verbose = false) const;
 
   //@}
   //--------------------------------------------------

@@ -23,9 +23,10 @@
 namespace Kokkos {
 class InitializationSettings;
 namespace Impl {
-KOKKOSCORE_EXPORT void parse_command_line_arguments(int& argc, char* argv[],
-                                  InitializationSettings& settings);
-KOKKOSCORE_EXPORT void parse_environment_variables(InitializationSettings& settings);
+KOKKOSCORE_EXPORT void parse_command_line_arguments(
+    int& argc, char* argv[], InitializationSettings& settings);
+KOKKOSCORE_EXPORT void parse_environment_variables(
+    InitializationSettings& settings);
 }  // namespace Impl
 }  // namespace Kokkos
 

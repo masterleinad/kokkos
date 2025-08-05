@@ -240,7 +240,8 @@ void kokkos_terminate_handler() {
   }
 }
 
-KOKKOSCORE_EXPORT void set_kokkos_terminate_handler(std::function<void()> user_post) {
+KOKKOSCORE_EXPORT void set_kokkos_terminate_handler(
+    std::function<void()> user_post) {
   user_terminate_handler_post_ = user_post;
   std::set_terminate(kokkos_terminate_handler);
 }

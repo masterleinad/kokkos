@@ -67,9 +67,9 @@ class SerialInternal {
 
   // Resize thread team data scratch memory
   KOKKOSCORE_EXPORT void resize_thread_team_data(size_t pool_reduce_bytes,
-                               size_t team_reduce_bytes,
-                               size_t team_shared_bytes,
-                               size_t thread_local_bytes);
+                                                 size_t team_reduce_bytes,
+                                                 size_t team_shared_bytes,
+                                                 size_t thread_local_bytes);
 
   HostThreadTeamData m_thread_team_data;
   bool m_is_initialized = false;
@@ -200,7 +200,8 @@ class Serial {
 #endif
 
   //! Print configuration information to the given output stream.
-  KOKKOSCORE_EXPORT void print_configuration(std::ostream& os, bool verbose = false) const;
+  KOKKOSCORE_EXPORT void print_configuration(std::ostream& os,
+                                             bool verbose = false) const;
 
   static void impl_initialize(InitializationSettings const&);
 

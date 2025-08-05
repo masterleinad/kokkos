@@ -120,7 +120,9 @@ class SharedAllocationRecord<void, void> {
   static inline thread_local int t_tracking_enabled = 1;
 
  public:
-  KOKKOSCORE_EXPORT virtual std::string get_label() const { return std::string("Unmanaged"); }
+  KOKKOSCORE_EXPORT virtual std::string get_label() const {
+    return std::string("Unmanaged");
+  }
 
 #if defined(__EDG__)
 #pragma push
@@ -179,7 +181,8 @@ class SharedAllocationRecord<void, void> {
 
   /* Decrement use count. If 1->0 then remove from the tracking list and invoke
    * m_dealloc */
-  KOKKOSCORE_EXPORT static SharedAllocationRecord* decrement(SharedAllocationRecord*);
+  KOKKOSCORE_EXPORT static SharedAllocationRecord* decrement(
+      SharedAllocationRecord*);
 
   /* Given a root record and data pointer find the record */
   static SharedAllocationRecord* find(SharedAllocationRecord* const,
@@ -256,12 +259,12 @@ class SharedAllocationRecordCommon : public SharedAllocationRecord<void, void> {
       record_base_t::function_type dealloc = &deallocate);
 
   KOKKOSCORE_EXPORT static auto allocate(MemorySpace const& arg_space,
-                       std::string const& arg_label, size_t arg_alloc_size)
-      -> derived_t*;
+                                         std::string const& arg_label,
+                                         size_t arg_alloc_size) -> derived_t*;
   /**\brief  Allocate tracked memory in the space */
-  KOKKOSCORE_EXPORT static void* allocate_tracked(MemorySpace const& arg_space,
-                                std::string const& arg_alloc_label,
-                                size_t arg_alloc_size);
+  KOKKOSCORE_EXPORT static void* allocate_tracked(
+      MemorySpace const& arg_space, std::string const& arg_alloc_label,
+      size_t arg_alloc_size);
   /**\brief  Deallocate tracked memory in the space */
   KOKKOSCORE_EXPORT static void deallocate_tracked(void* arg_alloc_ptr);
   /**\brief  Reallocate tracked memory in the space
@@ -345,12 +348,12 @@ class HostInaccessibleSharedAllocationRecordCommon
       record_base_t::function_type dealloc = &deallocate);
 
   KOKKOSCORE_EXPORT static auto allocate(MemorySpace const& arg_space,
-                       std::string const& arg_label, size_t arg_alloc_size)
-      -> derived_t*;
+                                         std::string const& arg_label,
+                                         size_t arg_alloc_size) -> derived_t*;
   /**\brief  Allocate tracked memory in the space */
-  KOKKOSCORE_EXPORT static void* allocate_tracked(MemorySpace const& arg_space,
-                                std::string const& arg_alloc_label,
-                                size_t arg_alloc_size);
+  KOKKOSCORE_EXPORT static void* allocate_tracked(
+      MemorySpace const& arg_space, std::string const& arg_alloc_label,
+      size_t arg_alloc_size);
   /**\brief  Deallocate tracked memory in the space */
   KOKKOSCORE_EXPORT static void deallocate_tracked(void* arg_alloc_ptr);
   /**\brief  Reallocate tracked memory in the space

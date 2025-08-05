@@ -37,7 +37,8 @@ KOKKOSCORE_EXPORT Impl::PerThreadValue PerThread(const size_t& arg) {
   return Impl::PerThreadValue(arg);
 }
 
-KOKKOSCORE_EXPORT void team_policy_check_valid_storage_level_argument(int level) {
+KOKKOSCORE_EXPORT void team_policy_check_valid_storage_level_argument(
+    int level) {
   if (!(level == 0 || level == 1)) {
     std::stringstream ss;
     ss << "TeamPolicy::set_scratch_size(/*level*/ " << level

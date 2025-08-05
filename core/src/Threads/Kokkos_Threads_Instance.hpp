@@ -90,7 +90,8 @@ class ThreadsInternal {
   KOKKOS_INLINE_FUNCTION int pool_rank() const { return m_pool_rank; }
   inline long team_work_index() const { return m_team_work_index; }
 
-  KOKKOSCORE_EXPORT static ThreadsInternal *get_thread(const int init_thread_rank);
+  KOKKOSCORE_EXPORT static ThreadsInternal *get_thread(
+      const int init_thread_rank);
 
   inline void *reduce_memory() const { return m_scratch; }
   KOKKOS_INLINE_FUNCTION void *scratch_memory() const {
@@ -107,7 +108,8 @@ class ThreadsInternal {
   ~ThreadsInternal();
   ThreadsInternal();
 
-  KOKKOSCORE_EXPORT static void *resize_scratch(size_t reduce_size, size_t thread_size);
+  KOKKOSCORE_EXPORT static void *resize_scratch(size_t reduce_size,
+                                                size_t thread_size);
 
   KOKKOSCORE_EXPORT static void *root_reduce_scratch();
 
@@ -121,7 +123,8 @@ class ThreadsInternal {
 
   KOKKOSCORE_EXPORT static void finalize();
 
-  KOKKOSCORE_EXPORT static void print_configuration(std::ostream &, const bool detail = false);
+  KOKKOSCORE_EXPORT static void print_configuration(std::ostream &,
+                                                    const bool detail = false);
 
   //------------------------------------
   // All-thread functions:
@@ -401,7 +404,8 @@ class ThreadsInternal {
    *          complete and release the Threads device.
    *          Acquire the Threads device and start this functor.
    */
-  KOKKOSCORE_EXPORT static void start(void (*)(ThreadsInternal &, const void *), const void *);
+  KOKKOSCORE_EXPORT static void start(void (*)(ThreadsInternal &, const void *),
+                                      const void *);
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
   KOKKOSCORE_EXPORT static int in_parallel();

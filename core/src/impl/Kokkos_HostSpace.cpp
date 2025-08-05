@@ -49,10 +49,11 @@ KOKKOS_DEPRECATED HostSpace::HostSpace(const HostSpace::AllocationMechanism &)
 KOKKOSCORE_EXPORT void *HostSpace::allocate(const size_t arg_alloc_size) const {
   return allocate("[unlabeled]", arg_alloc_size);
 }
-KOKKOSCORE_EXPORT void *HostSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
-                          const size_t
+KOKKOSCORE_EXPORT void *HostSpace::allocate(const char *arg_label,
+                                            const size_t arg_alloc_size,
+                                            const size_t
 
-                              arg_logical_size) const {
+                                                arg_logical_size) const {
   return impl_allocate(arg_label, arg_alloc_size, arg_logical_size);
 }
 void *HostSpace::impl_allocate(
@@ -86,14 +87,14 @@ void *HostSpace::impl_allocate(
   return ptr;
 }
 
-KOKKOSCORE_EXPORT void HostSpace::deallocate(void *const arg_alloc_ptr,
-                           const size_t arg_alloc_size) const {
+KOKKOSCORE_EXPORT void HostSpace::deallocate(
+    void *const arg_alloc_ptr, const size_t arg_alloc_size) const {
   deallocate("[unlabeled]", arg_alloc_ptr, arg_alloc_size);
 }
 
-KOKKOSCORE_EXPORT void HostSpace::deallocate(const char *arg_label, void *const arg_alloc_ptr,
-                           const size_t arg_alloc_size,
-                           const size_t arg_logical_size) const {
+KOKKOSCORE_EXPORT void HostSpace::deallocate(
+    const char *arg_label, void *const arg_alloc_ptr,
+    const size_t arg_alloc_size, const size_t arg_logical_size) const {
   if (arg_alloc_ptr) Kokkos::fence("HostSpace::impl_deallocate before free");
   impl_deallocate(arg_label, arg_alloc_ptr, arg_alloc_size, arg_logical_size);
 }

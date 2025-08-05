@@ -26,15 +26,18 @@ namespace Impl {
 
 KOKKOSCORE_EXPORT void hostspace_fence(const DefaultHostExecutionSpace& exec);
 
-KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy(void* dst, const void* src, ptrdiff_t n);
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy(void* dst, const void* src,
+                                                   ptrdiff_t n);
 // DeepCopy called with an execution space that can't access HostSpace
-KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(void* dst, const void* src, ptrdiff_t n);
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(void* dst,
+                                                         const void* src,
+                                                         ptrdiff_t n);
 template <typename ExecutionSpace>
-KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(const ExecutionSpace& exec, void* dst,
-                                       const void* src, ptrdiff_t n);
+KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(
+    const ExecutionSpace& exec, void* dst, const void* src, ptrdiff_t n);
 template <typename ExecutionSpace>
-KOKKOSCORE_EXPORT void hostspace_parallel_zeromemset(const ExecutionSpace& exec, void* dst,
-                                   size_t n);
+KOKKOSCORE_EXPORT void hostspace_parallel_zeromemset(const ExecutionSpace& exec,
+                                                     void* dst, size_t n);
 }  // namespace Impl
 
 }  // namespace Kokkos

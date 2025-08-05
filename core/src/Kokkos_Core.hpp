@@ -136,7 +136,8 @@ KOKKOSCORE_EXPORT void finalize();
  */
 KOKKOSCORE_EXPORT void push_finalize_hook(std::function<void()> f);
 
-KOKKOSCORE_EXPORT void fence(const std::string& name /*= "Kokkos::fence: Unnamed Global Fence"*/);
+KOKKOSCORE_EXPORT void fence(
+    const std::string& name /*= "Kokkos::fence: Unnamed Global Fence"*/);
 
 /** \brief Print "Bill of Materials" */
 void print_configuration(std::ostream& os, bool verbose = false);

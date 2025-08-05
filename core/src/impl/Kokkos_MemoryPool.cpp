@@ -39,12 +39,10 @@ namespace Impl {
  *   min_superblock_size  <= min_block_alloc_size *
  *                           max_block_per_superblock
  */
-KOKKOSCORE_EXPORT void memory_pool_bounds_verification(size_t min_block_alloc_size,
-                                     size_t max_block_alloc_size,
-                                     size_t min_superblock_size,
-                                     size_t max_superblock_size,
-                                     size_t max_block_per_superblock,
-                                     size_t min_total_alloc_size) {
+KOKKOSCORE_EXPORT void memory_pool_bounds_verification(
+    size_t min_block_alloc_size, size_t max_block_alloc_size,
+    size_t min_superblock_size, size_t max_superblock_size,
+    size_t max_block_per_superblock, size_t min_total_alloc_size) {
   const size_t max_superblock = min_block_alloc_size * max_block_per_superblock;
 
   if ((size_t(max_superblock_size) < min_superblock_size) ||
@@ -87,10 +85,10 @@ KOKKOSCORE_EXPORT void memory_pool_bounds_verification(size_t min_block_alloc_si
 
 // This has way too many parameters, but it is entirely for moving the iostream
 // inclusion out of the header file with as few changes as possible
-KOKKOSCORE_EXPORT void _print_memory_pool_state(std::ostream& s, uint32_t const* sb_state_ptr,
-                              int32_t sb_count, uint32_t sb_size_lg2,
-                              uint32_t sb_state_size, uint32_t state_shift,
-                              uint32_t state_used_mask) {
+KOKKOSCORE_EXPORT void _print_memory_pool_state(
+    std::ostream& s, uint32_t const* sb_state_ptr, int32_t sb_count,
+    uint32_t sb_size_lg2, uint32_t sb_state_size, uint32_t state_shift,
+    uint32_t state_used_mask) {
   s << "pool_size(" << (size_t(sb_count) << sb_size_lg2) << ")"
     << " superblock_size(" << (1LU << sb_size_lg2) << ")" << std::endl;
 

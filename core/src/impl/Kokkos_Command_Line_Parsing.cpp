@@ -247,7 +247,8 @@ std::vector<std::regex> do_not_warn_regular_expressions{
 };
 }
 
-KOKKOSCORE_EXPORT void Kokkos::Impl::do_not_warn_not_recognized_command_line_argument(
+KOKKOSCORE_EXPORT void
+Kokkos::Impl::do_not_warn_not_recognized_command_line_argument(
     std::regex ignore) {
   do_not_warn_regular_expressions.push_back(std::move(ignore));
 }

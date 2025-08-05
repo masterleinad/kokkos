@@ -54,7 +54,8 @@ KOKKOSCORE_EXPORT void print_demangled_saved_stacktrace(std::ostream& out);
 /// without including their header file, and Kokkos does not depend on
 /// MPI, so there's no way for Kokkos to depend on MPI_Abort in a
 /// portable way.
-KOKKOSCORE_EXPORT void set_kokkos_terminate_handler(std::function<void()> user_post = nullptr);
+KOKKOSCORE_EXPORT void set_kokkos_terminate_handler(
+    std::function<void()> user_post = nullptr);
 
 }  // namespace Impl
 }  // namespace Kokkos

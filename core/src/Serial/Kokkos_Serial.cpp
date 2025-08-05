@@ -88,10 +88,9 @@ SerialInternal& SerialInternal::singleton() {
 }
 
 // Resize thread team data scratch memory
-KOKKOSCORE_EXPORT void SerialInternal::resize_thread_team_data(size_t pool_reduce_bytes,
-                                             size_t team_reduce_bytes,
-                                             size_t team_shared_bytes,
-                                             size_t thread_local_bytes) {
+KOKKOSCORE_EXPORT void SerialInternal::resize_thread_team_data(
+    size_t pool_reduce_bytes, size_t team_reduce_bytes,
+    size_t team_shared_bytes, size_t thread_local_bytes) {
   if (pool_reduce_bytes < 512) pool_reduce_bytes = 512;
   if (team_reduce_bytes < 512) team_reduce_bytes = 512;
 
@@ -166,7 +165,8 @@ KOKKOSCORE_EXPORT Serial::Serial(NewInstance)
   m_space_instance->initialize();
 }
 
-KOKKOSCORE_EXPORT void Serial::print_configuration(std::ostream& os, bool /*verbose*/) const {
+KOKKOSCORE_EXPORT void Serial::print_configuration(std::ostream& os,
+                                                   bool /*verbose*/) const {
   os << "Host Serial Execution Space:\n";
   os << "  KOKKOS_ENABLE_SERIAL: yes\n";
 

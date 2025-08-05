@@ -80,8 +80,9 @@ class Threads {
   /// device have completed.
   static void impl_static_fence(const std::string& name);
 
-  KOKKOSCORE_EXPORT void fence(const std::string& name =
-                 "Kokkos::Threads::fence: Unnamed Instance Fence") const;
+  KOKKOSCORE_EXPORT void fence(
+      const std::string& name =
+          "Kokkos::Threads::fence: Unnamed Instance Fence") const;
 
   /** \brief  Return the maximum amount of concurrency.  */
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4

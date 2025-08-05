@@ -258,7 +258,8 @@ KOKKOS_FUNCTION void runtime_check_memory_access_violation(
 //----------------------------------------------------------------------------
 
 namespace Kokkos {
-KOKKOSCORE_EXPORT void fence(const std::string &name = "Kokkos::fence: Unnamed Global Fence");
+KOKKOSCORE_EXPORT void fence(
+    const std::string &name = "Kokkos::fence: Unnamed Global Fence");
 }  // namespace Kokkos
 
 //----------------------------------------------------------------------------

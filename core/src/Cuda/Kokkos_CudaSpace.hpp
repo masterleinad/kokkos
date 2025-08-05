@@ -82,12 +82,14 @@ class CudaSpace {
 
   /**\brief  Allocate untracked memory in the cuda space */
   void* allocate(const Cuda& exec_space, const size_t arg_alloc_size) const;
-  KOKKOSCORE_EXPORT void* allocate(const Cuda& exec_space, const char* arg_label,
-                 const size_t arg_alloc_size,
-                 const size_t arg_logical_size = 0) const;
+  KOKKOSCORE_EXPORT void* allocate(const Cuda& exec_space,
+                                   const char* arg_label,
+                                   const size_t arg_alloc_size,
+                                   const size_t arg_logical_size = 0) const;
   void* allocate(const size_t arg_alloc_size) const;
-  KOKKOSCORE_EXPORT void* allocate(const char* arg_label, const size_t arg_alloc_size,
-                 const size_t arg_logical_size = 0) const;
+  KOKKOSCORE_EXPORT void* allocate(const char* arg_label,
+                                   const size_t arg_alloc_size,
+                                   const size_t arg_logical_size = 0) const;
 
 #if defined(KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY)
   template <typename ExecutionSpace>
@@ -104,9 +106,10 @@ class CudaSpace {
 
   /**\brief  Deallocate untracked memory in the cuda space */
   void deallocate(void* const arg_alloc_ptr, const size_t arg_alloc_size) const;
-  KOKKOSCORE_EXPORT void deallocate(const char* arg_label, void* const arg_alloc_ptr,
-                  const size_t arg_alloc_size,
-                  const size_t arg_logical_size = 0) const;
+  KOKKOSCORE_EXPORT void deallocate(const char* arg_label,
+                                    void* const arg_alloc_ptr,
+                                    const size_t arg_alloc_size,
+                                    const size_t arg_logical_size = 0) const;
 
   static CudaSpace impl_create(int device_id, cudaStream_t stream) {
     return CudaSpace(device_id, stream);
@@ -193,8 +196,9 @@ class CudaUVMSpace {
     return allocate(arg_label, arg_alloc_size, arg_logical_size);
   }
   void* allocate(const size_t arg_alloc_size) const;
-  KOKKOSCORE_EXPORT void* allocate(const char* arg_label, const size_t arg_alloc_size,
-                 const size_t arg_logical_size = 0) const;
+  KOKKOSCORE_EXPORT void* allocate(const char* arg_label,
+                                   const size_t arg_alloc_size,
+                                   const size_t arg_logical_size = 0) const;
 
   /**\brief  Deallocate untracked memory in the cuda space */
   void deallocate(void* const arg_alloc_ptr, const size_t arg_alloc_size) const;
@@ -285,8 +289,9 @@ class CudaHostPinnedSpace {
     return allocate(arg_label, arg_alloc_size, arg_logical_size);
   }
   void* allocate(const size_t arg_alloc_size) const;
-  KOKKOSCORE_EXPORT void* allocate(const char* arg_label, const size_t arg_alloc_size,
-                 const size_t arg_logical_size = 0) const;
+  KOKKOSCORE_EXPORT void* allocate(const char* arg_label,
+                                   const size_t arg_alloc_size,
+                                   const size_t arg_logical_size = 0) const;
 
   /**\brief  Deallocate untracked memory in the space */
   void deallocate(void* const arg_alloc_ptr, const size_t arg_alloc_size) const;
@@ -467,8 +472,8 @@ namespace Kokkos {
 namespace Impl {
 
 KOKKOSCORE_EXPORT void DeepCopyCuda(void* dst, const void* src, size_t n);
-KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(const Cuda& instance, void* dst, const void* src,
-                       size_t n);
+KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(const Cuda& instance, void* dst,
+                                         const void* src, size_t n);
 KOKKOSCORE_EXPORT void DeepCopyAsyncCuda(void* dst, const void* src, size_t n);
 
 template <class MemSpace>

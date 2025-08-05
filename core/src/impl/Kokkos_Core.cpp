@@ -342,7 +342,8 @@ KOKKOSCORE_EXPORT int Kokkos::Impl::get_ctest_gpu(int local_rank) {
   return std::stoi(id.c_str());
 }
 
-KOKKOSCORE_EXPORT std::vector<int> Kokkos::Impl::get_visible_devices(int device_count) {
+KOKKOSCORE_EXPORT std::vector<int> Kokkos::Impl::get_visible_devices(
+    int device_count) {
   std::vector<int> visible_devices;
   char* env_visible_devices = std::getenv("KOKKOS_VISIBLE_DEVICES");
   if (env_visible_devices) {
@@ -1053,17 +1054,21 @@ void Kokkos::initialize(InitializationSettings const& settings) {
   initialize_internal(tmp);
 }
 
-KOKKOSCORE_EXPORT void Kokkos::Impl::pre_initialize(const InitializationSettings& settings) {
+KOKKOSCORE_EXPORT void Kokkos::Impl::pre_initialize(
+    const InitializationSettings& settings) {
   pre_initialize_internal(settings);
 }
 
-KOKKOSCORE_EXPORT void Kokkos::Impl::post_initialize(const InitializationSettings& settings) {
+KOKKOSCORE_EXPORT void Kokkos::Impl::post_initialize(
+    const InitializationSettings& settings) {
   post_initialize_internal(settings);
 }
 
 KOKKOSCORE_EXPORT void Kokkos::Impl::pre_finalize() { pre_finalize_internal(); }
 
-KOKKOSCORE_EXPORT void Kokkos::Impl::post_finalize() { post_finalize_internal(); }
+KOKKOSCORE_EXPORT void Kokkos::Impl::post_finalize() {
+  post_finalize_internal();
+}
 
 KOKKOSCORE_EXPORT void Kokkos::push_finalize_hook(std::function<void()> f) {
   finalize_hooks.push(f);
@@ -1122,8 +1127,14 @@ void Kokkos::print_configuration(std::ostream& os, bool verbose) {
   return g_is_initialized;
 }
 
-[[nodiscard]] KOKKOSCORE_EXPORT bool Kokkos::is_finalized() noexcept { return g_is_finalized; }
+[[nodiscard]] KOKKOSCORE_EXPORT bool Kokkos::is_finalized() noexcept {
+  return g_is_finalized;
+}
 
-KOKKOSCORE_EXPORT bool Kokkos::show_warnings() noexcept { return g_show_warnings; }
+KOKKOSCORE_EXPORT bool Kokkos::show_warnings() noexcept {
+  return g_show_warnings;
+}
 
-KOKKOSCORE_EXPORT bool Kokkos::tune_internals() noexcept { return g_tune_internals; }
+KOKKOSCORE_EXPORT bool Kokkos::tune_internals() noexcept {
+  return g_tune_internals;
+}

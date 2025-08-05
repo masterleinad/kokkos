@@ -70,9 +70,9 @@ InitializationStatus initialize_tools_subsystem(
     const Kokkos::Tools::InitArguments& args);
 
 KOKKOSCORE_EXPORT void parse_command_line_arguments(int& narg, char* arg[],
-                                  InitArguments& arguments);
-KOKKOSCORE_EXPORT Kokkos::Tools::Impl::InitializationStatus parse_environment_variables(
-    InitArguments& arguments);
+                                                    InitArguments& arguments);
+KOKKOSCORE_EXPORT Kokkos::Tools::Impl::InitializationStatus
+parse_environment_variables(InitArguments& arguments);
 
 template <typename PolicyType, typename Functor>
 struct ToolResponse {
@@ -83,20 +83,24 @@ struct ToolResponse {
 
 KOKKOSCORE_EXPORT bool profileLibraryLoaded();
 
-KOKKOSCORE_EXPORT void beginParallelFor(const std::string& kernelPrefix, const uint32_t devID,
-                      uint64_t* kernelID);
+KOKKOSCORE_EXPORT void beginParallelFor(const std::string& kernelPrefix,
+                                        const uint32_t devID,
+                                        uint64_t* kernelID);
 KOKKOSCORE_EXPORT void endParallelFor(const uint64_t kernelID);
-KOKKOSCORE_EXPORT void beginParallelScan(const std::string& kernelPrefix, const uint32_t devID,
-                       uint64_t* kernelID);
+KOKKOSCORE_EXPORT void beginParallelScan(const std::string& kernelPrefix,
+                                         const uint32_t devID,
+                                         uint64_t* kernelID);
 KOKKOSCORE_EXPORT void endParallelScan(const uint64_t kernelID);
-KOKKOSCORE_EXPORT void beginParallelReduce(const std::string& kernelPrefix, const uint32_t devID,
-                         uint64_t* kernelID);
+KOKKOSCORE_EXPORT void beginParallelReduce(const std::string& kernelPrefix,
+                                           const uint32_t devID,
+                                           uint64_t* kernelID);
 KOKKOSCORE_EXPORT void endParallelReduce(const uint64_t kernelID);
 
 KOKKOSCORE_EXPORT void pushRegion(const std::string& kName);
 KOKKOSCORE_EXPORT void popRegion();
 
-KOKKOSCORE_EXPORT void createProfileSection(const std::string& sectionName, uint32_t* secID);
+KOKKOSCORE_EXPORT void createProfileSection(const std::string& sectionName,
+                                            uint32_t* secID);
 KOKKOSCORE_EXPORT void startSection(const uint32_t secID);
 KOKKOSCORE_EXPORT void stopSection(const uint32_t secID);
 KOKKOSCORE_EXPORT void destroyProfileSection(const uint32_t secID);
@@ -108,13 +112,15 @@ void allocateData(const SpaceHandle space, const std::string& label,
 void deallocateData(const SpaceHandle space, const std::string& label,
                     const void* ptr, const uint64_t size);
 
-KOKKOSCORE_EXPORT void beginDeepCopy(const SpaceHandle dst_space, const std::string& dst_label,
-                   const void* dst_ptr, const SpaceHandle src_space,
-                   const std::string& src_label, const void* src_ptr,
-                   const uint64_t size);
+KOKKOSCORE_EXPORT void beginDeepCopy(const SpaceHandle dst_space,
+                                     const std::string& dst_label,
+                                     const void* dst_ptr,
+                                     const SpaceHandle src_space,
+                                     const std::string& src_label,
+                                     const void* src_ptr, const uint64_t size);
 KOKKOSCORE_EXPORT void endDeepCopy();
-KOKKOSCORE_EXPORT void beginFence(const std::string& name, const uint32_t deviceId,
-                uint64_t* handle);
+KOKKOSCORE_EXPORT void beginFence(const std::string& name,
+                                  const uint32_t deviceId, uint64_t* handle);
 KOKKOSCORE_EXPORT void endFence(const uint64_t handle);
 
 /**
@@ -128,8 +134,8 @@ KOKKOSCORE_EXPORT void endFence(const uint64_t handle);
  * to_device: true if the data is being synchronized to the device
  * 		false otherwise
  */
-KOKKOSCORE_EXPORT void syncDualView(const std::string& label, const void* const ptr,
-                  bool to_device);
+KOKKOSCORE_EXPORT void syncDualView(const std::string& label,
+                                    const void* const ptr, bool to_device);
 /**
  * modifyDualView declares to the tool that a given DualView
  * has been modified. Note: this means that somebody *called*
@@ -143,10 +149,11 @@ KOKKOSCORE_EXPORT void syncDualView(const std::string& label, const void* const 
  * on_device: true if the data is being modified on the device
  * 		false otherwise
  */
-KOKKOSCORE_EXPORT void modifyDualView(const std::string& label, const void* const ptr,
-                    bool on_device);
+KOKKOSCORE_EXPORT void modifyDualView(const std::string& label,
+                                      const void* const ptr, bool on_device);
 
-KOKKOSCORE_EXPORT void declareMetadata(const std::string& key, const std::string& value);
+KOKKOSCORE_EXPORT void declareMetadata(const std::string& key,
+                                       const std::string& value);
 void initialize(
     const std::string& = {});  // should rename to impl_initialize ASAP
 void initialize(const Kokkos::Tools::InitArguments&);
@@ -155,7 +162,8 @@ void finalize();
 bool printHelp(const std::string&);
 void parseArgs(const std::string&);
 
-KOKKOSCORE_EXPORT Kokkos_Profiling_SpaceHandle make_space_handle(const char* space_name);
+KOKKOSCORE_EXPORT Kokkos_Profiling_SpaceHandle
+make_space_handle(const char* space_name);
 
 namespace Experimental {
 
@@ -221,37 +229,53 @@ void set_parse_args_callback(parseArgsFunction callback);
 void set_print_help_callback(printHelpFunction callback);
 KOKKOSCORE_EXPORT void set_begin_parallel_for_callback(beginFunction callback);
 KOKKOSCORE_EXPORT void set_end_parallel_for_callback(endFunction callback);
-KOKKOSCORE_EXPORT void set_begin_parallel_reduce_callback(beginFunction callback);
+KOKKOSCORE_EXPORT void set_begin_parallel_reduce_callback(
+    beginFunction callback);
 KOKKOSCORE_EXPORT void set_end_parallel_reduce_callback(endFunction callback);
 KOKKOSCORE_EXPORT void set_begin_parallel_scan_callback(beginFunction callback);
 KOKKOSCORE_EXPORT void set_end_parallel_scan_callback(endFunction callback);
 KOKKOSCORE_EXPORT void set_push_region_callback(pushFunction callback);
 KOKKOSCORE_EXPORT void set_pop_region_callback(popFunction callback);
-KOKKOSCORE_EXPORT void set_allocate_data_callback(allocateDataFunction callback);
-KOKKOSCORE_EXPORT void set_deallocate_data_callback(deallocateDataFunction callback);
-KOKKOSCORE_EXPORT void set_create_profile_section_callback(createProfileSectionFunction callback);
-KOKKOSCORE_EXPORT void set_start_profile_section_callback(startProfileSectionFunction callback);
-KOKKOSCORE_EXPORT void set_stop_profile_section_callback(stopProfileSectionFunction callback);
+KOKKOSCORE_EXPORT void set_allocate_data_callback(
+    allocateDataFunction callback);
+KOKKOSCORE_EXPORT void set_deallocate_data_callback(
+    deallocateDataFunction callback);
+KOKKOSCORE_EXPORT void set_create_profile_section_callback(
+    createProfileSectionFunction callback);
+KOKKOSCORE_EXPORT void set_start_profile_section_callback(
+    startProfileSectionFunction callback);
+KOKKOSCORE_EXPORT void set_stop_profile_section_callback(
+    stopProfileSectionFunction callback);
 KOKKOSCORE_EXPORT void set_destroy_profile_section_callback(
     destroyProfileSectionFunction callback);
-KOKKOSCORE_EXPORT void set_profile_event_callback(profileEventFunction callback);
-KOKKOSCORE_EXPORT void set_begin_deep_copy_callback(beginDeepCopyFunction callback);
+KOKKOSCORE_EXPORT void set_profile_event_callback(
+    profileEventFunction callback);
+KOKKOSCORE_EXPORT void set_begin_deep_copy_callback(
+    beginDeepCopyFunction callback);
 KOKKOSCORE_EXPORT void set_end_deep_copy_callback(endDeepCopyFunction callback);
 KOKKOSCORE_EXPORT void set_begin_fence_callback(beginFenceFunction callback);
 KOKKOSCORE_EXPORT void set_end_fence_callback(endFenceFunction callback);
-KOKKOSCORE_EXPORT void set_dual_view_sync_callback(dualViewSyncFunction callback);
-KOKKOSCORE_EXPORT void set_dual_view_modify_callback(dualViewModifyFunction callback);
-KOKKOSCORE_EXPORT void set_declare_metadata_callback(declareMetadataFunction callback);
-KOKKOSCORE_EXPORT void set_request_tool_settings_callback(requestToolSettingsFunction callback);
+KOKKOSCORE_EXPORT void set_dual_view_sync_callback(
+    dualViewSyncFunction callback);
+KOKKOSCORE_EXPORT void set_dual_view_modify_callback(
+    dualViewModifyFunction callback);
+KOKKOSCORE_EXPORT void set_declare_metadata_callback(
+    declareMetadataFunction callback);
+KOKKOSCORE_EXPORT void set_request_tool_settings_callback(
+    requestToolSettingsFunction callback);
 KOKKOSCORE_EXPORT void set_provide_tool_programming_interface_callback(
     provideToolProgrammingInterfaceFunction callback);
-KOKKOSCORE_EXPORT void set_declare_output_type_callback(outputTypeDeclarationFunction callback);
-KOKKOSCORE_EXPORT void set_declare_input_type_callback(inputTypeDeclarationFunction callback);
-KOKKOSCORE_EXPORT void set_request_output_values_callback(requestValueFunction callback);
+KOKKOSCORE_EXPORT void set_declare_output_type_callback(
+    outputTypeDeclarationFunction callback);
+KOKKOSCORE_EXPORT void set_declare_input_type_callback(
+    inputTypeDeclarationFunction callback);
+KOKKOSCORE_EXPORT void set_request_output_values_callback(
+    requestValueFunction callback);
 void set_declare_optimization_goal_callback(
     optimizationGoalDeclarationFunction callback);
 KOKKOSCORE_EXPORT void set_end_context_callback(contextEndFunction callback);
-KOKKOSCORE_EXPORT void set_begin_context_callback(contextBeginFunction callback);
+KOKKOSCORE_EXPORT void set_begin_context_callback(
+    contextBeginFunction callback);
 
 KOKKOSCORE_EXPORT void pause_tools();
 void resume_tools();

@@ -32,8 +32,8 @@ template <class ExecSpace>
 void cuda_prefetch_pointer(const ExecSpace& /*space*/, const void* /*ptr*/,
                            size_t /*bytes*/, bool /*to_device*/) {}
 
-KOKKOSCORE_EXPORT void cuda_prefetch_pointer(const Cuda& space, const void* ptr, size_t bytes,
-                           bool to_device);
+KOKKOSCORE_EXPORT void cuda_prefetch_pointer(const Cuda& space, const void* ptr,
+                                             size_t bytes, bool to_device);
 
 }  // namespace Impl
 }  // namespace Kokkos
