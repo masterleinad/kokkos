@@ -142,10 +142,8 @@ if(NOT BUILD_SHARED_LIBS OR UNIX)
   target_compile_definitions(kokkoscore PRIVATE KOKKOSCORE_STATIC_DEFINE)
 endif()
 
-include(GenerateExportHeader) 
-  generate_export_header(kokkoscore
-  EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Core_Export.h"
-)
+include(GenerateExportHeader)
+generate_export_header(kokkoscore EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Core_Export.h")
 
 kokkos_lib_include_directories(
   kokkoscore ${KOKKOS_TOP_BUILD_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}

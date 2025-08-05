@@ -23,10 +23,8 @@ if(NOT BUILD_SHARED_LIBS OR UNIX)
   target_compile_definitions(kokkoscontainers PRIVATE KOKKOSCONTAINERS_STATIC_DEFINE)
 endif()
 
-include(GenerateExportHeader) 
-  generate_export_header(kokkoscontainers
-  EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Containers_Export.h"
-)
+include(GenerateExportHeader)
+generate_export_header(kokkoscontainers EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Containers_Export.h")
 
 kokkos_lib_include_directories(
   kokkoscontainers ${KOKKOS_TOP_BUILD_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
