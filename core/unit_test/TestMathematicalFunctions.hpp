@@ -1344,7 +1344,7 @@ struct TestAbsoluteValueFunction {
       Kokkos::printf("failed abs(long double)\n");
     }
 #endif
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1407,7 +1407,7 @@ struct TestFloatingPointAbsoluteValueFunction {
       Kokkos::printf("failed fabs(long double)\n");
     }
 #endif
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1477,7 +1477,7 @@ struct TestFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed fmod(long double)\n");
     }
 #endif
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1553,7 +1553,7 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed remainder(long double)\n");
     }
 #endif
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
