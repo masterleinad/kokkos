@@ -116,16 +116,21 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
     return Kokkos::Experimental::half_t::impl_type(1.0F);
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
-    // sycl::half doesn't have constexpr constructors so we return
-    // bit_comparison_type which doesn't have a unitary minus operator.
-    // -inf
-    return Kokkos::Experimental::half_t::bit_comparison_type{
-        0b1'11111'0000000000};
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
+    return -std::numeric_limits<
+        Kokkos::Experimental::half_t::impl_type>::infinity();
+#else
+    return std::numeric_limits<
+        Kokkos::Experimental::half_t::impl_type>::lowest();
+#endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
-    // sycl::half doesn't have constexpr constructors so we return
-    // bit_comparison_type
-    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
+    return std::numeric_limits<
+        Kokkos::Experimental::half_t::impl_type>::infinity();
+#else
+    return std::numeric_limits<Kokkos::Experimental::half_t::impl_type>::max();
+#endif
   }
 };
 
@@ -227,10 +232,18 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
     return 1.0f;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     return -Kokkos::Experimental::infinity_v<float>;
+#else
+    return -0x7f7f;
+#endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     return Kokkos::Experimental::infinity_v<float>;
+#else
+    return 0x7f7f;
+#endif
   }
 };
 
