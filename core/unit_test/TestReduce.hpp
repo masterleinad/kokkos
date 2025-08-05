@@ -716,6 +716,7 @@ class TestReductionOverInfiniteFloat {
   }
 };
 
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
 TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
   // nvhpc on device doesn't use the correct neutral value for the min and max
   // reducers
@@ -732,5 +733,6 @@ TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
 #endif
 #endif
 }
+#endif
 
 }  // namespace Test

@@ -92,7 +92,7 @@ struct TestExponentialIntergral1Function {
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& i) const {
-    d_expint(i) = 0;  // Kokkos::Experimental::expint1(d_x(i));
+    d_expint(i) = Kokkos::Experimental::expint1(d_x(i));
   }
 };
 
@@ -431,18 +431,18 @@ struct TestComplexErrorFunction {
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& i) const {
-    d_erf(i)   = 0;  // Kokkos::Experimental::erf(d_z(i));
-    d_erfcx(i) = 0;  // Kokkos::Experimental::erfcx(d_z(i));
+    d_erf(i)   = Kokkos::Experimental::erf(d_z(i));
+    d_erfcx(i) = Kokkos::Experimental::erfcx(d_z(i));
   }
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const TestRealErfcxTag&, const int& /*i*/) const {
-    d_erfcx_dbl(0) = 0;  // Kokkos::Experimental::erfcx(d_x(0));
-    d_erfcx_dbl(1) = 0;  // Kokkos::Experimental::erfcx(d_x(1));
-    d_erfcx_dbl(2) = 0;  // Kokkos::Experimental::erfcx(d_x(2));
-    d_erfcx_dbl(3) = 0;  // Kokkos::Experimental::erfcx(d_x(3));
-    d_erfcx_dbl(4) = 0;  // Kokkos::Experimental::erfcx(d_x(4));
-    d_erfcx_dbl(5) = 0;  // Kokkos::Experimental::erfcx(d_x(5));
+    d_erfcx_dbl(0) = Kokkos::Experimental::erfcx(d_x(0));
+    d_erfcx_dbl(1) = Kokkos::Experimental::erfcx(d_x(1));
+    d_erfcx_dbl(2) = Kokkos::Experimental::erfcx(d_x(2));
+    d_erfcx_dbl(3) = Kokkos::Experimental::erfcx(d_x(3));
+    d_erfcx_dbl(4) = Kokkos::Experimental::erfcx(d_x(4));
+    d_erfcx_dbl(5) = Kokkos::Experimental::erfcx(d_x(5));
   }
 };
 
@@ -694,12 +694,10 @@ struct TestComplexBesselJ0Y0Function {
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const int& i) const {
-    d_cbj0(i) =
-        0;  // Kokkos::Experimental::cyl_bessel_j0<Kokkos::complex<double>,
-            //                                   double, int>(d_z(i));
-    d_cby0(i) =
-        0;  // Kokkos::Experimental::cyl_bessel_y0<Kokkos::complex<double>,
-            //                                   double, int>(d_z(i));
+    d_cbj0(i) = Kokkos::Experimental::cyl_bessel_j0<Kokkos::complex<double>,
+                                                    double, int>(d_z(i));
+    d_cby0(i) = Kokkos::Experimental::cyl_bessel_y0<Kokkos::complex<double>,
+                                                    double, int>(d_z(i));
   }
 
   KOKKOS_INLINE_FUNCTION

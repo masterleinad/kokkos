@@ -420,7 +420,7 @@ struct reduction_identity<long double> {
   }
   constexpr static long double min() {
 #if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
-    return -HUGE_VALL;
+    return HUGE_VALL;
 #else
     return LDBL_MAX;
 #endif
