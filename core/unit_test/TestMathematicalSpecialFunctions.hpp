@@ -1949,7 +1949,7 @@ struct TestComplexBesselH2Function {
   }
 };
 
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
 TEST(TEST_CATEGORY, mathspecialfunc_expint1) {
   TestExponentialIntergral1Function<TEST_EXECSPACE> test;
   test.testit();

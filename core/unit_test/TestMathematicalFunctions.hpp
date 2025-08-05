@@ -1344,7 +1344,7 @@ struct TestAbsoluteValueFunction {
       Kokkos::printf("failed abs(long double)\n");
     }
 #endif
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1407,7 +1407,7 @@ struct TestFloatingPointAbsoluteValueFunction {
       Kokkos::printf("failed fabs(long double)\n");
     }
 #endif
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1477,7 +1477,7 @@ struct TestFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed fmod(long double)\n");
     }
 #endif
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1553,7 +1553,7 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed remainder(long double)\n");
     }
 #endif
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1590,7 +1590,7 @@ TEST(TEST_CATEGORY, mathematical_functions_ieee_remainder_function) {
 // TODO: TestFpClassify, see https://github.com/kokkos/kokkos/issues/6279
 
 #ifndef KOKKOS_MATHEMATICAL_FUNCTIONS_SKIP_2
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
 template <class Space>
 struct TestIsFinite {
   TestIsFinite() { run(); }
@@ -1608,7 +1608,7 @@ struct TestIsFinite {
       ++e;
       Kokkos::printf("failed isfinite(integral)\n");
     }
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     if (!isfinite(2.f) || isfinite(quiet_NaN<float>::value) ||
         isfinite(signaling_NaN<float>::value) ||
         isfinite(infinity<float>::value)) {
@@ -1666,7 +1666,7 @@ TEST(TEST_CATEGORY, mathematical_functions_isfinite) {
 }
 #endif
 
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
 template <class Space>
 struct TestIsInf {
   TestIsInf() { run(); }
@@ -1739,7 +1739,7 @@ TEST(TEST_CATEGORY, mathematical_functions_isinf) {
 }
 #endif
 
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
 template <class Space>
 struct TestIsNaN {
   TestIsNaN() { run(); }
@@ -1792,7 +1792,7 @@ struct TestIsNaN {
       Kokkos::printf("failed isnan(long double)\n");
     }
 #endif
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     // special values
     if (isnan(INFINITY) || !isnan(NAN)) {
       ++e;

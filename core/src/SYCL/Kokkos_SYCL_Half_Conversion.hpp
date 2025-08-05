@@ -116,17 +116,16 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
     return Kokkos::Experimental::half_t::impl_type(1.0F);
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     return -std::numeric_limits<
         Kokkos::Experimental::half_t::impl_type>::infinity();
-bla
 #else
     return std::numeric_limits<
         Kokkos::Experimental::half_t::impl_type>::lowest();
 #endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
-#ifndef __FINITE_MATH_ONLY__
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     return std::numeric_limits<
         Kokkos::Experimental::half_t::impl_type>::infinity();
 #else
@@ -223,17 +222,16 @@ cast_from_bhalf(bhalf_t val) {
 }
 }  // namespace Experimental
 
-// sycl::bfloat16 doesn't have constexpr constructors so we return float
 template <>
 struct reduction_identity<Kokkos::Experimental::bhalf_t> {
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float sum() noexcept {
     return 0.f;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
-    return 1.0f;
+    return 1.f;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
-#ifndef __FINITE_MATH_ONLY__
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::bhalf_t max() noexcept {
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     return -std::numeric_limits<
         Kokkos::Experimental::bhalf_t::impl_type>::infinity();
 #else
@@ -241,8 +239,8 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
         Kokkos::Experimental::bhalf_t::impl_type>::lowest();
 #endif
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
-#ifndef __FINITE_MATH_ONLY__
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::bhalf_t min() noexcept {
+#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
     return std::numeric_limits<
         Kokkos::Experimental::bhalf_t::impl_type>::infinity();
 #else
