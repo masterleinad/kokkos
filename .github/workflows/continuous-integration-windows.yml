@@ -48,4 +48,5 @@ jobs:
     - name: run tests
       shell: bash
       run: |
+        C:\a\kokkos\kokkos\build\core\unit_test\Release\Kokkos_CoreUnitTest_Serial_ViewSupport.exe
         ctest -V --test-dir build -C Release -j 4
