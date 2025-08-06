@@ -145,6 +145,11 @@ endif()
 include(GenerateExportHeader)
 generate_export_header(kokkoscore EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Core_Export.h")
 
+install(
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Core_Export.h"
+  DESTINATION ${KOKKOS_HEADER_DIR}
+)
+
 kokkos_lib_include_directories(
   kokkoscore ${KOKKOS_TOP_BUILD_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
 )
