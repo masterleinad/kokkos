@@ -485,7 +485,7 @@ class SharedAllocationRecord
             &Kokkos::Impl::deallocate<MemorySpace, DestroyFunctor>),
         m_destroy() {}
 
-  KOKKOSCORE_EXPORT SharedAllocationRecord()                       = delete;
+  SharedAllocationRecord()                                         = delete;
   SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
 
