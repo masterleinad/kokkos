@@ -26,10 +26,7 @@ endif()
 include(GenerateExportHeader)
 generate_export_header(kokkoscontainers EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Containers_Export.h")
 
-install(
-  FILES "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Containers_Export.h"
-  DESTINATION ${KOKKOS_HEADER_DIR}
-)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Kokkos_Containers_Export.h" DESTINATION ${KOKKOS_HEADER_DIR})
 
 kokkos_lib_include_directories(
   kokkoscontainers ${KOKKOS_TOP_BUILD_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
