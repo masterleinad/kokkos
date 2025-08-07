@@ -524,7 +524,8 @@ class BasicView {
   template <class T>
   KOKKOS_INLINE_FUNCTION static bool is_in_bounds(size_t extent,
                                                   const std::pair<T, T> arg) {
-    return static_cast<std::size_t>(arg.second) <= extent && arg.first >= 0;
+    return static_cast<std::size_t>(arg.second) <= extent && arg.first >= 0 &&
+           arg.first <= arg.second;
   }
 
   template <class T>
