@@ -30,7 +30,7 @@ static_assert(false,
 #include <Kokkos_Core_fwd.hpp>
 #include <Kokkos_Concepts.hpp>
 #include <Kokkos_MemoryTraits.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 #include <impl/Kokkos_Traits.hpp>
 #include <impl/Kokkos_Error.hpp>

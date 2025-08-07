@@ -17,7 +17,7 @@
 #ifndef KOKKOS_DEVICE_MANAGEMENT_HPP
 #define KOKKOS_DEVICE_MANAGEMENT_HPP
 
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <optional>
 #include <vector>
 

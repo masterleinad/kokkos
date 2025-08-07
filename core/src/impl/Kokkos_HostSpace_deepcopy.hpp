@@ -17,7 +17,7 @@
 #ifndef KOKKOS_IMPL_HOSTSPACE_DEEPCOPY_HPP
 #define KOKKOS_IMPL_HOSTSPACE_DEEPCOPY_HPP
 
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <cstdint>
 
 namespace Kokkos {

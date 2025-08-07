@@ -12,7 +12,7 @@ SPDX-License-Identifier: (BSD-3-Clause)
 
 #include <cstdint>
 
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include "desul/atomics/Common.hpp"
 #include "desul/atomics/Macros.hpp"
 

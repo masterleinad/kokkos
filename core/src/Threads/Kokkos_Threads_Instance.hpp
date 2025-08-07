@@ -18,7 +18,7 @@
 #define KOKKOS_THREADS_INSTANCE_HPP
 
 #include <Kokkos_Macros.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 #include <cstdio>
 #include <ostream>

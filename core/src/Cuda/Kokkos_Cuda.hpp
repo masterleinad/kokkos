@@ -38,7 +38,7 @@ static_assert(false,
 #include <Kokkos_Layout.hpp>
 #include <Kokkos_ScratchSpace.hpp>
 #include <Kokkos_MemoryTraits.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <impl/Kokkos_HostSharedPtr.hpp>
 #include <impl/Kokkos_InitializationSettings.hpp>
 

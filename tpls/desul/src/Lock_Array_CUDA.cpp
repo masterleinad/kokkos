@@ -11,7 +11,7 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #include <sstream>
 #include <string>
 
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 #ifdef DESUL_ATOMICS_ENABLE_CUDA_SEPARABLE_COMPILATION
 namespace desul {

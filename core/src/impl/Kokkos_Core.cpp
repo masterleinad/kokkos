@@ -19,7 +19,7 @@
 #endif
 
 #include <Kokkos_Core.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Command_Line_Parsing.hpp>
 #include <impl/Kokkos_ParseCommandLineArgumentsAndEnvironmentVariables.hpp>

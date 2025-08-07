@@ -21,7 +21,7 @@
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Abort.hpp>
 #include <Kokkos_Assert.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 namespace Kokkos::Impl {
 

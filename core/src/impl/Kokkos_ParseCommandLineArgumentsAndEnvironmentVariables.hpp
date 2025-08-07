@@ -17,7 +17,7 @@
 #ifndef KOKKOS_PARSE_COMMAND_LINE_ARGUMENTS_AND_ENVIRONMENT_VARIABLES_HPP
 #define KOKKOS_PARSE_COMMAND_LINE_ARGUMENTS_AND_ENVIRONMENT_VARIABLES_HPP
 
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 // These declaration are only provided for testing purposes
 namespace Kokkos {

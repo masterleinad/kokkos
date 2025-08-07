@@ -27,7 +27,7 @@
 
 #include <Kokkos_Macros.hpp>
 #include <Kokkos_Printf.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Utilities.hpp>
 

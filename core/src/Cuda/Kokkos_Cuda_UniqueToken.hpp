@@ -22,7 +22,7 @@
 
 #include <Cuda/Kokkos_CudaSpace.hpp>
 #include <Kokkos_UniqueToken.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 namespace Kokkos {
 

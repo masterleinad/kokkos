@@ -23,7 +23,7 @@
 #include <Cuda/Kokkos_Cuda_Error.hpp>
 #include <cuda_runtime_api.h>
 #include "Kokkos_CudaSpace.hpp"
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 #include <set>
 #include <map>

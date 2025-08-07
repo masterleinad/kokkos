@@ -19,7 +19,7 @@
 #endif
 
 #include <Kokkos_Macros.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 #include <Kokkos_Atomic.hpp>
 #include <Kokkos_BitManipulation.hpp>

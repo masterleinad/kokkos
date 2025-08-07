@@ -23,7 +23,7 @@
 #include <Kokkos_Tuners.hpp>
 #endif
 
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <impl/Kokkos_Profiling.hpp>
 #include <impl/Kokkos_Profiling_Interface.hpp>
 #include <impl/Kokkos_Command_Line_Parsing.hpp>

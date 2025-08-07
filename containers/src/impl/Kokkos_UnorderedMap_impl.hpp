@@ -18,7 +18,7 @@
 #define KOKKOS_UNORDERED_MAP_IMPL_HPP
 
 #include <Kokkos_Core.hpp>
-#include "Kokkos_Containers_Export.h"
+#include <Kokkos_Containers_Export.h>
 #include <cstdint>
 
 #include <cstdio>

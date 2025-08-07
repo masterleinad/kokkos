@@ -17,7 +17,7 @@
 #ifndef KOKKOS_COMMAND_LINE_PARSING_HPP
 #define KOKKOS_COMMAND_LINE_PARSING_HPP
 
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <string>
 #include <regex>
 

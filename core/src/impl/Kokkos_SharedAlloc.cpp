@@ -19,7 +19,7 @@
 #endif
 
 #include <Kokkos_Core.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <iomanip>
 #include <iostream>
 #include <sstream>

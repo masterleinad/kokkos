@@ -35,7 +35,7 @@
 #include <Kokkos_BitManipulation.hpp>
 #include <Kokkos_MinMax.hpp>
 #include <Kokkos_Vectorization.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 #include <impl/Kokkos_Tools.hpp>
 #include <typeinfo>

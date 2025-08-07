@@ -25,7 +25,7 @@ static_assert(false,
 #include <Kokkos_Core_fwd.hpp>
 #include <Kokkos_Parallel.hpp>
 #include <Kokkos_Atomic.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 #include <impl/Kokkos_ConcurrentBitset.hpp>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_SharedAlloc.hpp>

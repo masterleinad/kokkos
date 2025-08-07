@@ -26,7 +26,7 @@ static_assert(false,
 #if defined(KOKKOS_ENABLE_THREADS)
 
 #include <Kokkos_Core_fwd.hpp>
-#include "Kokkos_Core_Export.h"
+#include <Kokkos_Core_Export.h>
 
 #include <cstddef>
 #include <iosfwd>

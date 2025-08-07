@@ -19,7 +19,7 @@
 #endif
 
 #include <Kokkos_UnorderedMap.hpp>
-#include "Kokkos_Containers_Export.h"
+#include <Kokkos_Containers_Export.h>
 
 namespace Kokkos {
 namespace Impl {
