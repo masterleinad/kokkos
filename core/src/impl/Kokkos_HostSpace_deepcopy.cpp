@@ -47,8 +47,8 @@ KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(void* dst,
 }
 
 template <typename ExecutionSpace>
-KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(
-    const ExecutionSpace& exec, void* dst, const void* src, ptrdiff_t n) {
+void hostspace_parallel_deepcopy_async(const ExecutionSpace& exec, void* dst,
+                                       const void* src, ptrdiff_t n) {
   using policy_t = Kokkos::RangePolicy<ExecutionSpace>;
 
   // If the asynchronous HPX backend is enabled, do *not* copy anything
@@ -141,8 +141,8 @@ KOKKOSCORE_EXPORT void hostspace_parallel_deepcopy_async(
 }
 
 template <typename ExecutionSpace>
-KOKKOSCORE_EXPORT void hostspace_parallel_zeromemset(const ExecutionSpace& exec,
-                                                     void* dst, size_t n) {
+void hostspace_parallel_zeromemset(const ExecutionSpace& exec, void* dst,
+                                   size_t n) {
   constexpr uint8_t z_u8 = 0x00;
   using policy_t =
       Kokkos::RangePolicy<ExecutionSpace, Kokkos::IndexType<size_t>>;
