@@ -576,7 +576,8 @@ class BasicView {
     std::stringstream ss;
     ss << "Kokkos::subview bounds error (";
     append_error_message(ss, src_view.extent(0), arg0);
-    ((ss << ", ", append_error_message(ss, src_view.extent(Idx), args)), ...);
+    ((ss << ", ", append_error_message(ss, src_view.extent(Idx + 1), args)),
+     ...);
     ss << ')';
     return ss;
   }
