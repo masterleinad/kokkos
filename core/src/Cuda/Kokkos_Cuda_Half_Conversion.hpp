@@ -483,18 +483,19 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
     return 1.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
 #if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
-    return -Kokkos::Experimental::infinity_v<float>;
+    return Kokkos::Experimental::bhalf_t::bit_comparison_type{
+        0b1'11111111'0000000};
 #else
-    return -0x7f7f;
+    return Kokkos::Experimental::finite_min_v<Kokkos::Experimental::bhalf_t>;
 #endif
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
 #if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
-    return Kokkos::Experimental::infinity_v<float>;
+    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::bhalf_t>;
 #else
-    return 0x7f7f;
+    return Kokkos::Experimental::finite_max_v<Kokkos::Experimental::bhalf_t>;
 #endif
   }
 };
@@ -510,18 +511,19 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
     return 1.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
 #if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
-    return -Kokkos::Experimental::infinity_v<float>;
+    return Kokkos::Experimental::half_t::bit_comparison_type{
+        0b1'11111'0000000000};
 #else
-    return -65504.0F;
+    return Kokkos::Experimental::finite_min_v<Kokkos::Experimental::half_t>;
 #endif
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
 #if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
-    return Kokkos::Experimental::infinity_v<float>;
+    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
 #else
-    return 65504.0F;
+    return Kokkos::Experimental::finite_max_v<Kokkos::Experimental::half_t>;
 #endif
   }
 };

@@ -195,7 +195,7 @@ cast_from_half(half_t val) {
 }
 }  // namespace Experimental
 
-// use float as the return type for sum and prod since hip_fp16.h
+// use a type convertible to half_t as the return type since hip_fp16.h
 // has no constexpr functions for casting to __half
 template <>
 struct reduction_identity<Kokkos::Experimental::half_t> {
@@ -205,18 +205,19 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
     return 1.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
 #if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
-    return -Kokkos::Experimental::infinity_v<float>;
+    return Kokkos::Experimental::half_t::bit_comparison_type{
+        0b1'11111'0000000000};
 #else
-    return -65504.0F;
+    return Kokkos::Experimental::finite_min_v<Kokkos::Experimental::half_t>;
 #endif
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
 #if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
-    return Kokkos::Experimental::infinity_v<float>;
+    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
 #else
-    return 65504.0F;
+    return Kokkos::Experimental::finite_max_v<Kokkos::Experimental::half_t>;
 #endif
   }
 };
