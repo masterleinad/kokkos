@@ -203,12 +203,12 @@ class Serial {
   KOKKOSCORE_EXPORT void print_configuration(std::ostream& os,
                                              bool verbose = false) const;
 
-  static void impl_initialize(InitializationSettings const&);
+  KOKKOSCORE_EXPORT static void impl_initialize(InitializationSettings const&);
 
   KOKKOSCORE_EXPORT static bool impl_is_initialized();
 
   //! Free any resources being consumed by the device.
-  static void impl_finalize();
+  KOKKOSCORE_EXPORT static void impl_finalize();
 
   //--------------------------------------------------------------------------
 

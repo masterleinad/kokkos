@@ -181,11 +181,13 @@ KOKKOSCORE_EXPORT bool Serial::impl_is_initialized() {
   return Impl::SerialInternal::singleton().is_initialized();
 }
 
-void Serial::impl_initialize(InitializationSettings const&) {
+KOKKOSCORE_EXPORT void Serial::impl_initialize(InitializationSettings const&) {
   Impl::SerialInternal::singleton().initialize();
 }
 
-void Serial::impl_finalize() { Impl::SerialInternal::singleton().finalize(); }
+KOKKOSCORE_EXPORT void Serial::impl_finalize() {
+  Impl::SerialInternal::singleton().finalize();
+}
 
 KOKKOSCORE_EXPORT const char* Serial::name() { return "Serial"; }
 
