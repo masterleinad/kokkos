@@ -376,6 +376,7 @@ function(KOKKOS_ADD_LIBRARY LIBRARY_NAME)
   if(PARSE_SHARED OR BUILD_SHARED_LIBS)
     set_target_properties(
       ${LIBRARY_NAME} PROPERTIES VERSION ${Kokkos_VERSION} SOVERSION ${Kokkos_VERSION_MAJOR}.${Kokkos_VERSION_MINOR}
+                                 WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
   endif()
 
