@@ -1,6 +1,7 @@
 name: github-windows
 
 on:
+  push:
   workflow_call:
 
 concurrency:
@@ -39,7 +40,7 @@ jobs:
     - name: configure
       shell: bash
       run: |
-        cmake -B build -DKokkos_ENABLE_SERIAL=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_DEPRECATED_CODE_4=ON
+        cmake -B build -DKokkos_ENABLE_SERIAL=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_DEPRECATED_CODE_4=ON -DBUILD_SHARED_LIBS=ON
     - name: build library
       shell: bash
       run: |
