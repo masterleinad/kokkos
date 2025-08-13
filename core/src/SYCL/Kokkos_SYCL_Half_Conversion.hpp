@@ -19,8 +19,10 @@
 
 #ifdef KOKKOS_IMPL_SYCL_HALF_TYPE_DEFINED
 
-#include <Kokkos_Half.hpp>
+#include <SYCL/Kokkos_SYCL_Half_Impl_Type.hpp>
+#include <impl/Kokkos_Half_FloatingPointWrapper.hpp>
 #include <Kokkos_ReductionIdentity.hpp>
+#include <impl/Kokkos_Half_NumericTraits.hpp>
 
 namespace Kokkos {
 namespace Experimental {
@@ -51,56 +53,54 @@ KOKKOS_INLINE_FUNCTION
 half_t cast_to_half(unsigned long val) { return half_t::impl_type(val); }
 
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, float>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, float>, T>
 cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, double>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, double>, T>
 cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, short>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, short>, T>
 cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION
-    std::enable_if_t<std::is_same<T, unsigned short>::value, T>
-    cast_from_half(half_t val) {
-  return static_cast<T>(half_t::impl_type(val));
-}
-template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, int>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, unsigned short>, T>
 cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, unsigned int>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, int>, T>
 cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, long long>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, unsigned int>, T>
 cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION
-    std::enable_if_t<std::is_same<T, unsigned long long>::value, T>
-    cast_from_half(half_t val) {
-  return static_cast<T>(half_t::impl_type(val));
-}
-template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, long>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, long long>, T>
 cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 template <class T>
 KOKKOS_INLINE_FUNCTION
-    std::enable_if_t<std::is_same<T, unsigned long>::value, T>
+    std::enable_if_t<std::is_same_v<T, unsigned long long>, T>
     cast_from_half(half_t val) {
+  return static_cast<T>(half_t::impl_type(val));
+}
+template <class T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, long>, T>
+cast_from_half(half_t val) {
+  return static_cast<T>(half_t::impl_type(val));
+}
+template <class T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, unsigned long>, T>
+cast_from_half(half_t val) {
   return static_cast<T>(half_t::impl_type(val));
 }
 }  // namespace Experimental
@@ -115,14 +115,17 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
   prod() noexcept {
     return Kokkos::Experimental::half_t::impl_type(1.0F);
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
-  max() noexcept {
-    return std::numeric_limits<
-        Kokkos::Experimental::half_t::impl_type>::lowest();
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
+    // sycl::half doesn't have constexpr constructors so we return
+    // bit_comparison_type which doesn't have a unitary minus operator.
+    // -inf
+    return Kokkos::Experimental::half_t::bit_comparison_type{
+        0b1'11111'0000000000};
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
-  min() noexcept {
-    return std::numeric_limits<Kokkos::Experimental::half_t::impl_type>::max();
+  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
+    // sycl::half doesn't have constexpr constructors so we return
+    // bit_comparison_type
+    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
   }
 };
 
@@ -162,56 +165,54 @@ KOKKOS_INLINE_FUNCTION
 bhalf_t cast_to_bhalf(unsigned long val) { return bhalf_t::impl_type(val); }
 
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, float>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, float>, T>
 cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, double>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, double>, T>
 cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, short>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, short>, T>
 cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION
-    std::enable_if_t<std::is_same<T, unsigned short>::value, T>
-    cast_from_bhalf(bhalf_t val) {
-  return static_cast<T>(bhalf_t::impl_type(val));
-}
-template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, int>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, unsigned short>, T>
 cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, unsigned int>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, int>, T>
 cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, long long>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, unsigned int>, T>
 cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 template <class T>
-KOKKOS_INLINE_FUNCTION
-    std::enable_if_t<std::is_same<T, unsigned long long>::value, T>
-    cast_from_bhalf(bhalf_t val) {
-  return static_cast<T>(bhalf_t::impl_type(val));
-}
-template <class T>
-KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same<T, long>::value, T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, long long>, T>
 cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 template <class T>
 KOKKOS_INLINE_FUNCTION
-    std::enable_if_t<std::is_same<T, unsigned long>::value, T>
+    std::enable_if_t<std::is_same_v<T, unsigned long long>, T>
     cast_from_bhalf(bhalf_t val) {
+  return static_cast<T>(bhalf_t::impl_type(val));
+}
+template <class T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, long>, T>
+cast_from_bhalf(bhalf_t val) {
+  return static_cast<T>(bhalf_t::impl_type(val));
+}
+template <class T>
+KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_same_v<T, unsigned long>, T>
+cast_from_bhalf(bhalf_t val) {
   return static_cast<T>(bhalf_t::impl_type(val));
 }
 }  // namespace Experimental
@@ -226,10 +227,10 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
     return 1.0f;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
-    return -0x7f7f;
+    return -Kokkos::Experimental::infinity_v<float>;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
-    return 0x7f7f;
+    return Kokkos::Experimental::infinity_v<float>;
   }
 };
 

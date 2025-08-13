@@ -26,7 +26,7 @@
 #include <string>
 #include <utility>
 
-namespace {
+namespace Kokkos::Impl {
 
 template <class T>
 using public_member_types_t = std::enable_if_t<
@@ -106,11 +106,6 @@ constexpr bool check_valid_execution_space() {
   return true;
 }
 
-}  // namespace
-
-namespace Kokkos {
-namespace Impl {
-
 struct ExecSpaceBase {
   virtual void initialize(InitializationSettings const&)           = 0;
   virtual void finalize()                                          = 0;
@@ -123,14 +118,14 @@ template <class ExecutionSpace>
 struct ExecSpaceDerived : ExecSpaceBase {
   static_assert(check_valid_execution_space<ExecutionSpace>());
   static_assert(check_is_regular<ExecutionSpace>());
-  void initialize(InitializationSettings const& settings) final {
+  void initialize(InitializationSettings const& settings) override final {
     ExecutionSpace::impl_initialize(settings);
   }
-  void finalize() final { ExecutionSpace::impl_finalize(); }
-  void static_fence(std::string const& label) final {
+  void finalize() override final { ExecutionSpace::impl_finalize(); }
+  void static_fence(std::string const& label) override final {
     ExecutionSpace::impl_static_fence(label);
   }
-  void print_configuration(std::ostream& os, bool verbose) final {
+  void print_configuration(std::ostream& os, bool verbose) override final {
     ExecutionSpace().print_configuration(os, verbose);
   }
 };
@@ -162,7 +157,6 @@ int initialize_space_factory(std::string name) {
   return 1;
 }
 
-}  // namespace Impl
-}  // namespace Kokkos
+}  // namespace Kokkos::Impl
 
 #endif

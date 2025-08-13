@@ -33,12 +33,13 @@ namespace Kokkos {
 namespace Impl {
 
 void DeepCopySYCL(void* dst, const void* src, size_t n) {
-  Experimental::Impl::SYCLInternal::singleton().m_queue->memcpy(dst, src, n);
+  // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+  Impl::SYCLInternal::singleton().m_queue->memcpy(dst, src, n);
 }
 
-void DeepCopyAsyncSYCL(const Kokkos::Experimental::SYCL& instance, void* dst,
-                       const void* src, size_t n) {
-  sycl::queue& q = *instance.impl_internal_space_instance()->m_queue;
+void DeepCopyAsyncSYCL(const Kokkos::SYCL& instance, void* dst, const void* src,
+                       size_t n) {
+  sycl::queue& q = instance.sycl_queue();
   auto event     = q.memcpy(dst, src, n);
 #ifndef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
   q.ext_oneapi_submit_barrier(std::vector<sycl::event>{event});
@@ -46,9 +47,9 @@ void DeepCopyAsyncSYCL(const Kokkos::Experimental::SYCL& instance, void* dst,
 }
 
 void DeepCopyAsyncSYCL(void* dst, const void* src, size_t n) {
-  Experimental::Impl::SYCLInternal::singleton().m_queue->memcpy(dst, src, n);
-  Experimental::SYCL().fence(
-      "Kokkos::Impl::DeepCopyAsyncSYCL: fence after memcpy");
+  SYCL exec;
+  exec.sycl_queue().memcpy(dst, src, n);
+  exec.fence("Kokkos::Impl::DeepCopyAsyncSYCL: fence after memcpy");
 }
 
 }  // namespace Impl
@@ -56,36 +57,46 @@ void DeepCopyAsyncSYCL(void* dst, const void* src, size_t n) {
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
+namespace {
+
+std::string_view get_memory_space_name(sycl::usm::alloc allocation_kind) {
+  switch (allocation_kind) {
+    case sycl::usm::alloc::host: return Kokkos::SYCLHostUSMSpace::name();
+    case sycl::usm::alloc::device: return Kokkos::SYCLDeviceUSMSpace::name();
+    case sycl::usm::alloc::shared: return Kokkos::SYCLSharedUSMSpace::name();
+    default:
+      Kokkos::abort("bug: unknown sycl allocation type");
+      return "unreachable";
+  }
+}
+
+}  // namespace
 
 namespace Kokkos {
-namespace Experimental {
 
-SYCLDeviceUSMSpace::SYCLDeviceUSMSpace()
-    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+SYCLDeviceUSMSpace::SYCLDeviceUSMSpace() : m_queue(SYCL().sycl_queue()) {}
 SYCLDeviceUSMSpace::SYCLDeviceUSMSpace(sycl::queue queue)
     : m_queue(std::move(queue)) {}
 
-SYCLSharedUSMSpace::SYCLSharedUSMSpace()
-    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+SYCLSharedUSMSpace::SYCLSharedUSMSpace() : m_queue(SYCL().sycl_queue()) {}
 SYCLSharedUSMSpace::SYCLSharedUSMSpace(sycl::queue queue)
     : m_queue(std::move(queue)) {}
 
-SYCLHostUSMSpace::SYCLHostUSMSpace()
-    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+SYCLHostUSMSpace::SYCLHostUSMSpace() : m_queue(SYCL().sycl_queue()) {}
 SYCLHostUSMSpace::SYCLHostUSMSpace(sycl::queue queue)
     : m_queue(std::move(queue)) {}
 
-void* allocate_sycl(
-    const char* arg_label, const size_t arg_alloc_size,
-    const size_t arg_logical_size, const Kokkos::Tools::SpaceHandle arg_handle,
-    const RawMemoryAllocationFailure::AllocationMechanism failure_tag,
-    const sycl::usm::alloc allocation_kind, const sycl::queue& queue) {
+void* allocate_sycl(const char* arg_label, const size_t arg_alloc_size,
+                    const size_t arg_logical_size,
+                    const Kokkos::Tools::SpaceHandle arg_handle,
+                    const sycl::usm::alloc allocation_kind,
+                    const sycl::queue& queue) {
   void* const hostPtr = sycl::malloc(arg_alloc_size, queue, allocation_kind);
 
-  if (hostPtr == nullptr)
-    throw RawMemoryAllocationFailure(
-        arg_alloc_size, 1, RawMemoryAllocationFailure::FailureMode::Unknown,
-        failure_tag);
+  if (hostPtr == nullptr) {
+    Kokkos::Impl::throw_bad_alloc(get_memory_space_name(allocation_kind),
+                                  arg_alloc_size, arg_label);
+  }
 
   if (Kokkos::Profiling::profileLibraryLoaded()) {
     const size_t reported_size =
@@ -99,22 +110,19 @@ void* allocate_sycl(
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 KOKKOS_DEPRECATED_WITH_COMMENT("Use the overload with a label instead!")
-void* SYCLDeviceUSMSpace::allocate(const Kokkos::Experimental::SYCL& exec_space,
+void* SYCLDeviceUSMSpace::allocate(const Kokkos::SYCL& exec_space,
                                    const size_t arg_alloc_size) const {
   return allocate(exec_space, "[unlabeled]", arg_alloc_size);
 }
 #endif
 
-void* SYCLDeviceUSMSpace::allocate(const Kokkos::Experimental::SYCL& exec_space,
+void* SYCLDeviceUSMSpace::allocate(const Kokkos::SYCL& exec_space,
                                    const char* arg_label,
                                    const size_t arg_alloc_size,
                                    const size_t arg_logical_size) const {
-  return allocate_sycl(
-      arg_label, arg_alloc_size, arg_logical_size,
-      Kokkos::Tools::make_space_handle(name()),
-      RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocDevice,
-      sycl::usm::alloc::device,
-      *exec_space.impl_internal_space_instance()->m_queue);
+  return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
+                       Kokkos::Tools::make_space_handle(name()),
+                       sycl::usm::alloc::device, exec_space.sycl_queue());
 }
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -127,11 +135,9 @@ void* SYCLDeviceUSMSpace::allocate(const size_t arg_alloc_size) const {
 void* SYCLDeviceUSMSpace::allocate(const char* arg_label,
                                    const size_t arg_alloc_size,
                                    const size_t arg_logical_size) const {
-  return allocate_sycl(
-      arg_label, arg_alloc_size, arg_logical_size,
-      Kokkos::Tools::make_space_handle(name()),
-      RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocDevice,
-      sycl::usm::alloc::device, m_queue);
+  return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
+                       Kokkos::Tools::make_space_handle(name()),
+                       sycl::usm::alloc::device, m_queue);
 }
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -146,12 +152,9 @@ void* SYCLSharedUSMSpace::allocate(const SYCL& exec_space,
                                    const char* arg_label,
                                    const size_t arg_alloc_size,
                                    const size_t arg_logical_size) const {
-  return allocate_sycl(
-      arg_label, arg_alloc_size, arg_logical_size,
-      Kokkos::Tools::make_space_handle(name()),
-      RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocShared,
-      sycl::usm::alloc::shared,
-      *exec_space.impl_internal_space_instance()->m_queue);
+  return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
+                       Kokkos::Tools::make_space_handle(name()),
+                       sycl::usm::alloc::shared, exec_space.sycl_queue());
 }
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -164,11 +167,9 @@ void* SYCLSharedUSMSpace::allocate(const size_t arg_alloc_size) const {
 void* SYCLSharedUSMSpace::allocate(const char* arg_label,
                                    const size_t arg_alloc_size,
                                    const size_t arg_logical_size) const {
-  return allocate_sycl(
-      arg_label, arg_alloc_size, arg_logical_size,
-      Kokkos::Tools::make_space_handle(name()),
-      RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocShared,
-      sycl::usm::alloc::shared, m_queue);
+  return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
+                       Kokkos::Tools::make_space_handle(name()),
+                       sycl::usm::alloc::shared, m_queue);
 }
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -182,12 +183,9 @@ void* SYCLHostUSMSpace::allocate(const SYCL& exec_space,
 void* SYCLHostUSMSpace::allocate(const SYCL& exec_space, const char* arg_label,
                                  const size_t arg_alloc_size,
                                  const size_t arg_logical_size) const {
-  return allocate_sycl(
-      arg_label, arg_alloc_size, arg_logical_size,
-      Kokkos::Tools::make_space_handle(name()),
-      RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocHost,
-      sycl::usm::alloc::host,
-      *exec_space.impl_internal_space_instance()->m_queue);
+  return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
+                       Kokkos::Tools::make_space_handle(name()),
+                       sycl::usm::alloc::host, exec_space.sycl_queue());
 }
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -200,11 +198,9 @@ void* SYCLHostUSMSpace::allocate(const size_t arg_alloc_size) const {
 void* SYCLHostUSMSpace::allocate(const char* arg_label,
                                  const size_t arg_alloc_size,
                                  const size_t arg_logical_size) const {
-  return allocate_sycl(
-      arg_label, arg_alloc_size, arg_logical_size,
-      Kokkos::Tools::make_space_handle(name()),
-      RawMemoryAllocationFailure::AllocationMechanism::SYCLMallocHost,
-      sycl::usm::alloc::host, m_queue);
+  return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
+                       Kokkos::Tools::make_space_handle(name()),
+                       sycl::usm::alloc::host, m_queue);
 }
 
 void sycl_deallocate(const char* arg_label, void* const arg_alloc_ptr,
@@ -224,13 +220,10 @@ void sycl_deallocate(const char* arg_label, void* const arg_alloc_ptr,
   sycl::free(arg_alloc_ptr, queue);
 }
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-KOKKOS_DEPRECATED_WITH_COMMENT("Use the overload with a label instead!")
 void SYCLDeviceUSMSpace::deallocate(void* const arg_alloc_ptr,
                                     const size_t arg_alloc_size) const {
   deallocate("[unlabeled]", arg_alloc_ptr, arg_alloc_size);
 }
-#endif
 
 void SYCLDeviceUSMSpace::deallocate(const char* arg_label,
                                     void* const arg_alloc_ptr,
@@ -240,13 +233,10 @@ void SYCLDeviceUSMSpace::deallocate(const char* arg_label,
                   Kokkos::Tools::make_space_handle(name()), m_queue);
 }
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-KOKKOS_DEPRECATED_WITH_COMMENT("Use the overload with a label instead!")
 void SYCLSharedUSMSpace::deallocate(void* const arg_alloc_ptr,
                                     const size_t arg_alloc_size) const {
   deallocate("[unlabeled]", arg_alloc_ptr, arg_alloc_size);
 }
-#endif
 
 void SYCLSharedUSMSpace::deallocate(const char* arg_label,
                                     void* const arg_alloc_ptr,
@@ -256,13 +246,10 @@ void SYCLSharedUSMSpace::deallocate(const char* arg_label,
                   Kokkos::Tools::make_space_handle(name()), m_queue);
 }
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-KOKKOS_DEPRECATED_WITH_COMMENT("Use the overload with a label instead!")
 void SYCLHostUSMSpace::deallocate(void* const arg_alloc_ptr,
                                   const size_t arg_alloc_size) const {
   deallocate("[unlabeled]", arg_alloc_ptr, arg_alloc_size);
 }
-#endif
 
 void SYCLHostUSMSpace::deallocate(const char* arg_label,
                                   void* const arg_alloc_ptr,
@@ -272,7 +259,6 @@ void SYCLHostUSMSpace::deallocate(const char* arg_label,
                   Kokkos::Tools::make_space_handle(name()), m_queue);
 }
 
-}  // namespace Experimental
 }  // namespace Kokkos
 
 //==============================================================================
@@ -281,11 +267,11 @@ void SYCLHostUSMSpace::deallocate(const char* arg_label,
 #include <impl/Kokkos_SharedAlloc_timpl.hpp>
 
 KOKKOS_IMPL_HOST_INACCESSIBLE_SHARED_ALLOCATION_RECORD_EXPLICIT_INSTANTIATION(
-    Kokkos::Experimental::SYCLDeviceUSMSpace);
+    Kokkos::SYCLDeviceUSMSpace);
 KOKKOS_IMPL_SHARED_ALLOCATION_RECORD_EXPLICIT_INSTANTIATION(
-    Kokkos::Experimental::SYCLSharedUSMSpace);
+    Kokkos::SYCLSharedUSMSpace);
 KOKKOS_IMPL_SHARED_ALLOCATION_RECORD_EXPLICIT_INSTANTIATION(
-    Kokkos::Experimental::SYCLHostUSMSpace);
+    Kokkos::SYCLHostUSMSpace);
 
 // </editor-fold> end Explicit instantiations of CRTP Base classes }}}1
 //==============================================================================

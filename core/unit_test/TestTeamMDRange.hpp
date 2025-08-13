@@ -148,10 +148,6 @@ struct TestTeamMDParallelFor {
   }
 };
 
-// If KOKKOS_ENABLE_CUDA_LAMBDA is off, extended lambdas used in parallel_for
-// and parallel_reduce in these tests will not compile correctly
-#if !defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_CUDA_LAMBDA)
-
 template <typename ExecSpace>
 struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   using TeamType = typename Kokkos::TeamPolicy<ExecSpace>::member_type;
@@ -159,7 +155,7 @@ struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_3D_TeamThreadMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType***, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -198,7 +194,7 @@ struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_4D_TeamThreadMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType****, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -238,7 +234,7 @@ struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_5D_TeamThreadMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType*****, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -280,7 +276,7 @@ struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_6D_TeamThreadMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType******, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -324,7 +320,7 @@ struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_7D_TeamThreadMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType*******, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -369,7 +365,7 @@ struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_8D_TeamThreadMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType********, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -416,7 +412,7 @@ struct TestTeamThreadMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_single_direction_test(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType***, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int n0 = dims[0];
     int n1 = dims[1];
@@ -451,7 +447,7 @@ struct TestThreadVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_4D_ThreadVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType****, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -494,7 +490,7 @@ struct TestThreadVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_5D_ThreadVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType*****, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -539,7 +535,7 @@ struct TestThreadVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_6D_ThreadVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType******, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -585,7 +581,7 @@ struct TestThreadVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_7D_ThreadVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType*******, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -633,7 +629,7 @@ struct TestThreadVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_8D_ThreadVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType********, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -687,7 +683,7 @@ struct TestTeamVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_3D_TeamVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType***, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -726,7 +722,7 @@ struct TestTeamVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_4D_TeamVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType****, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -766,7 +762,7 @@ struct TestTeamVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_5D_TeamVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType*****, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -808,7 +804,7 @@ struct TestTeamVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_6D_TeamVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType******, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -852,7 +848,7 @@ struct TestTeamVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_7D_TeamVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType*******, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -897,7 +893,7 @@ struct TestTeamVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_for_8D_TeamVectorMDRange(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType********, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int leagueSize = dims[0];
     int n0         = dims[1];
@@ -944,7 +940,7 @@ struct TestTeamVectorMDRangeParallelFor : public TestTeamMDParallelFor {
   template <Kokkos::Iterate Direction = Kokkos::Iterate::Default>
   static void test_parallel_double_direction_test(DimsType const& dims) {
     using ViewType     = typename Kokkos::View<DataType****, ExecSpace>;
-    using HostViewType = typename ViewType::HostMirror;
+    using HostViewType = typename ViewType::host_mirror_type;
 
     int n0 = dims[0];
     int n1 = dims[1];
@@ -2186,7 +2182,7 @@ TEST(TEST_CATEGORY, TeamThreadMDRangeParallelReduce) {
 TEST(TEST_CATEGORY, ThreadVectorMDRangeParallelReduce) {
 // FIXME_SYCL sycl::group_barrier doesn't work correctly for non-Intel GPUs
 #if defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ARCH_INTEL_GPU)
-  if (std::is_same_v<TEST_EXECSPACE, Kokkos::Experimental::SYCL>)
+  if (std::is_same_v<TEST_EXECSPACE, Kokkos::SYCL>)
     GTEST_SKIP() << "skipping because of bug in group_barrier implementation";
 #endif
 
@@ -2219,7 +2215,7 @@ TEST(TEST_CATEGORY, ThreadVectorMDRangeParallelReduce) {
 TEST(TEST_CATEGORY, TeamVectorMDRangeParallelReduce) {
 // FIXME_SYCL sycl::group_barrier doesn't work correctly for non-Intel GPUs
 #if defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ARCH_INTEL_GPU)
-  if (std::is_same_v<TEST_EXECSPACE, Kokkos::Experimental::SYCL>)
+  if (std::is_same_v<TEST_EXECSPACE, Kokkos::SYCL>)
     GTEST_SKIP() << "skipping because of bug in group_barrier implementation";
 #endif
 
@@ -2248,8 +2244,6 @@ TEST(TEST_CATEGORY, TeamVectorMDRangeParallelReduce) {
   TestTeamVectorMDRangeParallelReduce<TEST_EXECSPACE>::
       test_parallel_reduce_for_8D_TeamVectorMDRange<Right>(smallDims);
 }
-
-#endif
 
 }  // namespace TeamMDRange
 }  // namespace Test
