@@ -14,13 +14,23 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #include "desul/atomics/Common.hpp"
 #include "desul/atomics/Macros.hpp"
 
+#if defined(_WIN32)
+#ifdef KOKKOS_EXPORT_SYMBOLS
+#define KOKKOS_EXPORT __declspec(dllexport)
+#else
+#define KOKKOS_EXPORT __declspec(dllimport)
+#endif
+#else
+#define KOKKOS_EXPORT
+#endif
+
 namespace desul {
 namespace Impl {
 
 /// \brief This global variable in Host space is the central definition
 ///        of these arrays.
-extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_DEVICE_h;
-extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_NODE_h;
+KOKKOS_EXPORT extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_DEVICE_h;
+KOKKOS_EXPORT extern int32_t* CUDA_SPACE_ATOMIC_LOCKS_NODE_h;
 
 /// \brief After this call, the g_host_cuda_lock_arrays variable has
 ///        valid, initialized arrays.

@@ -1,6 +1,7 @@
 name: github-windows
 
 on:
+  push:
   workflow_call:
 
 concurrency:
@@ -28,7 +29,7 @@ jobs:
     - name: build library
       shell: bash
       run: |
-        cmake --build build --parallel 4 --config Release
+        cmake --build build --parallel 4 --config Debug
   windows-serial:
     # Serial build on Windows
     name: Serial VS-2022
