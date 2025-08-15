@@ -716,13 +716,16 @@ class TestReductionOverInfiniteFloat {
   }
 };
 
-// nvhpc on device doesn't use the correct neutral value for the min and max
-// reducers
-#if !(defined(KOKKOS_COMPILER_NVHPC) && defined(KOKKOS_ENABLE_OPENACC))
 TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
+// nvhpc on device doesn't use the correct neutral value for the min and max
+// reducers
+#if !(defined(KOKKOS_COMPILER_NVHPC) && defined(KOKKOS_ENABLE_OPENACC))
+  GTEST_SKIP() << "skipping for NVHPC and OPENACC due to wrong neutral value";
+#endif
+
   TestReductionOverInfiniteFloat<Kokkos::Experimental::half_t>();
   TestReductionOverInfiniteFloat<Kokkos::Experimental::bhalf_t>();
   TestReductionOverInfiniteFloat<float>();
@@ -734,6 +737,5 @@ TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
   TestReductionOverInfiniteFloat<long double>();
 #endif
 }
-#endif
 
 }  // namespace Test
