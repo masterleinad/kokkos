@@ -1344,7 +1344,7 @@ struct TestAbsoluteValueFunction {
       Kokkos::printf("failed abs(long double)\n");
     }
 #endif
-#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
+#if !__FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1407,7 +1407,7 @@ struct TestFloatingPointAbsoluteValueFunction {
       Kokkos::printf("failed fabs(long double)\n");
     }
 #endif
-#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
+#if !__FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1477,7 +1477,7 @@ struct TestFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed fmod(long double)\n");
     }
 #endif
-#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
+#if !__FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1553,7 +1553,7 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
       Kokkos::printf("failed remainder(long double)\n");
     }
 #endif
-#if !(defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0)
+#if !__FINITE_MATH_ONLY__
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
@@ -1659,7 +1659,7 @@ struct TestIsFinite {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_isfinite) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestIsFinite<TEST_EXECSPACE>();
@@ -1733,7 +1733,7 @@ struct TestIsInf {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_isinf) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestIsInf<TEST_EXECSPACE>();
@@ -1807,7 +1807,7 @@ struct TestIsNaN {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_isnan) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestIsNaN<TEST_EXECSPACE>();

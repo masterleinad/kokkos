@@ -213,7 +213,7 @@ struct TestNumericTraits<
 
 // NOLINTBEGIN(bugprone-unused-raii)
 TEST(TEST_CATEGORY, numeric_traits_infinity) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestNumericTraits<TEST_EXECSPACE, Kokkos::Experimental::half_t, Infinity>();

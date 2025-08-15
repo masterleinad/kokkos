@@ -1948,7 +1948,7 @@ struct TestComplexBesselH2Function {
 };
 
 TEST(TEST_CATEGORY, mathspecialfunc_expint1) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestExponentialIntergral1Function<TEST_EXECSPACE> test;
@@ -1959,7 +1959,7 @@ TEST(TEST_CATEGORY, mathspecialfunc_expint1) {
 // runtime with LLVM/13.
 #ifndef KOKKOS_ENABLE_OPENMPTARGET
 TEST(TEST_CATEGORY, mathspecialfunc_errorfunc) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestComplexErrorFunction<TEST_EXECSPACE> test;
@@ -1968,7 +1968,7 @@ TEST(TEST_CATEGORY, mathspecialfunc_errorfunc) {
 #endif
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesselj0y0) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestComplexBesselJ0Y0Function<TEST_EXECSPACE> test;
@@ -1983,7 +1983,7 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesselj1y1) {
     GTEST_SKIP()
         << "skipping since test is known to fail on MI100 with ROCm 5.3";
 #endif
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestComplexBesselJ1Y1Function<TEST_EXECSPACE> test;
@@ -1991,7 +1991,7 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesselj1y1) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesseli0k0) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestComplexBesselI0K0Function<TEST_EXECSPACE> test;
@@ -1999,7 +1999,7 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesseli0k0) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesseli1k1) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestComplexBesselI1K1Function<TEST_EXECSPACE> test;
@@ -2018,7 +2018,7 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesselh1stkind) {
     GTEST_SKIP() << "skipping since test is known to fail on MI100 and for "
                     "some versions of ROCm";
 #endif
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestComplexBesselH1Function<TEST_EXECSPACE> test;
@@ -2026,7 +2026,7 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesselh1stkind) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesselh2ndkind) {
-#if defined(__FINITE_MATH_ONLY__) && __FINITE_MATH_ONLY__ > 0
+#if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when assuming finite math";
 #endif
   TestComplexBesselH2Function<TEST_EXECSPACE> test;
