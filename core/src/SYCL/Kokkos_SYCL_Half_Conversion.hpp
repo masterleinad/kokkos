@@ -116,20 +116,20 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
     return Kokkos::Experimental::half_t::impl_type(1.0F);
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
-#if !__FINITE_MATH_ONLY__
-    return -std::numeric_limits<
-        Kokkos::Experimental::half_t::impl_type>::infinity();
-#else
+#if __FINITE_MATH_ONLY__
     return std::numeric_limits<
         Kokkos::Experimental::half_t::impl_type>::lowest();
+#else
+    return -std::numeric_limits<
+        Kokkos::Experimental::half_t::impl_type>::infinity();
 #endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
-#if !__FINITE_MATH_ONLY__
+#if __FINITE_MATH_ONLY__
+    return std::numeric_limits<Kokkos::Experimental::half_t::impl_type>::max();
+#else
     return std::numeric_limits<
         Kokkos::Experimental::half_t::impl_type>::infinity();
-#else
-    return std::numeric_limits<Kokkos::Experimental::half_t::impl_type>::max();
 #endif
   }
 };
@@ -233,18 +233,18 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
     using Kokkos::Experimental;
-#if !__FINITE_MATH_ONLY__
-    return -infinity_v<bhalf_t>;
-#else
+#if __FINITE_MATH_ONLY__
     return finite_min_v<bhalf_t>;
+#else
+    return -infinity_v<bhalf_t>;
 #endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
     using Kokkos::Experimental;
-#if !__FINITE_MATH_ONLY__
-    return infinity_v<bhalf_t>;
-#else
+#if __FINITE_MATH_ONLY__
     return finite_max_v<bhalf_t>;
+#else
+    return infinity_v<bhalf_t>;
 #endif
   }
 };
