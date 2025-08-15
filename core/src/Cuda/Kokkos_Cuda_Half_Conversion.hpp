@@ -484,17 +484,19 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
     return 1.0F;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
+    using Kokkos::Experimental;
 #if !__FINITE_MATH_ONLY__
-    return -Kokkos::Experimental::infinity_v<Kokkos::Experimental::bhalf_t>;
+    return -infinity_v<bhalf_t>;
 #else
-    return Kokkos::Experimental::finite_min_v<Kokkos::Experimental::bhalf_t>;
+    return finite_min_v<bhalf_t>;
 #endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
+    using Kokkos::Experimental;
 #if !__FINITE_MATH_ONLY__
-    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::bhalf_t>;
+    return infinity_v<bhalf_t>;
 #else
-    return Kokkos::Experimental::finite_max_v<Kokkos::Experimental::bhalf_t>;
+    return finite_max_v<bhalf_t>;
 #endif
   }
 };
@@ -511,17 +513,19 @@ struct reduction_identity<Kokkos::Experimental::half_t> {
     return 1.0F;
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
+    using Kokkos::Experimental;
 #if !__FINITE_MATH_ONLY__
-    return -Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
+    return -infinity_v<half_t>;
 #else
-    return Kokkos::Experimental::finite_min_v<Kokkos::Experimental::half_t>;
+    return finite_min_v<half_t>;
 #endif
   }
   KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
+    using Kokkos::Experimental;
 #if !__FINITE_MATH_ONLY__
-    return Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
+    return infinity_v<half_t>;
 #else
-    return Kokkos::Experimental::finite_max_v<Kokkos::Experimental::half_t>;
+    return finite_max_v<half_t>;
 #endif
   }
 };
