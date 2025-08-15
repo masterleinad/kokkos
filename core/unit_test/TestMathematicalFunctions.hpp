@@ -1660,7 +1660,7 @@ struct TestIsFinite {
 
 TEST(TEST_CATEGORY, mathematical_functions_isfinite) {
 #if __FINITE_MATH_ONLY__
-  GTEST_SKIP() << "skipping when assuming finite math";
+  GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
   TestIsFinite<TEST_EXECSPACE>();
 }
@@ -1734,7 +1734,7 @@ struct TestIsInf {
 
 TEST(TEST_CATEGORY, mathematical_functions_isinf) {
 #if __FINITE_MATH_ONLY__
-  GTEST_SKIP() << "skipping when assuming finite math";
+  GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
   TestIsInf<TEST_EXECSPACE>();
 }
@@ -1808,7 +1808,7 @@ struct TestIsNaN {
 
 TEST(TEST_CATEGORY, mathematical_functions_isnan) {
 #if __FINITE_MATH_ONLY__
-  GTEST_SKIP() << "skipping when assuming finite math";
+  GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
   TestIsNaN<TEST_EXECSPACE>();
 }

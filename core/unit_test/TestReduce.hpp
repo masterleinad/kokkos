@@ -718,7 +718,7 @@ class TestReductionOverInfiniteFloat {
 
 TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
 #if __FINITE_MATH_ONLY__
-  GTEST_SKIP() << "skipping when assuming finite math";
+  GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
 // nvhpc on device doesn't use the correct neutral value for the min and max
 // reducers
