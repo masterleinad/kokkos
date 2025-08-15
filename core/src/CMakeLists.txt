@@ -143,6 +143,10 @@ kokkos_lib_include_directories(
 )
 if(NOT desul_FOUND)
   target_include_directories(kokkoscore SYSTEM PUBLIC $<BUILD_INTERFACE:${KOKKOS_SOURCE_DIR}/tpls/desul/include>)
+  if(BUILD_SHARED_LIBS)
+    set(DESUL_BUILD_SHARED_LIBS ON)
+    target_compile_definitions(kokkoscore PRIVATE DESUL_EXPORT_SYMBOLS)
+  endif()
 endif()
 
 if(Kokkos_ENABLE_IMPL_MDSPAN)
