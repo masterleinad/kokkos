@@ -29,6 +29,7 @@ jobs:
     - name: build library
       shell: bash
       run: |
+        cmake --build build --parallel 4 --config Debug --target Kokkos_IncrementalTest_CUDA
         cmake --build build --parallel 4 --config Debug
   windows-serial:
     # Serial build on Windows
