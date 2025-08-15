@@ -477,16 +477,20 @@ cast_from_bhalf(bhalf_t val) {
 #if (CUDA_VERSION >= 11000)
 template <>
 struct reduction_identity<Kokkos::Experimental::bhalf_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float sum() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  sum() noexcept {
     return 0.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  prod() noexcept {
     return 1.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  max() noexcept {
     return -Kokkos::Experimental::infinity_v<float>;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  min() noexcept {
     return Kokkos::Experimental::infinity_v<float>;
   }
 };
@@ -496,16 +500,20 @@ struct reduction_identity<Kokkos::Experimental::bhalf_t> {
 // has no constexpr functions for casting to __half
 template <>
 struct reduction_identity<Kokkos::Experimental::half_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float sum() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  sum() noexcept {
     return 0.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  prod() noexcept {
     return 1.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  max() noexcept {
     return -Kokkos::Experimental::infinity_v<float>;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  min() noexcept {
     return Kokkos::Experimental::infinity_v<float>;
   }
 };

@@ -199,16 +199,20 @@ cast_from_half(half_t val) {
 // has no constexpr functions for casting to __half
 template <>
 struct reduction_identity<Kokkos::Experimental::half_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float sum() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  sum() noexcept {
     return 0.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  prod() noexcept {
     return 1.0F;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  max() noexcept {
     return -Kokkos::Experimental::infinity_v<float>;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  min() noexcept {
     return Kokkos::Experimental::infinity_v<float>;
   }
 };

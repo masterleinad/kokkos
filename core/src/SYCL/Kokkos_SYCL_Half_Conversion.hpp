@@ -107,22 +107,24 @@ cast_from_half(half_t val) {
 
 template <>
 struct reduction_identity<Kokkos::Experimental::half_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
   sum() noexcept {
     return Kokkos::Experimental::half_t::impl_type(0.0F);
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static Kokkos::Experimental::half_t
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
   prod() noexcept {
     return Kokkos::Experimental::half_t::impl_type(1.0F);
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  max() noexcept {
     // sycl::half doesn't have constexpr constructors so we return
     // bit_comparison_type which doesn't have a unitary minus operator.
     // -inf
     return Kokkos::Experimental::half_t::bit_comparison_type{
         0b1'11111'0000000000};
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::half_t
+  min() noexcept {
     // sycl::half doesn't have constexpr constructors so we return
     // bit_comparison_type
     return Kokkos::Experimental::infinity_v<Kokkos::Experimental::half_t>;
@@ -220,16 +222,20 @@ cast_from_bhalf(bhalf_t val) {
 // sycl::bfloat16 doesn't have constexpr constructors so we return float
 template <>
 struct reduction_identity<Kokkos::Experimental::bhalf_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float sum() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  sum() noexcept {
     return 0.f;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  prod() noexcept {
     return 1.0f;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float max() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  max() noexcept {
     return -Kokkos::Experimental::infinity_v<float>;
   }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float min() noexcept {
+  KOKKOS_FORCEINLINE_FUNCTION static Kokkos::Experimental::bhalf_t
+  min() noexcept {
     return Kokkos::Experimental::infinity_v<float>;
   }
 };
