@@ -14,20 +14,20 @@
 //
 //@HEADER
 
-#ifndef KOKKOS_HALF_HPP_
-#define KOKKOS_HALF_HPP_
-#ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
-#define KOKKOS_IMPL_PUBLIC_INCLUDE
-#define KOKKOS_IMPL_PUBLIC_INCLUDE_NOTDEFINED_HALF
-#endif
+#ifndef KOKKOS_IMPL_KOKKOS_GRAPHNODETHENPOLICY_HPP
+#define KOKKOS_IMPL_KOKKOS_GRAPHNODETHENPOLICY_HPP
 
-#include <impl/Kokkos_Half_FloatingPointWrapper.hpp>
-#include <impl/Kokkos_Half_NumericTraits.hpp>
-#include <impl/Kokkos_Half_ReductionIdentity.hpp>
-#include <impl/Kokkos_Half_MathematicalFunctions.hpp>
+#include <type_traits>
 
-#ifdef KOKKOS_IMPL_PUBLIC_INCLUDE_NOTDEFINED_HALF
-#undef KOKKOS_IMPL_PUBLIC_INCLUDE
-#undef KOKKOS_IMPL_PUBLIC_INCLUDE_NOTDEFINED_HALF
-#endif
-#endif  // KOKKOS_HALF_HPP_
+namespace Kokkos::Experimental {
+
+template <typename WorkTag>
+struct ThenPolicy {
+  static_assert(std::is_empty_v<WorkTag> || std::is_void_v<WorkTag>);
+
+  using work_tag = WorkTag;
+};
+
+}  // namespace Kokkos::Experimental
+
+#endif  // KOKKOS_IMPL_KOKKOS_GRAPHNODETHENPOLICY_HPP

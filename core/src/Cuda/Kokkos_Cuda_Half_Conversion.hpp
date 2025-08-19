@@ -20,14 +20,12 @@
 #ifdef KOKKOS_IMPL_CUDA_HALF_TYPE_DEFINED
 
 #include <Kokkos_Half.hpp>
-#include <Kokkos_ReductionIdentity.hpp>
 
 #if CUDA_VERSION >= 11000
 #include <cuda_bf16.h>
 #endif
 
-namespace Kokkos {
-namespace Experimental {
+namespace Kokkos::Experimental {
 
 /************************** half conversions **********************************/
 KOKKOS_INLINE_FUNCTION
@@ -472,64 +470,7 @@ cast_from_bhalf(bhalf_t val) {
 #endif  // CUDA_VERSION >= 11010
 
 #undef KOKKOS_IMPL_NVIDIA_GPU_ARCH_SUPPORT_BHALF
-}  // namespace Experimental
+}  // namespace Kokkos::Experimental
 
-#if (CUDA_VERSION >= 11000)
-template <>
-struct reduction_identity<Kokkos::Experimental::bhalf_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float sum() noexcept {
-    return 0.0F;
-  }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
-    return 1.0F;
-  }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
-    using Kokkos::Experimental;
-#if __FINITE_MATH_ONLY__
-    return finite_min_v<bhalf_t>;
-#else
-    return -infinity_v<bhalf_t>;
-#endif
-  }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
-    using Kokkos::Experimental;
-#if __FINITE_MATH_ONLY__
-    return finite_max_v<bhalf_t>;
-#else
-    return infinity_v<bhalf_t>;
-#endif
-  }
-};
-#endif  // CUDA_VERSION >= 11000
-
-// use float as the return type for sum and prod since cuda_fp16.h
-// has no constexpr functions for casting to __half
-template <>
-struct reduction_identity<Kokkos::Experimental::half_t> {
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float sum() noexcept {
-    return 0.0F;
-  }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static float prod() noexcept {
-    return 1.0F;
-  }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto max() noexcept {
-    using Kokkos::Experimental;
-#if __FINITE_MATH_ONLY__
-    return finite_min_v<half_t>;
-#else
-    return -infinity_v<half_t>;
-#endif
-  }
-  KOKKOS_FORCEINLINE_FUNCTION constexpr static auto min() noexcept {
-    using Kokkos::Experimental;
-#if __FINITE_MATH_ONLY__
-    return finite_max_v<half_t>;
-#else
-    return infinity_v<half_t>;
-#endif
-  }
-};
-
-}  // namespace Kokkos
 #endif  // KOKKOS_IMPL_CUDA_HALF_TYPE_DEFINED
 #endif

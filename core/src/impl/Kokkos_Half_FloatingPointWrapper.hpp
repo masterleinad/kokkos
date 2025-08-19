@@ -217,11 +217,6 @@ template <typename FloatType>
 struct BitComparisonWrapper {
   std::uint16_t value;
 
-  KOKKOS_FUNCTION constexpr BitComparisonWrapper operator-() const {
-    return {static_cast<std::uint16_t>(value ^
-                                       (1 << (sizeof(std::uint16_t) * 8 - 1)))};
-  }
-
   template <typename Number>
   KOKKOS_FUNCTION friend bool operator==(BitComparisonWrapper a, Number b) {
     return static_cast<FloatType>(a) == b;
