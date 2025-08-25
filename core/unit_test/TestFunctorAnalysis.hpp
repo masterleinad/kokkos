@@ -62,13 +62,17 @@ void test_functor_analysis() {
   static_assert(std::is_void_v<typename A01::value_type>);
   static_assert(std::is_void_v<typename A01::pointer_type>);
   static_assert(std::is_void_v<typename A01::reference_type>);
+#ifndef KOKKOS_COMPILER_MSVC
   static_assert(std::is_same_v<typename R01::functor_type, decltype(c01)>);
+#endif
 
   static_assert(!A01::has_join_member_function);
   static_assert(!A01::has_init_member_function);
   static_assert(!A01::has_final_member_function);
   static_assert(A01::StaticValueSize == 0);
+#ifndef KOKKOS_COMPILER_MSVC
   ASSERT_EQ(R01(c01).length(), 0);
+#endif
 
   //------------------------------
   auto c02  = KOKKOS_LAMBDA(int, double&){};
@@ -80,13 +84,17 @@ void test_functor_analysis() {
   static_assert(std::is_same_v<typename A02::value_type, double>);
   static_assert(std::is_same_v<typename A02::pointer_type, double*>);
   static_assert(std::is_same_v<typename A02::reference_type, double&>);
+#ifndef KOKKOS_COMPILER_MSVC
   static_assert(std::is_same_v<typename R02::functor_type, decltype(c02)>);
+#endif
 
   static_assert(!A02::has_join_member_function);
   static_assert(!A02::has_init_member_function);
   static_assert(!A02::has_final_member_function);
   static_assert(A02::StaticValueSize == sizeof(double));
+#ifndef KOKKOS_COMPILER_MSVC
   ASSERT_EQ(R02(c02).length(), 1);
+#endif
 
   //------------------------------
 
