@@ -161,6 +161,16 @@ KOKKOS_IMPL_IS_CONCEPT(hooks_policy)
 
 namespace Impl {
 
+template <typename T>
+struct is_floating_point : std::is_floating_point<T> {};
+template <typename T>
+concept FloatingPointType = is_floating_point<T>::value;
+
+template <typename T>
+struct is_integral : std::is_integral<T> {};
+template <typename T>
+concept IntegralType = is_integral<T>::value;
+
 // Implementation concept:
 
 KOKKOS_IMPL_IS_CONCEPT(thread_team_member)
