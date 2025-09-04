@@ -128,14 +128,14 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), submit_once) {
       });
   graph.submit();
 
-  ASSERT_TRUE(contains(graph.get_execution_space(), count, 1));
-  ASSERT_TRUE(contains(graph.get_execution_space(), bugs, 0));
+  ASSERT_TRUE(contains(TEST_EXECSPACE{}, count, 1));
+  ASSERT_TRUE(contains(TEST_EXECSPACE{}, bugs, 0));
 }
 
 TEST_F(TEST_CATEGORY_FIXTURE(graph), submit_once_rvalue) {
   Kokkos::Experimental::create_graph(ex, [&](auto root) {
     root.then_parallel_for(1, count_functor{count, bugs, 0, 0});
-  }).submit();
+  }).submit(ex);
 
   ASSERT_TRUE(contains(ex, count, 1));
   ASSERT_TRUE(contains(ex, bugs, 0));
@@ -149,7 +149,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), instantiate_and_submit_once) {
     root.then_parallel_for(1, count_functor{count, bugs, 0, 0});
   });
   graph.instantiate();
-  graph.submit();
+  graph.submit(ex);
 
   ASSERT_TRUE(contains(ex, count, 1));
   ASSERT_TRUE(contains(ex, bugs, 0));
@@ -299,7 +299,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), submit_six) {
     ready.then_parallel_for(2, count_functor{count, bugs, 0, 6});
     //----------------------------------------
   });
-  graph.submit();
+  graph.submit(ex);
 
   ASSERT_TRUE(contains(ex, count, 6));
   ASSERT_TRUE(contains(ex, bugs, 0));
@@ -319,7 +319,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), when_all_cycle) {
     Kokkos::Experimental::when_all(f1, f4, f3)
         .then_parallel_reduce(6, set_result_functor{count}, reduction_out);
     //----------------------------------------
-  }).submit();
+  }).submit(ex);
 
   ASSERT_TRUE(contains(ex, bugs, 0));
   ASSERT_TRUE(contains(ex, count, 7));
@@ -363,7 +363,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), repeat_chain) {
     constexpr int repeats = 10;
 
     for (int i = 0; i < repeats; ++i) {
-      graph.submit();
+      graph.submit(ex);
       ex.fence();
       EXPECT_EQ(2, count_host());
       EXPECT_EQ(0, bugs_host());
@@ -395,7 +395,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), zero_work_reduce) {
     (defined(KOKKOS_ARCH_KEPLER) || defined(KOKKOS_ARCH_MAXWELL))
   Kokkos::fence();
 #endif
-  graph.submit();
+  graph.submit(ex);
   Kokkos::deep_copy(ex, count, 1);
 // These fences are only necessary because of the weirdness of how CUDA
 // UVM works on pre pascal cards.
@@ -403,7 +403,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), zero_work_reduce) {
     (defined(KOKKOS_ARCH_KEPLER) || defined(KOKKOS_ARCH_MAXWELL))
   if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::Cuda>) Kokkos::fence();
 #endif
-  graph.submit();
+  graph.submit(ex);
 
   ASSERT_TRUE(contains(ex, count, 0));
 }
@@ -561,10 +561,11 @@ TEST_F(TEST_CATEGORY_FIXTURE(graph), sized_functor_launch) {
 // Ensure that an empty graph on the default host execution space
 // can be submitted.
 TEST_F(TEST_CATEGORY_FIXTURE(graph), empty_graph_default_host_exec) {
-  Kokkos::Experimental::Graph graph{Kokkos::DefaultHostExecutionSpace{}};
+  const Kokkos::DefaultHostExecutionSpace exec{};
+  Kokkos::Experimental::Graph graph{exec};
   graph.instantiate();
-  graph.submit();
-  graph.get_execution_space().fence();
+  graph.submit(exec);
+  exec.fence();
 }
 
 template <typename DataViewType, typename BufferViewType>
@@ -816,10 +817,14 @@ template <typename ViewType>
 struct ThenFunctor {
   static_assert(ViewType::rank() == 0);
 
+  struct TimesTwo {};
+
   ViewType data;
   typename ViewType::value_type value;
 
   KOKKOS_FUNCTION void operator()() const { data() += value; }
+
+  KOKKOS_FUNCTION void operator()(const TimesTwo) const { data() += 2 * value; }
 };
 
 // Supported graph node types.
@@ -840,7 +845,8 @@ struct GraphNodeTypes {
 
 #if defined(KOKKOS_ENABLE_CUDA)
 // TODO check range of problematic nvcc/11.4 and gcc/10.x combos
-#if (defined(KOKKOS_COMPILER_GNU) && (KOKKOS_COMPILER_GNU == 1030)) && \
+#if (defined(KOKKOS_COMPILER_GNU) &&                                 \
+     (KOKKOS_COMPILER_GNU >= 1000 && KOKKOS_COMPILER_GNU < 1100)) && \
     (defined(KOKKOS_COMPILER_NVCC) && (KOKKOS_COMPILER_NVCC == 1140))
   static constexpr bool support_capture = false;
 #else
@@ -865,7 +871,8 @@ struct GraphNodeTypes {
 
   // Type of a then node.
   using then_t =
-      Kokkos::Impl::GraphNodeThenImpl<Exec, ThenFunctor<Kokkos::View<int>>>;
+      Kokkos::Impl::GraphNodeThenImpl<Exec, Kokkos::Experimental::ThenPolicy<>,
+                                      ThenFunctor<Kokkos::View<int>>>;
 
   // Type of a host node.
   using host_t =
@@ -1124,7 +1131,8 @@ TEST(TEST_CATEGORY, graph_then) {
   using node_ref_memset_t =
       Kokkos::Experimental::GraphNodeRef<TEST_EXECSPACE, node_memset_t,
                                          typename types::node_ref_root_t>;
-  using node_then_t = Kokkos::Impl::GraphNodeThenImpl<TEST_EXECSPACE, then_t>;
+  using node_then_t = Kokkos::Impl::GraphNodeThenImpl<
+      TEST_EXECSPACE, Kokkos::Experimental::ThenPolicy<>, then_t>;
   using node_ref_then_t =
       Kokkos::Experimental::GraphNodeRef<TEST_EXECSPACE, node_then_t,
                                          node_ref_memset_t>;
@@ -1281,6 +1289,35 @@ TEST(TEST_CATEGORY, mixed_then_host_device_nodes) {
   } else {
     GTEST_SKIP() << "This test requires a shared space.";
   }
+}
+
+// Ensure that a then can be given a work tag.
+TEST(TEST_CATEGORY, graph_then_tag) {
+  using view_t    = Kokkos::View<int, TEST_EXECSPACE>;
+  using functor_t = ThenFunctor<view_t>;
+
+  constexpr int value_then = 456;
+
+  const TEST_EXECSPACE exec{};
+
+  const view_t data(Kokkos::view_alloc(exec, "data used in 'then'"));
+
+  auto graph = Kokkos::Experimental::create_graph(exec, [&](const auto& root) {
+    const auto notag = root.then("no tag", functor_t{data, value_then});
+    const auto tagged_labelled =
+        notag.then("tag and label",
+                   Kokkos::Experimental::ThenPolicy<functor_t::TimesTwo>{},
+                   functor_t{data, value_then});
+    const auto tagged = tagged_labelled.then(
+        Kokkos::Experimental::ThenPolicy<functor_t::TimesTwo>{},
+        functor_t{data, value_then});
+  });
+
+  ASSERT_TRUE(contains(exec, data, 0));
+
+  graph.submit(exec);
+
+  ASSERT_TRUE(contains(exec, data, 5 * value_then));
 }
 
 }  // end namespace Test

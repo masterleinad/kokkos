@@ -109,12 +109,10 @@ struct [[nodiscard]] Graph {
 
   auto root_node() const { return root_t{m_impl_ptr, m_root}; }
 
-  void submit(const execution_space& exec) const {
+  void submit(const execution_space& exec = execution_space{}) const {
     KOKKOS_EXPECTS(bool(m_impl_ptr))
     (*m_impl_ptr).submit(exec);
   }
-
-  void submit() const { submit(get_execution_space()); }
 
   decltype(auto) native_graph();
 
@@ -173,9 +171,8 @@ Graph<ExecutionSpace> create_graph(ExecutionSpace ex, Closure&& arg_closure) {
 template <
     class ExecutionSpace = DefaultExecutionSpace,
     class Closure = Kokkos::Impl::DoNotExplicitlySpecifyThisTemplateParameter>
-std::enable_if_t<
-    !Kokkos::is_execution_space_v<Kokkos::Impl::remove_cvref_t<Closure>>,
-    Graph<ExecutionSpace>>
+std::enable_if_t<!Kokkos::is_execution_space_v<std::remove_cvref_t<Closure>>,
+                 Graph<ExecutionSpace>>
 create_graph(Closure&& arg_closure) {
   return create_graph(ExecutionSpace{}, (Closure&&)arg_closure);
 }

@@ -254,36 +254,21 @@ class OffsetView : public View<DataType, Properties...> {
   }
 
   template <class OtherIndexType>
-#ifndef KOKKOS_ENABLE_CXX17
     requires(std::is_convertible_v<OtherIndexType, index_type> &&
              std::is_nothrow_constructible_v<index_type, OtherIndexType> &&
              (base_t::rank() == 1))
-#endif
   KOKKOS_FUNCTION constexpr typename base_t::reference_type operator[](
       const OtherIndexType& idx) const {
-#ifdef KOKKOS_ENABLE_CXX17
-    static_assert(std::is_convertible_v<OtherIndexType, index_type> &&
-                  std::is_nothrow_constructible_v<index_type, OtherIndexType> &&
-                  (base_t::rank() == 1));
-#endif
     return base_t::operator[](idx - m_begins[0]);
   }
 
   template <class... OtherIndexTypes>
-#ifndef KOKKOS_ENABLE_CXX17
     requires((std::is_convertible_v<OtherIndexTypes, index_type> && ...) &&
              (std::is_nothrow_constructible_v<index_type, OtherIndexTypes> &&
               ...) &&
              (sizeof...(OtherIndexTypes) == base_t::rank()))
-#endif
   KOKKOS_FUNCTION constexpr typename base_t::reference_type operator()(
       OtherIndexTypes... indices) const {
-#ifdef KOKKOS_ENABLE_CXX17
-    static_assert(
-        (std::is_convertible_v<OtherIndexTypes, index_type> && ...) &&
-        (std::is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...) &&
-        (sizeof...(OtherIndexTypes) == base_t::rank()));
-#endif
     return offset_operator(std::make_index_sequence<base_t::rank()>(),
                            indices...);
   }
@@ -1115,6 +1100,7 @@ KOKKOS_INLINE_FUNCTION
   return offsetView;
 }
 }  // namespace Impl
+}  // namespace Experimental
 
 template <class D, class... P, class... Args>
 KOKKOS_INLINE_FUNCTION
@@ -1123,15 +1109,32 @@ KOKKOS_INLINE_FUNCTION
             void /* deduce subview type from source view traits */
             ,
             ViewTraits<D, P...>, Args...>::type>::type
-    subview(const OffsetView<D, P...>& src, Args... args) {
+    subview(const Kokkos::Experimental::OffsetView<D, P...>& src,
+            Args... args) {
   static_assert(
-      OffsetView<D, P...>::rank() == sizeof...(Args),
+      Kokkos::Experimental::OffsetView<D, P...>::rank() == sizeof...(Args),
       "subview requires one argument for each source OffsetView rank");
 
   return Kokkos::Experimental::Impl::subview_offset(src, args...);
 }
 
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
+namespace Experimental {
+template <class D, class... P, class... Args>
+KOKKOS_DEPRECATED_WITH_COMMENT("Use Kokkos::subview instead")
+KOKKOS_INLINE_FUNCTION
+    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
+        typename Kokkos::Impl::ViewMapping<
+            void /* deduce subview type from source view traits */
+            ,
+            ViewTraits<D, P...>, Args...>::type>::type
+    subview(const Kokkos::Experimental::OffsetView<D, P...>& src,
+            Args... args) {
+  return Kokkos::subview(src, args...);
+}
 }  // namespace Experimental
+#endif
+
 }  // namespace Kokkos
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------

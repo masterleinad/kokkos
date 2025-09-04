@@ -716,12 +716,23 @@ class TestReductionOverInfiniteFloat {
   }
 };
 
+KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_PUSH()
 TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
-  // nvhpc on device doesn't use the correct neutral value for the min and max
-  // reducers
-#if !(defined(KOKKOS_COMPILER_NVHPC) && defined(KOKKOS_ENABLE_OPENACC))
+#if __FINITE_MATH_ONLY__
+  GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
+#endif
+// FIXME_OPENACC nvhpc on device doesn't use the correct neutral value for the
+// min and max reducers
+#if defined(KOKKOS_COMPILER_NVHPC) && defined(KOKKOS_ENABLE_OPENACC)
+  GTEST_SKIP() << "skipping for NVHPC and OPENACC due to wrong neutral value";
+#endif
+
+  // FIXME_CUDA cuda-clang 17 cannot compile the max parallel_reduce for half_t
+  // and bhalf_t. The min parallel_reduce works correctly.
+#if !defined(KOKKOS_ENABLE_CUDA) || !defined(KOKKOS_COMPILER_CLANG)
   TestReductionOverInfiniteFloat<Kokkos::Experimental::half_t>();
   TestReductionOverInfiniteFloat<Kokkos::Experimental::bhalf_t>();
+#endif
   TestReductionOverInfiniteFloat<float>();
   TestReductionOverInfiniteFloat<double>();
 
@@ -730,7 +741,7 @@ TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
     !defined(KOKKOS_ENABLE_OPENACC)
   TestReductionOverInfiniteFloat<long double>();
 #endif
-#endif
 }
+KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_POP()
 
 }  // namespace Test

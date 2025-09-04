@@ -67,6 +67,9 @@ struct is_view_label<char[N]> : public std::true_type {};
 template <unsigned N>
 struct is_view_label<const char[N]> : public std::true_type {};
 
+template <typename T>
+constexpr bool is_view_label_v = is_view_label<T>::value;
+
 //----------------------------------------------------------------------------
 
 template <typename... P>
@@ -495,8 +498,8 @@ inline constexpr Kokkos::Impl::AllowPadding_t AllowPadding{};
  */
 template <class... Args>
 auto view_alloc(Args &&...args) {
-  using return_type = Impl::ViewCtorProp<typename Impl::ViewCtorProp<
-      void, Kokkos::Impl::remove_cvref_t<Args>>::type...>;
+  using return_type = Impl::ViewCtorProp<
+      typename Impl::ViewCtorProp<void, std::remove_cvref_t<Args>>::type...>;
 
   static_assert(!return_type::has_pointer,
                 "Cannot give pointer-to-memory for view allocation");
