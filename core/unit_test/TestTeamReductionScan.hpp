@@ -72,8 +72,8 @@ TEST(TEST_CATEGORY, team_double_reduce) {
 }
 
 TEST(TEST_CATEGORY, team_long_array_reduce) {
-// FIXME_MSVC FIXME_32BIT Test is known to fail
-#if defined(KOKKOS_COMPILER_MSVC) || defined(KOKKOS_IMPL_32BIT)
+// FIXME_WINDOWS FIXME_32BIT Test is known to fail
+#if defined(_WIN32) || defined(KOKKOS_IMPL_32BIT)
   GTEST_SKIP() << "Test know to fail for MSVC or 32-bit builds";
 #endif
 
