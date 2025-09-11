@@ -9,7 +9,10 @@ Polaris:
   extends: .polaris-shell-runner
   script:
     - module use /soft/modulefiles
-    - module load spack-pe-base cmake cudatoolkit-standalone/12.8.1 PrgEnv-gnu
+    - module load PrgEnv-gnu
+    - module load spack-pe-base
+    - module load cmake
+    - module load cudatoolkit-standalone/12.8.1
     - module list
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
     - export ENV_CMAKE_OPTIONS=""
