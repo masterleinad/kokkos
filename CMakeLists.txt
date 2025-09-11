@@ -205,10 +205,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/kokkos_configure_trilinos.cmake)
 
 if(Kokkos_ENABLE_TESTS)
   find_package(GTest QUIET)
-  if(WIN32)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/bigobj>)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=/bigobj")
-  endif()
 endif()
 
 # Include a set of Kokkos-specific wrapper functions that
