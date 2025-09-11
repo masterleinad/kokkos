@@ -978,6 +978,10 @@ function(kokkos_check_flags)
   # icpx adds "-device ..." options that need quotes (which CMake removes). We need to add them here again.
   string(REGEX REPLACE "(-device [A-Za-z0-9_\\\\.]*)" "\"\\1\"" QUOTED_FLAGS "${WHITESPACE_FLAGS}")
 
+  if(Kokkos_ENABLE_CUDA)
+    set(CMAKE_REQUIRED_LIBRARIES CUDA::cudart)
+  endif()
+
   if(INP_COMPILER)
     include(CheckCompilerFlag)
     #delete cache so we always do the check
@@ -1010,6 +1014,8 @@ function(kokkos_check_flags)
       )
     endif()
   endif()
+
+  unset(CMAKE_REQUIRED_LIBRARIES)
 endfunction()
 
 # this function is provided to easily select which files use nvcc_wrapper:
