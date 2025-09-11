@@ -827,11 +827,7 @@ endif()
 
 if(NOT KOKKOS_COMPILE_LANGUAGE STREQUAL CUDA)
   if(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE)
-    if(KOKKOS_CXX_COMPILER_ID STREQUAL Clang)
-      compiler_specific_options(DEFAULT -fgpu-rdc --offload-new-driver)
-    else()
-      compiler_specific_flags(DEFAULT --relocatable-device-code=true)
-    endif()
+    compiler_specific_flags(Clang -fgpu-rdc --offload-new-driver NVIDIA --relocatable-device-code=true)
   endif()
 endif()
 
