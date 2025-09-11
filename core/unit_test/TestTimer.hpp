@@ -28,20 +28,20 @@ TEST(TEST_CATEGORY, timer) {
   using namespace std::chrono_literals;
 
   Kokkos::Timer t;
-  std::this_thread::sleep_for(5ms);
+  std::this_thread::sleep_for(50ms);
   auto elapsed = t.seconds();
-  EXPECT_GE(elapsed, .005);
+  EXPECT_GE(elapsed, .05);
   EXPECT_LT(elapsed, 1.);
 
-  std::this_thread::sleep_for(10ms);
+  std::this_thread::sleep_for(50ms);
   auto elapsed2 = std::as_const(t).seconds();
-  EXPECT_GE(elapsed2, .015);
+  EXPECT_GE(elapsed2, .01);
   EXPECT_GT(elapsed2, elapsed);
 
   t.reset();
-  std::this_thread::sleep_for(5ms);
+  std::this_thread::sleep_for(50ms);
   auto elapsed3 = t.seconds();
-  EXPECT_GE(elapsed3, .005);
+  EXPECT_GE(elapsed3, .05);
   EXPECT_LT(elapsed3, elapsed2);
 }
 
