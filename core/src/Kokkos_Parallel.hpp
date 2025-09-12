@@ -127,9 +127,7 @@ namespace Kokkos {
  * This compares to a single iteration \c iwork of a \c for loop.
  * If \c execution_space is not defined DefaultExecutionSpace will be used.
  */
-template <
-    class ExecPolicy, class FunctorType,
-    class Enable = std::enable_if_t<is_execution_policy<ExecPolicy>::value>>
+template <Kokkos::ExecutionPolicy ExecPolicy, class FunctorType>
 inline void parallel_for(const std::string& str, const ExecPolicy& policy,
                          const FunctorType& functor) {
   uint64_t kpID = 0;
@@ -146,10 +144,8 @@ inline void parallel_for(const std::string& str, const ExecPolicy& policy,
   Kokkos::Tools::Impl::end_parallel_for(inner_policy, functor, str, kpID);
 }
 
-template <class ExecPolicy, class FunctorType>
-inline void parallel_for(
-    const ExecPolicy& policy, const FunctorType& functor,
-    std::enable_if_t<is_execution_policy<ExecPolicy>::value>* = nullptr) {
+template <Kokkos::ExecutionPolicy ExecPolicy, class FunctorType>
+inline void parallel_for(const ExecPolicy& policy, const FunctorType& functor) {
   Kokkos::parallel_for("", policy, functor);
 }
 
@@ -343,9 +339,7 @@ namespace Kokkos {
 /// };
 /// \endcode
 ///
-template <class ExecutionPolicy, class FunctorType,
-          class Enable =
-              std::enable_if_t<is_execution_policy<ExecutionPolicy>::value>>
+template <Kokkos::ExecutionPolicy ExecutionPolicy, class FunctorType>
 inline void parallel_scan(const std::string& str, const ExecutionPolicy& policy,
                           const FunctorType& functor) {
   uint64_t kpID                = 0;
@@ -362,10 +356,9 @@ inline void parallel_scan(const std::string& str, const ExecutionPolicy& policy,
   Kokkos::Tools::Impl::end_parallel_scan(inner_policy, functor, str, kpID);
 }
 
-template <class ExecutionPolicy, class FunctorType>
-inline void parallel_scan(
-    const ExecutionPolicy& policy, const FunctorType& functor,
-    std::enable_if_t<is_execution_policy<ExecutionPolicy>::value>* = nullptr) {
+template <Kokkos::ExecutionPolicy ExecutionPolicy, class FunctorType>
+inline void parallel_scan(const ExecutionPolicy& policy,
+                          const FunctorType& functor) {
   ::Kokkos::parallel_scan("", policy, functor);
 }
 
@@ -387,9 +380,8 @@ inline void parallel_scan(const size_t work_count, const FunctorType& functor) {
   ::Kokkos::parallel_scan("", work_count, functor);
 }
 
-template <class ExecutionPolicy, class FunctorType, class ReturnType,
-          class Enable =
-              std::enable_if_t<is_execution_policy<ExecutionPolicy>::value>>
+template <Kokkos::ExecutionPolicy ExecutionPolicy, class FunctorType,
+          class ReturnType>
 inline void parallel_scan(const std::string& str, const ExecutionPolicy& policy,
                           const FunctorType& functor,
                           ReturnType& return_value) {
@@ -420,11 +412,11 @@ inline void parallel_scan(const std::string& str, const ExecutionPolicy& policy,
         "Kokkos::parallel_scan: fence due to result being a value, not a view");
 }
 
-template <class ExecutionPolicy, class FunctorType, class ReturnType>
-inline void parallel_scan(
-    const ExecutionPolicy& policy, const FunctorType& functor,
-    ReturnType& return_value,
-    std::enable_if_t<is_execution_policy<ExecutionPolicy>::value>* = nullptr) {
+template <Kokkos::ExecutionPolicy ExecutionPolicy, class FunctorType,
+          class ReturnType>
+inline void parallel_scan(const ExecutionPolicy& policy,
+                          const FunctorType& functor,
+                          ReturnType& return_value) {
   ::Kokkos::parallel_scan("", policy, functor, return_value);
 }
 
