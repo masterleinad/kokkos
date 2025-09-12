@@ -28,7 +28,7 @@
 
 using StreamDeviceArray =
     Kokkos::View<double*, Kokkos::MemoryTraits<Kokkos::Restrict>>;
-using StreamHostArray = typename StreamDeviceArray::HostMirror;
+using StreamHostArray = typename StreamDeviceArray::host_mirror_type;
 
 using StreamIndex = int;
 using Policy      = Kokkos::RangePolicy<Kokkos::IndexType<StreamIndex>>;
@@ -83,7 +83,7 @@ int perform_validation(StreamHostArray& a, StreamHostArray& b,
   double bi = 2.0;
   double ci = 0.0;
 
-  for (StreamIndex i = 0; i < arraySize; ++i) {
+  for (StreamIndex i = 0; i < STREAM_NTIMES; ++i) {
     ci = ai;
     bi = scalar * ci;
     ci = ai + bi;
@@ -235,7 +235,7 @@ int run_benchmark() {
   return rc;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {  // NOLINT(bugprone-exception-escape)
   printf(HLINE);
   printf("Kokkos STREAM Benchmark\n");
   printf(HLINE);

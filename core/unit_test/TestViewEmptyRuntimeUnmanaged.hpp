@@ -23,13 +23,14 @@ namespace {
 template <class T>
 void test_empty_view_runtime_unmanaged() {
   T d{};
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4312)
+#endif
   auto* p = reinterpret_cast<T*>(0xABADBABE);
-
-  (void)Kokkos::View<T>(p);
-  (void)Kokkos::View<T>(&d);
-  (void)Kokkos::View<T>(nullptr);
-  (void)Kokkos::View<T>(NULL);  // NOLINT(modernize-use-nullptr)
-  (void)Kokkos::View<T>(0);     // NOLINT(modernize-use-nullptr)
+#if defined(_MSC_VER)
+#pragma warning(push)
+#endif
 
   (void)Kokkos::View<T*>(p, 0);
   (void)Kokkos::View<T*>(&d, 0);

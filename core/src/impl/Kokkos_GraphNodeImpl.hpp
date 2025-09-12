@@ -22,7 +22,6 @@
 #include <Kokkos_Core_fwd.hpp>
 #include <Kokkos_Graph_fwd.hpp>
 
-#include <impl/Kokkos_SimpleTaskScheduler.hpp>  // ExecutionSpaceInstanceStorage
 #include <impl/Kokkos_GraphImpl.hpp>
 #include <impl/Kokkos_GraphNodeCustomization.hpp>
 
@@ -42,7 +41,7 @@ template <class ExecutionSpace>
 struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
                      Kokkos::Experimental::TypeErasedTag>
     : GraphNodeBackendSpecificDetails<ExecutionSpace>,
-      ExecutionSpaceInstanceStorage<ExecutionSpace> {
+      InstanceStorage<ExecutionSpace> {
  public:
   using node_ref_t =
       Kokkos::Experimental::GraphNodeRef<ExecutionSpace,
@@ -51,8 +50,7 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
 
  protected:
   using implementation_base_t = GraphNodeBackendSpecificDetails<ExecutionSpace>;
-  using execution_space_storage_base_t =
-      ExecutionSpaceInstanceStorage<ExecutionSpace>;
+  using execution_space_storage_base_t = InstanceStorage<ExecutionSpace>;
 
  public:
   virtual ~GraphNodeImpl() = default;
@@ -74,8 +72,7 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
   template <class... Args>
   GraphNodeImpl(ExecutionSpace const& ex, _graph_node_is_root_ctor_tag,
                 Args&&... args) noexcept
-      : implementation_base_t(_graph_node_is_root_ctor_tag{},
-                              (Args &&) args...),
+      : implementation_base_t(_graph_node_is_root_ctor_tag{}, (Args&&)args...),
         execution_space_storage_base_t(ex) {}
 
   // </editor-fold> end public(-ish) constructors }}}2
@@ -84,17 +81,17 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
   //----------------------------------------------------------------------------
   // <editor-fold desc="no other constructors"> {{{2
 
-  GraphNodeImpl()                     = delete;
-  GraphNodeImpl(GraphNodeImpl const&) = delete;
-  GraphNodeImpl(GraphNodeImpl&&)      = delete;
+  GraphNodeImpl()                                = delete;
+  GraphNodeImpl(GraphNodeImpl const&)            = delete;
+  GraphNodeImpl(GraphNodeImpl&&)                 = delete;
   GraphNodeImpl& operator=(GraphNodeImpl const&) = delete;
-  GraphNodeImpl& operator=(GraphNodeImpl&&) = delete;
+  GraphNodeImpl& operator=(GraphNodeImpl&&)      = delete;
 
   // </editor-fold> end no other constructors }}}2
   //----------------------------------------------------------------------------
 
   ExecutionSpace const& execution_space_instance() const {
-    return this->execution_space_storage_base_t::execution_space_instance();
+    return this->execution_space_storage_base_t::instance();
   }
 };
 
@@ -141,26 +138,29 @@ struct GraphNodeImpl<ExecutionSpace, Kernel,
   //----------------------------------------------------------------------------
   // <editor-fold desc="Ctors, destructors, and assignment"> {{{2
 
-  template <class KernelDeduced>
-  GraphNodeImpl(ExecutionSpace const& ex, _graph_node_kernel_ctor_tag,
-                KernelDeduced&& arg_kernel)
-      : base_t(ex), m_kernel((KernelDeduced &&) arg_kernel) {}
+  template <class KernelDeduced, class Tag,
+            typename = std::enable_if_t<
+                std::is_same_v<Tag, _graph_node_kernel_ctor_tag> ||
+                std::is_same_v<Tag, _graph_node_capture_ctor_tag> ||
+                std::is_same_v<Tag, _graph_node_host_ctor_tag>>>
+  GraphNodeImpl(ExecutionSpace const& ex, Tag, KernelDeduced&& arg_kernel)
+      : base_t(ex), m_kernel{(KernelDeduced&&)arg_kernel} {}
 
   template <class... Args>
   GraphNodeImpl(ExecutionSpace const& ex, _graph_node_is_root_ctor_tag,
                 Args&&... args)
-      : base_t(ex, _graph_node_is_root_ctor_tag{}, (Args &&) args...) {}
+      : base_t(ex, _graph_node_is_root_ctor_tag{}, (Args&&)args...) {}
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // <editor-fold desc="Rule of 6 for not copyable or movable"> {{{3
 
   // Not copyable or movable
-  GraphNodeImpl()                     = delete;
-  GraphNodeImpl(GraphNodeImpl const&) = delete;
-  GraphNodeImpl(GraphNodeImpl&&)      = delete;
+  GraphNodeImpl()                                = delete;
+  GraphNodeImpl(GraphNodeImpl const&)            = delete;
+  GraphNodeImpl(GraphNodeImpl&&)                 = delete;
   GraphNodeImpl& operator=(GraphNodeImpl const&) = delete;
-  GraphNodeImpl& operator=(GraphNodeImpl&&) = delete;
-  ~GraphNodeImpl() override                 = default;
+  GraphNodeImpl& operator=(GraphNodeImpl&&)      = delete;
+  ~GraphNodeImpl() override                      = default;
 
   // </editor-fold> end Rule of 6 for not copyable or movable }}}3
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -228,33 +228,36 @@ struct GraphNodeImpl
   // <editor-fold desc="Ctors, destructors, and assignment"> {{{2
 
   // Not copyable or movable
-  GraphNodeImpl()                     = delete;
-  GraphNodeImpl(GraphNodeImpl const&) = delete;
-  GraphNodeImpl(GraphNodeImpl&&)      = delete;
+  GraphNodeImpl()                                = delete;
+  GraphNodeImpl(GraphNodeImpl const&)            = delete;
+  GraphNodeImpl(GraphNodeImpl&&)                 = delete;
   GraphNodeImpl& operator=(GraphNodeImpl const&) = delete;
-  GraphNodeImpl& operator=(GraphNodeImpl&&) = delete;
-  ~GraphNodeImpl() override                 = default;
+  GraphNodeImpl& operator=(GraphNodeImpl&&)      = delete;
+  ~GraphNodeImpl() override                      = default;
 
-  // Normal kernel-and-predecessor constructor
-  template <class KernelDeduced, class PredecessorPtrDeduced>
-  GraphNodeImpl(ExecutionSpace const& ex, _graph_node_kernel_ctor_tag,
-                KernelDeduced&& arg_kernel, _graph_node_predecessor_ctor_tag,
+  // Normal kernel-and-predecessor or capture-and-predecessor constructor.
+  template <class KernelDeduced, class PredecessorPtrDeduced, class Tag,
+            typename = std::enable_if_t<
+                std::is_same_v<Tag, _graph_node_kernel_ctor_tag> ||
+                std::is_same_v<Tag, _graph_node_capture_ctor_tag> ||
+                std::is_same_v<Tag, _graph_node_host_ctor_tag>>>
+  GraphNodeImpl(ExecutionSpace const& ex, Tag, KernelDeduced&& arg_kernel,
+                _graph_node_predecessor_ctor_tag,
                 PredecessorPtrDeduced&& arg_predecessor)
-      : base_t(ex, _graph_node_kernel_ctor_tag{},
-               (KernelDeduced &&) arg_kernel),
+      : base_t(ex, Tag{}, (KernelDeduced&&)arg_kernel),
         // The backend gets the ability to store (weak, non-owning) references
         // to the kernel in it's final resting place here if it wants. The
         // predecessor is already a pointer, so it doesn't matter that it isn't
         // already at its final address
         backend_details_base_t(ex, this->base_t::get_kernel(), arg_predecessor,
                                *this),
-        m_predecessor_ref((PredecessorPtrDeduced &&) arg_predecessor) {}
+        m_predecessor_ref((PredecessorPtrDeduced&&)arg_predecessor) {}
 
   // Root-tagged constructor
   template <class... Args>
   GraphNodeImpl(ExecutionSpace const& ex, _graph_node_is_root_ctor_tag,
                 Args&&... args)
-      : base_t(ex, _graph_node_is_root_ctor_tag{}, (Args &&) args...),
+      : base_t(ex, _graph_node_is_root_ctor_tag{}, (Args&&)args...),
         backend_details_base_t(ex, _graph_node_is_root_ctor_tag{}, *this),
         m_predecessor_ref() {}
 

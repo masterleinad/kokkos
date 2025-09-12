@@ -52,16 +52,16 @@ struct EBOBaseImpl;
 template <class T, template <class...> class CtorNotOnDevice>
 struct EBOBaseImpl<T, true, CtorNotOnDevice> {
   template <class... Args, class _ignored = void,
-            std::enable_if_t<std::is_void<_ignored>::value &&
-                                 std::is_constructible<T, Args...>::value &&
+            std::enable_if_t<std::is_void_v<_ignored> &&
+                                 std::is_constructible_v<T, Args...> &&
                                  !CtorNotOnDevice<Args...>::value,
                              int> = 0>
   KOKKOS_FORCEINLINE_FUNCTION constexpr explicit EBOBaseImpl(
       Args&&...) noexcept {}
 
   template <class... Args, class _ignored = void,
-            std::enable_if_t<std::is_void<_ignored>::value &&
-                                 std::is_constructible<T, Args...>::value &&
+            std::enable_if_t<std::is_void_v<_ignored> &&
+                                 std::is_constructible_v<T, Args...> &&
                                  CtorNotOnDevice<Args...>::value,
                              long> = 0>
   inline constexpr explicit EBOBaseImpl(Args&&...) noexcept {}
@@ -109,19 +109,21 @@ template <class T, template <class...> class CTorsNotOnDevice>
 struct EBOBaseImpl<T, false, CTorsNotOnDevice> {
   T m_ebo_object;
 
+  // NOLINTBEGIN(modernize-type-traits)
   template <class... Args, class _ignored = void,
-            std::enable_if_t<std::is_void<_ignored>::value &&
+            std::enable_if_t<std::is_void_v<_ignored> &&
                                  !CTorsNotOnDevice<Args...>::value &&
-                                 std::is_constructible<T, Args...>::value,
+                                 std::is_constructible_v<T, Args...>,
                              int> = 0>
+  // NOLINTEND(modernize-type-traits)
   KOKKOS_FORCEINLINE_FUNCTION constexpr explicit EBOBaseImpl(
       Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
       : m_ebo_object(std::forward<Args>(args)...) {}
 
   template <class... Args, class _ignored = void,
-            std::enable_if_t<std::is_void<_ignored>::value &&
+            std::enable_if_t<std::is_void_v<_ignored> &&
                                  CTorsNotOnDevice<Args...>::value &&
-                                 std::is_constructible<T, Args...>::value,
+                                 std::is_constructible_v<T, Args...>,
                              long> = 0>
   inline constexpr explicit EBOBaseImpl(Args&&... args) noexcept(
       noexcept(T(std::forward<Args>(args)...)))
@@ -167,9 +169,9 @@ struct EBOBaseImpl<T, false, CTorsNotOnDevice> {
 template <class T,
           template <class...> class CtorsNotOnDevice = NoCtorsNotOnDevice>
 struct StandardLayoutNoUniqueAddressMemberEmulation
-    : EBOBaseImpl<T, std::is_empty<T>::value, CtorsNotOnDevice> {
+    : EBOBaseImpl<T, std::is_empty_v<T>, CtorsNotOnDevice> {
  private:
-  using ebo_base_t = EBOBaseImpl<T, std::is_empty<T>::value, CtorsNotOnDevice>;
+  using ebo_base_t = EBOBaseImpl<T, std::is_empty_v<T>, CtorsNotOnDevice>;
 
  public:
   using ebo_base_t::ebo_base_t;
@@ -218,74 +220,35 @@ class NoUniqueAddressMemberEmulation
   using base_t::no_unique_address_data_member;
 };
 
-template <class ExecutionSpace>
-class ExecutionSpaceInstanceStorage
-    : private NoUniqueAddressMemberEmulation<ExecutionSpace,
+template <class InstanceType>
+class InstanceStorage
+    : private NoUniqueAddressMemberEmulation<InstanceType,
                                              DefaultCtorNotOnDevice> {
  private:
   using base_t =
-      NoUniqueAddressMemberEmulation<ExecutionSpace, DefaultCtorNotOnDevice>;
+      NoUniqueAddressMemberEmulation<InstanceType, DefaultCtorNotOnDevice>;
 
  protected:
-  constexpr explicit ExecutionSpaceInstanceStorage() : base_t() {}
+  constexpr explicit InstanceStorage() : base_t() {}
 
   KOKKOS_INLINE_FUNCTION
-  constexpr explicit ExecutionSpaceInstanceStorage(
-      ExecutionSpace const& arg_execution_space)
-      : base_t(arg_execution_space) {}
+  constexpr explicit InstanceStorage(InstanceType const& instance)
+      : base_t(instance) {}
 
   KOKKOS_INLINE_FUNCTION
-  constexpr explicit ExecutionSpaceInstanceStorage(
-      ExecutionSpace&& arg_execution_space)
-      : base_t(std::move(arg_execution_space)) {}
+  constexpr explicit InstanceStorage(InstanceType&& instance)
+      : base_t(std::move(instance)) {}
 
   KOKKOS_INLINE_FUNCTION
-  ExecutionSpace& execution_space_instance() & {
+  InstanceType& instance() & { return this->no_unique_address_data_member(); }
+
+  KOKKOS_INLINE_FUNCTION
+  InstanceType const& instance() const& {
     return this->no_unique_address_data_member();
   }
 
   KOKKOS_INLINE_FUNCTION
-  ExecutionSpace const& execution_space_instance() const& {
-    return this->no_unique_address_data_member();
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  ExecutionSpace&& execution_space_instance() && {
-    return std::move(*this).no_unique_address_data_member();
-  }
-};
-
-template <class MemorySpace>
-class MemorySpaceInstanceStorage
-    : private NoUniqueAddressMemberEmulation<MemorySpace,
-                                             DefaultCtorNotOnDevice> {
- private:
-  using base_t =
-      NoUniqueAddressMemberEmulation<MemorySpace, DefaultCtorNotOnDevice>;
-
- protected:
-  MemorySpaceInstanceStorage() : base_t() {}
-
-  KOKKOS_INLINE_FUNCTION
-  MemorySpaceInstanceStorage(MemorySpace const& arg_memory_space)
-      : base_t(arg_memory_space) {}
-
-  KOKKOS_INLINE_FUNCTION
-  constexpr explicit MemorySpaceInstanceStorage(MemorySpace&& arg_memory_space)
-      : base_t(arg_memory_space) {}
-
-  KOKKOS_INLINE_FUNCTION
-  MemorySpace& memory_space_instance() & {
-    return this->no_unique_address_data_member();
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  MemorySpace const& memory_space_instance() const& {
-    return this->no_unique_address_data_member();
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  MemorySpace&& memory_space_instance() && {
+  InstanceType&& instance() && {
     return std::move(*this).no_unique_address_data_member();
   }
 };

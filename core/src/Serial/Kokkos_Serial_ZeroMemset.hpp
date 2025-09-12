@@ -27,19 +27,9 @@
 namespace Kokkos {
 namespace Impl {
 
-// We only need to provide a specialization for Serial if there is a host
-// parallel execution space since the specialization for
-// DefaultHostExecutionSpace is defined elsewhere.
-struct DummyExecutionSpace;
-template <class T, class... P>
-struct ZeroMemset<
-    std::conditional_t<!std::is_same<Serial, DefaultHostExecutionSpace>::value,
-                       Serial, DummyExecutionSpace>,
-    View<T, P...>> {
-  ZeroMemset(const Serial&, const View<T, P...>& dst) {
-    using ValueType = typename View<T, P...>::value_type;
-    std::memset(dst.data(), 0, sizeof(ValueType) * dst.size());
-  }
+template <>
+struct ZeroMemset<Serial> {
+  ZeroMemset(const Serial&, void* dst, size_t cnt) { std::memset(dst, 0, cnt); }
 };
 
 }  // namespace Impl

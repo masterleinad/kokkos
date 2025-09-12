@@ -22,6 +22,7 @@
 #ifdef KOKKOS_ENABLE_SYCL
 
 #include <utility>
+#include <SYCL/Kokkos_SYCL_WorkgroupReduction.hpp>
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -29,11 +30,11 @@
 namespace Kokkos {
 namespace Impl {
 
-/**\brief  Team member_type passed to TeamPolicy or TeamTask closures.
+/**\brief  Team member_type passed to the TeamPolicy closure.
  */
 class SYCLTeamMember {
  public:
-  using execution_space      = Kokkos::Experimental::SYCL;
+  using execution_space      = Kokkos::SYCL;
   using scratch_memory_space = execution_space::scratch_memory_space;
   using team_handle          = SYCLTeamMember;
 
@@ -125,6 +126,20 @@ class SYCLTeamMember {
   team_reduce(ReducerType const& reducer,
               typename ReducerType::value_type& value) const noexcept {
     using value_type = typename ReducerType::value_type;
+    using wrapped_reducer_type =
+        typename Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
+                                       TeamPolicy<SYCL>, ReducerType,
+                                       value_type>::Reducer;
+    impl_team_reduce(wrapped_reducer_type(reducer), value);
+    reducer.reference() = value;
+  }
+
+  template <typename WrappedReducerType>
+  KOKKOS_INLINE_FUNCTION std::enable_if_t<is_reducer<WrappedReducerType>::value>
+  impl_team_reduce(
+      WrappedReducerType const& wrapped_reducer,
+      typename WrappedReducerType::value_type& value) const noexcept {
+    using value_type = typename WrappedReducerType::value_type;
 
     auto sg                       = m_item.get_sub_group();
     const auto sub_group_range    = sg.get_local_range()[0];
@@ -136,8 +151,9 @@ class SYCLTeamMember {
 #if defined(KOKKOS_ARCH_INTEL_GPU) || defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
     auto shuffle_combine = [&](int shift) {
       if (vector_range * shift < sub_group_range) {
-        const value_type tmp = sg.shuffle_down(value, vector_range * shift);
-        if (team_rank_ + shift < team_size_) reducer.join(value, tmp);
+        const value_type tmp = Kokkos::Impl::SYCLReduction::shift_group_left(
+            sg, value, vector_range * shift);
+        if (team_rank_ + shift < team_size_) wrapped_reducer.join(&value, &tmp);
       }
     };
     shuffle_combine(1);
@@ -149,15 +165,15 @@ class SYCLTeamMember {
 #else
     for (unsigned int shift = 1; vector_range * shift < sub_group_range;
          shift <<= 1) {
-      const value_type tmp = sg.shuffle_down(value, vector_range * shift);
-      if (team_rank_ + shift < team_size_) reducer.join(value, tmp);
+      auto tmp = Kokkos::Impl::SYCLReduction::shift_group_left(
+          sg, value, vector_range * shift);
+      if (team_rank_ + shift < team_size_) wrapped_reducer.join(&value, &tmp);
     }
 #endif
-    value = sg.shuffle(value, 0);
+    value = Kokkos::Impl::SYCLReduction::select_from_group(sg, value, 0);
 
     const int n_subgroups = sg.get_group_range()[0];
     if (n_subgroups == 1) {
-      reducer.reference() = value;
       return;
     }
 
@@ -184,16 +200,15 @@ class SYCLTeamMember {
     for (int start = step_width; start < n_subgroups; start += step_width) {
       if (id_in_sg == 0 && group_id >= start &&
           group_id < std::min(start + step_width, n_subgroups))
-        reducer.join(reduction_array[group_id - start], value);
+        wrapped_reducer.join(&reduction_array[group_id - start], &value);
       sycl::group_barrier(m_item.get_group());
     }
 
     // Do the final reduction for all threads redundantly
     value = reduction_array[0];
     for (int i = 1; i < std::min(step_width, n_subgroups); ++i)
-      reducer.join(value, reduction_array[i]);
+      wrapped_reducer.join(&value, &reduction_array[i]);
 
-    reducer.reference() = value;
     // Make sure that every thread is done using the reduction array.
     sycl::group_barrier(m_item.get_group());
   }
@@ -220,7 +235,8 @@ class SYCLTeamMember {
     // First combine the values in the same subgroup
     for (unsigned int stride = 1; vector_range * stride < sub_group_range;
          stride <<= 1) {
-      auto tmp = sg.shuffle_up(value, vector_range * stride);
+      auto tmp = Kokkos::Impl::SYCLReduction::shift_group_right(
+          sg, value, vector_range * stride);
       if (id_in_sg >= vector_range * stride) value += tmp;
     }
 
@@ -246,7 +262,8 @@ class SYCLTeamMember {
               sub_group_range, n_active_subgroups - round * sub_group_range);
           auto local_value = base_data[idx];
           for (unsigned int stride = 1; stride < upper_bound; stride <<= 1) {
-            auto tmp = sg.shuffle_up(local_value, stride);
+            auto tmp = Kokkos::Impl::SYCLReduction::shift_group_right(
+                sg, local_value, stride);
             if (id_in_sg >= stride) {
               if (idx < n_active_subgroups)
                 local_value += tmp;
@@ -264,9 +281,10 @@ class SYCLTeamMember {
     }
     auto total = base_data[n_active_subgroups - 1];
 
-    const auto update = sg.shuffle_up(value, vector_range);
-    Type intermediate = (group_id > 0 ? base_data[group_id - 1] : 0) +
-                        (id_in_sg >= vector_range ? update : 0);
+    const auto update =
+        Kokkos::Impl::SYCLReduction::shift_group_right(sg, value, vector_range);
+    Type intermediate = (group_id > 0 ? base_data[group_id - 1] : Type{0}) +
+                        (id_in_sg >= vector_range ? update : Type{0});
 
     if (global_accum) {
       if (id_in_sg == sub_group_range - 1 &&
@@ -278,7 +296,7 @@ class SYCLTeamMember {
       intermediate += base_data[n_active_subgroups - 1];
     }
     // Make sure that the reduction array hasn't been modified in the meantime.
-    m_item.barrier(sycl::access::fence_space::local_space);
+    sycl::group_barrier(m_item.get_group());
 
     return intermediate;
   }
@@ -305,6 +323,19 @@ class SYCLTeamMember {
   KOKKOS_INLINE_FUNCTION std::enable_if_t<is_reducer<ReducerType>::value>
   vector_reduce(ReducerType const& reducer,
                 typename ReducerType::value_type& value) const {
+    using value_type = typename ReducerType::value_type;
+    using wrapped_reducer_type =
+        typename Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
+                                       TeamPolicy<SYCL>, ReducerType,
+                                       value_type>::Reducer;
+    impl_vector_reduce(wrapped_reducer_type(reducer), value);
+    reducer.reference() = value;
+  }
+
+  template <typename WrappedReducerType>
+  KOKKOS_INLINE_FUNCTION std::enable_if_t<is_reducer<WrappedReducerType>::value>
+  impl_vector_reduce(WrappedReducerType const& wrapped_reducer,
+                     typename WrappedReducerType::value_type& value) const {
     const auto tidx1   = m_item.get_local_id(1);
     const auto grange1 = m_item.get_local_range(1);
 
@@ -313,13 +344,13 @@ class SYCLTeamMember {
     if (grange1 == 1) return;
 
     // Intra vector lane shuffle reduction:
-    typename ReducerType::value_type tmp(value);
-    typename ReducerType::value_type tmp2 = tmp;
+    typename WrappedReducerType::value_type tmp(value);
+    typename WrappedReducerType::value_type tmp2 = tmp;
 
     for (int i = grange1; (i >>= 1);) {
-      tmp2 = sg.shuffle_down(tmp, i);
+      tmp2 = Kokkos::Impl::SYCLReduction::shift_group_left(sg, tmp, i);
       if (static_cast<int>(tidx1) < i) {
-        reducer.join(tmp, tmp2);
+        wrapped_reducer.join(&tmp, &tmp2);
       }
     }
 
@@ -328,9 +359,9 @@ class SYCLTeamMember {
     // because floating point summation is not associative
     // and thus different threads could have different results.
 
-    tmp2  = sg.shuffle(tmp, (sg.get_local_id() / grange1) * grange1);
+    tmp2 = Kokkos::Impl::SYCLReduction::select_from_group(
+        sg, tmp, (sg.get_local_id() / grange1) * grange1);
     value = tmp2;
-    reducer.reference() = tmp2;
   }
 
   //----------------------------------------
@@ -377,13 +408,14 @@ struct TeamThreadRangeBoundariesStruct<iType, SYCLTeamMember> {
   const iType end;
 
   KOKKOS_INLINE_FUNCTION
-  TeamThreadRangeBoundariesStruct(const SYCLTeamMember& thread_, iType count)
-      : member(thread_), start(0), end(count) {}
+  TeamThreadRangeBoundariesStruct(const SYCLTeamMember& arg_thread,
+                                  iType arg_count)
+      : member(arg_thread), start(0), end(arg_count) {}
 
   KOKKOS_INLINE_FUNCTION
-  TeamThreadRangeBoundariesStruct(const SYCLTeamMember& thread_, iType begin_,
-                                  iType end_)
-      : member(thread_), start(begin_), end(end_) {}
+  TeamThreadRangeBoundariesStruct(const SYCLTeamMember& arg_thread,
+                                  iType arg_begin, iType arg_end)
+      : member(arg_thread), start(arg_begin), end(arg_end) {}
 };
 
 template <typename iType>
@@ -394,14 +426,14 @@ struct TeamVectorRangeBoundariesStruct<iType, SYCLTeamMember> {
   const iType end;
 
   KOKKOS_INLINE_FUNCTION
-  TeamVectorRangeBoundariesStruct(const SYCLTeamMember& thread_,
-                                  const iType& count)
-      : member(thread_), start(0), end(count) {}
+  TeamVectorRangeBoundariesStruct(const SYCLTeamMember& arg_thread,
+                                  const iType& arg_count)
+      : member(arg_thread), start(0), end(arg_count) {}
 
   KOKKOS_INLINE_FUNCTION
-  TeamVectorRangeBoundariesStruct(const SYCLTeamMember& thread_,
-                                  const iType& begin_, const iType& end_)
-      : member(thread_), start(begin_), end(end_) {}
+  TeamVectorRangeBoundariesStruct(const SYCLTeamMember& arg_thread,
+                                  const iType& arg_begin, const iType& arg_end)
+      : member(arg_thread), start(arg_begin), end(arg_end) {}
 };
 
 template <typename iType>
@@ -412,14 +444,14 @@ struct ThreadVectorRangeBoundariesStruct<iType, SYCLTeamMember> {
   const index_type end;
 
   KOKKOS_INLINE_FUNCTION
-  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember& thread,
-                                    index_type count)
-      : member(thread), start(static_cast<index_type>(0)), end(count) {}
+  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember& arg_thread,
+                                    index_type arg_count)
+      : member(arg_thread), start(static_cast<index_type>(0)), end(arg_count) {}
 
   KOKKOS_INLINE_FUNCTION
-  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember& thread,
+  ThreadVectorRangeBoundariesStruct(const SYCLTeamMember& arg_thread,
                                     index_type arg_begin, index_type arg_end)
-      : member(thread), start(arg_begin), end(arg_end) {}
+      : member(arg_thread), start(arg_begin), end(arg_end) {}
 };
 
 }  // namespace Impl
@@ -524,8 +556,16 @@ KOKKOS_INLINE_FUNCTION std::enable_if_t<Kokkos::is_reducer<ReducerType>::value>
 parallel_reduce(const Impl::TeamThreadRangeBoundariesStruct<
                     iType, Impl::SYCLTeamMember>& loop_boundaries,
                 const Closure& closure, const ReducerType& reducer) {
-  typename ReducerType::value_type value;
-  reducer.init(value);
+  using value_type            = typename ReducerType::value_type;
+  using functor_analysis_type = typename Impl::FunctorAnalysis<
+      Impl::FunctorPatternInterface::REDUCE,
+      TeamPolicy<typename Impl::SYCLTeamMember::execution_space>, ReducerType,
+      value_type>;
+  using wrapped_reducer_type = typename functor_analysis_type::Reducer;
+
+  wrapped_reducer_type wrapped_reducer(reducer);
+  value_type value;
+  wrapped_reducer.init(&value);
 
   for (iType i = loop_boundaries.start +
                  loop_boundaries.member.item().get_local_id(0);
@@ -534,7 +574,9 @@ parallel_reduce(const Impl::TeamThreadRangeBoundariesStruct<
     closure(i, value);
   }
 
-  loop_boundaries.member.team_reduce(reducer, value);
+  loop_boundaries.member.impl_team_reduce(wrapped_reducer, value);
+  wrapped_reducer.final(&value);
+  reducer.reference() = value;
 }
 
 /** \brief  Inter-thread parallel_reduce assuming summation.
@@ -550,20 +592,28 @@ KOKKOS_INLINE_FUNCTION std::enable_if_t<!Kokkos::is_reducer<ValueType>::value>
 parallel_reduce(const Impl::TeamThreadRangeBoundariesStruct<
                     iType, Impl::SYCLTeamMember>& loop_boundaries,
                 const Closure& closure, ValueType& result) {
-  ValueType val;
-  Kokkos::Sum<ValueType> reducer(val);
+  using functor_analysis_type = typename Impl::FunctorAnalysis<
+      Impl::FunctorPatternInterface::REDUCE,
+      TeamPolicy<typename Impl::SYCLTeamMember::execution_space>, Closure,
+      ValueType>;
+  using wrapped_reducer_type = typename functor_analysis_type::Reducer;
+  using value_type           = typename wrapped_reducer_type::value_type;
 
-  reducer.init(reducer.reference());
+  wrapped_reducer_type wrapped_reducer(closure);
+  value_type value;
+  wrapped_reducer.init(&value);
 
   for (iType i = loop_boundaries.start +
                  loop_boundaries.member.item().get_local_id(0);
        i < loop_boundaries.end;
        i += loop_boundaries.member.item().get_local_range(0)) {
-    closure(i, val);
+    closure(i, value);
   }
 
-  loop_boundaries.member.team_reduce(reducer, val);
-  result = reducer.reference();
+  loop_boundaries.member.impl_team_reduce(wrapped_reducer, value);
+
+  wrapped_reducer.final(&value);
+  result = value;
 }
 
 /** \brief  Inter-thread parallel exclusive prefix sum.
@@ -650,8 +700,16 @@ KOKKOS_INLINE_FUNCTION std::enable_if_t<Kokkos::is_reducer<ReducerType>::value>
 parallel_reduce(const Impl::TeamVectorRangeBoundariesStruct<
                     iType, Impl::SYCLTeamMember>& loop_boundaries,
                 const Closure& closure, const ReducerType& reducer) {
-  typename ReducerType::value_type value;
-  reducer.init(value);
+  using value_type            = typename ReducerType::value_type;
+  using functor_analysis_type = typename Impl::FunctorAnalysis<
+      Impl::FunctorPatternInterface::REDUCE,
+      TeamPolicy<typename Impl::SYCLTeamMember::execution_space>, ReducerType,
+      value_type>;
+  using wrapped_reducer_type = typename functor_analysis_type::Reducer;
+
+  wrapped_reducer_type wrapped_reducer(reducer);
+  value_type value;
+  wrapped_reducer.init(&value);
 
   const iType tidx0 = loop_boundaries.member.item().get_local_id(0);
   const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
@@ -663,8 +721,11 @@ parallel_reduce(const Impl::TeamVectorRangeBoundariesStruct<
        i < loop_boundaries.end; i += grange0 * grange1)
     closure(i, value);
 
-  loop_boundaries.member.vector_reduce(reducer, value);
-  loop_boundaries.member.team_reduce(reducer, value);
+  loop_boundaries.member.impl_vector_reduce(wrapped_reducer, value);
+  loop_boundaries.member.impl_team_reduce(wrapped_reducer, value);
+
+  wrapped_reducer.final(&value);
+  reducer.reference() = value;
 }
 
 template <typename iType, class Closure, typename ValueType>
@@ -672,10 +733,16 @@ KOKKOS_INLINE_FUNCTION std::enable_if_t<!Kokkos::is_reducer<ValueType>::value>
 parallel_reduce(const Impl::TeamVectorRangeBoundariesStruct<
                     iType, Impl::SYCLTeamMember>& loop_boundaries,
                 const Closure& closure, ValueType& result) {
-  ValueType val;
-  Kokkos::Sum<ValueType> reducer(val);
+  using functor_analysis_type = typename Impl::FunctorAnalysis<
+      Impl::FunctorPatternInterface::REDUCE,
+      TeamPolicy<typename Impl::SYCLTeamMember::execution_space>, Closure,
+      ValueType>;
+  using wrapped_reducer_type = typename functor_analysis_type::Reducer;
+  using value_type           = typename wrapped_reducer_type::value_type;
 
-  reducer.init(reducer.reference());
+  wrapped_reducer_type wrapped_reducer(closure);
+  value_type value;
+  wrapped_reducer.init(&value);
 
   const iType tidx0 = loop_boundaries.member.item().get_local_id(0);
   const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
@@ -685,11 +752,13 @@ parallel_reduce(const Impl::TeamVectorRangeBoundariesStruct<
 
   for (iType i = loop_boundaries.start + tidx0 * grange1 + tidx1;
        i < loop_boundaries.end; i += grange0 * grange1)
-    closure(i, val);
+    closure(i, value);
 
-  loop_boundaries.member.vector_reduce(reducer);
-  loop_boundaries.member.team_reduce(reducer);
-  result = reducer.reference();
+  loop_boundaries.member.impl_vector_reduce(wrapped_reducer, value);
+  loop_boundaries.member.impl_team_reduce(wrapped_reducer, value);
+
+  wrapped_reducer.final(&value);
+  result = value;
 }
 
 //----------------------------------------------------------------------------
@@ -739,16 +808,27 @@ KOKKOS_INLINE_FUNCTION std::enable_if_t<is_reducer<ReducerType>::value>
 parallel_reduce(Impl::ThreadVectorRangeBoundariesStruct<
                     iType, Impl::SYCLTeamMember> const& loop_boundaries,
                 Closure const& closure, ReducerType const& reducer) {
-  reducer.init(reducer.reference());
+  using value_type            = typename ReducerType::value_type;
+  using functor_analysis_type = typename Impl::FunctorAnalysis<
+      Impl::FunctorPatternInterface::REDUCE,
+      TeamPolicy<typename Impl::SYCLTeamMember::execution_space>, ReducerType,
+      value_type>;
+  using wrapped_reducer_type = typename functor_analysis_type::Reducer;
+
+  wrapped_reducer_type wrapped_reducer(reducer);
+  value_type value;
+  wrapped_reducer.init(&value);
 
   const iType tidx1   = loop_boundaries.member.item().get_local_id(1);
   const iType grange1 = loop_boundaries.member.item().get_local_range(1);
 
   for (iType i = loop_boundaries.start + tidx1; i < loop_boundaries.end;
        i += grange1)
-    closure(i, reducer.reference());
+    closure(i, value);
 
-  loop_boundaries.member.vector_reduce(reducer);
+  loop_boundaries.member.impl_vector_reduce(wrapped_reducer, value);
+  wrapped_reducer.final(&value);
+  reducer.reference() = value;
 }
 
 /** \brief  Intra-thread vector parallel_reduce.
@@ -767,16 +847,27 @@ KOKKOS_INLINE_FUNCTION std::enable_if_t<!is_reducer<ValueType>::value>
 parallel_reduce(Impl::ThreadVectorRangeBoundariesStruct<
                     iType, Impl::SYCLTeamMember> const& loop_boundaries,
                 Closure const& closure, ValueType& result) {
-  result = ValueType();
+  using functor_analysis_type = typename Impl::FunctorAnalysis<
+      Impl::FunctorPatternInterface::REDUCE,
+      TeamPolicy<typename Impl::SYCLTeamMember::execution_space>, Closure,
+      ValueType>;
+  using wrapped_reducer_type = typename functor_analysis_type::Reducer;
+  using value_type           = typename wrapped_reducer_type::value_type;
+
+  wrapped_reducer_type wrapped_reducer(closure);
+  value_type value;
+  wrapped_reducer.init(&value);
 
   const iType tidx1 = loop_boundaries.member.item().get_local_id(1);
   const int grange1 = loop_boundaries.member.item().get_local_range(1);
 
   for (iType i = loop_boundaries.start + tidx1; i < loop_boundaries.end;
        i += grange1)
-    closure(i, result);
+    closure(i, value);
 
-  loop_boundaries.member.vector_reduce(Kokkos::Sum<ValueType>(result));
+  loop_boundaries.member.impl_vector_reduce(wrapped_reducer, value);
+  wrapped_reducer.final(&value);
+  result = value;
 }
 
 //----------------------------------------------------------------------------
@@ -836,7 +927,8 @@ parallel_scan(const Impl::ThreadVectorRangeBoundariesStruct<
     //  [t] += [t-4] if t >= 4
     //  ...
     for (int j = 1; j < static_cast<int>(grange1); j <<= 1) {
-      value_type tmp = sg.shuffle_up(val, j);
+      value_type tmp =
+          Kokkos::Impl::SYCLReduction::shift_group_right(sg, val, j);
       if (j <= static_cast<int>(tidx1)) {
         reducer.join(val, tmp);
       }
@@ -847,7 +939,8 @@ parallel_scan(const Impl::ThreadVectorRangeBoundariesStruct<
 
     // Update i's contribution into the val and add it to accum for next round
     if (i < loop_boundaries.end) closure(i, val, true);
-    accum = sg.shuffle(val, mask + vector_offset);
+    accum = Kokkos::Impl::SYCLReduction::select_from_group(
+        sg, val, mask + vector_offset);
   }
   reducer.reference() = accum;
 }
@@ -889,7 +982,7 @@ KOKKOS_INLINE_FUNCTION void parallel_scan(
   using closure_value_type = typename Kokkos::Impl::FunctorAnalysis<
       Kokkos::Impl::FunctorPatternInterface::SCAN, void, Closure,
       void>::value_type;
-  static_assert(std::is_same<closure_value_type, ValueType>::value,
+  static_assert(std::is_same_v<closure_value_type, ValueType>,
                 "Non-matching value types of closure and return type");
 
   ValueType accum;
@@ -924,7 +1017,17 @@ KOKKOS_INLINE_FUNCTION void single(
   const auto grange1          = item.get_local_range(1);
   const auto sg               = item.get_sub_group();
   if (item.get_local_id(1) == 0) lambda(val);
-  val = sg.shuffle(val, (sg.get_local_id() / grange1) * grange1);
+  // FIXME_SYCL oneAPI broke pointer support in sycl::select_from_group past the
+  // 2025.0.0 release. It's supposed to be fixed in the 2025.2.0 release.
+  if constexpr (std::is_pointer_v<ValueType>) {
+    uintptr_t tmp = reinterpret_cast<uintptr_t>(val);
+    tmp           = Kokkos::Impl::SYCLReduction::select_from_group(
+        sg, tmp, (sg.get_local_id() / grange1) * grange1);
+    val = reinterpret_cast<ValueType>(tmp);
+  } else {
+    val = Kokkos::Impl::SYCLReduction::select_from_group(
+        sg, val, (sg.get_local_id() / grange1) * grange1);
+  }
 }
 
 template <class FunctorType, class ValueType>

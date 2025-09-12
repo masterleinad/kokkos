@@ -43,7 +43,7 @@ class ErrorReporter {
     clear();
   }
 
-  int getCapacity() const { return m_reports.h_view.extent(0); }
+  int getCapacity() const { return m_reports.view_host().extent(0); }
 
   int getNumReports();
 
@@ -52,11 +52,10 @@ class ErrorReporter {
   void getReports(std::vector<int> &reporters_out,
                   std::vector<report_type> &reports_out);
   void getReports(
-      typename Kokkos::View<int *,
-                            typename DeviceType::execution_space>::HostMirror
-          &reporters_out,
-      typename Kokkos::View<report_type *,
-                            typename DeviceType::execution_space>::HostMirror
+      typename Kokkos::View<int *, typename DeviceType::execution_space>::
+          host_mirror_type &reporters_out,
+      typename Kokkos::View<
+          report_type *, typename DeviceType::execution_space>::host_mirror_type
           &reports_out);
 
   void clear();
@@ -69,9 +68,10 @@ class ErrorReporter {
   bool add_report(int reporter_id, report_type report) const {
     int idx = Kokkos::atomic_fetch_add(&m_numReportsAttempted(), 1);
 
-    if (idx >= 0 && (idx < static_cast<int>(m_reports.d_view.extent(0)))) {
-      m_reporters.d_view(idx) = reporter_id;
-      m_reports.d_view(idx)   = report;
+    if (idx >= 0 &&
+        (idx < static_cast<int>(m_reports.view_device().extent(0)))) {
+      m_reporters.view_device()(idx) = reporter_id;
+      m_reports.view_device()(idx)   = report;
       return true;
     } else {
       return false;
@@ -92,8 +92,8 @@ template <typename ReportType, typename DeviceType>
 inline int ErrorReporter<ReportType, DeviceType>::getNumReports() {
   int num_reports = 0;
   Kokkos::deep_copy(num_reports, m_numReportsAttempted);
-  if (num_reports > static_cast<int>(m_reports.h_view.extent(0))) {
-    num_reports = m_reports.h_view.extent(0);
+  if (num_reports > static_cast<int>(m_reports.view_host().extent(0))) {
+    num_reports = m_reports.view_host().extent(0);
   }
   return num_reports;
 }
@@ -119,32 +119,32 @@ void ErrorReporter<ReportType, DeviceType>::getReports(
     m_reporters.template sync<host_mirror_space>();
 
     for (int i = 0; i < num_reports; ++i) {
-      reporters_out.push_back(m_reporters.h_view(i));
-      reports_out.push_back(m_reports.h_view(i));
+      reporters_out.push_back(m_reporters.view_host()(i));
+      reports_out.push_back(m_reports.view_host()(i));
     }
   }
 }
 
 template <typename ReportType, typename DeviceType>
 void ErrorReporter<ReportType, DeviceType>::getReports(
-    typename Kokkos::View<
-        int *, typename DeviceType::execution_space>::HostMirror &reporters_out,
-    typename Kokkos::View<report_type *,
-                          typename DeviceType::execution_space>::HostMirror
-        &reports_out) {
+    typename Kokkos::View<int *, typename DeviceType::execution_space>::
+        host_mirror_type &reporters_out,
+    typename Kokkos::View<report_type *, typename DeviceType::execution_space>::
+        host_mirror_type &reports_out) {
   int num_reports = getNumReports();
-  reporters_out   = typename Kokkos::View<int *, DeviceType>::HostMirror(
+  reporters_out   = typename Kokkos::View<int *, DeviceType>::host_mirror_type(
       "ErrorReport::reporters_out", num_reports);
-  reports_out = typename Kokkos::View<report_type *, DeviceType>::HostMirror(
-      "ErrorReport::reports_out", num_reports);
+  reports_out =
+      typename Kokkos::View<report_type *, DeviceType>::host_mirror_type(
+          "ErrorReport::reports_out", num_reports);
 
   if (num_reports > 0) {
     m_reports.template sync<host_mirror_space>();
     m_reporters.template sync<host_mirror_space>();
 
     for (int i = 0; i < num_reports; ++i) {
-      reporters_out(i) = m_reporters.h_view(i);
-      reports_out(i)   = m_reports.h_view(i);
+      reporters_out(i) = m_reporters.view_host()(i);
+      reports_out(i)   = m_reports.view_host()(i);
     }
   }
 }

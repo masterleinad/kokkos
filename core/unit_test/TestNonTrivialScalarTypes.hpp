@@ -140,6 +140,7 @@ struct array_reduce {
 
   KOKKOS_INLINE_FUNCTION
   array_reduce &operator=(const array_reduce &src) {
+    if (&src == this) return *this;
     for (int i = 0; i < N; i++) data[i] = src.data[i];
     return *this;
   }
@@ -214,10 +215,10 @@ struct point_t {
   uint8_t x, y, z;
 
   KOKKOS_FUNCTION
-  point_t() : x(0), y(0), z(0){};
+  point_t() : x(0), y(0), z(0) {}
 
   KOKKOS_FUNCTION
-  point_t(const point_t &val) : x(val.x), y(val.y), z(val.z){};
+  point_t(const point_t &val) : x(val.x), y(val.y), z(val.z) {}
 
   KOKKOS_FUNCTION
   point_t(const int rhs) { x = y = z = static_cast<uint8_t>(rhs); }

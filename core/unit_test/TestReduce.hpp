@@ -479,7 +479,7 @@ class TestReduceDynamicView {
         Test::RuntimeReduceFunctor<ScalarType, execution_space>;
 
     using result_type      = Kokkos::View<ScalarType*, DeviceType>;
-    using result_host_type = typename result_type::HostMirror;
+    using result_host_type = typename result_type::host_mirror_type;
 
     const unsigned CountLimit = 23;
 
@@ -571,20 +571,37 @@ TEST(TEST_CATEGORY, mdrange_combined_reduce) {
   constexpr uint64_t nw = 1000;
 
   uint64_t nsum = (nw / 2) * (nw + 1);
+  {
+    int64_t result1 = 0;
+    int64_t result2 = 0;
+    int64_t result3 = 0;
 
-  int64_t result1 = 0;
-  int64_t result2 = 0;
-  int64_t result3 = 0;
+    Kokkos::parallel_reduce(
+        "int_combined_reduce_mdrange",
+        Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<3>>({{0, 0, 0}},
+                                                               {{nw, 1, 1}}),
+        functor_type(nw), result1, result2, result3);
 
-  Kokkos::parallel_reduce(
-      "int_combined_reduce_mdrange",
-      Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<3>>({{0, 0, 0}},
-                                                             {{nw, 1, 1}}),
-      functor_type(nw), result1, result2, result3);
+    ASSERT_EQ(nw, uint64_t(result1));
+    ASSERT_EQ(nsum, uint64_t(result2));
+    ASSERT_EQ(nsum, uint64_t(result3));
+  }
+  {
+    int64_t result1 = 0;
+    int64_t result2 = 0;
+    int64_t result3 = 0;
 
-  ASSERT_EQ(nw, uint64_t(result1));
-  ASSERT_EQ(nsum, uint64_t(result2));
-  ASSERT_EQ(nsum, uint64_t(result3));
+    Kokkos::parallel_reduce(
+        "int_combined_reduce_mdrange",
+        Kokkos::MDRangePolicy<TEST_EXECSPACE, Kokkos::Rank<3>,
+                              Kokkos::Schedule<Kokkos::Dynamic>>({{0, 0, 0}},
+                                                                 {{nw, 1, 1}}),
+        functor_type(nw), result1, result2, result3);
+
+    ASSERT_EQ(nw, uint64_t(result1));
+    ASSERT_EQ(nsum, uint64_t(result2));
+    ASSERT_EQ(nsum, uint64_t(result3));
+  }
 }
 
 TEST(TEST_CATEGORY, int_combined_reduce_mixed) {
@@ -637,6 +654,10 @@ struct FunctorReductionWithLargeIterationCount {
 };
 
 TEST(TEST_CATEGORY, reduction_with_large_iteration_count) {
+  // FIXME_OPENMPTARGET - causes runtime failure with CrayClang compiler
+#if defined(KOKKOS_COMPILER_CRAY_LLVM) && defined(KOKKOS_ENABLE_OPENMPTARGET)
+  GTEST_SKIP() << "known to fail with OpenMPTarget+Cray LLVM";
+#endif
   if constexpr (std::is_same_v<typename TEST_EXECSPACE::memory_space,
                                Kokkos::HostSpace>) {
     GTEST_SKIP() << "Disabling for host backends";
@@ -645,10 +666,82 @@ TEST(TEST_CATEGORY, reduction_with_large_iteration_count) {
   const int64_t N = pow(2LL, 39LL) - pow(2LL, 8LL) + 1;
   Kokkos::RangePolicy<TEST_EXECSPACE, Kokkos::IndexType<int64_t>> p(0, N);
   double nu = 0;
-  EXPECT_NO_THROW(Kokkos::parallel_reduce(
-      "sample reduction", p, FunctorReductionWithLargeIterationCount(), nu));
+  Kokkos::parallel_reduce("sample reduction", p,
+                          FunctorReductionWithLargeIterationCount(), nu);
   ASSERT_DOUBLE_EQ(nu, double(N));
 }
 #endif
+
+/* Test that searching the Max of a View containing only -inf returns -inf and
+   the Min of a View containing only +inf returns +inf. */
+template <typename ScalarType>
+class TestReductionOverInfiniteFloat {
+ public:
+  TestReductionOverInfiniteFloat() { runTest(); }
+
+  void runTest() {
+    const unsigned int N = 10;
+
+    ScalarType inf = Kokkos::Experimental::infinity_v<ScalarType>;
+    // Ensure that inf correctly correspond to infinity for type `ScalarType`
+    EXPECT_TRUE((inf == inf * inf) && (inf == inf + 1));
+
+    Kokkos::View<ScalarType*> view("view", N);
+
+    Kokkos::deep_copy(view, inf);
+    ScalarType min;
+    Kokkos::parallel_reduce(
+        N,
+        KOKKOS_LAMBDA(const int i, ScalarType& partial_min) {
+          if (view[i] < partial_min) {
+            partial_min = view[i];
+          }
+        },
+        Kokkos::Min<ScalarType>(min));
+    EXPECT_EQ(inf, min) << "For type "
+                        << Kokkos::Impl::TypeInfo<ScalarType>::name() << '\n';
+
+    Kokkos::deep_copy(view, -inf);
+    ScalarType max;
+    Kokkos::parallel_reduce(
+        N,
+        KOKKOS_LAMBDA(const int i, ScalarType& partial_max) {
+          if (view[i] > partial_max) {
+            partial_max = view[i];
+          }
+        },
+        Kokkos::Max<ScalarType>(max));
+    EXPECT_EQ(-inf, max) << "For type "
+                         << Kokkos::Impl::TypeInfo<ScalarType>::name() << '\n';
+  }
+};
+
+KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_PUSH()
+TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
+#if __FINITE_MATH_ONLY__
+  GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
+#endif
+// FIXME_OPENACC nvhpc on device doesn't use the correct neutral value for the
+// min and max reducers
+#if defined(KOKKOS_COMPILER_NVHPC) && defined(KOKKOS_ENABLE_OPENACC)
+  GTEST_SKIP() << "skipping for NVHPC and OPENACC due to wrong neutral value";
+#endif
+
+  // FIXME_CUDA cuda-clang 17 cannot compile the max parallel_reduce for half_t
+  // and bhalf_t. The min parallel_reduce works correctly.
+#if !defined(KOKKOS_ENABLE_CUDA) || !defined(KOKKOS_COMPILER_CLANG)
+  TestReductionOverInfiniteFloat<Kokkos::Experimental::half_t>();
+  TestReductionOverInfiniteFloat<Kokkos::Experimental::bhalf_t>();
+#endif
+  TestReductionOverInfiniteFloat<float>();
+  TestReductionOverInfiniteFloat<double>();
+
+#if !defined(KOKKOS_ENABLE_CUDA) && !defined(KOKKOS_ENABLE_HIP) &&          \
+    !defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ENABLE_OPENMPTARGET) && \
+    !defined(KOKKOS_ENABLE_OPENACC)
+  TestReductionOverInfiniteFloat<long double>();
+#endif
+}
+KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_POP()
 
 }  // namespace Test

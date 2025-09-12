@@ -72,10 +72,39 @@ struct TestParallelScanRangePolicy {
 
       for (size_t i = 0; i < work_size; ++i) {
         // Check prefix sum
-        ASSERT_EQ(ValueType((i * (i - 1)) / 2), prefix_h(i));
+        ASSERT_EQ(
+            static_cast<ValueType>((static_cast<ValueType>(i) * (i - 1)) / 2),
+            prefix_h(i));
 
         // Check postfix sum
-        ASSERT_EQ(ValueType(((i + 1) * i) / 2), postfix_h(i));
+        ASSERT_EQ(
+            static_cast<ValueType>((static_cast<ValueType>(i) * (i + 1)) / 2),
+            postfix_h(i));
+      }
+
+      // Reset results
+      Kokkos::deep_copy(prefix_results, 0);
+      Kokkos::deep_copy(postfix_results, 0);
+    };
+
+    // Lambda for checking errors from stored value at each index
+    // starting from 2.
+    auto check_scan_results_start2 = [&]() {
+      auto const prefix_h = Kokkos::create_mirror_view_and_copy(
+          Kokkos::HostSpace(), prefix_results);
+      auto const postfix_h = Kokkos::create_mirror_view_and_copy(
+          Kokkos::HostSpace(), postfix_results);
+
+      for (size_t i = 2; i < work_size; ++i) {
+        // Check prefix sum
+        ASSERT_EQ(static_cast<ValueType>(
+                      (static_cast<ValueType>(i + 1) * (i - 2)) / 2),
+                  prefix_h(i));
+
+        // Check postfix sum
+        ASSERT_EQ(static_cast<ValueType>(
+                      (static_cast<ValueType>(i + 2) * (i - 1)) / 2),
+                  postfix_h(i));
       }
 
       // Reset results
@@ -85,7 +114,8 @@ struct TestParallelScanRangePolicy {
 
     // If policy template args are not given, call parallel_scan()
     // with work_size input, if args are given, call
-    // parallel_scan() with RangePolicy<Args...>(0, work_size).
+    // parallel_scan() with RangePolicy<Args...>(0, work_size)
+    // and RangePolicy<Args...>(2, work_size).
     // For each case, call parallel_scan() with all possible
     // function signatures.
     if (sizeof...(Args) == 0) {
@@ -103,7 +133,8 @@ struct TestParallelScanRangePolicy {
         ValueType return_val = 0;
         Kokkos::parallel_scan("TestWithStrArg2", work_size, *this, return_val);
         check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+        ASSERT_EQ(static_cast<ValueType>(static_cast<ValueType>(work_size) *
+                                         (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
       }
 
@@ -113,7 +144,8 @@ struct TestParallelScanRangePolicy {
         ValueType return_val = 0;
         Kokkos::parallel_scan(work_size, *this, return_val);
         check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+        ASSERT_EQ(static_cast<ValueType>(static_cast<ValueType>(work_size) *
+                                         (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
       }
 
@@ -123,7 +155,8 @@ struct TestParallelScanRangePolicy {
         Kokkos::View<ValueType, Kokkos::HostSpace> return_view("return_view");
         Kokkos::parallel_scan(work_size, *this, return_view);
         check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+        ASSERT_EQ(static_cast<ValueType>(static_cast<ValueType>(work_size) *
+                                         (work_size - 1) / 2),
                   return_view());  // sum( 0 .. N-1 )
       }
     } else {
@@ -145,7 +178,8 @@ struct TestParallelScanRangePolicy {
         ValueType return_val = 0;
         Kokkos::parallel_scan("TestWithStrArg4", policy, *this, return_val);
         check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+        ASSERT_EQ(static_cast<ValueType>(static_cast<ValueType>(work_size) *
+                                         (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
       }
 
@@ -155,7 +189,8 @@ struct TestParallelScanRangePolicy {
         ValueType return_val = 0;
         Kokkos::parallel_scan(policy, *this, return_val);
         check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+        ASSERT_EQ(static_cast<ValueType>(static_cast<ValueType>(work_size) *
+                                         (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
       }
 
@@ -168,7 +203,8 @@ struct TestParallelScanRangePolicy {
 
         ValueType total;
         Kokkos::deep_copy(total, return_view);
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+        ASSERT_EQ(static_cast<ValueType>(static_cast<ValueType>(work_size) *
+                                         (work_size - 1) / 2),
                   total);  // sum( 0 .. N-1 )
       }
 
@@ -185,8 +221,81 @@ struct TestParallelScanRangePolicy {
         ValueType return_val = 0;
         Kokkos::parallel_scan(policy_with_require, *this, return_val);
         check_scan_results();
-        ASSERT_EQ(ValueType(work_size * (work_size - 1) / 2),
+        ASSERT_EQ(static_cast<ValueType>(static_cast<ValueType>(work_size) *
+                                         (work_size - 1) / 2),
                   return_val);  // sum( 0 .. N-1 )
+      }
+
+      if (work_size >= 2) {
+        // Construct another RangePolicy for parallel_scan
+        // whose range starts from 2.
+        Kokkos::RangePolicy<execution_space, Args...> policy2(2, work_size);
+
+        // Input: label, work_count, functor
+        Kokkos::parallel_scan("TestWithStrArg5", policy2, *this);
+        check_scan_results_start2();
+
+        // Input: work_count, functor
+        Kokkos::parallel_scan(policy2, *this);
+        check_scan_results_start2();
+
+        {
+          // Input: label, work_count, functor
+          // Input/Output: return_value
+          ValueType return_val = 0;
+          Kokkos::parallel_scan("TestWithStrArg6", policy2, *this, return_val);
+          check_scan_results_start2();
+          ASSERT_EQ(
+              static_cast<ValueType>(static_cast<ValueType>(work_size + 1) *
+                                     (work_size - 2) / 2),
+              return_val);  // sum( 2 .. N-1 )
+        }
+
+        // Input: work_count, functor
+        // Input/Output: return_value
+        {
+          ValueType return_val = 0;
+          Kokkos::parallel_scan(policy2, *this, return_val);
+          check_scan_results_start2();
+          ASSERT_EQ(
+              static_cast<ValueType>(static_cast<ValueType>(work_size + 1) *
+                                     (work_size - 2) / 2),
+              return_val);  // sum( 2 .. N-1 )
+        }
+
+        // Input: work_count, functor
+        // Input/Output: return_view (Device)
+        {
+          Kokkos::View<ValueType, execution_space> return_view("return_view");
+          Kokkos::parallel_scan(policy2, *this, return_view);
+          check_scan_results_start2();
+
+          ValueType total;
+          Kokkos::deep_copy(total, return_view);
+          ASSERT_EQ(
+              static_cast<ValueType>(static_cast<ValueType>(work_size + 1) *
+                                     (work_size - 2) / 2),
+              total);  // sum( 2 .. N-1 )
+        }
+
+        // Check Kokkos::Experimental::require()
+        // for one of the signatures.
+        {
+          using Property =
+              Kokkos::Experimental::WorkItemProperty::HintLightWeight_t;
+          const auto policy_with_require2 =
+              Kokkos::Experimental::require(policy2, Property());
+
+          // Input: work_count, functor
+          // Input/Output: return_value
+          ValueType return_val = 0;
+          Kokkos::parallel_scan(policy_with_require2, *this, return_val);
+          check_scan_results_start2();
+          ASSERT_EQ(
+              static_cast<ValueType>(static_cast<ValueType>(work_size + 1) *
+                                     (work_size - 2) / 2),
+              return_val);  // sum( 2 .. N-1 )
+        }
       }
     }
   }

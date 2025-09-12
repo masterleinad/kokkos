@@ -98,12 +98,6 @@ static_assert(Kokkos::Reducer<Kokkos::Sum<int, Kokkos::HostSpace>>);
 static_assert(!Kokkos::Reducer<int>);
 #endif
 
-static_assert(
-    std::is_same<float, Kokkos::Impl::remove_cvref_t<float const &>>{});
-static_assert(std::is_same<int, Kokkos::Impl::remove_cvref_t<int &>>{});
-static_assert(std::is_same<int, Kokkos::Impl::remove_cvref_t<int const>>{});
-static_assert(std::is_same<float, Kokkos::Impl::remove_cvref_t<float>>{});
-
 /*-------------------------------------------------
   begin test for team_handle concept
 
@@ -167,8 +161,9 @@ struct is_team_handle_complete_trait_check {
       decltype(std::declval<U const &>().team_barrier());
 
   template <class U>
-  using TeamBroadcastArchetypeExpr = decltype(
-      std::declval<U const &>().team_broadcast(lvalueForMethodsNeedingIt_, 0));
+  using TeamBroadcastArchetypeExpr =
+      decltype(std::declval<U const &>().team_broadcast(
+          lvalueForMethodsNeedingIt_, 0));
 
   template <class U>
   using TeamBroadcastAcceptClosureArchetypeExpr =
