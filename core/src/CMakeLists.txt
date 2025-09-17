@@ -134,7 +134,7 @@ else()
 endif()
 
 if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
-  set(KOKKOS_CORE_MODULE_FILES Kokkos_Core.cppm)
+  set(KOKKOS_CORE_MODULE_FILES Kokkos_Core.cppm Kokkos_Core_Impl.cppm)
 endif()
 
 kokkos_add_library(
