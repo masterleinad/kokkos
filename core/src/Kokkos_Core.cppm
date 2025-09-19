@@ -101,6 +101,11 @@ export {
 #endif
 
   // View-related
+using ::Kokkos::is_memory_traits;
+using ::Kokkos::is_memory_traits_v;
+using ::Kokkos::layout_stride;
+  using ::Kokkos::is_array_layout;
+  using ::Kokkos::is_array_layout_v;
   using ::Kokkos::ALL;
   using ::Kokkos::ALL_t;
   using ::Kokkos::AllowPadding;
@@ -131,21 +136,42 @@ export {
   using ::Kokkos::Subview;
   using ::Kokkos::Unmanaged;
   using ::Kokkos::View;
+  using ::Kokkos::Experimental::AppendExtent;
+  using ::Kokkos::Experimental::DefaultViewHooks;
+  using ::Kokkos::Experimental::EmptyViewHooks;
+  using ::Kokkos::Experimental::PrependExtent;
+  using ::Kokkos::Experimental::SubscribableViewHooks;
+  using ::Kokkos::Experimental::dims;
+  using ::Kokkos::Experimental::is_hooks_policy;
+  using ::Kokkos::Experimental::is_hooks_policy_v;
   using ::Kokkos::view_alloc;
   using ::Kokkos::view_wrap;
   using ::Kokkos::ViewTraits;
   using ::Kokkos::WithoutInitializing;
+  using ::Kokkos::strided_slice;
+  using ::Kokkos::submdspan;
+  using ::Kokkos::submdspan_extents;
+  using ::Kokkos::ViewAllocateWithoutInitializing;
+  using ::Kokkos::common_view_alloc_prop;
+  using ::Kokkos::mdspan_non_standard;
+  using ::Kokkos::mdspan_non_standard_tag;
+  using ::Kokkos::full_extent;
+  using ::Kokkos::full_extent_t;
+  using ::Kokkos::submdspan_mapping_result;
   namespace Experimental {
   using ::Kokkos::Experimental::local_deep_copy;
   using ::Kokkos::Experimental::local_deep_copy_contiguous;
   }  // namespace Experimental
 
   // execution policies
+using ::Kokkos::default_inner_direction;
+using ::Kokkos::default_outer_direction;
   using ::Kokkos::AUTO;
   using ::Kokkos::AUTO_t;
   using ::Kokkos::ChunkSize;
   using ::Kokkos::Dynamic;
   using ::Kokkos::IndexType;
+  using ::Kokkos::team_policy_check_valid_storage_level_argument;
   using ::Kokkos::is_execution_policy;
   using ::Kokkos::is_execution_policy_v;
   using ::Kokkos::is_team_handle;
@@ -174,6 +200,8 @@ export {
   using ::Kokkos::ThreadVectorRange;
   using ::Kokkos::WorkGraphPolicy;
   namespace Experimental {
+  using ::Kokkos::Experimental::is_work_item_property;
+  using ::Kokkos::Experimental::is_work_item_property_v;
   using ::Kokkos::Experimental::DesiredOccupancy;
   using ::Kokkos::Experimental::MaximizeOccupancy;
   using ::Kokkos::Experimental::partition_space;
@@ -185,6 +213,7 @@ export {
   // miscellaneous
   using ::Kokkos::detected_or_t;
   using ::Kokkos::detected_t;
+  using ::Kokkos::nonesuch;
   using ::Kokkos::is_detected;
   using ::Kokkos::is_detected_convertible;
   using ::Kokkos::is_detected_convertible_v;
@@ -192,6 +221,7 @@ export {
   using ::Kokkos::is_detected_exact_v;
   using ::Kokkos::is_detected_v;
   using ::Kokkos::num_devices;
+  using ::Kokkos::num_threads;
   using ::Kokkos::print_configuration;
   using ::Kokkos::Timer;
   namespace Experimental {
@@ -679,7 +709,97 @@ export {
   using ::Kokkos::Tools::Experimental::ToolSettings;
   using ::Kokkos::Tools::Experimental::VariableInfo;
   using ::Kokkos::Tools::Experimental::VariableValue;
+  using ::Kokkos::Tools::Experimental::CategoricalTuner;
+  using ::Kokkos::Tools::Experimental::EventSet;
+  using ::Kokkos::Tools::Experimental::ExecutionSpaceIdentifier;
+  using ::Kokkos::Tools::Experimental::ExtendableTunerMixin;
+  using ::Kokkos::Tools::Experimental::MDRangeTuner;
+  using ::Kokkos::Tools::Experimental::MultidimensionalSparseTuningProblem;
+  using ::Kokkos::Tools::Experimental::NumReservedDeviceIDs;
+  using ::Kokkos::Tools::Experimental::RangePolicyOccupancyTuner;
+  using ::Kokkos::Tools::Experimental::SingleDimensionalRangeTuner;
+  using ::Kokkos::Tools::Experimental::TeamSizeTuner;
+  using ::Kokkos::Tools::Experimental::TuningString;
+  using ::Kokkos::Tools::Experimental::ValueRange;
+  using ::Kokkos::Tools::Experimental::ValueSet;
+  using ::Kokkos::Tools::Experimental::contextBeginFunction;
+  using ::Kokkos::Tools::Experimental::contextEndFunction;
+  using ::Kokkos::Tools::Experimental::declare_optimization_goal;
+  using ::Kokkos::Tools::Experimental::device_id;
+  using ::Kokkos::Tools::Experimental::device_id_root;
+  using ::Kokkos::Tools::Experimental::devicetype_from_uint32t;
+  using ::Kokkos::Tools::Experimental::get_current_context_id;
+  using ::Kokkos::Tools::Experimental::get_new_variable_id;
+  using ::Kokkos::Tools::Experimental::have_tuning_tool;
+  using ::Kokkos::Tools::Experimental::identifier_from_devid;
+  using ::Kokkos::Tools::Experimental::inputTypeDeclarationFunction;
+  using ::Kokkos::Tools::Experimental::int_for_synchronization_reason;
+  using ::Kokkos::Tools::Experimental::make_candidate_range;
+  using ::Kokkos::Tools::Experimental::make_multidimensional_sparse_tuning_problem;
+  using ::Kokkos::Tools::Experimental::num_avail_bits;
+  using ::Kokkos::Tools::Experimental::num_device_bits;
+  using ::Kokkos::Tools::Experimental::num_instance_bits;
+  using ::Kokkos::Tools::Experimental::num_type_bits;
+  using ::Kokkos::Tools::Experimental::optimizationGoalDeclarationFunction;
+  using ::Kokkos::Tools::Experimental::outputTypeDeclarationFunction;
+  using ::Kokkos::Tools::Experimental::provideToolProgrammingInterfaceFunction;
+  using ::Kokkos::Tools::Experimental::requestToolSettingsFunction;
+  using ::Kokkos::Tools::Experimental::requestValueFunction;
+  using ::Kokkos::Tools::Experimental::resume_tools;
+  using ::Kokkos::Tools::Experimental::set_callbacks;
+  using ::Kokkos::Tools::Experimental::set_declare_optimization_goal_callback;
+  using ::Kokkos::Tools::Experimental::set_parse_args_callback;
+  using ::Kokkos::Tools::Experimental::set_print_help_callback;
+  using ::Kokkos::Tools::Experimental::toolInvokedFenceFunction;
   }  // namespace Experimental
+  using ::Kokkos::Tools::InitArguments;
+  using ::Kokkos::Tools::allocateData;
+  using ::Kokkos::Tools::allocateDataFunction;
+  using ::Kokkos::Tools::beginDeepCopy;
+  using ::Kokkos::Tools::beginDeepCopyFunction;
+  using ::Kokkos::Tools::beginFence;
+  using ::Kokkos::Tools::beginFenceFunction;
+  using ::Kokkos::Tools::beginFunction;
+  using ::Kokkos::Tools::beginParallelFor;
+  using ::Kokkos::Tools::beginParallelReduce;
+  using ::Kokkos::Tools::beginParallelScan;
+  using ::Kokkos::Tools::createProfileSection;
+  using ::Kokkos::Tools::createProfileSectionFunction;
+  using ::Kokkos::Tools::deallocateData;
+  using ::Kokkos::Tools::deallocateDataFunction;
+  using ::Kokkos::Tools::declareMetadataFunction;
+  using ::Kokkos::Tools::destroyProfileSection;
+  using ::Kokkos::Tools::destroyProfileSectionFunction;
+  using ::Kokkos::Tools::dualViewModifyFunction;
+  using ::Kokkos::Tools::dualViewSyncFunction;
+  using ::Kokkos::Tools::endDeepCopy;
+  using ::Kokkos::Tools::endDeepCopyFunction;
+  using ::Kokkos::Tools::endFence;
+  using ::Kokkos::Tools::endFenceFunction;
+  using ::Kokkos::Tools::endFunction;
+  using ::Kokkos::Tools::endParallelFor;
+  using ::Kokkos::Tools::endParallelReduce;
+  using ::Kokkos::Tools::endParallelScan;
+  using ::Kokkos::Tools::finalize;
+  using ::Kokkos::Tools::finalizeFunction;
+  using ::Kokkos::Tools::initFunction;
+  using ::Kokkos::Tools::initialize;
+  using ::Kokkos::Tools::make_space_handle;
+  using ::Kokkos::Tools::markEvent;
+  using ::Kokkos::Tools::parseArgs;
+  using ::Kokkos::Tools::parseArgsFunction;
+  using ::Kokkos::Tools::popFunction;
+  using ::Kokkos::Tools::popRegion;
+  using ::Kokkos::Tools::printHelp;
+  using ::Kokkos::Tools::printHelpFunction;
+  using ::Kokkos::Tools::profileEventFunction;
+  using ::Kokkos::Tools::profileLibraryLoaded;
+  using ::Kokkos::Tools::pushFunction;
+  using ::Kokkos::Tools::pushRegion;
+  using ::Kokkos::Tools::startProfileSectionFunction;
+  using ::Kokkos::Tools::startSection;
+  using ::Kokkos::Tools::stopProfileSectionFunction;
+  using ::Kokkos::Tools::stopSection;
   using ::Kokkos::Tools::declareMetadata;
   using ::Kokkos::Tools::modifyDualView;
   using ::Kokkos::Tools::SpaceHandle;
@@ -687,6 +807,8 @@ export {
   }  // namespace Tools
 
   // Crs
+using ::Kokkos::CountAndFill;
+using ::Kokkos::CountAndFillBase;
   using ::Kokkos::count_and_fill_crs;
   using ::Kokkos::Crs;
   using ::Kokkos::get_crs_row_map_from_counts;
@@ -728,5 +850,11 @@ export {
   using ::Kokkos::operator<=;
   using ::Kokkos::operator>;
   using ::Kokkos::operator>=;
+namespace Experimental {
+using ::Kokkos::Experimental::operator&;
+using ::Kokkos::Experimental::operator==;
+using ::Kokkos::Experimental::operator|;
+}
+
   }  // namespace Kokkos
 }
