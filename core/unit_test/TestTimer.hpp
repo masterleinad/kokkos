@@ -35,7 +35,7 @@ TEST(TEST_CATEGORY, timer) {
 
   std::this_thread::sleep_for(50ms);
   auto elapsed2 = std::as_const(t).seconds();
-  EXPECT_GE(elapsed2, .01);
+  EXPECT_GE(elapsed2, .1);
   EXPECT_GT(elapsed2, elapsed);
 
   t.reset();
