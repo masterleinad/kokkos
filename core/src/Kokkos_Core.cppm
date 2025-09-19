@@ -26,9 +26,14 @@ export {
   // hwloc
   namespace hwloc {
   using ::Kokkos::hwloc::available;
+  using ::Kokkos::hwloc::bind_this_thread;
+  using ::Kokkos::hwloc::can_bind_threads;
   using ::Kokkos::hwloc::get_available_cores_per_numa;
   using ::Kokkos::hwloc::get_available_numa_count;
   using ::Kokkos::hwloc::get_available_threads_per_core;
+  using ::Kokkos::hwloc::get_this_thread_coordinate;
+  using ::Kokkos::hwloc::thread_mapping;
+  using ::Kokkos::hwloc::unbind_this_thread;
   }  // namespace hwloc
 
   // execution/memory spaces
@@ -69,9 +74,12 @@ export {
   using ::Kokkos::DefaultExecutionSpace;
   using ::Kokkos::DefaultHostExecutionSpace;
   using ::Kokkos::Device;
+  using ::Kokkos::device_id;
   using ::Kokkos::has_shared_host_pinned_space;
   using ::Kokkos::has_shared_space;
   using ::Kokkos::HostSpace;
+  using ::Kokkos::ScratchMemorySpace;
+  using ::Kokkos::ScratchRequest;
   using ::Kokkos::is_device;
   using ::Kokkos::is_device_v;
   using ::Kokkos::is_execution_space;
@@ -99,6 +107,7 @@ export {
   using ::Kokkos::create_mirror;
   using ::Kokkos::create_mirror_view;
   using ::Kokkos::create_mirror_view_and_copy;
+  using ::Kokkos::DeducedCommonPropsType;
   using ::Kokkos::deep_copy;
   using ::Kokkos::InvalidType;
   using ::Kokkos::is_always_assignable;
@@ -128,13 +137,17 @@ export {
   using ::Kokkos::WithoutInitializing;
   namespace Experimental {
   using ::Kokkos::Experimental::local_deep_copy;
+  using ::Kokkos::Experimental::local_deep_copy_contiguous;
   }
 
   // execution policies
   using ::Kokkos::AUTO;
+  using ::Kokkos::AUTO_t;
   using ::Kokkos::ChunkSize;
   using ::Kokkos::Dynamic;
   using ::Kokkos::IndexType;
+  using ::Kokkos::is_execution_policy;
+  using ::Kokkos::is_execution_policy_v;
   using ::Kokkos::is_team_handle;
   using ::Kokkos::is_team_handle_v;
   using ::Kokkos::Iterate;
@@ -171,7 +184,11 @@ export {
 
   // miscellaneous
   using ::Kokkos::detected_t;
+  using ::Kokkos::detected_or_t;
   using ::Kokkos::is_detected;
+  using ::Kokkos::is_detected_convertible;
+  using ::Kokkos::is_detected_convertible_v;
+  using ::Kokkos::is_detected_exact;
   using ::Kokkos::is_detected_exact_v;
   using ::Kokkos::is_detected_v;
   using ::Kokkos::num_devices;
@@ -195,9 +212,11 @@ export {
   // std replacements (other than math)
   using ::Kokkos::abort;
   using ::Kokkos::Array;
+  using ::Kokkos::begin;
   using ::Kokkos::clamp;
   using ::Kokkos::complex;
   using ::Kokkos::conj;
+  using ::Kokkos::end;
   using ::Kokkos::get;
   using ::Kokkos::imag;
   using ::Kokkos::kokkos_swap;
@@ -206,15 +225,19 @@ export {
   using ::Kokkos::min;
   using ::Kokkos::minmax;
   using ::Kokkos::pair;
+  using ::Kokkos::polar;
   using ::Kokkos::printf;
   using ::Kokkos::real;
   using ::Kokkos::tie;
+  using ::Kokkos::to_array;
 
   // reducers
   using ::Kokkos::BAnd;
   using ::Kokkos::BOr;
   using ::Kokkos::FirstLoc;
   using ::Kokkos::FirstLocScalar;
+  using ::Kokkos::is_reducer;
+  using ::Kokkos::is_reducer_v;
   using ::Kokkos::LAnd;
   using ::Kokkos::LastLoc;
   using ::Kokkos::LastLocScalar;
@@ -274,6 +297,7 @@ export {
   using ::Kokkos::bit_ceil;
   using ::Kokkos::bit_floor;
   using ::Kokkos::bit_width;
+  using ::Kokkos::byteswap;
   using ::Kokkos::countl_one;
   using ::Kokkos::countl_zero;
   using ::Kokkos::countr_one;
@@ -371,74 +395,199 @@ export {
   using ::Kokkos::atomic_sub_fetch;
   using ::Kokkos::atomic_xor;
   using ::Kokkos::atomic_xor_fetch;
+  using ::Kokkos::load_fence;
   using ::Kokkos::memory_fence;
+  using ::Kokkos::safe_load;
+  using ::Kokkos::store_fence;
   using ::Kokkos::volatile_load;
+  using ::Kokkos::volatile_store;
 
   // math functions
   using ::Kokkos::abs;
   using ::Kokkos::acos;
+  using ::Kokkos::acosf;
+  using ::Kokkos::acosl;
   using ::Kokkos::acosh;
+  using ::Kokkos::acoshf;
+  using ::Kokkos::acoshl;
   using ::Kokkos::asin;
+  using ::Kokkos::asinf;
+  using ::Kokkos::asinl;
   using ::Kokkos::asinh;
+  using ::Kokkos::asinhf;
+  using ::Kokkos::asinhl;
   using ::Kokkos::atan;
+  using ::Kokkos::atanf;
+  using ::Kokkos::atanl;
   using ::Kokkos::atan2;
+  using ::Kokkos::atan2f;
+  using ::Kokkos::atan2l;
   using ::Kokkos::atanh;
+  using ::Kokkos::atanhf;
+  using ::Kokkos::atanhl;
   using ::Kokkos::cbrt;
+  using ::Kokkos::cbrtf;
+  using ::Kokkos::cbrtl;
   using ::Kokkos::ceil;
+  using ::Kokkos::ceilf;
+  using ::Kokkos::ceill;
   using ::Kokkos::copysign;
+  using ::Kokkos::copysignf;
+  using ::Kokkos::copysignl;
   using ::Kokkos::cos;
+  using ::Kokkos::cosf;
+  using ::Kokkos::cosl;
   using ::Kokkos::cosh;
+  using ::Kokkos::coshf;
+  using ::Kokkos::coshl;
   using ::Kokkos::erf;
+  using ::Kokkos::erff;
+  using ::Kokkos::erfl;
   using ::Kokkos::erfc;
+  using ::Kokkos::erfcf;
+  using ::Kokkos::erfcl;
   using ::Kokkos::exp;
+  using ::Kokkos::expf;
+  using ::Kokkos::expl;
   using ::Kokkos::exp2;
+  using ::Kokkos::exp2f;
+  using ::Kokkos::exp2l;
   using ::Kokkos::expm1;
+  using ::Kokkos::expm1f;
+  using ::Kokkos::expm1l;
   using ::Kokkos::fabs;
+  using ::Kokkos::fabsf;
+  using ::Kokkos::fabsl;
+  using ::Kokkos::fdim;
+  using ::Kokkos::fdimf;
+  using ::Kokkos::fdiml;
   using ::Kokkos::floor;
+  using ::Kokkos::floorf;
+  using ::Kokkos::floorl;
   using ::Kokkos::fma;
+  using ::Kokkos::fmaf;
+  using ::Kokkos::fmal;
   using ::Kokkos::fmax;
+  using ::Kokkos::fmaxf;
+  using ::Kokkos::fmaxl;
   using ::Kokkos::fmin;
+  using ::Kokkos::fminf;
+  using ::Kokkos::fminl;
   using ::Kokkos::fmod;
+  using ::Kokkos::fmodf;
+  using ::Kokkos::fmodl;
   using ::Kokkos::hypot;
+  using ::Kokkos::hypotf;
+  using ::Kokkos::hypotl;
   using ::Kokkos::isfinite;
   using ::Kokkos::isinf;
   using ::Kokkos::isnan;
   using ::Kokkos::lgamma;
+  using ::Kokkos::lgammaf;
+  using ::Kokkos::lgammal;
   using ::Kokkos::log;
+  using ::Kokkos::logf;
+  using ::Kokkos::logl;
   using ::Kokkos::log10;
+  using ::Kokkos::log10f;
+  using ::Kokkos::log10l;
   using ::Kokkos::log1p;
+  using ::Kokkos::log1pf;
+  using ::Kokkos::log1pl;
   using ::Kokkos::log2;
+  using ::Kokkos::log2f;
+  using ::Kokkos::log2l;
   using ::Kokkos::logb;
+  using ::Kokkos::logbf;
+  using ::Kokkos::logbl;
+  using ::Kokkos::nan;
+  using ::Kokkos::nanf;
+  using ::Kokkos::nanl;
   using ::Kokkos::nearbyint;
+  using ::Kokkos::nearbyintf;
+  using ::Kokkos::nearbyintl;
   using ::Kokkos::nextafter;
+  using ::Kokkos::nextafterf;
+  using ::Kokkos::nextafterl;
   using ::Kokkos::pow;
+  using ::Kokkos::powf;
+  using ::Kokkos::powl;
   using ::Kokkos::remainder;
+  using ::Kokkos::remainderf;
+  using ::Kokkos::remainderl;
   using ::Kokkos::round;
+  using ::Kokkos::roundf;
+  using ::Kokkos::roundl;
   using ::Kokkos::rsqrt;
+  using ::Kokkos::rsqrtf;
+  using ::Kokkos::rsqrtl;
+  using ::Kokkos::signbit;
   using ::Kokkos::sin;
+  using ::Kokkos::sinf;
+  using ::Kokkos::sinl;
   using ::Kokkos::sinh;
+  using ::Kokkos::sinhf;
+  using ::Kokkos::sinhl;
   using ::Kokkos::sqrt;
+  using ::Kokkos::sqrtf;
+  using ::Kokkos::sqrtl;
   using ::Kokkos::tan;
+  using ::Kokkos::tanf;
+  using ::Kokkos::tanl;
   using ::Kokkos::tanh;
+  using ::Kokkos::tanhf;
+  using ::Kokkos::tanhl;
   using ::Kokkos::tgamma;
+  using ::Kokkos::tgammaf;
+  using ::Kokkos::tgammal;
   using ::Kokkos::trunc;
+  using ::Kokkos::truncf;
+  using ::Kokkos::truncl;
+  namespace Experimental {
+  using ::Kokkos::Experimental::cyl_bessel_h10;
+  using ::Kokkos::Experimental::cyl_bessel_h11;
+  using ::Kokkos::Experimental::cyl_bessel_h20;
+  using ::Kokkos::Experimental::cyl_bessel_h21;
+  using ::Kokkos::Experimental::cyl_bessel_i0;
+  using ::Kokkos::Experimental::cyl_bessel_i1;
+  using ::Kokkos::Experimental::cyl_bessel_j0;
+  using ::Kokkos::Experimental::cyl_bessel_j1;
+  using ::Kokkos::Experimental::cyl_bessel_k0;
+  using ::Kokkos::Experimental::cyl_bessel_k1;
+  using ::Kokkos::Experimental::cyl_bessel_y0;
+  using ::Kokkos::Experimental::cyl_bessel_y1;
+  using ::Kokkos::Experimental::erf;
+  using ::Kokkos::Experimental::erfcx;
+  using ::Kokkos::Experimental::expint1;
+  }
 
   // numbers
   namespace numbers {
+  using ::Kokkos::numbers::e;
   using ::Kokkos::numbers::e_v;
+  using ::Kokkos::numbers::egamma;
   using ::Kokkos::numbers::egamma_v;
+  using ::Kokkos::numbers::inv_pi;
   using ::Kokkos::numbers::inv_pi_v;
+  using ::Kokkos::numbers::inv_sqrt3;
   using ::Kokkos::numbers::inv_sqrt3_v;
+  using ::Kokkos::numbers::inv_sqrtpi;
   using ::Kokkos::numbers::inv_sqrtpi_v;
+  using ::Kokkos::numbers::ln10;
   using ::Kokkos::numbers::ln10_v;
+  using ::Kokkos::numbers::ln2;
   using ::Kokkos::numbers::ln2_v;
   using ::Kokkos::numbers::log10e;
   using ::Kokkos::numbers::log10e_v;
+  using ::Kokkos::numbers::log2e;
   using ::Kokkos::numbers::log2e_v;
+  using ::Kokkos::numbers::phi;
   using ::Kokkos::numbers::phi_v;
   using ::Kokkos::numbers::pi;
   using ::Kokkos::numbers::pi_v;
+  using ::Kokkos::numbers::sqrt2;
   using ::Kokkos::numbers::sqrt2_v;
+  using ::Kokkos::numbers::sqrt3;
   using ::Kokkos::numbers::sqrt3_v;
   }  // namespace numbers
 
@@ -540,6 +689,8 @@ export {
   // Crs
   using ::Kokkos::count_and_fill_crs;
   using ::Kokkos::Crs;
+  using ::Kokkos::get_crs_row_map_from_counts;
+  using ::Kokkos::get_crs_transpose_counts;
   using ::Kokkos::transpose_crs;
 
   // mdspan
@@ -573,5 +724,9 @@ export {
   using ::Kokkos::operator>>;
   using ::Kokkos::operator==;
   using ::Kokkos::operator!=;
+  using ::Kokkos::operator<;
+  using ::Kokkos::operator<=;
+  using ::Kokkos::operator>;
+  using ::Kokkos::operator>=;
   }  // namespace Kokkos
 }
