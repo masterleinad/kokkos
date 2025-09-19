@@ -94,7 +94,7 @@ jobs:
             distro: 'fedora:latest'
             cxx: 'g++'
             cmake_build_type: 'RelWithDebInfo'
-            backend: 'Serial'
+            backend: 'SERIAL'
             stdcxx: '20'
             cmake_extra_opts: '-DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"'
           - arch: 'x64'
