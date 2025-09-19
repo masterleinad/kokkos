@@ -78,8 +78,6 @@ export {
   using ::Kokkos::has_shared_host_pinned_space;
   using ::Kokkos::has_shared_space;
   using ::Kokkos::HostSpace;
-  using ::Kokkos::ScratchMemorySpace;
-  using ::Kokkos::ScratchRequest;
   using ::Kokkos::is_device;
   using ::Kokkos::is_device_v;
   using ::Kokkos::is_execution_space;
@@ -87,6 +85,8 @@ export {
   using ::Kokkos::is_memory_space;
   using ::Kokkos::is_memory_space_v;
   using ::Kokkos::is_space;
+  using ::Kokkos::ScratchMemorySpace;
+  using ::Kokkos::ScratchRequest;
 #ifdef KOKKOS_HAS_SHARED_SPACE
   using ::Kokkos::SharedSpace;
 #endif
@@ -138,7 +138,7 @@ export {
   namespace Experimental {
   using ::Kokkos::Experimental::local_deep_copy;
   using ::Kokkos::Experimental::local_deep_copy_contiguous;
-  }
+  }  // namespace Experimental
 
   // execution policies
   using ::Kokkos::AUTO;
@@ -183,8 +183,8 @@ export {
   }  // namespace Experimental
 
   // miscellaneous
-  using ::Kokkos::detected_t;
   using ::Kokkos::detected_or_t;
+  using ::Kokkos::detected_t;
   using ::Kokkos::is_detected;
   using ::Kokkos::is_detected_convertible;
   using ::Kokkos::is_detected_convertible_v;
@@ -406,25 +406,25 @@ export {
   using ::Kokkos::abs;
   using ::Kokkos::acos;
   using ::Kokkos::acosf;
-  using ::Kokkos::acosl;
   using ::Kokkos::acosh;
   using ::Kokkos::acoshf;
   using ::Kokkos::acoshl;
+  using ::Kokkos::acosl;
   using ::Kokkos::asin;
   using ::Kokkos::asinf;
-  using ::Kokkos::asinl;
   using ::Kokkos::asinh;
   using ::Kokkos::asinhf;
   using ::Kokkos::asinhl;
+  using ::Kokkos::asinl;
   using ::Kokkos::atan;
-  using ::Kokkos::atanf;
-  using ::Kokkos::atanl;
   using ::Kokkos::atan2;
   using ::Kokkos::atan2f;
   using ::Kokkos::atan2l;
+  using ::Kokkos::atanf;
   using ::Kokkos::atanh;
   using ::Kokkos::atanhf;
   using ::Kokkos::atanhl;
+  using ::Kokkos::atanl;
   using ::Kokkos::cbrt;
   using ::Kokkos::cbrtf;
   using ::Kokkos::cbrtl;
@@ -436,22 +436,22 @@ export {
   using ::Kokkos::copysignl;
   using ::Kokkos::cos;
   using ::Kokkos::cosf;
-  using ::Kokkos::cosl;
   using ::Kokkos::cosh;
   using ::Kokkos::coshf;
   using ::Kokkos::coshl;
+  using ::Kokkos::cosl;
   using ::Kokkos::erf;
-  using ::Kokkos::erff;
-  using ::Kokkos::erfl;
   using ::Kokkos::erfc;
   using ::Kokkos::erfcf;
   using ::Kokkos::erfcl;
+  using ::Kokkos::erff;
+  using ::Kokkos::erfl;
   using ::Kokkos::exp;
-  using ::Kokkos::expf;
-  using ::Kokkos::expl;
   using ::Kokkos::exp2;
   using ::Kokkos::exp2f;
   using ::Kokkos::exp2l;
+  using ::Kokkos::expf;
+  using ::Kokkos::expl;
   using ::Kokkos::expm1;
   using ::Kokkos::expm1f;
   using ::Kokkos::expm1l;
@@ -486,8 +486,6 @@ export {
   using ::Kokkos::lgammaf;
   using ::Kokkos::lgammal;
   using ::Kokkos::log;
-  using ::Kokkos::logf;
-  using ::Kokkos::logl;
   using ::Kokkos::log10;
   using ::Kokkos::log10f;
   using ::Kokkos::log10l;
@@ -500,6 +498,8 @@ export {
   using ::Kokkos::logb;
   using ::Kokkos::logbf;
   using ::Kokkos::logbl;
+  using ::Kokkos::logf;
+  using ::Kokkos::logl;
   using ::Kokkos::nan;
   using ::Kokkos::nanf;
   using ::Kokkos::nanl;
@@ -524,19 +524,19 @@ export {
   using ::Kokkos::signbit;
   using ::Kokkos::sin;
   using ::Kokkos::sinf;
-  using ::Kokkos::sinl;
   using ::Kokkos::sinh;
   using ::Kokkos::sinhf;
   using ::Kokkos::sinhl;
+  using ::Kokkos::sinl;
   using ::Kokkos::sqrt;
   using ::Kokkos::sqrtf;
   using ::Kokkos::sqrtl;
   using ::Kokkos::tan;
   using ::Kokkos::tanf;
-  using ::Kokkos::tanl;
   using ::Kokkos::tanh;
   using ::Kokkos::tanhf;
   using ::Kokkos::tanhl;
+  using ::Kokkos::tanl;
   using ::Kokkos::tgamma;
   using ::Kokkos::tgammaf;
   using ::Kokkos::tgammal;
@@ -559,7 +559,7 @@ export {
   using ::Kokkos::Experimental::erf;
   using ::Kokkos::Experimental::erfcx;
   using ::Kokkos::Experimental::expint1;
-  }
+  }  // namespace Experimental
 
   // numbers
   namespace numbers {
