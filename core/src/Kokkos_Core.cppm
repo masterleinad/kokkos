@@ -100,10 +100,13 @@ export {
   using ::Kokkos::SharedHostPinnedSpace;
 #endif
 
+//mdspan
+
+
   // View-related
 using ::Kokkos::is_memory_traits;
 using ::Kokkos::is_memory_traits_v;
-using ::Kokkos::layout_stride;
+using ::Kokkos::MDSpan::layout_stride;
   using ::Kokkos::is_array_layout;
   using ::Kokkos::is_array_layout_v;
   using ::Kokkos::ALL;
@@ -141,23 +144,23 @@ using ::Kokkos::layout_stride;
   using ::Kokkos::Experimental::EmptyViewHooks;
   using ::Kokkos::Experimental::PrependExtent;
   using ::Kokkos::Experimental::SubscribableViewHooks;
-  using ::Kokkos::Experimental::dims;
+  using ::Kokkos::MDSpan::Experimental::dims;
   using ::Kokkos::Experimental::is_hooks_policy;
   using ::Kokkos::Experimental::is_hooks_policy_v;
   using ::Kokkos::view_alloc;
   using ::Kokkos::view_wrap;
   using ::Kokkos::ViewTraits;
   using ::Kokkos::WithoutInitializing;
-  using ::Kokkos::strided_slice;
-  using ::Kokkos::submdspan;
-  using ::Kokkos::submdspan_extents;
+  using ::Kokkos::MDSpan::strided_slice;
+  using ::Kokkos::MDSpan::submdspan;
+  using ::Kokkos::MDSpan::submdspan_extents;
   using ::Kokkos::ViewAllocateWithoutInitializing;
   using ::Kokkos::common_view_alloc_prop;
-  using ::Kokkos::mdspan_non_standard;
-  using ::Kokkos::mdspan_non_standard_tag;
-  using ::Kokkos::full_extent;
-  using ::Kokkos::full_extent_t;
-  using ::Kokkos::submdspan_mapping_result;
+  using ::Kokkos::MDSpan::mdspan_non_standard;
+  using ::Kokkos::MDSpan::mdspan_non_standard_tag;
+  using ::Kokkos::MDSpan::full_extent;
+  using ::Kokkos::MDSpan::full_extent_t;
+  using ::Kokkos::MDSpan::submdspan_mapping_result;
   namespace Experimental {
   using ::Kokkos::Experimental::local_deep_copy;
   using ::Kokkos::Experimental::local_deep_copy_contiguous;
@@ -816,17 +819,17 @@ using ::Kokkos::CountAndFillBase;
   using ::Kokkos::transpose_crs;
 
   // mdspan
-  using ::Kokkos::default_accessor;
-  using ::Kokkos::dextents;
-  using ::Kokkos::dynamic_extent;
-  using ::Kokkos::extents;
-  using ::Kokkos::layout_left;
-  using ::Kokkos::layout_right;
-  using ::Kokkos::mdspan;
+  using ::Kokkos::MDSpan::default_accessor;
+  using ::Kokkos::MDSpan::dextents;
+  using ::Kokkos::MDSpan::dynamic_extent;
+  using ::Kokkos::MDSpan::extents;
+  using ::Kokkos::MDSpan::layout_left;
+  using ::Kokkos::MDSpan::layout_right;
+  using ::Kokkos::MDSpan::mdspan;
   namespace Experimental {
   using ::Kokkos::Experimental::Extents;
-  using ::Kokkos::Experimental::layout_left_padded;
-  using ::Kokkos::Experimental::layout_right_padded;
+  using ::Kokkos::MDSpan::Experimental::layout_left_padded;
+  using ::Kokkos::MDSpan::Experimental::layout_right_padded;
   }  // namespace Experimental
 
   // UniqueToken

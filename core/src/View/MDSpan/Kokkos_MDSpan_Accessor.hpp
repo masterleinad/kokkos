@@ -212,7 +212,7 @@ struct AtomicAccessorRelaxed {
             std::enable_if_t<std::is_convertible_v<
                 OtherElementType (*)[], element_type (*)[]>>* = nullptr>
   KOKKOS_FUNCTION constexpr AtomicAccessorRelaxed(
-      Kokkos::default_accessor<OtherElementType>) noexcept {}
+      Kokkos::MDSpan::default_accessor<OtherElementType>) noexcept {}
 
   template <class OtherElementType,
             std::enable_if_t<std::is_convertible_v<
@@ -223,8 +223,8 @@ struct AtomicAccessorRelaxed {
   template <class OtherElementType,
             std::enable_if_t<std::is_convertible_v<
                 element_type (*)[], OtherElementType (*)[]>>* = nullptr>
-  KOKKOS_FUNCTION explicit operator default_accessor<OtherElementType>() const {
-    return default_accessor<OtherElementType>{};
+  KOKKOS_FUNCTION explicit operator Kokkos::MDSpan::default_accessor<OtherElementType>() const {
+    return Kokkos::MDSpan::default_accessor<OtherElementType>{};
   }
 
   KOKKOS_FUNCTION
@@ -418,7 +418,7 @@ class ReferenceCountedAccessor {
             class = std::enable_if_t<std::is_convertible_v<
                 OtherElementType (*)[], element_type (*)[]>>>
   KOKKOS_FUNCTION constexpr ReferenceCountedAccessor(
-      const default_accessor<OtherElementType>&) {}
+      const Kokkos::MDSpan::default_accessor<OtherElementType>&) {}
 
   template <class DstAccessor,
             typename = std::enable_if_t<
@@ -468,7 +468,7 @@ template <class ElementType, class MemorySpace>
 using CheckedReferenceCountedAccessor =
     SpaceAwareAccessor<MemorySpace,
                        ReferenceCountedAccessor<ElementType, MemorySpace,
-                                                default_accessor<ElementType>>>;
+                                                Kokkos::MDSpan::default_accessor<ElementType>>>;
 
 template <class ElementType, class MemorySpace,
           class MemoryScope = desul::MemoryScopeDevice>

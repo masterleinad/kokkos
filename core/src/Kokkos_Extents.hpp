@@ -85,7 +85,7 @@ struct _parse_impl {
 template <class T, size_t... ExtentSpec>
 struct _parse_impl<T*, Kokkos::Experimental::Extents<ExtentSpec...>,
                    std::enable_if_t<_all_remaining_extents_dynamic<T>::value>>
-    : _parse_impl<T, Kokkos::Experimental::Extents<Kokkos::dynamic_extent,
+    : _parse_impl<T, Kokkos::Experimental::Extents<Kokkos::MDSpan::dynamic_extent,
                                                    ExtentSpec...>> {};
 
 // int*(*[x])[y] should still work also (meaning int[][x][][y])
@@ -96,7 +96,7 @@ struct _parse_impl<
   using _next = Kokkos::Experimental::AppendExtent<
       typename _parse_impl<T, Kokkos::Experimental::Extents<ExtentSpec...>,
                            void>::type,
-      Kokkos::dynamic_extent>;
+      Kokkos::MDSpan::dynamic_extent>;
   using type = typename _next::type;
 };
 
@@ -123,7 +123,7 @@ struct ApplyExtent {
 };
 
 template <class ValueType>
-struct ApplyExtent<ValueType, Kokkos::dynamic_extent> {
+struct ApplyExtent<ValueType, Kokkos::MDSpan::dynamic_extent> {
   using type = ValueType*;
 };
 
@@ -138,13 +138,13 @@ struct ApplyExtent<ValueType*, Ext> {
 };
 
 template <class ValueType>
-struct ApplyExtent<ValueType*, dynamic_extent> {
-  using type = typename ApplyExtent<ValueType, dynamic_extent>::type*;
+struct ApplyExtent<ValueType*, Kokkos::MDSpan::dynamic_extent> {
+  using type = typename ApplyExtent<ValueType, Kokkos::MDSpan::dynamic_extent>::type*;
 };
 
 template <class ValueType, unsigned N>
-struct ApplyExtent<ValueType[N], dynamic_extent> {
-  using type = typename ApplyExtent<ValueType, dynamic_extent>::type[N];
+struct ApplyExtent<ValueType[N], Kokkos::MDSpan::dynamic_extent> {
+  using type = typename ApplyExtent<ValueType, Kokkos::MDSpan::dynamic_extent>::type[N];
 };
 
 }  // end namespace Impl
