@@ -2,6 +2,7 @@ name: github-Linux
 
 on:
   workflow_call:
+  push:
 
 concurrency:
   group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}-linux-x64
@@ -93,7 +94,7 @@ jobs:
             distro: 'fedora:latest'
             cxx: 'g++'
             cmake_build_type: 'RelWithDebInfo'
-            backend: 'HPX'
+            backend: 'Serial'
             stdcxx: '20'
             cmake_extra_opts: '-DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*"'
           - arch: 'x64'
