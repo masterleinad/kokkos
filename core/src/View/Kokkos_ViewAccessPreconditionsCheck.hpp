@@ -79,7 +79,7 @@ KOKKOS_FUNCTION void runtime_check_memory_access_violation(
 template <class IndexType, std::size_t... Extents, class... Indices,
           std::size_t... Enumerate>
 KOKKOS_FUNCTION bool within_range(
-    Kokkos::MDSpan::extents<IndexType, Extents...> const &exts,
+    Kokkos::extents<IndexType, Extents...> const &exts,
     std::index_sequence<Enumerate...>, Indices... indices) {
   // FIXME[CUDA11]: This is written so weirdly to avoid warnings with CUDA 11
   // Without the workaround this could just be written as:
@@ -121,7 +121,7 @@ KOKKOS_FUNCTION constexpr char *append_formatted_multidimensional_index(
 
 template <class IndexType, size_t... Extents, std::size_t... Enumerate>
 KOKKOS_FUNCTION void print_extents(
-    char *dest, Kokkos::MDSpan::extents<IndexType, Extents...> const &exts,
+    char *dest, Kokkos::extents<IndexType, Extents...> const &exts,
     std::index_sequence<Enumerate...>) {
   append_formatted_multidimensional_index(dest, exts.extent(Enumerate)...);
 }

@@ -293,15 +293,15 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
     using LayoutType = typename mdspan_type::layout_type;
     if (r >= static_cast<iType>(rank())) {
       if constexpr (rank() == 0) return 1;
-      if constexpr (std::is_same_v<LayoutType, Kokkos::MDSpan::layout_right> ||
+      if constexpr (std::is_same_v<LayoutType, layout_right> ||
                     Impl::IsLayoutRightPadded<LayoutType>::value) {
         return 1;
       }
-      if constexpr (std::is_same_v<LayoutType, Kokkos::MDSpan::layout_left> ||
+      if constexpr (std::is_same_v<LayoutType, layout_left> ||
                     Impl::IsLayoutLeftPadded<LayoutType>::value) {
         return base_t::stride(rank() - 1) * extent(rank() - 1);
       }
-      if constexpr (std::is_same_v<LayoutType, Kokkos::MDSpan::layout_stride>) {
+      if constexpr (std::is_same_v<LayoutType, layout_stride>) {
         return 0;
       }
     }
@@ -608,7 +608,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   KOKKOS_FUNCTION
   explicit View(const typename base_t::data_handle_type& handle,
                 const LayoutStride& arg_layout)
-    requires(std::is_same_v<typename base_t::layout_type, Kokkos::MDSpan::layout_stride>)
+    requires(std::is_same_v<typename base_t::layout_type, layout_stride>)
       : base_t(
             handle,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
@@ -618,7 +618,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   explicit View(const typename base_t::data_handle_type& handle,
                 const LayoutLeft& arg_layout)
     requires(std::is_same_v<typename base_t::layout_type,
-                            Kokkos::MDSpan::Experimental::layout_left_padded<> >)
+                            Experimental::layout_left_padded<> >)
       : base_t(
             handle,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
@@ -628,7 +628,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   explicit View(const typename base_t::data_handle_type& handle,
                 const LayoutRight& arg_layout)
     requires(std::is_same_v<typename base_t::layout_type,
-                            Kokkos::MDSpan::Experimental::layout_right_padded<> >)
+                            Experimental::layout_right_padded<> >)
       : base_t(
             handle,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
@@ -637,7 +637,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   KOKKOS_FUNCTION
   explicit View(const typename base_t::data_handle_type& handle,
                 const LayoutLeft& arg_layout)
-    requires(std::is_same_v<typename base_t::layout_type, Kokkos::MDSpan::layout_left>)
+    requires(std::is_same_v<typename base_t::layout_type, layout_left>)
       : base_t(
             handle,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
@@ -646,7 +646,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   KOKKOS_FUNCTION
   explicit View(const typename base_t::data_handle_type& handle,
                 const LayoutRight& arg_layout)
-    requires(std::is_same_v<typename base_t::layout_type, Kokkos::MDSpan::layout_right>)
+    requires(std::is_same_v<typename base_t::layout_type, layout_right>)
       : base_t(
             handle,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
@@ -1044,7 +1044,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
     if (static_cast<int>(r) >= static_cast<int>(base_t::extents_type::rank()))
       return 1;
     size_t value = base_t::extents_type::static_extent(r);
-    return value == Kokkos::MDSpan::dynamic_extent ? 0 : value;
+    return value == Kokkos::dynamic_extent ? 0 : value;
   }
 };
 

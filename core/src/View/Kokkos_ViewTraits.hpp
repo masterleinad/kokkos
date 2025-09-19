@@ -212,7 +212,7 @@ template <class Traits, class Enabled = void>
 struct AccessorFromViewTraits {
   using type =
       SpaceAwareAccessor<typename Traits::memory_space,
-                         Kokkos::MDSpan::default_accessor<typename Traits::value_type>>;
+                         default_accessor<typename Traits::value_type>>;
 };
 
 #ifdef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
@@ -222,7 +222,7 @@ struct AccessorFromViewTraits<
                              !Traits::memory_traits::is_atomic>> {
   using type =
       SpaceAwareAccessor<typename Traits::memory_space,
-                         Kokkos::MDSpan::default_accessor<typename Traits::value_type>>;
+                         default_accessor<typename Traits::value_type>>;
 };
 
 template <class Traits>
@@ -281,7 +281,7 @@ struct MDSpanViewTraits {
       std::is_same_v<Layout, typename LayoutFromArrayLayout<
                                  typename Traits::array_layout>::type>);
   using accessor_type = accessor_from_view_traits_t<Traits>;
-  using mdspan_type   = Kokkos::MDSpan::mdspan<typename Traits::value_type, extents_type,
+  using mdspan_type   = mdspan<typename Traits::value_type, extents_type,
                              mdspan_layout_type, accessor_type>;
 };
 
@@ -302,7 +302,7 @@ struct MDSpanViewTraits<Traits, ViewCustomArguments<IndexType, AccessorType>,
   using mdspan_layout_type = LayoutType;
   using accessor_type      = AccessorType;
   // This will static assert that accessor_type is legal
-  using mdspan_type = Kokkos::MDSpan::mdspan<typename Traits::value_type, extents_type,
+  using mdspan_type = mdspan<typename Traits::value_type, extents_type,
                              mdspan_layout_type, accessor_type>;
 };
 

@@ -40,14 +40,14 @@ template <class>
 struct IsLayoutRightPadded : std::false_type {};
 
 template <size_t Pad>
-struct IsLayoutRightPadded<::Kokkos::MDSpan::Experimental::layout_right_padded<Pad>>
+struct IsLayoutRightPadded<::Kokkos::Experimental::layout_right_padded<Pad>>
     : std::true_type {};
 
 template <class>
 struct IsLayoutLeftPadded : std::false_type {};
 
 template <size_t Pad>
-struct IsLayoutLeftPadded<::Kokkos::MDSpan::Experimental::layout_left_padded<Pad>>
+struct IsLayoutLeftPadded<::Kokkos::Experimental::layout_left_padded<Pad>>
     : std::true_type {};
 
 template <class ArrayLayout>
@@ -57,17 +57,17 @@ struct LayoutFromArrayLayout {
 
 template <>
 struct LayoutFromArrayLayout<LayoutLeft> {
-  using type = ::Kokkos::MDSpan::Experimental::layout_left_padded<Kokkos::MDSpan::dynamic_extent>;
+  using type = ::Kokkos::Experimental::layout_left_padded<dynamic_extent>;
 };
 
 template <>
 struct LayoutFromArrayLayout<LayoutRight> {
-  using type = ::Kokkos::MDSpan::Experimental::layout_right_padded<Kokkos::MDSpan::dynamic_extent>;
+  using type = ::Kokkos::Experimental::layout_right_padded<dynamic_extent>;
 };
 
 template <>
 struct LayoutFromArrayLayout<LayoutStride> {
-  using type = Kokkos::MDSpan::layout_stride;
+  using type = layout_stride;
 };
 
 template <class ArrayLayout, class MDSpanType>
@@ -113,13 +113,13 @@ KOKKOS_INLINE_FUNCTION auto array_layout_from_mapping(
 
     if constexpr (rank > 1 &&
                   std::is_same_v<typename mapping_type::layout_type,
-                                 Kokkos::MDSpan::Experimental::layout_left_padded<
-                                     Kokkos::MDSpan::dynamic_extent>>) {
+                                 Kokkos::Experimental::layout_left_padded<
+                                     dynamic_extent>>) {
       layout.stride = mapping.stride(1);
     }
     if constexpr (std::is_same_v<typename mapping_type::layout_type,
-                                 Kokkos::MDSpan::Experimental::layout_right_padded<
-                                     Kokkos::MDSpan::dynamic_extent>>) {
+                                 Kokkos::Experimental::layout_right_padded<
+                                     dynamic_extent>>) {
       if constexpr (rank == 2) {
         layout.stride = mapping.stride(0);
       }
@@ -139,17 +139,17 @@ KOKKOS_INLINE_FUNCTION auto mapping_from_array_layout_impl(
   using index_type   = typename MappingType::index_type;
   using extents_type = typename MappingType::extents_type;
   if constexpr (std::is_same_v<typename MappingType::layout_type,
-                               Kokkos::MDSpan::layout_left> ||
+                               layout_left> ||
                 std::is_same_v<typename MappingType::layout_type,
-                               Kokkos::MDSpan::layout_right>) {
+                               layout_right>) {
     return MappingType{
-        extents_type{ Kokkos::MDSpan::dextents<index_type, MappingType::extents_type::rank()>{
+        extents_type{dextents<index_type, MappingType::extents_type::rank()>{
             layout.dimension[Idx]...}}};
   } else {
     if (layout.stride == KOKKOS_IMPL_CTOR_DEFAULT_ARG ||
         extents_type::rank() < 2) {
       return MappingType{
-          extents_type{ Kokkos::MDSpan::dextents<index_type, MappingType::extents_type::rank()>{
+          extents_type{dextents<index_type, MappingType::extents_type::rank()>{
               layout.dimension[Idx]...}}};
     } else {
 // Handle DEFAULT_ARG, should be layout_dimension 0 or n -1
@@ -173,12 +173,12 @@ KOKKOS_INLINE_FUNCTION auto mapping_from_array_layout_impl(
 
       if (layout.stride == KOKKOS_IMPL_CTOR_DEFAULT_ARG) {
         return MappingType{extents_type{
-             Kokkos::MDSpan::dextents<index_type, MappingType::extents_type::rank()>{
+            dextents<index_type, MappingType::extents_type::rank()>{
                 layout.dimension[Idx]...}}};
       } else {
         return MappingType{
             extents_type{
-                 Kokkos::MDSpan::dextents<index_type, MappingType::extents_type::rank()>{
+                dextents<index_type, MappingType::extents_type::rank()>{
                     layout.dimension[Idx]...}},
             layout.stride};
       }
@@ -190,14 +190,14 @@ template <class MappingType, size_t... Idx>
 KOKKOS_INLINE_FUNCTION auto mapping_from_array_layout_impl(
     LayoutStride layout, std::index_sequence<Idx...>) {
   static_assert(
-      std::is_same_v<typename MappingType::layout_type, Kokkos::MDSpan::layout_stride>);
+      std::is_same_v<typename MappingType::layout_type, layout_stride>);
   using index_type = typename MappingType::index_type;
   index_type strides[MappingType::extents_type::rank()] = {
       layout.stride[Idx]...};
   return MappingType{
-      Kokkos::MDSpan::mdspan_non_standard_tag(),
+      mdspan_non_standard_tag(),
       static_cast<typename MappingType::extents_type>(
-           Kokkos::MDSpan::dextents<index_type, MappingType::extents_type::rank()>{
+          dextents<index_type, MappingType::extents_type::rank()>{
               layout.dimension[Idx]...}),
       strides};
 }
@@ -226,20 +226,20 @@ KOKKOS_INLINE_FUNCTION auto mapping_from_view_mapping(const VM &view_mapping) {
   std::size_t strides[VM::Rank];
   view_mapping.stride_fill(&strides[0]);
   if constexpr (std::is_same_v<typename mapping_type::layout_type,
-                               Kokkos::MDSpan::layout_stride>) {
-    return mapping_type(Kokkos::MDSpan::mdspan_non_standard,
+                               Kokkos::layout_stride>) {
+    return mapping_type(Kokkos::mdspan_non_standard,
                         extents_from_view_mapping<extents_type>(view_mapping),
                         strides);
   } else if constexpr (VM::Rank > 1 &&
                        std::is_same_v<typename mapping_type::layout_type,
-                                      Kokkos::MDSpan::Experimental::layout_left_padded<
-                                          Kokkos::MDSpan::dynamic_extent>>) {
+                                      Kokkos::Experimental::layout_left_padded<
+                                          Kokkos::dynamic_extent>>) {
     return mapping_type(extents_from_view_mapping<extents_type>(view_mapping),
                         strides[1]);
   } else if constexpr (VM::Rank > 1 &&
                        std::is_same_v<typename mapping_type::layout_type,
-                                      Kokkos::MDSpan::Experimental::layout_right_padded<
-                                          Kokkos::MDSpan::dynamic_extent>>) {
+                                      Kokkos::Experimental::layout_right_padded<
+                                          Kokkos::dynamic_extent>>) {
     return mapping_type(extents_from_view_mapping<extents_type>(view_mapping),
                         strides[VM::Rank - 2]);
   } else {

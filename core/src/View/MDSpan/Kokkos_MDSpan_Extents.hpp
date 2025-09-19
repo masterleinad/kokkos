@@ -51,7 +51,7 @@ struct ExtentFromDimension {
 // Kokkos uses a dimension of '0' to denote a dynamic dimension.
 template <>
 struct ExtentFromDimension<std::size_t{0}> {
-  static constexpr std::size_t value = Kokkos::MDSpan::dynamic_extent;
+  static constexpr std::size_t value = dynamic_extent;
 };
 
 template <std::size_t N>
@@ -60,7 +60,7 @@ struct DimensionFromExtent {
 };
 
 template <>
-struct DimensionFromExtent<Kokkos::MDSpan::dynamic_extent> {
+struct DimensionFromExtent<dynamic_extent> {
   static constexpr std::size_t value = std::size_t{0};
 };
 
@@ -71,7 +71,7 @@ template <class IndexType, class Dimension, std::size_t... Indices>
 struct ExtentsFromDimension<IndexType, Dimension,
                             std::index_sequence<Indices...>> {
   using type =
-      Kokkos::MDSpan::extents<IndexType,
+      extents<IndexType,
               ExtentFromDimension<Dimension::static_extent(Indices)>::value...>;
 };
 

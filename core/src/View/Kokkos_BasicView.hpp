@@ -79,10 +79,10 @@ struct KokkosSliceToMDSpanSliceImpl {
 
 template <>
 struct KokkosSliceToMDSpanSliceImpl<Kokkos::ALL_t> {
-  using type = Kokkos::MDSpan::full_extent_t;
+  using type = full_extent_t;
   KOKKOS_FUNCTION
   static constexpr decltype(auto) transform(Kokkos::ALL_t) {
-    return Kokkos::MDSpan::full_extent;
+    return full_extent;
   }
 };
 
@@ -149,7 +149,7 @@ template <class ElementType, class Extents, class LayoutPolicy,
 class BasicView {
  public:
   using mdspan_type =
-      Kokkos::MDSpan::mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>;
+      mdspan<ElementType, Extents, LayoutPolicy, AccessorPolicy>;
   using extents_type  = typename mdspan_type::extents_type;
   using layout_type   = typename mdspan_type::layout_type;
   using accessor_type = typename mdspan_type::accessor_type;
@@ -190,7 +190,7 @@ class BasicView {
     [[maybe_unused]] constexpr size_t rnk = mdspan_type::rank();
     if constexpr (!std::is_same_v<src_t, dst_t>) {
       if constexpr (Impl::IsLayoutLeftPadded<dst_t>::value) {
-        if constexpr (std::is_same_v<src_t, Kokkos::MDSpan::layout_stride>) {
+        if constexpr (std::is_same_v<src_t, layout_stride>) {
           index_type stride = 1;
           for (size_t r = 0; r < rnk; r++) {
             if (rhs.stride(r) != stride)
@@ -201,7 +201,7 @@ class BasicView {
         }
       }
       if constexpr (Impl::IsLayoutRightPadded<dst_t>::value) {
-        if constexpr (std::is_same_v<src_t, Kokkos::MDSpan::layout_stride>) {
+        if constexpr (std::is_same_v<src_t, layout_stride>) {
           index_type stride = 1;
           if constexpr (rnk > 0) {
             for (size_t r = rnk; r > 0; r--) {
@@ -214,8 +214,8 @@ class BasicView {
           }
         }
       }
-      if constexpr (std::is_same_v<dst_t, Kokkos::MDSpan::layout_left>) {
-        if constexpr (std::is_same_v<src_t, Kokkos::MDSpan::layout_stride>) {
+      if constexpr (std::is_same_v<dst_t, layout_left>) {
+        if constexpr (std::is_same_v<src_t, layout_stride>) {
           index_type stride = 1;
           for (size_t r = 0; r < rnk; r++) {
             if (rhs.stride(r) != stride)
@@ -228,8 +228,8 @@ class BasicView {
             Kokkos::abort("View assignment must have compatible layouts");
         }
       }
-      if constexpr (std::is_same_v<dst_t, Kokkos::MDSpan::layout_right>) {
-        if constexpr (std::is_same_v<src_t, Kokkos::MDSpan::layout_stride>) {
+      if constexpr (std::is_same_v<dst_t, layout_right>) {
+        if constexpr (std::is_same_v<src_t, layout_stride>) {
           index_type stride = 1;
           if constexpr (rnk > 0) {
             for (size_t r = rnk; r > 0; r--) {
@@ -312,16 +312,16 @@ class BasicView {
 
   template <class OtherT, class OtherE, class OtherL, class OtherA>
     requires(std::is_constructible_v<mdspan_type,
-                                     Kokkos::MDSpan::mdspan<OtherT, OtherE, OtherL, OtherA>>)
+                                     mdspan<OtherT, OtherE, OtherL, OtherA>>)
   explicit(
       !std::is_convertible_v<const typename OtherL::template mapping<OtherE> &,
                              mapping_type> ||
       !std::is_convertible_v<const OtherA &, accessor_type>)
       KOKKOS_INLINE_FUNCTION
-      BasicView(const Kokkos::MDSpan::mdspan<OtherT, OtherE, OtherL, OtherA> &other,
+      BasicView(const mdspan<OtherT, OtherE, OtherL, OtherA> &other,
                 std::enable_if_t<
                     std::is_constructible_v<
-                        mdspan_type, Kokkos::MDSpan::mdspan<OtherT, OtherE, OtherL, OtherA>>,
+                        mdspan_type, mdspan<OtherT, OtherE, OtherL, OtherA>>,
                     void *> = nullptr)
       : m_ptr(other.data_handle()),
         m_map(other.mapping()),
@@ -602,11 +602,11 @@ class BasicView {
   template <class OtherElementType, class OtherExtents, class OtherLayoutPolicy,
             class OtherAccessor,
             typename = std::enable_if_t<
-                std::is_assignable_v<Kokkos::MDSpan::mdspan<OtherElementType, OtherExtents,
+                std::is_assignable_v<mdspan<OtherElementType, OtherExtents,
                                             OtherLayoutPolicy, OtherAccessor>,
                                      mdspan_type>>>
   KOKKOS_INLINE_FUNCTION constexpr
-  operator Kokkos::MDSpan::mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy,
+  operator mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy,
                   OtherAccessor>() const {
     return mdspan_type(m_ptr, m_map, m_acc);
   }
@@ -620,7 +620,7 @@ class BasicView {
                 typename OtherAccessorType::data_handle_type>>>
   KOKKOS_INLINE_FUNCTION constexpr auto to_mdspan() const {
     using ret_mdspan_type =
-        Kokkos::MDSpan::mdspan<typename mdspan_type::element_type,
+        mdspan<typename mdspan_type::element_type,
                typename mdspan_type::extents_type,
                typename mdspan_type::layout_type, OtherAccessorType>;
     return ret_mdspan_type(
@@ -636,7 +636,7 @@ class BasicView {
   KOKKOS_INLINE_FUNCTION constexpr auto to_mdspan(
       const OtherAccessorType &other_accessor) const {
     using ret_mdspan_type =
-        Kokkos::MDSpan::mdspan<element_type, extents_type, layout_type, OtherAccessorType>;
+        mdspan<element_type, extents_type, layout_type, OtherAccessorType>;
     return ret_mdspan_type(
         static_cast<typename OtherAccessorType::data_handle_type>(
             data_handle()),
