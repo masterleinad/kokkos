@@ -39,7 +39,8 @@ kokkos_enable_option(IMPL_CUDA_MALLOC_ASYNC OFF "Whether to enable CudaMallocAsy
 kokkos_enable_option(IMPL_NVHPC_AS_DEVICE_COMPILER OFF "Whether to allow nvc++ as Cuda device compiler")
 kokkos_enable_option(IMPL_CUDA_UNIFIED_MEMORY OFF "Whether to leverage unified memory architectures for CUDA")
 
-kokkos_enable_option(DEPRECATED_CODE_4 ON "Whether code deprecated in major release 4 is available")
+kokkos_enable_option(DEPRECATED_CODE_4 OFF "Whether code deprecated in major release 4 is available")
+kokkos_enable_option(DEPRECATED_CODE_5 ON "Whether code deprecated in major release 5 is available")
 kokkos_enable_option(DEPRECATION_WARNINGS ON "Whether to emit deprecation warnings")
 kokkos_enable_option(HIP_RELOCATABLE_DEVICE_CODE OFF "Whether to enable relocatable device code (RDC) for HIP")
 
@@ -85,6 +86,12 @@ kokkos_enable_option(COMPILER_WARNINGS OFF "Whether to print all compiler warnin
 kokkos_enable_option(TUNING OFF "Whether to create bindings for tuning tools")
 kokkos_enable_option(AGGRESSIVE_VECTORIZATION OFF "Whether to aggressively vectorize loops")
 kokkos_enable_option(COMPILE_AS_CMAKE_LANGUAGE OFF "Whether to use native cmake language support")
+if(Kokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE AND Kokkos_ENABLE_CUDA)
+  if(CMAKE_VERSION VERSION_LESS "3.25.2")
+    message(FATAL_ERROR "Building Kokkos with CUDA as language and c++20 requires CMake version 3.25.2 or higher.")
+  endif()
+endif()
+
 kokkos_enable_option(
   HIP_MULTIPLE_KERNEL_INSTANTIATIONS OFF
   "Whether multiple kernels are instantiated at compile time - improve performance but increase compile time"

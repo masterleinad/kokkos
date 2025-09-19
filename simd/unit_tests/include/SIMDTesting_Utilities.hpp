@@ -18,7 +18,12 @@
 #define KOKKOS_SIMD_TESTING_UTILITIES_HPP
 
 #include <gtest/gtest.h>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.simd;
+#else
 #include <Kokkos_SIMD.hpp>
+#endif
 #include <SIMDTesting_Ops.hpp>
 
 class gtest_checker {
@@ -49,9 +54,9 @@ class kokkos_checker {
     // double and a and b end up being different in long double but have the
     // same value when casted to float or double. (see
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=323#c109)
-    T const volatile va = a;
-    T const volatile vb = b;
-    if (va != vb)
+    T const volatile* const volatile pa = &a;
+    T const volatile* const volatile pb = &b;
+    if (*pa != *pb)
       Kokkos::abort("SIMD unit test equality condition failed on device");
 #else
     if (a != b)

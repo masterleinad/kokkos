@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 
 # scan source files for importing C++20 modules
 if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
@@ -153,7 +153,7 @@ elseif(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 set(Kokkos_VERSION_MAJOR 4)
-set(Kokkos_VERSION_MINOR 6)
+set(Kokkos_VERSION_MINOR 7)
 set(Kokkos_VERSION_PATCH 99)
 set(Kokkos_VERSION "${Kokkos_VERSION_MAJOR}.${Kokkos_VERSION_MINOR}.${Kokkos_VERSION_PATCH}")
 message(STATUS "Kokkos version: ${Kokkos_VERSION}")
