@@ -115,7 +115,7 @@ if(NOT desul_FOUND)
     PATTERN "*.hpp"
   )
 
-  file(STRINGS "${KOKKOS_SOURCE_DIR}/scripts/desul-hash.txt" KOKKOS_DESUL_HASH)
+  file(STRINGS "${KOKKOS_SOURCE_DIR}/tpls/desul-hash.txt" KOKKOS_DESUL_HASH)
   global_set(KOKKOS_DESUL_VERSION "${KOKKOS_DESUL_HASH}")
   message(STATUS "Using bundled desul_atomics copy (desul/desul@${KOKKOS_DESUL_HASH})")
 else()
@@ -157,7 +157,7 @@ if(Kokkos_ENABLE_IMPL_MDSPAN)
       PATTERN "*.hpp"
     )
 
-    file(STRINGS "${KOKKOS_SOURCE_DIR}/scripts/mdspan-hash.txt" KOKKOS_MDSPAN_HASH)
+    file(STRINGS "${KOKKOS_SOURCE_DIR}/tpls/mdspan-hash.txt" KOKKOS_MDSPAN_HASH)
     global_set(KOKKOS_MDSPAN_VERSION "${KOKKOS_MDSPAN_HASH}")
     message(STATUS "Using bundled mdspan copy (kokkos/mdspan@${KOKKOS_MDSPAN_HASH})")
   endif()
@@ -170,7 +170,6 @@ endif()
 kokkos_link_tpl(kokkoscore PUBLIC HWLOC)
 kokkos_link_tpl(kokkoscore PUBLIC CUDA)
 kokkos_link_tpl(kokkoscore PUBLIC HPX)
-kokkos_link_tpl(kokkoscore PUBLIC LIBDL)
 # On *nix-like systems (Linux, macOS) we need pthread for C++ std::thread
 if(NOT WIN32)
   kokkos_link_tpl(kokkoscore PUBLIC THREADS)
@@ -178,6 +177,7 @@ endif()
 if(NOT KOKKOS_ENABLE_COMPILE_AS_CMAKE_LANGUAGE)
   kokkos_link_tpl(kokkoscore PUBLIC ROCM)
 endif()
+kokkos_link_tpl(kokkoscore PUBLIC LIBQUADMATH)
 
 # FIXME: We need a proper solution to figure out whether to enable
 #        libatomic
@@ -195,4 +195,6 @@ if(Kokkos_ENABLE_OPENMP)
   target_link_libraries(kokkoscore PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-kokkos_link_tpl(kokkoscore PUBLIC LIBQUADMATH)
+if(Kokkos_ENABLE_LIBDL)
+  target_link_libraries(kokkoscore PUBLIC ${CMAKE_DL_LIBS})
+endif()

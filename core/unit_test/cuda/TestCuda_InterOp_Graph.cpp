@@ -97,15 +97,6 @@ TEST_F(TEST_CATEGORY_FIXTURE(GraphInterOp), count_nodes) {
 
 // Use native Cuda graph to generate a DOT representation.
 TEST_F(TEST_CATEGORY_FIXTURE(GraphInterOp), debug_dot_print) {
-#if defined(_GLIBCXX_RELEASE) && _GLIBCXX_RELEASE < 9
-  GTEST_SKIP()
-      << "The GNU C++ Library (libstdc++) versions less than 9.1 "
-         "require linking with `-lstdc++fs` when using std::filesystem";
-#elif defined(_LIBCPP_VERSION) && _LIBCPP_VERSION < 110000
-  GTEST_SKIP()
-      << "The LLVM C++ Standard Library (libc++) versions less than "
-         "11 require linking with `-lc++fs` when using std::filesystem";
-#else
   graph->instantiate();
 
   const auto dot = std::filesystem::temp_directory_path() / "cuda_graph.dot";
@@ -130,11 +121,13 @@ TEST_F(TEST_CATEGORY_FIXTURE(GraphInterOp), debug_dot_print) {
   ASSERT_TRUE(std::regex_search(buffer.str(), std::regex(expected)))
       << "Could not find expected signature regex " << std::quoted(expected)
       << " in " << dot;
-#endif
 }
 
 // Ensure that the graph has been instantiated with the default flag.
 TEST_F(TEST_CATEGORY_FIXTURE(GraphInterOp), instantiation_flags) {
+#if CUDA_VERSION < 12000
+  GTEST_SKIP() << "Graph instantiation flag inspection requires Cuda 12.";
+#else
   graph->instantiate();
   unsigned long long flags =
       Kokkos::Experimental::finite_max_v<unsigned long long>;
@@ -142,6 +135,7 @@ TEST_F(TEST_CATEGORY_FIXTURE(GraphInterOp), instantiation_flags) {
       cudaGraphExecGetFlags(graph->native_graph_exec(), &flags));
 
   ASSERT_EQ(flags, 0u);
+#endif
 }
 
 // Build a Kokkos::Graph from an existing cudaGraph_t.
