@@ -666,6 +666,7 @@ export {
   using ::Kokkos::Tools::Experimental::declare_optimization_goal;
   using ::Kokkos::Tools::Experimental::device_id;
   using ::Kokkos::Tools::Experimental::device_id_root;
+  using ::Kokkos::Tools::Experimental::DeviceType;
   using ::Kokkos::Tools::Experimental::devicetype_from_uint32t;
   using ::Kokkos::Tools::Experimental::end_context;
   using ::Kokkos::Tools::Experimental::EventSet;
@@ -734,6 +735,7 @@ export {
   using ::Kokkos::Tools::Experimental::set_start_profile_section_callback;
   using ::Kokkos::Tools::Experimental::set_stop_profile_section_callback;
   using ::Kokkos::Tools::Experimental::SingleDimensionalRangeTuner;
+  using ::Kokkos::Tools::Experimental::SpecialSynchronizationCases;
   using ::Kokkos::Tools::Experimental::TeamSizeTuner;
   using ::Kokkos::Tools::Experimental::toolInvokedFenceFunction;
   using ::Kokkos::Tools::Experimental::ToolProgrammingInterface;
