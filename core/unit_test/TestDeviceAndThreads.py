@@ -32,7 +32,18 @@ def GetFlag(flag, *extra_args):
     return int(p.stdout)
 
 def GetNumThreads(max_threads):
-    phys_cores_count = os.cpu_count()
+    args = []
+    name = platform.system()
+    if name == 'Darwin':
+        args = ['sysctl', '-n', 'hw.physicalcpu_max']
+    elif name == 'Linux':
+        args = ['nproc', '--all']
+    else:
+        args = ['echo %NUMBER_OF_PROCESSORS%']
+
+    result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = result.stdout.decode('utf-8')
+    phys_cores_count = int(output)
     looplist = [1] + [i*phys_cores_count for i in [1,2,3,4,5,6,7]] \
         if GetFlag("hwloc_enabled") else [1,2,3,4,5]
 
