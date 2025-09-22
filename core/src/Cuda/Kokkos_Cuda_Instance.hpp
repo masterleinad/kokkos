@@ -94,7 +94,7 @@ class CudaInternal {
   static int m_cudaArch;
   static int concurrency();
 
-  KOKKOS_EXPORT static cudaDeviceProp m_deviceProp;
+  KOKKOS_IMPL_EXPORT static cudaDeviceProp m_deviceProp;
 
   // Scratch Spaces for Reductions
   mutable std::size_t m_scratchSpaceCount;
@@ -121,10 +121,11 @@ class CudaInternal {
   bool was_finalized   = false;
 
   static std::set<int> cuda_devices;
-  KOKKOS_EXPORT static std::map<int, unsigned long*>
+  KOKKOS_IMPL_EXPORT static std::map<int, unsigned long*>
       constantMemHostStagingPerDevice;
-  KOKKOS_EXPORT static std::map<int, cudaEvent_t> constantMemReusablePerDevice;
-  KOKKOS_EXPORT static std::map<int, std::mutex> constantMemMutexPerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, cudaEvent_t>
+      constantMemReusablePerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, std::mutex> constantMemMutexPerDevice;
 
   static CudaInternal& singleton();
 

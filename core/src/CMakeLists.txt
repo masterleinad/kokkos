@@ -28,7 +28,7 @@ if(NOT desul_FOUND)
     endif()
   endif()
   if(BUILD_SHARED_LIBS)
-    set(DESUL_BUILD_SHARED_LIBS ON)
+    set(DESUL_IMPL_BUILD_SHARED_LIBS ON)
   endif()
   configure_file(
     ${KOKKOS_SOURCE_DIR}/tpls/desul/Config.hpp.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/desul/atomics/Config.hpp
@@ -138,7 +138,7 @@ kokkos_lib_include_directories(
 if(NOT desul_FOUND)
   target_include_directories(kokkoscore SYSTEM PUBLIC $<BUILD_INTERFACE:${KOKKOS_SOURCE_DIR}/tpls/desul/include>)
   if(BUILD_SHARED_LIBS)
-    target_compile_definitions(kokkoscore PRIVATE DESUL_EXPORT_SYMBOLS)
+    target_compile_definitions(kokkoscore PRIVATE DESUL_IMPL_EXPORT_SYMBOLS)
   endif()
 endif()
 

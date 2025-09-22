@@ -750,13 +750,13 @@ int g_cuda_space_factory_initialized =
     initialize_space_factory<Cuda>("150_Cuda");
 
 int CudaInternal::m_cudaArch = -1;
-KOKKOS_EXPORT cudaDeviceProp CudaInternal::m_deviceProp;
+KOKKOS_IMPL_EXPORT cudaDeviceProp CudaInternal::m_deviceProp;
 std::set<int> CudaInternal::cuda_devices = {};
-KOKKOS_EXPORT std::map<int, unsigned long *>
+KOKKOS_IMPL_EXPORT std::map<int, unsigned long *>
     CudaInternal::constantMemHostStagingPerDevice = {};
-KOKKOS_EXPORT std::map<int, cudaEvent_t>
+KOKKOS_IMPL_EXPORT std::map<int, cudaEvent_t>
     CudaInternal::constantMemReusablePerDevice = {};
-KOKKOS_EXPORT std::map<int, std::mutex>
+KOKKOS_IMPL_EXPORT std::map<int, std::mutex>
     CudaInternal::constantMemMutexPerDevice = {};
 
 }  // namespace Impl
