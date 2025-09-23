@@ -28,8 +28,8 @@ export {
   using ::Kokkos::Experimental::is_offset_view;
   using ::Kokkos::Experimental::is_offset_view_v;
 
-  using ::Kokkos::Experimental::IndexRange;
   using ::Kokkos::Experimental::index_list_type;
+  using ::Kokkos::Experimental::IndexRange;
   }  // namespace Experimental
 
   using ::Kokkos::create_mirror;
