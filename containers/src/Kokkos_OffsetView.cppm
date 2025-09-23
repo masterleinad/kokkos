@@ -30,6 +30,9 @@ export {
 
   using ::Kokkos::Experimental::index_list_type;
   using ::Kokkos::Experimental::IndexRange;
+
+  using ::Kokkos::Experimental::operator==;
+  using ::Kokkos::Experimental::operator!=;
   }  // namespace Experimental
 
   using ::Kokkos::create_mirror;
@@ -39,8 +42,5 @@ export {
   using ::Kokkos::deep_copy;
 
   using ::Kokkos::subview;
-
-  using ::Kokkos::Experimental::operator==;
-  using ::Kokkos::Experimental::operator!=;
   }  // namespace Kokkos
 }
