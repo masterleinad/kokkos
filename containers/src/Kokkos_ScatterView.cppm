@@ -35,6 +35,8 @@ export {
   using ::Kokkos::Experimental::ScatterDuplicated;
   using ::Kokkos::Experimental::ScatterNonDuplicated;
 
+  using ::Kokkos::Experimental::ScatterAccess;
+
   using ::Kokkos::Experimental::ScatterAtomic;
   using ::Kokkos::Experimental::ScatterNonAtomic;
 

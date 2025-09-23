@@ -27,6 +27,7 @@ export {
   using ::Kokkos::is_dyn_rank_view;
   using ::Kokkos::is_dyn_rank_view_v;
 
+  using ::Kokkos::Subdynrankview;
   using ::Kokkos::subdynrankview;
   using ::Kokkos::subview;
 

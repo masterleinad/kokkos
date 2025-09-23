@@ -25,6 +25,7 @@ export {
   using ::Kokkos::UnorderedMap;
 
   using ::Kokkos::UnorderedMapInsertOpTypes;
+  using ::Kokkos::UnorderedMapInsertResult;
 
   using ::Kokkos::create_mirror;
 
