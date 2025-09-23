@@ -109,8 +109,6 @@ function(KOKKOS_ADD_EXECUTABLE_AND_TEST ROOT_NAME)
       OR Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES
       OR Kokkos_ENABLE_SYCL
       OR Kokkos_ENABLE_HPX
-      OR Kokkos_ENABLE_IMPL_SKIP_NO_RTTI_FLAG
-      OR (KOKKOS_CXX_COMPILER_ID STREQUAL "NVIDIA" AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 11.3.0)
       OR (KOKKOS_CXX_COMPILER_ID STREQUAL "NVIDIA" AND KOKKOS_CXX_HOST_COMPILER_ID STREQUAL "MSVC"))
   )
     if(MSVC)
@@ -163,7 +161,6 @@ macro(KOKKOS_SETUP_BUILD_ENVIRONMENT)
     include(${KOKKOS_SRC_PATH}/cmake/kokkos_arch.cmake)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${Kokkos_SOURCE_DIR}/cmake/Modules/")
     include(${KOKKOS_SRC_PATH}/cmake/kokkos_tpls.cmake)
-    include(${KOKKOS_SRC_PATH}/cmake/kokkos_corner_cases.cmake)
   endif()
 endmacro()
 
@@ -316,9 +313,10 @@ function(KOKKOS_SET_LIBRARY_PROPERTIES LIBRARY_NAME)
   #exclude case of compiler_launcher. The launcher forwards to nvcc_wrapper and shadow the CXX compiler that CMake sees (compiler_launcher changes the compiler).
   #The CXX compiler CMake will invoke for the check is not able to consume the cuda flags if it is not nvcc_wrapper or clang+cuda.
   #FIXME_NVHPC nvc++ is failing the check spuriously with various version numbers.
+  #FIXME CLANG+RDC with std=c++20 and CMake 3.22+ the runtime is not linked in the CheckCompilerFlag leading to false positives
   if(NOT (KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)
-     AND (NOT (KOKKOS_ENABLE_CUDA) OR ("${CMAKE_CXX_COMPILER}" MATCHES "nvcc_wrapper") OR (${KOKKOS_CXX_COMPILER_ID}
-                                                                                           STREQUAL Clang))
+     AND (NOT (KOKKOS_ENABLE_CUDA) OR ("${CMAKE_CXX_COMPILER}" MATCHES "nvcc_wrapper")
+          OR (${KOKKOS_CXX_COMPILER_ID} STREQUAL Clang AND NOT KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE))
   )
     kokkos_check_flags(
       COMPILER
