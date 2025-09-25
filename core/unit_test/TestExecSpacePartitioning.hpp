@@ -52,9 +52,14 @@ void check_distinctive([[maybe_unused]] ExecSpace exec1,
     ASSERT_NE(exec1, exec2);
     // FIXME_OPENMP exec.concurrency() does not return thread pool size outside
     // of parallel regions
-    ASSERT_EQ(ExecSpace().impl_internal_space_instance()->thread_pool_size(),
-              exec1.impl_internal_space_instance()->thread_pool_size() +
-                  exec2.impl_internal_space_instance()->thread_pool_size());
+    if (ExecSpace().concurrency() >= 2)
+      ASSERT_EQ(ExecSpace().impl_internal_space_instance()->thread_pool_size(),
+                exec1.impl_internal_space_instance()->thread_pool_size() +
+                    exec2.impl_internal_space_instance()->thread_pool_size());
+    else {
+      ASSERT_EQ(exec1.impl_internal_space_instance()->thread_pool_size(), 1);
+      ASSERT_EQ(exec2.impl_internal_space_instance()->thread_pool_size(), 1);
+    }
   }
 #endif
 #ifdef KOKKOS_ENABLE_CUDA
@@ -151,13 +156,6 @@ void test_partitioning(TEST_EXECSPACE& instance0, TEST_EXECSPACE& instance1) {
 }
 
 TEST(TEST_CATEGORY, partitioning_by_args) {
-  if (TEST_EXECSPACE().concurrency() < 2
-#ifdef KOKKOS_ENABLE_SERIAL
-      && !std::is_same_v<TEST_EXECSPACE, Kokkos::Serial>
-#endif
-  )
-    GTEST_SKIP() << "The test needs concurrency >= 2";
-
   auto instances =
       Kokkos::Experimental::partition_space(TEST_EXECSPACE(), 1, 1);
   ASSERT_EQ(int(instances.size()), 2);
@@ -167,26 +165,12 @@ TEST(TEST_CATEGORY, partitioning_by_args) {
 }
 
 TEST(TEST_CATEGORY, partitioning_by_args_with_structured_bindings) {
-  if (TEST_EXECSPACE().concurrency() < 2
-#ifdef KOKKOS_ENABLE_SERIAL
-      && !std::is_same_v<TEST_EXECSPACE, Kokkos::Serial>
-#endif
-  )
-    GTEST_SKIP() << "The test needs concurrency >= 2";
-
   auto [instance0, instance1] =
       Kokkos::Experimental::partition_space(TEST_EXECSPACE(), 1, 1);
   test_partitioning(instance0, instance1);
 }
 
 TEST(TEST_CATEGORY, partitioning_by_vector) {
-  if (TEST_EXECSPACE().concurrency() < 2
-#ifdef KOKKOS_ENABLE_SERIAL
-      && !std::is_same_v<TEST_EXECSPACE, Kokkos::Serial>
-#endif
-  )
-    GTEST_SKIP() << "The test needs concurrency >= 2";
-
   // Make sure we can use a temporary as argument for weights
   auto instances = Kokkos::Experimental::partition_space(
       TEST_EXECSPACE(), std::vector<int> /*weights*/ {1, 1});

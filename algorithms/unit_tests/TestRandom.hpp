@@ -676,13 +676,6 @@ TEST(TEST_CATEGORY, Multi_streams) {
   }
 #endif
 
-  if (TEST_EXECSPACE().concurrency() < 2
-#ifdef KOKKOS_ENABLE_SERIAL
-      && !std::is_same_v<TEST_EXECSPACE, Kokkos::Serial>
-#endif
-  )
-    GTEST_SKIP() << "The test needs concurrency >= 2";
-
   using Pool64   = Kokkos::Random_XorShift64_Pool<ExecutionSpace>;
   using Pool1024 = Kokkos::Random_XorShift1024_Pool<ExecutionSpace>;
 
