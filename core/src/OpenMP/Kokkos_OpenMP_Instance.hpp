@@ -159,19 +159,10 @@ inline std::vector<int> calculate_omp_pool_sizes(
   int resources_left = main_pool_size;
   for (unsigned int i = 0; i < weights.size() - 1; ++i) {
     int instance_pool_size = (weights[i] / total_weight) * main_pool_size;
-    if (instance_pool_size == 0) {
-      Kokkos::abort("Kokkos::abort: Instance has no resource allocated to it");
-    }
-    pool_sizes[i] = instance_pool_size;
+    pool_sizes[i]          = std::max(instance_pool_size, 1);
     resources_left -= instance_pool_size;
   }
-  // Last instance get all resources left
-  if (resources_left <= 0) {
-    Kokkos::abort(
-        "Kokkos::abort: Partition not enough resources left to create the last "
-        "instance.");
-  }
-  pool_sizes[weights.size() - 1] = resources_left;
+  pool_sizes[weights.size() - 1] = std::max(resources_left, 1);
 
   return pool_sizes;
 }
