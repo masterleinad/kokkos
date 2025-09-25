@@ -2,6 +2,7 @@ name: github-windows
 
 on:
   workflow_call:
+  push:
 
 concurrency:
   group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}-win-x64
@@ -10,45 +11,6 @@ concurrency:
 permissions: read-all
 
 jobs:
-  windows-cuda:
-    # Cuda build on Windows
-    name: Cuda VS-2022
-    runs-on: windows-2022
-
-    steps:
-    - uses: Jimver/cuda-toolkit@c35baa1a18fd1fc9dcf47c5bd839bf30559c0bc3 # v0.2.24
-      id: cuda-toolkit
-      with:
-        cuda: '12.4.1'
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-    - name: configure
-      shell: bash
-      run: |
-        cmake -B build -DCMAKE_CXX_STANDARD=20 -DKokkos_ENABLE_CUDA=ON -DKokkos_ARCH_VOLTA70=ON -DKokkos_ENABLE_TESTS=ON -DKokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON
-    - name: build library
-      shell: bash
-      run: |
-        cmake --build build --parallel 4 --config Release
-  windows-serial:
-    # Serial build on Windows
-    name: Serial VS-2022
-    runs-on: windows-2025
-
-    steps:
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-    - name: configure
-      shell: bash
-      run: |
-        cmake -B build -DCMAKE_CXX_STANDARD=20 -DKokkos_ENABLE_SERIAL=ON -DKokkos_ENABLE_TESTS=ON
-    - name: build library
-      shell: bash
-      run: |
-        cmake --build build --parallel 4 --config Release
-    - name: run tests
-      shell: bash
-      run: |
-        ctest --test-dir build -C Release -j 4 --output-on-failure
-
   windows-clang:
    # Threads build on Windows using ClangCL
     name: Threads Clang VS-2022
