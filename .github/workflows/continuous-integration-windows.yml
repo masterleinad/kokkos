@@ -29,4 +29,4 @@ jobs:
     - name: run tests
       shell: bash
       run: |
-        ctest --test-dir build -C Release -j 4 --output-on-failure
+        ctest --test-dir build -C Release -j 4 --V

@@ -36,6 +36,11 @@ union Baz {
 using Lambda = decltype(func);
 
 TEST(defaultdevicetype, type_info) {
+  std::cout << TypeInfo<Foo>::name() << std::endl;
+  std::cout << TypeInfo<FooAlias>::name() << std::endl;
+  std::cout << TypeInfo<Bar>::name() << std::endl;
+  std::cout << TypeInfo<Baz>::name() << std::endl;
+  std::cout << TypeInfo<Lambda>::name() << std::endl;
 // clang-format off
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__)
 // can't do much
