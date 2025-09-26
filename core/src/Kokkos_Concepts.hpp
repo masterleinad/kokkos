@@ -145,15 +145,10 @@ namespace Kokkos {
   template <typename T>                                        \
   inline constexpr bool is_##CONCEPT##_v = is_##CONCEPT<T>::value;
 
-#if (defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
 #define KOKKOS_IMPL_IS_CONCEPT(CONCEPT, CXX20_CONCEPT) \
   KOKKOS_IMPL_IS_CONCEPT_IMPL(CONCEPT)                 \
   template <typename T>                                \
   concept CXX20_CONCEPT = is_##CONCEPT##_v<T>;
-#else
-#define KOKKOS_IMPL_IS_CONCEPT(CONCEPT, CXX20_CONCEPT) \
-  KOKKOS_IMPL_IS_CONCEPT_IMPL(CONCEPT)
-#endif
 
 // Public concept:
 
