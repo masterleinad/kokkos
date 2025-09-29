@@ -41,7 +41,7 @@ template <class ExecutionSpace>
 struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
                      Kokkos::Experimental::TypeErasedTag>
     : GraphNodeBackendSpecificDetails<ExecutionSpace>,
-      ExecutionSpaceInstanceStorage<ExecutionSpace> {
+      InstanceStorage<ExecutionSpace> {
  public:
   using node_ref_t =
       Kokkos::Experimental::GraphNodeRef<ExecutionSpace,
@@ -50,8 +50,7 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
 
  protected:
   using implementation_base_t = GraphNodeBackendSpecificDetails<ExecutionSpace>;
-  using execution_space_storage_base_t =
-      ExecutionSpaceInstanceStorage<ExecutionSpace>;
+  using execution_space_storage_base_t = InstanceStorage<ExecutionSpace>;
 
  public:
   virtual ~GraphNodeImpl() = default;
@@ -92,7 +91,7 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
   //----------------------------------------------------------------------------
 
   ExecutionSpace const& execution_space_instance() const {
-    return this->execution_space_storage_base_t::execution_space_instance();
+    return this->execution_space_storage_base_t::instance();
   }
 };
 
@@ -142,7 +141,8 @@ struct GraphNodeImpl<ExecutionSpace, Kernel,
   template <class KernelDeduced, class Tag,
             typename = std::enable_if_t<
                 std::is_same_v<Tag, _graph_node_kernel_ctor_tag> ||
-                std::is_same_v<Tag, _graph_node_capture_ctor_tag>>>
+                std::is_same_v<Tag, _graph_node_capture_ctor_tag> ||
+                std::is_same_v<Tag, _graph_node_host_ctor_tag>>>
   GraphNodeImpl(ExecutionSpace const& ex, Tag, KernelDeduced&& arg_kernel)
       : base_t(ex), m_kernel{(KernelDeduced&&)arg_kernel} {}
 
@@ -239,7 +239,8 @@ struct GraphNodeImpl
   template <class KernelDeduced, class PredecessorPtrDeduced, class Tag,
             typename = std::enable_if_t<
                 std::is_same_v<Tag, _graph_node_kernel_ctor_tag> ||
-                std::is_same_v<Tag, _graph_node_capture_ctor_tag>>>
+                std::is_same_v<Tag, _graph_node_capture_ctor_tag> ||
+                std::is_same_v<Tag, _graph_node_host_ctor_tag>>>
   GraphNodeImpl(ExecutionSpace const& ex, Tag, KernelDeduced&& arg_kernel,
                 _graph_node_predecessor_ctor_tag,
                 PredecessorPtrDeduced&& arg_predecessor)

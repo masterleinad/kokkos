@@ -202,7 +202,7 @@ void CudaInternal::print_configuration(std::ostream &s) const {
   s << "macro  KOKKOS_ENABLE_CUDA      : defined\n";
 #endif
 #if defined(CUDA_VERSION)
-  s << "macro  CUDA_VERSION          = " << CUDA_VERSION << " = version "
+  s << "macro  CUDA_VERSION          : " << CUDA_VERSION << " = version "
     << CUDA_VERSION / 1000 << "." << (CUDA_VERSION % 1000) / 10 << '\n';
 #endif
 
@@ -210,7 +210,10 @@ void CudaInternal::print_configuration(std::ostream &s) const {
     cudaDeviceProp prop;
     KOKKOS_IMPL_CUDA_SAFE_CALL(cudaGetDeviceProperties(&prop, i));
     s << "Kokkos::Cuda[ " << i << " ] " << prop.name;
-    if (m_cudaDev == i) s << " : Selected";
+    if (m_cudaDev == i)
+      s << " : Selected";
+    else
+      s << " : Not Selected";
     s << '\n'
       << "  Capability: " << prop.major << "." << prop.minor << '\n'
       << "  Total Global Memory: " << human_memory_size(prop.totalGlobalMem)
@@ -747,12 +750,14 @@ int g_cuda_space_factory_initialized =
     initialize_space_factory<Cuda>("150_Cuda");
 
 int CudaInternal::m_cudaArch = -1;
-cudaDeviceProp CudaInternal::m_deviceProp;
+KOKKOS_IMPL_EXPORT cudaDeviceProp CudaInternal::m_deviceProp;
 std::set<int> CudaInternal::cuda_devices = {};
-std::map<int, unsigned long *> CudaInternal::constantMemHostStagingPerDevice =
-    {};
-std::map<int, cudaEvent_t> CudaInternal::constantMemReusablePerDevice = {};
-std::map<int, std::mutex> CudaInternal::constantMemMutexPerDevice     = {};
+KOKKOS_IMPL_EXPORT std::map<int, unsigned long *>
+    CudaInternal::constantMemHostStagingPerDevice = {};
+KOKKOS_IMPL_EXPORT std::map<int, cudaEvent_t>
+    CudaInternal::constantMemReusablePerDevice = {};
+KOKKOS_IMPL_EXPORT std::map<int, std::mutex>
+    CudaInternal::constantMemMutexPerDevice = {};
 
 }  // namespace Impl
 

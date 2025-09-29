@@ -37,6 +37,12 @@ struct is_graph_capture<
            Kokkos::Impl::is_specialization_of_v<T, GraphNodeCaptureImpl>>>
     : public std::true_type {};
 
+template <typename T>
+struct is_graph_then_host<
+    T, std::enable_if_t<
+           Kokkos::Impl::is_specialization_of_v<T, GraphNodeThenHostImpl>>>
+    : public std::true_type {};
+
 struct GraphAccess {
   template <class NodeType, class... Args>
   static auto make_node_shared_ptr(Args&&... args) {
@@ -66,7 +72,7 @@ struct GraphAccess {
   template <class NodeRef>
   static auto get_node_ptr(NodeRef&& node_ref) {
     static_assert(
-        is_specialization_of<remove_cvref_t<NodeRef>,
+        is_specialization_of<std::remove_cvref_t<NodeRef>,
                              Kokkos::Experimental::GraphNodeRef>::value,
         "Kokkos Internal Implementation error (bad argument to "
         "`GraphAccess::get_node_ptr()`)");
@@ -76,7 +82,7 @@ struct GraphAccess {
   template <class NodeRef>
   static auto get_graph_weak_ptr(NodeRef&& node_ref) {
     static_assert(
-        is_specialization_of<remove_cvref_t<NodeRef>,
+        is_specialization_of<std::remove_cvref_t<NodeRef>,
                              Kokkos::Experimental::GraphNodeRef>::value,
         "Kokkos Internal Implementation error (bad argument to "
         "`GraphAccess::get_graph_weak_ptr()`)");

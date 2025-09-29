@@ -68,6 +68,11 @@ class GraphImpl<Kokkos::SYCL> {
 
   template <class NodeImpl>
   std::enable_if_t<
+      Kokkos::Impl::is_graph_then_host_v<typename NodeImpl::kernel_type>>
+  add_node(std::shared_ptr<NodeImpl> arg_node_ptr);
+
+  template <class NodeImpl>
+  std::enable_if_t<
       Kokkos::Impl::is_graph_capture_v<typename NodeImpl::kernel_type>>
   add_node(const Kokkos::SYCL& exec, std::shared_ptr<NodeImpl> arg_node_ptr);
 
@@ -141,6 +146,20 @@ GraphImpl<Kokkos::SYCL>::add_node(std::shared_ptr<NodeImpl> arg_node_ptr) {
 
 template <class NodeImpl>
 std::enable_if_t<
+    Kokkos::Impl::is_graph_then_host_v<typename NodeImpl::kernel_type>>
+GraphImpl<Kokkos::SYCL>::add_node(std::shared_ptr<NodeImpl> arg_node_ptr) {
+  static_assert(Kokkos::Impl::is_specialization_of_v<NodeImpl, GraphNodeImpl>);
+  KOKKOS_EXPECTS(arg_node_ptr);
+
+  auto& kernel = arg_node_ptr->get_kernel();
+  kernel.add_to_graph(m_graph);
+  static_cast<node_details_t*>(arg_node_ptr.get())->node = kernel.m_node;
+
+  m_nodes.push_back(std::move(arg_node_ptr));
+}
+
+template <class NodeImpl>
+std::enable_if_t<
     Kokkos::Impl::is_graph_capture_v<typename NodeImpl::kernel_type>>
 GraphImpl<Kokkos::SYCL>::add_node(const Kokkos::SYCL& exec,
                                   std::shared_ptr<NodeImpl> arg_node_ptr) {
@@ -175,17 +194,13 @@ inline void GraphImpl<Kokkos::SYCL>::add_predecessor(
 }
 
 inline void GraphImpl<Kokkos::SYCL>::submit(const Kokkos::SYCL& exec) {
-  auto q = exec.sycl_queue();
-
-  desul::ensure_sycl_lock_arrays_on_device(q);
-
   if (!m_graph_exec) {
     instantiate();
   }
   KOKKOS_ASSERT(m_graph_exec);
 
   // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-  q.ext_oneapi_graph(*m_graph_exec);
+  exec.sycl_queue().ext_oneapi_graph(*m_graph_exec);
 }
 
 inline Kokkos::SYCL const& GraphImpl<Kokkos::SYCL>::get_execution_space()

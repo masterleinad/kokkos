@@ -94,7 +94,7 @@ class CudaInternal {
   static int m_cudaArch;
   static int concurrency();
 
-  static cudaDeviceProp m_deviceProp;
+  KOKKOS_IMPL_EXPORT static cudaDeviceProp m_deviceProp;
 
   // Scratch Spaces for Reductions
   mutable std::size_t m_scratchSpaceCount;
@@ -121,9 +121,11 @@ class CudaInternal {
   bool was_finalized   = false;
 
   static std::set<int> cuda_devices;
-  static std::map<int, unsigned long*> constantMemHostStagingPerDevice;
-  static std::map<int, cudaEvent_t> constantMemReusablePerDevice;
-  static std::map<int, std::mutex> constantMemMutexPerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, unsigned long*>
+      constantMemHostStagingPerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, cudaEvent_t>
+      constantMemReusablePerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, std::mutex> constantMemMutexPerDevice;
 
   static CudaInternal& singleton();
 
@@ -222,7 +224,11 @@ class CudaInternal {
       cudaGraph_t graph, const cudaGraphNode_t* from, const cudaGraphNode_t* to,
       size_t numDependencies) const {
     set_cuda_device();
+#if CUDART_VERSION >= 13000
+    return cudaGraphAddDependencies(graph, from, to, NULL, numDependencies);
+#else
     return cudaGraphAddDependencies(graph, from, to, numDependencies);
+#endif
   }
 
   cudaError_t cuda_graph_add_empty_node_wrapper(
@@ -276,7 +282,12 @@ class CudaInternal {
   cudaError_t cuda_mem_prefetch_async_wrapper(const void* devPtr, size_t count,
                                               int dstDevice) const {
     set_cuda_device();
+#if CUDART_VERSION >= 13000
+    cudaMemLocation loc = {cudaMemLocationTypeDevice, dstDevice};
+    return cudaMemPrefetchAsync(devPtr, count, loc, 0, m_stream);
+#else
     return cudaMemPrefetchAsync(devPtr, count, dstDevice, m_stream);
+#endif
   }
 
   cudaError_t cuda_memcpy_wrapper(void* dst, const void* src, size_t count,

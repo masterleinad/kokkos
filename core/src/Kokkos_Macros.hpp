@@ -59,16 +59,10 @@
 #include <impl/Kokkos_NvidiaGpuArchitectures.hpp>
 #endif
 
-#if !defined(KOKKOS_ENABLE_CXX17)
 #if __has_include(<version>)
 #include <version>
 #else
 #include <ciso646>
-#endif
-#if defined(_GLIBCXX_RELEASE) && _GLIBCXX_RELEASE < 10
-#error \
-    "Compiling with support for C++20 or later requires a libstdc++ version later than 9"
-#endif
 #endif
 
 //----------------------------------------------------------------------------
@@ -167,8 +161,8 @@
 #define KOKKOS_COMPILER_GNU \
   __GNUC__ * 100 + __GNUC_MINOR__ * 10 + __GNUC_PATCHLEVEL__
 
-#if (820 > KOKKOS_COMPILER_GNU)
-#error "Compiling with GCC version earlier than 8.2.0 is not supported."
+#if (1040 > KOKKOS_COMPILER_GNU)
+#error "Compiling with GCC version earlier than 10.4.0 is not supported."
 #endif
 
 #elif defined(_MSC_VER)
@@ -206,7 +200,7 @@
 
 #ifndef KOKKOS_IMPL_ALIGN_PTR
 #if defined(_WIN32)
-#define KOKKOS_IMPL_ALIGN_PTR(size) __declspec(align_value(size))
+#define KOKKOS_IMPL_ALIGN_PTR(size)
 #else
 #define KOKKOS_IMPL_ALIGN_PTR(size) __attribute__((align_value(size)))
 #endif
@@ -583,20 +577,6 @@ static constexpr bool kokkos_omp_on_host() { return false; }
 #endif
 
 //----------------------------------------------------------------------------
-// If compiling with CUDA, we must use relocatable device code to enable the
-// task policy.
-
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-#if defined(KOKKOS_ENABLE_CUDA)
-#if defined(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE)
-#define KOKKOS_ENABLE_TASKDAG
-#endif
-// FIXME_SYCL Tasks not implemented
-#elif !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_SYCL) && \
-    !defined(KOKKOS_ENABLE_OPENMPTARGET)
-#define KOKKOS_ENABLE_TASKDAG
-#endif
-#endif
 
 #if defined(KOKKOS_ENABLE_CUDA) && defined(KOKKOS_ENABLE_DEPRECATED_CODE_4)
 #define KOKKOS_ENABLE_CUDA_LDG_INTRINSIC
@@ -674,12 +654,8 @@ static constexpr bool kokkos_omp_on_host() { return false; }
 #endif
 // clang-format on
 
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 #define KOKKOS_ATTRIBUTE_NODISCARD [[nodiscard]]
-
-#ifndef KOKKOS_ENABLE_CXX17
-#define KOKKOS_IMPL_ATTRIBUTE_UNLIKELY [[unlikely]]
-#else
-#define KOKKOS_IMPL_ATTRIBUTE_UNLIKELY
 #endif
 
 #if (defined(KOKKOS_COMPILER_GNU) || defined(KOKKOS_COMPILER_CLANG) ||         \
@@ -691,13 +667,6 @@ static constexpr bool kokkos_omp_on_host() { return false; }
 #define KOKKOS_IMPL_ENABLE_CXXABI
 #endif
 
-// WORKAROUND for AMD aomp which apparently defines CUDA_ARCH when building for
-// AMD GPUs with OpenMP Target ???
-#if defined(__CUDA_ARCH__) && !defined(__CUDACC__) && \
-    !defined(KOKKOS_ENABLE_HIP) && !defined(KOKKOS_ENABLE_CUDA)
-#undef __CUDA_ARCH__
-#endif
-
 #if (defined(KOKKOS_IMPL_WINDOWS_CUDA) || defined(KOKKOS_COMPILER_MSVC)) && \
     !defined(KOKKOS_COMPILER_CLANG)
 // MSVC (as of 16.5.5 at least) does not do empty base class optimization by
@@ -706,6 +675,16 @@ static constexpr bool kokkos_omp_on_host() { return false; }
 #define KOKKOS_IMPL_ENFORCE_EMPTY_BASE_OPTIMIZATION __declspec(empty_bases)
 #else
 #define KOKKOS_IMPL_ENFORCE_EMPTY_BASE_OPTIMIZATION
+#endif
+
+#if defined(KOKKOS_IMPL_BUILD_SHARED_LIBS) && defined(_WIN32)
+#ifdef KOKKOS_IMPL_EXPORT_SYMBOLS
+#define KOKKOS_IMPL_EXPORT __declspec(dllexport)
+#else
+#define KOKKOS_IMPL_EXPORT __declspec(dllimport)
+#endif
+#else
+#define KOKKOS_IMPL_EXPORT
 #endif
 
 #endif  // #ifndef KOKKOS_MACROS_HPP
