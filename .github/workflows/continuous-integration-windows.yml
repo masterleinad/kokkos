@@ -22,7 +22,7 @@ jobs:
       with:
         cuda: '12.4.1'
         method: 'network'
-        sub-packages: '["nvcc"]'
+        sub-packages: '["nvcc", "cudart"]'
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
     - name: configure
       shell: bash
