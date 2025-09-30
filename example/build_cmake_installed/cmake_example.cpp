@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
-#include <Kokkos_Core.hpp>
+#include <Kokkos_Macros.hpp>
+import kokkos.core;
 
 #include <cstdio>
 #include <iostream>
-
-extern "C" void print_fortran_();
 
 struct CountFunctor {
   KOKKOS_FUNCTION void operator()(const long i, long& lcount) const {
@@ -49,8 +48,6 @@ int main(int argc, char* argv[]) {
 
   count_time = timer.seconds();
   printf("Sequential: %ld    %10.6f\n", seq_count, count_time);
-
-  print_fortran_();
 
   Kokkos::finalize();
 
