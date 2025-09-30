@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef TESTHALFOPERATOR_HPP_
 #define TESTHALFOPERATOR_HPP_
@@ -983,9 +970,9 @@ void _test_half_operators(half_type h_lhs, half_type h_rhs) {
 
   Functor_TestHalfOperators<ViewType, half_type> f_device(h_lhs, h_rhs);
   Functor_TestHalfOperators<ViewTypeHost, half_type> f_host(h_lhs, h_rhs);
-  typename ViewType::HostMirror f_device_actual_lhs =
+  typename ViewType::host_mirror_type f_device_actual_lhs =
       Kokkos::create_mirror_view(f_device.actual_lhs);
-  typename ViewType::HostMirror f_device_expected_lhs =
+  typename ViewType::host_mirror_type f_device_expected_lhs =
       Kokkos::create_mirror_view(f_device.expected_lhs);
 
   ExecutionSpace().fence();

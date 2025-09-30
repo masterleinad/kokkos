@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_HIP_GRAPH_IMPL_HPP
 #define KOKKOS_HIP_GRAPH_IMPL_HPP
@@ -66,6 +53,11 @@ class GraphImpl<Kokkos::HIP> {
   std::enable_if_t<
       Kokkos::Impl::is_graph_capture_v<typename NodeImpl::kernel_type>>
   add_node(const Kokkos::HIP& exec, std::shared_ptr<NodeImpl> arg_node_ptr);
+
+  template <class NodeImpl>
+  std::enable_if_t<
+      Kokkos::Impl::is_graph_then_host_v<typename NodeImpl::kernel_type>>
+  add_node(std::shared_ptr<NodeImpl> arg_node_ptr);
 
   template <class NodeImplPtr, class PredecessorRef>
   void add_predecessor(NodeImplPtr arg_node_ptr, PredecessorRef arg_pred_ref);
@@ -173,6 +165,20 @@ GraphImpl<Kokkos::HIP>::add_node(const Kokkos::HIP& exec,
   m_nodes.push_back(std::move(arg_node_ptr));
 }
 
+template <class NodeImpl>
+inline std::enable_if_t<
+    Kokkos::Impl::is_graph_then_host_v<typename NodeImpl::kernel_type>>
+GraphImpl<Kokkos::HIP>::add_node(std::shared_ptr<NodeImpl> arg_node_ptr) {
+  static_assert(Kokkos::Impl::is_specialization_of_v<NodeImpl, GraphNodeImpl>);
+  KOKKOS_EXPECTS(bool(arg_node_ptr));
+
+  auto& kernel = arg_node_ptr->get_kernel();
+  kernel.add_to_graph(m_graph);
+  static_cast<node_details_t*>(arg_node_ptr.get())->node = kernel.m_node;
+
+  m_nodes.push_back(std::move(arg_node_ptr));
+}
+
 // Requires PredecessorRef is a specialization of GraphNodeRef that has
 // already been added to this graph and NodeImpl is a specialization of
 // GraphNodeImpl that has already been added to this graph.
@@ -195,8 +201,6 @@ inline void GraphImpl<Kokkos::HIP>::add_predecessor(
 }
 
 inline void GraphImpl<Kokkos::HIP>::submit(const Kokkos::HIP& exec) {
-  desul::ensure_hip_lock_arrays_on_device();
-
   if (!m_graph_exec) {
     instantiate();
   }

@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_KOKKOS_CUDA_GRAPH_IMPL_HPP
 #define KOKKOS_KOKKOS_CUDA_GRAPH_IMPL_HPP
@@ -96,7 +83,7 @@ struct GraphImpl<Kokkos::Cuda> {
           (m_execution_space.impl_internal_space_instance()
                ->cuda_graph_destroy_wrapper(m_graph)));
     }
-  };
+  }
 
   explicit GraphImpl(Kokkos::Cuda arg_instance)
       : m_execution_space(std::move(arg_instance)), m_graph_owning(true) {
@@ -158,6 +145,21 @@ struct GraphImpl<Kokkos::Cuda> {
     m_nodes.push_back(std::move(arg_node_ptr));
   }
 
+  template <class NodeImpl>
+  std::enable_if_t<
+      Kokkos::Impl::is_graph_then_host_v<typename NodeImpl::kernel_type>>
+  add_node(std::shared_ptr<NodeImpl> arg_node_ptr) {
+    static_assert(
+        Kokkos::Impl::is_specialization_of_v<NodeImpl, GraphNodeImpl>);
+    KOKKOS_EXPECTS(bool(arg_node_ptr));
+
+    auto& kernel = arg_node_ptr->get_kernel();
+    kernel.add_to_graph(m_graph);
+    static_cast<node_details_t*>(arg_node_ptr.get())->node = kernel.m_node;
+
+    m_nodes.push_back(std::move(arg_node_ptr));
+  }
+
   template <class NodeImplPtr, class PredecessorRef>
   // requires PredecessorRef is a specialization of GraphNodeRef that has
   // already been added to this graph and NodeImpl is a specialization of
@@ -186,8 +188,6 @@ struct GraphImpl<Kokkos::Cuda> {
   }
 
   void submit(const execution_space& exec) {
-    desul::ensure_cuda_lock_arrays_on_device();
-
     if (!bool(m_graph_exec)) {
       instantiate();
     }

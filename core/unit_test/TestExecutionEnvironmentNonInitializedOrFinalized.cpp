@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <gtest/gtest.h>
 
@@ -31,7 +18,7 @@ using ExecutionEnvironmentNonInitializedOrFinalized_DeathTest =
 struct NonTrivial {
   KOKKOS_FUNCTION NonTrivial() {}
 };
-static_assert(!std::is_trivial_v<NonTrivial>);
+static_assert(!std::is_trivially_default_constructible_v<NonTrivial>);
 
 TEST_F(ExecutionEnvironmentNonInitializedOrFinalized_DeathTest,
        default_constructed_views) {

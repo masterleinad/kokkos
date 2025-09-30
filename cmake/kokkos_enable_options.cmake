@@ -39,7 +39,8 @@ kokkos_enable_option(IMPL_CUDA_MALLOC_ASYNC OFF "Whether to enable CudaMallocAsy
 kokkos_enable_option(IMPL_NVHPC_AS_DEVICE_COMPILER OFF "Whether to allow nvc++ as Cuda device compiler")
 kokkos_enable_option(IMPL_CUDA_UNIFIED_MEMORY OFF "Whether to leverage unified memory architectures for CUDA")
 
-kokkos_enable_option(DEPRECATED_CODE_4 ON "Whether code deprecated in major release 4 is available")
+kokkos_enable_option(DEPRECATED_CODE_4 OFF "Whether code deprecated in major release 4 is available")
+kokkos_enable_option(DEPRECATED_CODE_5 ON "Whether code deprecated in major release 5 is available")
 kokkos_enable_option(DEPRECATION_WARNINGS ON "Whether to emit deprecation warnings")
 kokkos_enable_option(HIP_RELOCATABLE_DEVICE_CODE OFF "Whether to enable relocatable device code (RDC) for HIP")
 
@@ -85,6 +86,12 @@ kokkos_enable_option(COMPILER_WARNINGS OFF "Whether to print all compiler warnin
 kokkos_enable_option(TUNING OFF "Whether to create bindings for tuning tools")
 kokkos_enable_option(AGGRESSIVE_VECTORIZATION OFF "Whether to aggressively vectorize loops")
 kokkos_enable_option(COMPILE_AS_CMAKE_LANGUAGE OFF "Whether to use native cmake language support")
+if(Kokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE AND Kokkos_ENABLE_CUDA)
+  if(CMAKE_VERSION VERSION_LESS "3.25.2")
+    message(FATAL_ERROR "Building Kokkos with CUDA as language and c++20 requires CMake version 3.25.2 or higher.")
+  endif()
+endif()
+
 kokkos_enable_option(
   HIP_MULTIPLE_KERNEL_INSTANTIATIONS OFF
   "Whether multiple kernels are instantiated at compile time - improve performance but increase compile time"
@@ -107,11 +114,20 @@ kokkos_enable_option(
 )
 mark_as_advanced(Kokkos_ENABLE_IMPL_VIEW_OF_VIEWS_DESTRUCTOR_PRECONDITION_VIOLATION_WORKAROUND)
 
+kokkos_enable_option(EXPERIMENTAL_CXX20_MODULES OFF "Whether to export C++20 modules for Kokkos")
+if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
+  if(CMAKE_VERSION VERSION_LESS 3.28.2)
+    message(FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES requires at least CMake 3.28.2")
+  endif()
+  if(Kokkos_ENABLE_DEPRECATED_CODE_4)
+    message(
+      FATAL_ERROR "Enabling Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES requires Kokkos_ENABLE_DEPRECATED_CODE_4=OFF"
+    )
+  endif()
+endif()
+
 kokkos_enable_option(IMPL_MDSPAN ON "Whether to enable experimental mdspan support")
 kokkos_enable_option(MDSPAN_EXTERNAL OFF "Whether to use an external version of mdspan")
-kokkos_enable_option(
-  IMPL_SKIP_COMPILER_MDSPAN ON "Whether to use an internal version of mdspan even if the compiler provides mdspan"
-)
 kokkos_enable_option(
   IMPL_CHECK_POSSIBLY_BREAKING_LAYOUTS
   OFF
@@ -119,17 +135,14 @@ kokkos_enable_option(
 )
 mark_as_advanced(Kokkos_ENABLE_IMPL_MDSPAN)
 mark_as_advanced(Kokkos_ENABLE_MDSPAN_EXTERNAL)
-mark_as_advanced(Kokkos_ENABLE_IMPL_SKIP_COMPILER_MDSPAN)
 mark_as_advanced(IMPL_CHECK_POSSIBLY_BREAKING_LAYOUTS)
 
 if(Kokkos_ENABLE_IMPL_MDSPAN)
-  # Older CUDA versions work with mdspan but *not* our mdspan-based view implementation due
-  # to various compiler bugs. So we will disable it here
-  # Similarly GCC 8 and 9 have excessive memory usage so we default to legacy view, though the
-  # user can enable the new implementation if they wish
-  if(KOKKOS_CXX_COMPILER_ID STREQUAL GNU AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 9)
-    set(VIEW_LEGACY_DEFAULT ON)
-  elseif(KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 11.4)
+  # CUDA 12.9 has a bug that causes it to segfault when mdspan-based view is used:
+  #   see https://github.com/kokkos/kokkos/issues/8126
+  if(KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA AND KOKKOS_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.9
+     AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 13
+  )
     set(VIEW_LEGACY_DEFAULT ON)
   else()
     set(VIEW_LEGACY_DEFAULT OFF)
@@ -248,7 +261,9 @@ if(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE AND KOKKOS_CXX_COMPILER_ID STREQUA
   )
 endif()
 
-if(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE AND BUILD_SHARED_LIBS)
+if((KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE OR KOKKOS_ENABLE_HIP_RELOCATABLE_DEVICE_CODE
+    OR KOKKOS_ENABLE_SYCL_RELOCATABLE_DEVICE_CODE) AND BUILD_SHARED_LIBS
+)
   message(FATAL_ERROR "Relocatable device code requires static libraries.")
 endif()
 

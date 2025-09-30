@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_EXPERIMENTAL_ERROR_REPORTER_HPP
 #define KOKKOS_EXPERIMENTAL_ERROR_REPORTER_HPP
@@ -24,7 +11,12 @@
 #include <vector>
 #include <Kokkos_Core.hpp>
 #include <Kokkos_View.hpp>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.dual_view;
+#else
 #include <Kokkos_DualView.hpp>
+#endif
 
 namespace Kokkos {
 namespace Experimental {
@@ -52,11 +44,10 @@ class ErrorReporter {
   void getReports(std::vector<int> &reporters_out,
                   std::vector<report_type> &reports_out);
   void getReports(
-      typename Kokkos::View<int *,
-                            typename DeviceType::execution_space>::HostMirror
-          &reporters_out,
-      typename Kokkos::View<report_type *,
-                            typename DeviceType::execution_space>::HostMirror
+      typename Kokkos::View<int *, typename DeviceType::execution_space>::
+          host_mirror_type &reporters_out,
+      typename Kokkos::View<
+          report_type *, typename DeviceType::execution_space>::host_mirror_type
           &reports_out);
 
   void clear();
@@ -128,16 +119,16 @@ void ErrorReporter<ReportType, DeviceType>::getReports(
 
 template <typename ReportType, typename DeviceType>
 void ErrorReporter<ReportType, DeviceType>::getReports(
-    typename Kokkos::View<
-        int *, typename DeviceType::execution_space>::HostMirror &reporters_out,
-    typename Kokkos::View<report_type *,
-                          typename DeviceType::execution_space>::HostMirror
-        &reports_out) {
+    typename Kokkos::View<int *, typename DeviceType::execution_space>::
+        host_mirror_type &reporters_out,
+    typename Kokkos::View<report_type *, typename DeviceType::execution_space>::
+        host_mirror_type &reports_out) {
   int num_reports = getNumReports();
-  reporters_out   = typename Kokkos::View<int *, DeviceType>::HostMirror(
+  reporters_out   = typename Kokkos::View<int *, DeviceType>::host_mirror_type(
       "ErrorReport::reporters_out", num_reports);
-  reports_out = typename Kokkos::View<report_type *, DeviceType>::HostMirror(
-      "ErrorReport::reports_out", num_reports);
+  reports_out =
+      typename Kokkos::View<report_type *, DeviceType>::host_mirror_type(
+          "ErrorReport::reports_out", num_reports);
 
   if (num_reports > 0) {
     m_reports.template sync<host_mirror_space>();

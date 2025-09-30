@@ -1,30 +1,8 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_SETUP_SYCL_HPP_
 #define KOKKOS_SETUP_SYCL_HPP_
-
-// FIXME_SYCL the fallback assert is temporarily disabled by default in the
-// compiler so we need to force it
-#ifndef SYCL_ENABLE_FALLBACK_ASSERT
-#define SYCL_ENABLE_FALLBACK_ASSERT
-#endif
-#ifndef SYCL_FALLBACK_ASSERT
-#define SYCL_FALLBACK_ASSERT 1
-#endif
 
 // FIXME_SYCL
 #if __has_include(<sycl/sycl.hpp>)

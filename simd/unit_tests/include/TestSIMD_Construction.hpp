@@ -1,23 +1,15 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_TEST_SIMD_CONSTRUCTION_HPP
 #define KOKKOS_TEST_SIMD_CONSTRUCTION_HPP
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.simd;
+#else
 #include <Kokkos_SIMD.hpp>
+#endif
 #include <SIMDTesting_Utilities.hpp>
 
 using Kokkos::Experimental::all_of;
@@ -67,11 +59,14 @@ inline void host_test_simd_alias() {
   using native_fixed_abi =
       Kokkos::Experimental::simd_abi::Impl::native_fixed_abi<DataType>;
   using native_abi =
-      Kokkos::Experimental::simd_abi::Impl::native_abi<basic_simd_type::size()>;
+      Kokkos::Experimental::simd_abi::Impl::native_abi<DataType,
+                                                       basic_simd_type::size()>;
 
   if constexpr (std::is_same_v<Abi, native_fixed_abi>) {
-    using simd_type      = Kokkos::Experimental::simd<DataType>;
-    using simd_mask_type = Kokkos::Experimental::simd_mask<DataType>;
+    using simd_type =
+        Kokkos::Experimental::simd<DataType, basic_simd_type::size()>;
+    using simd_mask_type =
+        Kokkos::Experimental::simd_mask<DataType, basic_simd_type::size()>;
     static_assert(std::is_same_v<basic_simd_type, simd_type>);
     static_assert(
         std::is_same_v<typename basic_simd_type::mask_type, simd_mask_type>);

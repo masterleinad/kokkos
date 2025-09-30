@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_SYCL_HALF_MATHEMATICAL_FUNCTIONS_HPP_
 #define KOKKOS_SYCL_HALF_MATHEMATICAL_FUNCTIONS_HPP_
@@ -42,12 +29,10 @@ namespace Impl {
     return sycl::OP(Experimental::half_t::impl_type(x));          \
   }
 
-#ifdef KOKKOS_TEST_HALF_INTERNAL_IMPLEMENTATION
 KOKKOS_INLINE_FUNCTION Kokkos::Experimental::half_t impl_test_fallback_half(
     Kokkos::Experimental::half_t) {
   return Kokkos::Experimental::half_t(0.f);
 }
-#endif
 
 // Basic operations
 // abs
@@ -134,12 +119,10 @@ KOKKOS_SYCL_HALF_UNARY_PREDICATE(signbit)
         Experimental::bhalf_t::impl_type(x));                      \
   }
 
-#ifdef KOKKOS_TEST_HALF_INTERNAL_IMPLEMENTATION
 KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t impl_test_fallback_bhalf(
     Kokkos::Experimental::bhalf_t) {
   return Kokkos::Experimental::bhalf_t(0.f);
 }
-#endif
 
 // Basic operations
 // abs

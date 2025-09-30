@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_CUDA_INSTANCE_HPP_
 #define KOKKOS_CUDA_INSTANCE_HPP_
@@ -94,7 +81,7 @@ class CudaInternal {
   static int m_cudaArch;
   static int concurrency();
 
-  static cudaDeviceProp m_deviceProp;
+  KOKKOS_IMPL_EXPORT static cudaDeviceProp m_deviceProp;
 
   // Scratch Spaces for Reductions
   mutable std::size_t m_scratchSpaceCount;
@@ -121,9 +108,11 @@ class CudaInternal {
   bool was_finalized   = false;
 
   static std::set<int> cuda_devices;
-  static std::map<int, unsigned long*> constantMemHostStagingPerDevice;
-  static std::map<int, cudaEvent_t> constantMemReusablePerDevice;
-  static std::map<int, std::mutex> constantMemMutexPerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, unsigned long*>
+      constantMemHostStagingPerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, cudaEvent_t>
+      constantMemReusablePerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, std::mutex> constantMemMutexPerDevice;
 
   static CudaInternal& singleton();
 
@@ -222,7 +211,11 @@ class CudaInternal {
       cudaGraph_t graph, const cudaGraphNode_t* from, const cudaGraphNode_t* to,
       size_t numDependencies) const {
     set_cuda_device();
+#if CUDART_VERSION >= 13000
+    return cudaGraphAddDependencies(graph, from, to, NULL, numDependencies);
+#else
     return cudaGraphAddDependencies(graph, from, to, numDependencies);
+#endif
   }
 
   cudaError_t cuda_graph_add_empty_node_wrapper(
@@ -276,7 +269,12 @@ class CudaInternal {
   cudaError_t cuda_mem_prefetch_async_wrapper(const void* devPtr, size_t count,
                                               int dstDevice) const {
     set_cuda_device();
+#if CUDART_VERSION >= 13000
+    cudaMemLocation loc = {cudaMemLocationTypeDevice, dstDevice};
+    return cudaMemPrefetchAsync(devPtr, count, loc, 0, m_stream);
+#else
     return cudaMemPrefetchAsync(devPtr, count, dstDevice, m_stream);
+#endif
   }
 
   cudaError_t cuda_memcpy_wrapper(void* dst, const void* src, size_t count,
@@ -363,39 +361,27 @@ class CudaInternal {
                                   bool force_shrink = false);
   void release_team_scratch_space(int scratch_pool_id);
 };
-
-void create_Cuda_instances(std::vector<Cuda>& instances);
 }  // Namespace Impl
 
-namespace Experimental {
-// Partitioning an Execution Space: expects space and integer arguments for
-// relative weight
-//   Customization point for backends
-//   Default behavior is to return the passed in instance
-
-template <class... Args>
-std::vector<Cuda> partition_space(const Cuda&, Args...) {
-  static_assert(
-      (... && std::is_arithmetic_v<Args>),
-      "Kokkos Error: partitioning arguments must be integers or floats");
-  std::vector<Cuda> instances(sizeof...(Args));
-  Kokkos::Impl::create_Cuda_instances(instances);
-  return instances;
-}
-
+namespace Experimental::Impl {
+// For each space in partition, create new cudaStream_t on the same device as
+// base_instance, ignoring weights
 template <class T>
-std::vector<Cuda> partition_space(const Cuda&, std::vector<T> const& weights) {
-  static_assert(
-      std::is_arithmetic_v<T>,
-      "Kokkos Error: partitioning arguments must be integers or floats");
+std::vector<Cuda> impl_partition_space(const Cuda& base_instance,
+                                       const std::vector<T>& weights) {
+  std::vector<Cuda> instances;
+  instances.reserve(weights.size());
+  std::generate_n(
+      std::back_inserter(instances), weights.size(), [&base_instance]() {
+        cudaStream_t stream;
+        KOKKOS_IMPL_CUDA_SAFE_CALL(base_instance.impl_internal_space_instance()
+                                       ->cuda_stream_create_wrapper(&stream));
+        return Cuda(stream, Kokkos::Impl::ManageStream::yes);
+      });
 
-  // We only care about the number of instances to create and ignore weights
-  // otherwise.
-  std::vector<Cuda> instances(weights.size());
-  Kokkos::Impl::create_Cuda_instances(instances);
   return instances;
 }
-}  // namespace Experimental
+}  // namespace Experimental::Impl
 
 }  // Namespace Kokkos
 #endif

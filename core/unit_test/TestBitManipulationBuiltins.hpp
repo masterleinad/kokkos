@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <gtest/gtest.h>
 
@@ -788,14 +775,7 @@ struct TestBitCastFunction {
     ASSERT_EQ(errors, 0) << "Failed check no error for bit_cast()";
   }
   template <typename To, typename From>
-#if defined(KOKKOS_COMPILER_GNU) && (900 <= KOKKOS_COMPILER_GNU) && \
-    (KOKKOS_COMPILER_GNU < 930)
-  // workaround compiler bug seen in GCC 9.0.1 and GCC 9.2.0
-  KOKKOS_FUNCTION bool check(const From& from) const
-#else
-  static KOKKOS_FUNCTION bool check(const From& from)
-#endif
-  {
+  static KOKKOS_FUNCTION bool check(const From& from) {
     using Kokkos::Experimental::bit_cast_builtin;
     return bit_cast_builtin<From>(bit_cast_builtin<To>(from)) == from;
   }

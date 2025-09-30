@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #define KOKKOS_IMPL_PUBLIC_INCLUDE
@@ -67,26 +54,21 @@ void OpenMPTargetInternal::fence(const std::string& name,
   }
 }
 int OpenMPTargetInternal::concurrency() const {
-  int max_threads = 2048 * 80;
-#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
   int max_threads_sm = 2048;
+  int max_threads    = max_threads_sm * 80;
 #if defined(KOKKOS_ARCH_AMPERE86)
   max_threads = max_threads_sm * 84;
+#elif defined(KOKKOS_ARCH_AMPERE87)
+  max_threads_sm = 1024;
+  max_threads    = max_threads_sm * 32;  // Orin Nano cores
 #elif defined(KOKKOS_ARCH_AMPERE80)
-  max_threads = max_threads_sm * 108;
+  return max_threads_sm * 108;
 #elif defined(KOKKOS_ARCH_VOLTA72)
-  max_threads = max_threads_sm * 84;
+  return max_threads_sm * 84;
 #elif defined(KOKKOS_ARCH_VOLTA70)
-  max_threads = max_threads_sm * 80;
+  return max_threads_sm * 80;
 #elif defined(KOKKOS_ARCH_PASCAL60) || defined(KOKKOS_ARCH_PASCAL61)
-  max_threads = max_threads_sm * 60;
-#endif
-#elif defined(KOKKOS_ARCH_INTEL_GPU)
-#pragma omp target map(max_threads)
-  { max_threads = omp_get_num_procs(); }
-
-  // Multiply the number of processors with the SIMD length.
-  max_threads *= 32;
+  return max_threads_sm * 60;
 #endif
 
   return max_threads;
@@ -96,11 +78,6 @@ void OpenMPTargetInternal::print_configuration(std::ostream& os,
                                                bool /*verbose*/) const {
   // FIXME_OPENMPTARGET
   os << "Using OpenMPTarget\n";
-#if defined(KOKKOS_IMPL_OPENMPTARGET_HIERARCHICAL_INTEL_GPU)
-  os << "Defined KOKKOS_IMPL_OPENMPTARGET_HIERARCHICAL_INTEL_GPU: Workaround "
-        "for "
-        "hierarchical parallelism for Intel GPUs.";
-#endif
 }
 
 void OpenMPTargetInternal::impl_finalize() {
@@ -115,13 +92,8 @@ void OpenMPTargetInternal::impl_initialize() {
   m_is_initialized = true;
 
   // FIXME_OPENMPTARGET:  Only fix the number of teams for NVIDIA architectures
-  // from Pascal and upwards.
-  // FIXME_OPENMPTARGTE: Cray compiler did not yet implement omp_set_num_teams.
-#if !defined(KOKKOS_COMPILER_CRAY_LLVM)
-#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU) && defined(KOKKOS_COMPILER_CLANG) && \
-    (KOKKOS_COMPILER_CLANG >= 1300)
+#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
   omp_set_num_teams(512);
-#endif
 #endif
 }
 int OpenMPTargetInternal::impl_is_initialized() {
@@ -182,10 +154,7 @@ void OpenMPTargetInternal::resize_scratch(int64_t team_size,
   // max_active_teams is the number of active teams on the given hardware.
   // We set the number of teams to be twice the number of max_active_teams for
   // the compiler to pick the right number in its case.
-  // FIXME_OPENMPTARGET: Cray compiler did not yet implement omp_set_num_teams.
-#if !defined(KOKKOS_COMPILER_CRAY_LLVM)
   omp_set_num_teams(max_active_teams * 2);
-#endif
 
   // Total amount of scratch memory allocated is depenedent
   // on the maximum number of in-flight teams possible.

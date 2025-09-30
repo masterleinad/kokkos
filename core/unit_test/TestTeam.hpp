@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <cstdio>
 #include <sstream>
@@ -1096,7 +1083,7 @@ struct ClassNoShmemSizeFunction {
           *this);
       Kokkos::fence();
 
-      typename Kokkos::View<int, ExecSpace>::HostMirror h_errors =
+      typename Kokkos::View<int, ExecSpace>::host_mirror_type h_errors =
           Kokkos::create_mirror_view(d_errors);
       Kokkos::deep_copy(h_errors, d_errors);
       ASSERT_EQ(h_errors(), 0);
@@ -1117,7 +1104,7 @@ struct ClassNoShmemSizeFunction {
 
       ASSERT_EQ(error, 0);
     }
-  };
+  }
 };
 
 template <class ExecSpace, class ScheduleType>
@@ -1168,7 +1155,7 @@ struct ClassWithShmemSizeFunction {
           *this);
       Kokkos::fence();
 
-      typename Kokkos::View<int, ExecSpace>::HostMirror h_errors =
+      typename Kokkos::View<int, ExecSpace>::host_mirror_type h_errors =
           Kokkos::create_mirror_view(d_errors);
       Kokkos::deep_copy(h_errors, d_errors);
       ASSERT_EQ(h_errors(), 0);
@@ -1186,7 +1173,7 @@ struct ClassWithShmemSizeFunction {
 
       ASSERT_EQ(error, 0);
     }
-  };
+  }
 
   unsigned team_shmem_size(int team_size) const {
     const int per_team0 =
@@ -1247,7 +1234,7 @@ void test_team_mulit_level_scratch_test_lambda() {
       });
   Kokkos::fence();
 
-  typename Kokkos::View<int, ExecSpace>::HostMirror h_errors =
+  typename Kokkos::View<int, ExecSpace>::host_mirror_type h_errors =
       Kokkos::create_mirror_view(errors);
   Kokkos::deep_copy(h_errors, d_errors);
   ASSERT_EQ(h_errors(), 0);
@@ -1918,21 +1905,21 @@ class TestTeamNestedReducerFunctor {
       return Kokkos::TeamThreadRange(member, count);
     };
     run_test_team_policies(policy);
-  };
+  }
 
   void run_test_thread_vector() {
     auto policy = KOKKOS_LAMBDA(member_type const &member, index_type count) {
       return Kokkos::ThreadVectorRange(member, count);
     };
     run_test_team_policies(policy);
-  };
+  }
 
   void run_test_team_vector() {
     auto policy = KOKKOS_LAMBDA(member_type const &member, index_type count) {
       return Kokkos::TeamVectorRange(member, count);
     };
     run_test_team_policies(policy);
-  };
+  }
 
   template <typename Policy>
   void run_test_team_policies(Policy &policy) {

@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <gtest/gtest.h>
 
@@ -273,7 +260,11 @@ struct TestViewAllocationLargeRank {
   ViewType v;
 };
 
+// Orin and other Jetson devices come with smaller memory capacity, 8GB total
 TEST(TEST_CATEGORY, view_allocation_large_rank) {
+#ifdef KOKKOS_ARCH_AMPERE87
+  GTEST_SKIP() << "skipping for Jetson devices that have only 8GB memory";
+#endif
   using ExecutionSpace = typename TEST_EXECSPACE::execution_space;
   using MemorySpace    = typename TEST_EXECSPACE::memory_space;
   constexpr int dim    = 16;

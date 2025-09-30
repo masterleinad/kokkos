@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #define KOKKOS_IMPL_PUBLIC_INCLUDE
@@ -372,8 +359,9 @@ void ThreadsInternal::first_touch_allocate_thread_private_scratch(
 
     unsigned *ptr = reinterpret_cast<unsigned *>(exec.m_scratch);
 
-    unsigned *const end =
-        ptr + s_threads_process.m_scratch_thread_end / sizeof(unsigned);
+    auto const shift =
+        s_threads_process.m_scratch_thread_end / sizeof(unsigned);
+    unsigned *const end = ptr + shift;
 
     // touch on this thread
     while (ptr < end) *ptr++ = 0;

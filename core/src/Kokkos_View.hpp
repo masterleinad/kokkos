@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #include <Kokkos_Macros.hpp>
@@ -192,6 +179,10 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   using pointer_type = decltype(Impl::ptr_from_data_handle(
       std::declval<typename base_t::data_handle_type>()));
 
+ private:
+  using raw_allocation_value_type = std::remove_pointer_t<pointer_type>;
+
+ public:
   using scalar_array_type       = typename traits::scalar_array_type;
   using const_scalar_array_type = typename traits::const_scalar_array_type;
   using non_const_scalar_array_type =
@@ -220,15 +211,18 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
            typename traits::device_type, typename traits::hooks_policy,
            typename traits::memory_traits>;
 
-  // Compatible HostMirror view
+  // Compatible host mirror view
   using host_mirror_type =
       View<typename traits::non_const_data_type, typename traits::array_layout,
            Device<DefaultHostExecutionSpace,
                   typename traits::host_mirror_space::memory_space>,
            typename traits::hooks_policy>;
 
-  // Compatible HostMirror view
-  using HostMirror = host_mirror_type;
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
+  /** \brief  Compatible HostMirror view */
+  using HostMirror KOKKOS_DEPRECATED_WITH_COMMENT(
+      "Use host_mirror_type instead.") = host_mirror_type;
+#endif
 
   // Unified types
   using uniform_type = typename Impl::ViewUniformType<View, 0>::type;
@@ -262,14 +256,18 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
         base_t::mapping());
   }
 
-  KOKKOS_FUNCTION constexpr size_t stride_0() const { return stride(0); }
-  KOKKOS_FUNCTION constexpr size_t stride_1() const { return stride(1); }
-  KOKKOS_FUNCTION constexpr size_t stride_2() const { return stride(2); }
-  KOKKOS_FUNCTION constexpr size_t stride_3() const { return stride(3); }
-  KOKKOS_FUNCTION constexpr size_t stride_4() const { return stride(4); }
-  KOKKOS_FUNCTION constexpr size_t stride_5() const { return stride(5); }
-  KOKKOS_FUNCTION constexpr size_t stride_6() const { return stride(6); }
-  KOKKOS_FUNCTION constexpr size_t stride_7() const { return stride(7); }
+  // clang-format off
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(0) instead") KOKKOS_FUNCTION constexpr size_t stride_0() const { return stride(0); }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(1) instead") KOKKOS_FUNCTION constexpr size_t stride_1() const { return stride(1); }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(2) instead") KOKKOS_FUNCTION constexpr size_t stride_2() const { return stride(2); }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(3) instead") KOKKOS_FUNCTION constexpr size_t stride_3() const { return stride(3); }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(4) instead") KOKKOS_FUNCTION constexpr size_t stride_4() const { return stride(4); }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(5) instead") KOKKOS_FUNCTION constexpr size_t stride_5() const { return stride(5); }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(6) instead") KOKKOS_FUNCTION constexpr size_t stride_6() const { return stride(6); }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(7) instead") KOKKOS_FUNCTION constexpr size_t stride_7() const { return stride(7); }
+#endif
+  // clang-format on
 
   template <typename iType>
   KOKKOS_INLINE_FUNCTION constexpr std::enable_if_t<std::is_integral_v<iType>,
@@ -350,11 +348,11 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
 
   KOKKOS_INLINE_FUNCTION
   const Kokkos::Impl::SharedAllocationTracker& impl_track() const {
-    if constexpr (traits::is_managed) {
-      return base_t::data_handle().tracker();
-    } else {
+    if constexpr (traits::memory_traits::is_unmanaged) {
       static const Kokkos::Impl::SharedAllocationTracker empty_tracker = {};
       return empty_tracker;
+    } else {
+      return base_t::data_handle().tracker();
     }
   }
   //----------------------------------------
@@ -531,7 +529,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   KOKKOS_FUNCTION
   View(typename base_t::data_handle_type p,
        const typename base_t::mapping_type& m)
-      : base_t(p, m){};
+      : base_t(p, m) {}
 
   //----------------------------------------
   // Compatible view copy constructor and assignment
@@ -575,7 +573,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
             arg_prop,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
                 arg_layout)) {
-    static_assert(traits::is_managed,
+    static_assert(!traits::memory_traits::is_unmanaged,
                   "Can't construct managed View with unmanaged memory trait!");
   }
 
@@ -590,29 +588,6 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
                 arg_layout)) {}
 
-#ifdef KOKKOS_ENABLE_CXX17
-  template <class Layout>
-  KOKKOS_FUNCTION explicit View(
-      const typename base_t::data_handle_type& handle, const Layout& arg_layout,
-      std::enable_if_t<
-          (std::is_same_v<Layout, LayoutStride> &&
-           std::is_same_v<typename base_t::layout_type, layout_stride>) ||
-              (std::is_same_v<Layout, LayoutLeft> &&
-               std::is_same_v<typename base_t::layout_type, layout_left>) ||
-              (std::is_same_v<Layout, LayoutLeft> &&
-               std::is_same_v<typename base_t::layout_type,
-                              Experimental::layout_left_padded<> >) ||
-              (std::is_same_v<Layout, LayoutRight> &&
-               std::is_same_v<typename base_t::layout_type, layout_right>) ||
-              (std::is_same_v<Layout, LayoutRight> &&
-               std::is_same_v<typename base_t::layout_type,
-                              Experimental::layout_right_padded<> >),
-          void*> = nullptr)
-      : base_t(
-            handle,
-            Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
-                arg_layout)) {}
-#else
   // Constructors from legacy layouts when using Views of the new layouts
   // LayoutLeft -> layout_left, layout_left_padded
   // LayoutRight -> layout_right, layout_right_padded
@@ -663,11 +638,11 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
             handle,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
                 arg_layout)) {}
-#endif
 
-#ifndef KOKKOS_ENABLE_CXX17
   template <class P, class... Args>
-    requires(std::is_convertible_v<P, pointer_type>)
+    requires(!std::is_null_pointer_v<P> &&
+             std::is_constructible_v<typename base_t::data_handle_type, P> &&
+             sizeof...(Args) != rank() + 1)
   KOKKOS_FUNCTION View(P ptr_, Args... args)
       : View(Kokkos::view_wrap(static_cast<pointer_type>(ptr_)), args...) {}
 
@@ -682,43 +657,8 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   // Special function to be preferred over the above for passing in 0, NULL or
   // nullptr when pointer type is char*
   template <class... Args>
-  explicit View(decltype(nullptr), Args... args)
+  KOKKOS_FUNCTION explicit View(std::nullptr_t, Args... args)
       : View(Kokkos::view_wrap(pointer_type(nullptr)), args...) {}
-#else
-  // FIXME: The std::is_null_pointer_v<P> condition is to workaround a GCC8 bug
-  // in overload resolution
-  // FIXME: why does modernize-type-traits have a false positive here?
-  // NOLINTBEGIN(modernize-type-traits)
-  template <class P, class... Args,
-            std::enable_if_t<!std::is_null_pointer_v<P> &&
-                                 std::is_convertible_v<P, pointer_type>,
-                             size_t> = 0ul>
-  // NOLINTEND(modernize-type-traits)
-  KOKKOS_FUNCTION View(P ptr_, Args... args)
-      : View(Kokkos::view_wrap(static_cast<pointer_type>(ptr_)), args...) {}
-
-  // Special function to be preferred over the above for string literals
-  // when pointer type is char*
-  // The typename P = pointer_type is a workaround for an nvcc 11.0 bug
-  // where the compiler performs substitution earlier when the class is
-  // instantiated instead of at function instantiation and therefore errors out
-  // on these enable_ifs
-  // FIXME: why does modernize-type-traits have a false positive here?
-  // NOLINTBEGIN(modernize-type-traits)
-  template <class L, class... Args, typename P = pointer_type,
-            std::enable_if_t<(std::is_same_v<P, char*> &&
-                              std::is_same_v<const char*, L>),
-                             size_t> = 0ul>
-  // NOLINTEND(modernize-type-traits)
-  explicit View(L label, Args... args)
-      : View(Kokkos::view_alloc(std::string(label)), args...) {}
-
-  // Special function to be preferred over the above for passing in 0, NULL or
-  // nullptr when pointer type is char*
-  template <class... Args>
-  explicit View(decltype(nullptr), Args... args)
-      : View(Kokkos::view_wrap(pointer_type(nullptr)), args...) {}
-#endif
 
   // FIXME: Constructor which allows always 8 sizes should be deprecated
   template <class... P>
@@ -738,10 +678,26 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
                    typename mdspan_type::mapping_type, sizeof(value_type)>(
                    arg_prop, arg_N0, arg_N1, arg_N2, arg_N3, arg_N4, arg_N5,
                    arg_N6, arg_N7)) {
+#ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
+    if constexpr (std::is_same_v<typename traits::array_layout,
+                                 Kokkos::LayoutLeft> ||
+                  std::is_same_v<typename traits::array_layout,
+                                 Kokkos::LayoutRight> ||
+                  std::is_same_v<typename traits::array_layout,
+                                 Kokkos::LayoutStride>) {
+      auto prop_copy = Impl::with_properties_if_unset(arg_prop, std::string{});
+      const std::string& alloc_name =
+          Impl::get_property<Impl::LabelTag>(prop_copy);
+
+      Impl::runtime_check_rank(*this, !traits::impl_is_customized, arg_N0,
+                               arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6,
+                               arg_N7, alloc_name.c_str());
+    }
+#endif
     static_assert(traits::array_layout::is_extent_constructible,
                   "Layout is not constructible from extent arguments. Use "
                   "overload taking a layout object instead.");
-    static_assert(traits::is_managed,
+    static_assert(!traits::memory_traits::is_unmanaged,
                   "Can't construct managed View with unmanaged memory trait!");
   }
 
@@ -762,6 +718,18 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
                    typename mdspan_type::mapping_type, sizeof(value_type)>(
                    arg_prop, arg_N0, arg_N1, arg_N2, arg_N3, arg_N4, arg_N5,
                    arg_N6, arg_N7)) {
+#ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
+    if constexpr (std::is_same_v<typename traits::array_layout,
+                                 Kokkos::LayoutLeft> ||
+                  std::is_same_v<typename traits::array_layout,
+                                 Kokkos::LayoutRight> ||
+                  std::is_same_v<typename traits::array_layout,
+                                 Kokkos::LayoutStride>) {
+      Impl::runtime_check_rank(*this, !traits::impl_is_customized, arg_N0,
+                               arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6,
+                               arg_N7, "UNMANAGED");
+    }
+#endif
     static_assert(traits::array_layout::is_extent_constructible,
                   "Layout is not constructible from extent arguments. Use "
                   "overload taking a layout object instead.");
@@ -775,22 +743,127 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
                        typename traits::array_layout> const& arg_layout)
       : View(Impl::ViewCtorProp<std::string>(arg_label), arg_layout) {}
 
-  // Allocate label and layout, must disambiguate from subview constructor.
-  explicit View(const std::string& arg_label,
-                const size_t arg_N0 = KOKKOS_IMPL_CTOR_DEFAULT_ARG,
-                const size_t arg_N1 = KOKKOS_IMPL_CTOR_DEFAULT_ARG,
-                const size_t arg_N2 = KOKKOS_IMPL_CTOR_DEFAULT_ARG,
-                const size_t arg_N3 = KOKKOS_IMPL_CTOR_DEFAULT_ARG,
-                const size_t arg_N4 = KOKKOS_IMPL_CTOR_DEFAULT_ARG,
-                const size_t arg_N5 = KOKKOS_IMPL_CTOR_DEFAULT_ARG,
-                const size_t arg_N6 = KOKKOS_IMPL_CTOR_DEFAULT_ARG,
-                const size_t arg_N7 = KOKKOS_IMPL_CTOR_DEFAULT_ARG)
+#ifdef KOKKOS_COMPILER_MSVC  // FIXME_MSVC
+  // MSVC had pack expansion issues with the condition inside the enable_if
+ private:
+  template <class... Args>
+  static constexpr bool msvc_workaround_ctor_condition_1() {
+    size_t num_args = sizeof...(Args);
+    bool are_constructible =
+        (std::is_constructible_v<size_t, Args> && ... && true);
+    return (num_args != rank() + 1) && are_constructible;
+  }
+
+ public:
+#endif
+
+  template <class... Args>
+  View(std::enable_if_t<
+#ifndef KOKKOS_COMPILER_MSVC
+           ((sizeof...(Args)) != rank() + 1) &&
+               (std::is_constructible_v<size_t, Args> && ... && true),
+#else
+           msvc_workaround_ctor_condition_1<Args...>(),
+#endif
+           const std::string&>
+           arg_label,
+       const Args... args)
+#ifdef KOKKOS_COMPILER_INTEL_LLVM  // FIXME_INTEL
+      // Eventually we want to get rid of the array_layout thing entirely.
+      // For now this avoids a bug in the intel compiler 2024.2, and 2025 tested
+      // that only happens with O2 or higher and makes some extents not being
+      // set See https://github.com/kokkos/kokkos/pull/8202
       : View(Impl::ViewCtorProp<std::string>(arg_label),
-             typename traits::array_layout(arg_N0, arg_N1, arg_N2, arg_N3,
-                                           arg_N4, arg_N5, arg_N6, arg_N7)) {
-    static_assert(traits::array_layout::is_extent_constructible,
-                  "Layout is not constructible from extent arguments. Use "
-                  "overload taking a layout object instead.");
+             typename traits::array_layout(args...)) {
+#else
+      : View(Impl::ViewCtorProp<std::string>(arg_label), args...) {
+#endif
+  }
+
+ private:
+  // Special thing for Sacado taking rank()+1 integers, where the last integer
+  // is the FAD dimension
+  template <class... Args, size_t... Idx>
+  static auto view_alloc_from_label_and_integrals(std::true_type,
+                                                  const std::string& arg_label,
+                                                  std::index_sequence<Idx...>,
+                                                  Args... args) {
+    return view_alloc(arg_label, Impl::AccessorArg_t{static_cast<size_t>(
+                                     ((Idx == rank() ? args : 0) + ... + 0))});
+  }
+
+  template <class... Args, size_t... Idx>
+  static auto view_alloc_from_label_and_integrals(std::false_type,
+                                                  const std::string& arg_label,
+                                                  std::index_sequence<Idx...>,
+                                                  Args...) {
+    return view_alloc(arg_label);
+  }
+
+#ifdef KOKKOS_COMPILER_MSVC  // FIXME_MSVC
+  // Same as above but checking for num_args equal to rank()+1
+  template <class... Args>
+  static constexpr bool msvc_workaround_ctor_condition_2() {
+    size_t num_args = sizeof...(Args);
+    bool are_constructible =
+        (std::is_constructible_v<size_t, Args> && ... && true);
+    return (num_args == rank() + 1) && are_constructible;
+  }
+#endif
+
+ public:
+  template <class... Args>
+  View(std::enable_if_t<
+#ifndef KOKKOS_COMPILER_MSVC
+           ((sizeof...(Args)) == rank() + 1) &&
+               (std::is_constructible_v<size_t, Args> && ... && true),
+#else
+           msvc_workaround_ctor_condition_2<Args...>(),
+#endif
+           const std::string&>
+           arg_label,
+       const Args... args)
+      : View(
+            view_alloc_from_label_and_integrals(
+                std::bool_constant<traits::impl_is_customized>(), arg_label,
+                std::make_index_sequence<sizeof...(Args)>(), args...),
+#ifdef KOKKOS_COMPILER_INTEL_LLVM  // FIXME_INTEL
+            // Eventually we want to get rid of the array_layout thing entirely.
+            // For now this avoids a bug in the intel compiler 2024.2, and 2025
+            // tested that only happens with O2 or higher and makes some extents
+            // not being set See https://github.com/kokkos/kokkos/pull/8202
+            typename traits::array_layout(args...)) {
+#else
+            args...) {
+#endif
+  }
+
+  template <class... Args>
+  KOKKOS_FUNCTION View(
+      std::enable_if_t<
+#ifndef KOKKOS_COMPILER_MSVC
+          ((sizeof...(Args)) == rank() + 1) &&
+              (std::is_constructible_v<size_t, Args> && ... && true),
+#else
+           msvc_workaround_ctor_condition_2<Args...>(),
+#endif
+          const pointer_type&>
+          arg_ptr,
+      const Args... args)
+      : View(
+            Kokkos::view_wrap(arg_ptr,
+                              Kokkos::Impl::AccessorArg_t{
+                                  Kokkos::Array<size_t, sizeof...(Args)>{
+                                      static_cast<size_t>(args)...}[rank()]}),
+#ifdef KOKKOS_COMPILER_INTEL_LLVM  // FIXME_INTEL
+            // Eventually we want to get rid of the array_layout thing entirely.
+            // For now this avoids a bug in the intel compiler 2024.2, and 2025
+            // tested that only happens with O2 or higher and makes some extents
+            // not being set See https://github.com/kokkos/kokkos/pull/8202
+            typename traits::array_layout(args...)) {
+#else
+             args...) {
+#endif
   }
 
   //----------------------------------------
@@ -801,7 +874,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
     return Impl::mapping_from_array_layout<typename base_t::mapping_type>(
                layout)
                .required_span_size() *
-           sizeof(value_type);
+           sizeof(raw_allocation_value_type);
   }
 
   KOKKOS_FUNCTION
@@ -834,35 +907,61 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
     const size_t num_passed_args = Impl::count_valid_integers(
         arg_N0, arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6, arg_N7);
 
-    if (std::is_void_v<typename traits::specialize> &&
-        num_passed_args != rank_dynamic) {
-      Kokkos::abort(
-          "Kokkos::View::shmem_size() rank_dynamic != number of arguments.\n");
+    // Special case to cover sacado which passes in an extra integer
+    if (traits::impl_is_customized && num_passed_args == rank_dynamic + 1) {
+      size_t extra_dim = 0;
+      switch (rank_dynamic) {
+        case 0: extra_dim = arg_N0; break;
+        case 1: extra_dim = arg_N1; break;
+        case 2: extra_dim = arg_N2; break;
+        case 3: extra_dim = arg_N3; break;
+        case 4: extra_dim = arg_N4; break;
+        case 5: extra_dim = arg_N5; break;
+        case 6: extra_dim = arg_N6; break;
+        case 7: extra_dim = arg_N7; break;
+        default:
+          Kokkos::abort("This can't happen: rank_dynamic is smaller than 8");
+      }
+      return View::shmem_size(
+          typename traits::array_layout(arg_N0, arg_N1, arg_N2, arg_N3, arg_N4,
+                                        arg_N5, arg_N6, arg_N7),
+          extra_dim);
+    } else {
+      if (num_passed_args != rank_dynamic) {
+        Kokkos::abort(
+            "Kokkos::View::shmem_size() rank_dynamic != number of "
+            "arguments.\n");
+      }
+      return View::shmem_size(
+          typename traits::array_layout(arg_N0, arg_N1, arg_N2, arg_N3, arg_N4,
+                                        arg_N5, arg_N6, arg_N7),
+          1);
     }
+  }
 
-    return View::shmem_size(typename traits::array_layout(
-        arg_N0, arg_N1, arg_N2, arg_N3, arg_N4, arg_N5, arg_N6, arg_N7));
+  static KOKKOS_INLINE_FUNCTION size_t
+  shmem_size(typename traits::array_layout const& arg_layout) {
+    return shmem_size(arg_layout, 1);
   }
 
  private:
   // Want to be able to align to minimum scratch alignment or sizeof or alignof
   // elements
-  static constexpr size_t scratch_value_alignment =
-      max({sizeof(typename traits::value_type),
-           alignof(typename traits::value_type),
-           static_cast<size_t>(
-               traits::execution_space::scratch_memory_space::ALIGN)});
+  static constexpr size_t scratch_value_alignment = max(
+      {sizeof(raw_allocation_value_type), alignof(raw_allocation_value_type),
+       static_cast<size_t>(
+           traits::execution_space::scratch_memory_space::ALIGN)});
 
- public:
-  static KOKKOS_INLINE_FUNCTION size_t
-  shmem_size(typename traits::array_layout const& arg_layout) {
+  static KOKKOS_INLINE_FUNCTION size_t shmem_size(
+      typename traits::array_layout const& arg_layout, size_t extra_dim) {
     return Impl::mapping_from_array_layout<typename base_t::mapping_type>(
                arg_layout)
                    .required_span_size() *
-               sizeof(value_type) +
+               sizeof(raw_allocation_value_type) * extra_dim +
            scratch_value_alignment;
   }
 
+ public:
   explicit KOKKOS_INLINE_FUNCTION View(
       const typename traits::execution_space::scratch_memory_space& arg_space,
       const typename traits::array_layout& arg_layout)
@@ -901,18 +1000,18 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   //----------------------------------------
   // Allocation tracking properties
   std::string label() const {
-    if constexpr (traits::is_managed) {
-      return this->data_handle().get_label();
-    } else {
+    if constexpr (traits::memory_traits::is_unmanaged) {
       return "";
+    } else {
+      return this->data_handle().get_label();
     }
   }
 
   int use_count() const {
-    if constexpr (traits::is_managed) {
-      return this->data_handle().use_count();
-    } else {
+    if constexpr (traits::memory_traits::is_unmanaged) {
       return 0;
+    } else {
+      return this->data_handle().use_count();
     }
   }
 
@@ -975,10 +1074,13 @@ as_view_of_rank_n(View<T, Args...>) {
   return {};
 }
 
-template <typename Function, typename... Args>
-void apply_to_view_of_static_rank(Function&& f, View<Args...> a) {
-  f(a);
-}
+template <typename ViewType>
+struct ApplyToViewOfStaticRank {
+  template <typename Function>
+  static void apply(Function&& f, ViewType a) {
+    f(a);
+  }
+};
 
 }  // namespace Impl
 //----------------------------------------------------------------------------

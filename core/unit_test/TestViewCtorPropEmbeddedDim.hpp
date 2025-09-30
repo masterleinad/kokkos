@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <cstdio>
 
@@ -62,7 +49,7 @@ struct TestViewCtorProp_EmbeddedDim {
         using CommonViewValueType =
             typename decltype(view_alloc_arg)::value_type;
         using CVT     = typename Kokkos::View<CommonViewValueType*, ExecSpace>;
-        using HostCVT = typename CVT::HostMirror;
+        using HostCVT = typename CVT::host_mirror_type;
 
         // Construct View using the common type; for case of specialization, an
         // 'embedded_dim' would be stored by view_alloc_arg
@@ -103,7 +90,7 @@ struct TestViewCtorProp_EmbeddedDim {
         using CommonViewValueType =
             typename decltype(view_alloc_arg)::value_type;
         using CVT     = typename Kokkos::View<CommonViewValueType*, ExecSpace>;
-        using HostCVT = typename CVT::HostMirror;
+        using HostCVT = typename CVT::host_mirror_type;
 
         // Construct View using the common type; for case of specialization, an
         // 'embedded_dim' would be stored by view_alloc_arg

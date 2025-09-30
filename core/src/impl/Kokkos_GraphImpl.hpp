@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_KOKKOS_GRAPHIMPL_HPP
 #define KOKKOS_IMPL_KOKKOS_GRAPHIMPL_HPP
@@ -35,6 +22,12 @@ template <typename T>
 struct is_graph_capture<
     T, std::enable_if_t<
            Kokkos::Impl::is_specialization_of_v<T, GraphNodeCaptureImpl>>>
+    : public std::true_type {};
+
+template <typename T>
+struct is_graph_then_host<
+    T, std::enable_if_t<
+           Kokkos::Impl::is_specialization_of_v<T, GraphNodeThenHostImpl>>>
     : public std::true_type {};
 
 struct GraphAccess {
@@ -66,7 +59,7 @@ struct GraphAccess {
   template <class NodeRef>
   static auto get_node_ptr(NodeRef&& node_ref) {
     static_assert(
-        is_specialization_of<remove_cvref_t<NodeRef>,
+        is_specialization_of<std::remove_cvref_t<NodeRef>,
                              Kokkos::Experimental::GraphNodeRef>::value,
         "Kokkos Internal Implementation error (bad argument to "
         "`GraphAccess::get_node_ptr()`)");
@@ -76,7 +69,7 @@ struct GraphAccess {
   template <class NodeRef>
   static auto get_graph_weak_ptr(NodeRef&& node_ref) {
     static_assert(
-        is_specialization_of<remove_cvref_t<NodeRef>,
+        is_specialization_of<std::remove_cvref_t<NodeRef>,
                              Kokkos::Experimental::GraphNodeRef>::value,
         "Kokkos Internal Implementation error (bad argument to "
         "`GraphAccess::get_graph_weak_ptr()`)");

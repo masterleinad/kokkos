@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #define KOKKOS_IMPL_PUBLIC_INCLUDE
@@ -58,13 +45,10 @@ SYCL::SYCL(const sycl::queue& stream)
         ptr->finalize();
         delete ptr;
       }) {
-  // In principle could be guarded with
-  // #ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
-  // but we chose to require user-provided queues to be in-order
-  // unconditionally so that code downstream does not break
-  // when the backend setting changes.
+#ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
   if (!stream.is_in_order())
     Kokkos::abort("User provided sycl::queues must be in-order!");
+#endif
   Impl::SYCLInternal::singleton().verify_is_initialized(
       "SYCL instance constructor");
   m_space_instance->initialize(stream);
@@ -170,7 +154,10 @@ void SYCL::print_configuration(std::ostream& os, bool verbose) const {
     }
     os << "[" << device.get_backend() << "]:" << device_type << ':' << counter
        << "] " << device.get_info<sycl::info::device::name>();
-    if (counter == active_device) os << " : Selected";
+    if (counter == active_device)
+      os << " : Selected";
+    else
+      os << " : Not Selected";
     os << '\n';
     ++counter;
   }

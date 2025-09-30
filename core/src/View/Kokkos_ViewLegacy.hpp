@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #include <Kokkos_Macros.hpp>
@@ -271,8 +258,11 @@ class View : public ViewTraits<DataType, Properties...> {
                   typename traits::host_mirror_space::memory_space>,
            typename traits::hooks_policy>;
 
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
   /** \brief  Compatible host mirror view */
-  using HostMirror = host_mirror_type;
+  using HostMirror KOKKOS_DEPRECATED_WITH_COMMENT(
+      "Use host_mirror_type instead.") = host_mirror_type;
+#endif
 
   /** \brief Unified types */
   using uniform_type = typename Impl::ViewUniformType<View, 0>::type;
@@ -357,30 +347,40 @@ class View : public ViewTraits<DataType, Properties...> {
            m_map.dimension_6() * m_map.dimension_7();
   }
 
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(0) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_0() const {
     return m_map.stride_0();
   }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(1) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_1() const {
     return m_map.stride_1();
   }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(2) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_2() const {
     return m_map.stride_2();
   }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(3) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_3() const {
     return m_map.stride_3();
   }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(4) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_4() const {
     return m_map.stride_4();
   }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(5) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_5() const {
     return m_map.stride_5();
   }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(6) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_6() const {
     return m_map.stride_6();
   }
+  KOKKOS_DEPRECATED_WITH_COMMENT("Use stride(7) instead")
   KOKKOS_INLINE_FUNCTION constexpr size_t stride_7() const {
     return m_map.stride_7();
   }
+#endif
 
   template <typename iType>
   KOKKOS_INLINE_FUNCTION constexpr std::enable_if_t<std::is_integral_v<iType>,
@@ -950,17 +950,8 @@ class View : public ViewTraits<DataType, Properties...> {
                               Args... args)
       : m_track(src_view), m_map() {
     using SrcType = View<RT, RP...>;
-
     using Mapping = Kokkos::Impl::ViewMapping<void, typename SrcType::traits,
                                               Arg0, Args...>;
-
-    using DstType = typename Mapping::type;
-
-    static_assert(
-        Kokkos::Impl::ViewMapping<traits, typename DstType::traits,
-                                  typename traits::specialize>::is_assignable,
-        "Subview construction requires compatible view and subview arguments");
-
     Mapping::assign(m_map, src_view.m_map, arg0, args...);
   }
 
@@ -994,7 +985,7 @@ class View : public ViewTraits<DataType, Properties...> {
         typename traits::device_type::execution_space{});
     using alloc_prop = decltype(prop_copy);
 
-    static_assert(traits::is_managed,
+    static_assert(!traits::memory_traits::is_unmanaged,
                   "View allocation constructor requires managed memory");
 
     if (alloc_prop::initialize &&
@@ -1298,34 +1289,25 @@ class View : public ViewTraits<DataType, Properties...> {
   // MDSpan converting constructors
 #ifdef KOKKOS_ENABLE_IMPL_MDSPAN
   template <typename U = typename Impl::MDSpanViewTraits<traits>::mdspan_type>
-  KOKKOS_INLINE_FUNCTION
-#ifndef KOKKOS_ENABLE_CXX17
-      explicit(traits::is_managed)
-#endif
-          View(const typename Impl::MDSpanViewTraits<traits>::mdspan_type& mds,
-               std::enable_if_t<
-                   !std::is_same_v<Impl::UnsupportedKokkosArrayLayout, U>>* =
-                   nullptr)
+  KOKKOS_INLINE_FUNCTION explicit(!traits::memory_traits::is_unmanaged) View(
+      const typename Impl::MDSpanViewTraits<traits>::mdspan_type& mds,
+      std::enable_if_t<
+          !std::is_same_v<Impl::UnsupportedKokkosArrayLayout, U>>* = nullptr)
       : View(mds.data_handle(),
              Impl::array_layout_from_mapping<
                  typename traits::array_layout,
                  typename Impl::MDSpanViewTraits<traits>::mdspan_type>(
-                 mds.mapping())) {
-  }
+                 mds.mapping())) {}
 
   template <class ElementType, class ExtentsType, class LayoutType,
             class AccessorType>
-  KOKKOS_INLINE_FUNCTION
-#ifndef KOKKOS_ENABLE_CXX17
-      explicit(!std::is_convertible_v<
-               Kokkos::mdspan<ElementType, ExtentsType, LayoutType,
-                              AccessorType>,
-               typename Impl::MDSpanViewTraits<traits>::mdspan_type>)
-#endif
-          View(const Kokkos::mdspan<ElementType, ExtentsType, LayoutType,
-                                    AccessorType>& mds)
-      : View(typename Impl::MDSpanViewTraits<traits>::mdspan_type(mds)) {
-  }
+  KOKKOS_INLINE_FUNCTION explicit(
+      !std::is_convertible_v<
+          Kokkos::mdspan<ElementType, ExtentsType, LayoutType, AccessorType>,
+          typename Impl::MDSpanViewTraits<traits>::mdspan_type>)
+      View(const Kokkos::mdspan<ElementType, ExtentsType, LayoutType,
+                                AccessorType>& mds)
+      : View(typename Impl::MDSpanViewTraits<traits>::mdspan_type(mds)) {}
 
   //----------------------------------------
   // Conversion to MDSpan
@@ -1340,8 +1322,9 @@ class View : public ViewTraits<DataType, Properties...> {
                 std::is_assignable<mdspan<OtherElementType, OtherExtents,
                                           OtherLayoutPolicy, OtherAccessor>,
                                    ImplNaturalMDSpanType>>::value>>
-  KOKKOS_INLINE_FUNCTION constexpr operator mdspan<
-      OtherElementType, OtherExtents, OtherLayoutPolicy, OtherAccessor>() {
+  KOKKOS_INLINE_FUNCTION constexpr
+  operator mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy,
+                  OtherAccessor>() const {
     using mdspan_type = typename Impl::MDSpanViewTraits<traits>::mdspan_type;
     return mdspan_type{data(),
                        Impl::mapping_from_view_mapping<mdspan_type>(m_map)};
@@ -1355,7 +1338,7 @@ class View : public ViewTraits<DataType, Properties...> {
                 typename OtherAccessorType::data_handle_type>>>
   KOKKOS_INLINE_FUNCTION constexpr auto to_mdspan(
       const OtherAccessorType& other_accessor =
-          typename Impl::MDSpanViewTraits<traits>::accessor_type()) {
+          typename Impl::MDSpanViewTraits<traits>::accessor_type()) const {
     using mdspan_type = typename Impl::MDSpanViewTraits<traits>::mdspan_type;
     using ret_mdspan_type =
         mdspan<typename mdspan_type::element_type,
@@ -1407,10 +1390,13 @@ as_view_of_rank_n(View<T, Args...>) {
   return {};
 }
 
-template <typename Function, typename... Args>
-void apply_to_view_of_static_rank(Function&& f, View<Args...> a) {
-  f(a);
-}
+template <typename ViewType>
+struct ApplyToViewOfStaticRank {
+  template <typename Function>
+  static void apply(Function&& f, ViewType a) {
+    f(a);
+  }
+};
 
 }  // namespace Impl
 

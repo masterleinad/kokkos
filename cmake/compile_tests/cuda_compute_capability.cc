@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <iostream>
 #include <cuda_runtime_api.h>
@@ -46,6 +33,7 @@ int main() {
     case 75:  std::cout << "Set -DKokkos_ARCH_TURING75=ON ." << std::endl; break;
     case 80:  std::cout << "Set -DKokkos_ARCH_AMPERE80=ON ." << std::endl; break;
     case 86:  std::cout << "Set -DKokkos_ARCH_AMPERE86=ON ." << std::endl; break;
+    case 87:  std::cout << "Set -DKokkos_ARCH_AMPERE87=ON ." << std::endl; break;
     case 89:  std::cout << "Set -DKokkos_ARCH_ADA89=ON ." << std::endl; break;
     case 90:  std::cout << "Set -DKokkos_ARCH_HOPPER90=ON ." << std::endl; break;
     case 100: std::cout << "Set -DKokkos_ARCH_BLACKWELL100=ON ." << std::endl; break;

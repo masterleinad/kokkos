@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #include <Kokkos_Macros.hpp>
@@ -33,6 +20,7 @@ static_assert(false,
 #include <typeinfo>
 #endif
 #include <limits>
+#include <type_traits>
 
 //----------------------------------------------------------------------------
 
@@ -1277,30 +1265,30 @@ struct PatternImplSpecializationFromTag;
 
 template <class... Args>
 struct PatternImplSpecializationFromTag<Kokkos::ParallelForTag, Args...>
-    : type_identity<ParallelFor<Args...>> {};
+    : std::type_identity<ParallelFor<Args...>> {};
 
 template <class... Args>
 struct PatternImplSpecializationFromTag<Kokkos::ParallelReduceTag, Args...>
-    : type_identity<ParallelReduce<Args...>> {};
+    : std::type_identity<ParallelReduce<Args...>> {};
 
 template <class... Args>
 struct PatternImplSpecializationFromTag<Kokkos::ParallelScanTag, Args...>
-    : type_identity<ParallelScan<Args...>> {};
+    : std::type_identity<ParallelScan<Args...>> {};
 
 template <class PatternImpl>
 struct PatternTagFromImplSpecialization;
 
 template <class... Args>
 struct PatternTagFromImplSpecialization<ParallelFor<Args...>>
-    : type_identity<ParallelForTag> {};
+    : std::type_identity<ParallelForTag> {};
 
 template <class... Args>
 struct PatternTagFromImplSpecialization<ParallelReduce<Args...>>
-    : type_identity<ParallelReduceTag> {};
+    : std::type_identity<ParallelReduceTag> {};
 
 template <class... Args>
 struct PatternTagFromImplSpecialization<ParallelScan<Args...>>
-    : type_identity<ParallelScanTag> {};
+    : std::type_identity<ParallelScanTag> {};
 
 }  // end namespace Impl
 

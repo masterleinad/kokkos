@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_TEST_EXPERIMENTAL_ERROR_REPORTER_HPP
 #define KOKKOS_TEST_EXPERIMENTAL_ERROR_REPORTER_HPP
@@ -20,7 +7,12 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <Kokkos_Core.hpp>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.error_reporter;
+#else
 #include <Kokkos_ErrorReporter.hpp>
+#endif
 
 namespace Test {
 
@@ -93,12 +85,12 @@ void TestErrorReporter() {
   test2.m_errorReporter.getReports(reporters, reports);
   checkReportersAndReportsAgree(reporters, reports);
 
-  typename Kokkos::View<
-      int *, typename ErrorReporterDriverType::execution_space>::HostMirror
-      view_reporters;
+  typename Kokkos::View<int *,
+                        typename ErrorReporterDriverType::execution_space>::
+      host_mirror_type view_reporters;
   typename Kokkos::View<typename tester_type::report_type *,
                         typename ErrorReporterDriverType::execution_space>::
-      HostMirror view_reports;
+      host_mirror_type view_reports;
   test2.m_errorReporter.getReports(view_reporters, view_reports);
 
   int num_reports = view_reporters.extent(0);

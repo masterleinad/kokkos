@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 static_assert(false,
@@ -103,9 +90,28 @@ transform_kokkos_slice_to_mdspan_slice(const T &s) {
 // the element type of the View (something which is not true for example for
 // Sacado).
 template <class MappingType, class AccessorType>
-KOKKOS_INLINE_FUNCTION size_t allocation_size_from_mapping_and_accessor(
-    const MappingType &map, const AccessorType &) {
+KOKKOS_INLINE_FUNCTION constexpr size_t
+allocation_size_from_mapping_and_accessor(const MappingType &map,
+                                          const AccessorType &) {
   return map.required_span_size();
+}
+
+// Tag type to enable ADL for accessor_from_mapping_and_accessor_arg
+// customization point
+template <class AccessorType>
+struct AccessorTypeTag {};
+
+// Default implementation for creating an accessor from a mapping
+// and an AccessorArg_t.
+// In Sacado the accessor construction may require information from
+// the mapping (specifically the span size) in some cases.
+// Specifically it needs it if the elements of a FAD type are not
+// consecutive but strided by the span size.
+template <class AccessorType, class MappingType>
+KOKKOS_INLINE_FUNCTION constexpr auto accessor_from_mapping_and_accessor_arg(
+    const Kokkos::Impl::AccessorTypeTag<AccessorType> &, const MappingType &,
+    const AccessorArg_t &arg) {
+  return AccessorType(arg.value);
 }
 
 // FIXME_HPX spurious warnings like
@@ -158,7 +164,7 @@ class BasicView {
   }
   KOKKOS_FUNCTION constexpr index_type extent(rank_type r) const noexcept {
     return m_map.extents().extent(r);
-  };
+  }
 
  protected:
   // These are pre-condition checks which are unconditionally (i.e. in release
@@ -234,11 +240,11 @@ class BasicView {
   KOKKOS_FUNCTION constexpr BasicView(const mdspan_type &other)
       : m_ptr(other.data_handle()),
         m_map(other.mapping()),
-        m_acc(other.accessor()){};
+        m_acc(other.accessor()) {}
   KOKKOS_FUNCTION constexpr BasicView(mdspan_type &&other)
       : m_ptr(std::move(other.data_handle())),
         m_map(std::move(other.mapping())),
-        m_acc(std::move(other.accessor())){};
+        m_acc(std::move(other.accessor())) {}
 
   template <class OtherIndexType, size_t Size>
   // When doing C++20 we should switch to this, the conditional explicit we
@@ -257,40 +263,26 @@ class BasicView {
 
   KOKKOS_FUNCTION constexpr BasicView(data_handle_type p,
                                       const extents_type &exts)
-// Compilation will simply fail in C++17 and overload set should not be an issue
-#ifndef KOKKOS_ENABLE_CXX17
     requires(std::is_default_constructible_v<accessor_type> &&
              std::is_constructible_v<mapping_type, const extents_type &>)
-#endif
-      : m_ptr(std::move(p)), m_map(exts), m_acc{} {
-  }
+      : m_ptr(std::move(p)), m_map(exts), m_acc{} {}
 
   KOKKOS_FUNCTION constexpr BasicView(data_handle_type p, const mapping_type &m)
-// Compilation will simply fail in C++17 and overload set should not be an issue
-#ifndef KOKKOS_ENABLE_CXX17
     requires(std::is_default_constructible_v<accessor_type>)
-#endif
-      : m_ptr(std::move(p)), m_map(m), m_acc{} {
-  }
+      : m_ptr(std::move(p)), m_map(m), m_acc{} {}
 
   KOKKOS_FUNCTION constexpr BasicView(data_handle_type p, const mapping_type &m,
                                       const accessor_type &a)
       : m_ptr(std::move(p)), m_map(m), m_acc(a) {}
 
-  template <class OtherT, class OtherE, class OtherL, class OtherA,
-            typename = std::enable_if_t<std::is_constructible_v<
-                mdspan_type, typename BasicView<OtherT, OtherE, OtherL,
-                                                OtherA>::mdspan_type>>>
-//    requires(std::is_constructible_v<mdspan_type,
-//                                     typename BasicView<OtherT, OtherE,
-//                                     OtherL,
-//                                                        OtherA>::mdspan_type>)
-#ifndef KOKKOS_ENABLE_CXX17
+  template <class OtherT, class OtherE, class OtherL, class OtherA>
+    requires(std::is_constructible_v<mdspan_type,
+                                     typename BasicView<OtherT, OtherE, OtherL,
+                                                        OtherA>::mdspan_type>)
   explicit(
       !std::is_convertible_v<const typename OtherL::template mapping<OtherE> &,
                              mapping_type> ||
       !std::is_convertible_v<const OtherA &, accessor_type>)
-#endif
       KOKKOS_INLINE_FUNCTION
       BasicView(const BasicView<OtherT, OtherE, OtherL, OtherA> &other)
       : m_ptr(other.m_ptr), m_map(other.m_map), m_acc(other.m_acc) {
@@ -306,14 +298,12 @@ class BasicView {
   }
 
   template <class OtherT, class OtherE, class OtherL, class OtherA>
-//    requires(std::is_constructible_v<mdspan_type,
-//                                     mdspan<OtherT, OtherE, OtherL, OtherA>>)
-#ifndef KOKKOS_ENABLE_CXX17
+    requires(std::is_constructible_v<mdspan_type,
+                                     mdspan<OtherT, OtherE, OtherL, OtherA>>)
   explicit(
       !std::is_convertible_v<const typename OtherL::template mapping<OtherE> &,
                              mapping_type> ||
       !std::is_convertible_v<const OtherA &, accessor_type>)
-#endif
       KOKKOS_INLINE_FUNCTION
       BasicView(const mdspan<OtherT, OtherE, OtherL, OtherA> &other,
                 std::enable_if_t<
@@ -410,10 +400,10 @@ class BasicView {
       std::enable_if_t<!Impl::ViewCtorProp<P...>::has_pointer &&
                            Impl::ViewCtorProp<P...>::has_accessor_arg,
                        typename mdspan_type::mapping_type> const &arg_mapping)
-      : BasicView(
-            arg_prop, arg_mapping,
-            accessor_type{
-                Impl::get_property<Impl::AccessorArgTag>(arg_prop).value}) {}
+      : BasicView(arg_prop, arg_mapping,
+                  accessor_from_mapping_and_accessor_arg(
+                      Impl::AccessorTypeTag<accessor_type>(), arg_mapping,
+                      Impl::get_property<Impl::AccessorArgTag>(arg_prop))) {}
 
   template <class... P>
   KOKKOS_FUNCTION explicit BasicView(
@@ -421,10 +411,10 @@ class BasicView {
       std::enable_if_t<Impl::ViewCtorProp<P...>::has_pointer &&
                            Impl::ViewCtorProp<P...>::has_accessor_arg,
                        typename mdspan_type::mapping_type> const &arg_mapping)
-      : BasicView(
-            arg_prop, arg_mapping,
-            accessor_type{
-                Impl::get_property<Impl::AccessorArgTag>(arg_prop).value}) {}
+      : BasicView(arg_prop, arg_mapping,
+                  accessor_from_mapping_and_accessor_arg(
+                      Impl::AccessorTypeTag<accessor_type>(), arg_mapping,
+                      Impl::get_property<Impl::AccessorArgTag>(arg_prop))) {}
 
   // Private Ctors coming from the case where we dealt with AccessorArg_t
   // We don't have public ctors which take ViewCtorProp and accessor.
@@ -455,6 +445,27 @@ class BasicView {
   // Ctors taking CtorProp that don't have AccessorArg_t in it
  public:
   template <class... P>
+  explicit BasicView(
+      const Impl::ViewCtorProp<P...> &arg_prop,
+      std::enable_if_t<!Impl::ViewCtorProp<P...>::has_pointer &&
+                           !Impl::ViewCtorProp<P...>::has_accessor_arg,
+                       typename mdspan_type::mapping_type> const &arg_mapping,
+      const accessor_type &arg_accessor)
+      : BasicView(create_data_handle(arg_prop, arg_mapping, arg_accessor),
+                  arg_mapping, arg_accessor) {}
+
+  template <class... P>
+  KOKKOS_FUNCTION explicit BasicView(
+      const Impl::ViewCtorProp<P...> &arg_prop,
+      std::enable_if_t<ViewCtorProp<P...>::has_pointer &&
+                           !Impl::ViewCtorProp<P...>::has_accessor_arg,
+                       typename mdspan_type::mapping_type> const &arg_mapping,
+      const accessor_type &arg_accessor)
+      : BasicView(
+            data_handle_type{Impl::get_property<Impl::PointerTag>(arg_prop)},
+            arg_mapping, arg_accessor) {}
+
+  template <class... P>
   explicit inline BasicView(
       const Impl::ViewCtorProp<P...> &arg_prop,
       std::enable_if_t<!Impl::ViewCtorProp<P...>::has_pointer &&
@@ -473,6 +484,76 @@ class BasicView {
             data_handle_type{Impl::get_property<Impl::PointerTag>(arg_prop)},
             arg_mapping) {}
 
+#ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
+ private:
+  template <class Arg>
+  KOKKOS_INLINE_FUNCTION static bool is_in_bounds(size_t extent,
+                                                  const Arg arg) {
+    return static_cast<std::size_t>(arg) < extent;
+  }
+
+  template <class T>
+  KOKKOS_INLINE_FUNCTION static bool is_in_bounds(size_t extent,
+                                                  const std::pair<T, T> arg) {
+    return static_cast<std::size_t>(arg.second) <= extent && arg.first >= 0 &&
+           arg.first <= arg.second;
+  }
+
+  template <class T>
+  static bool is_in_bounds(size_t extent, const Kokkos::pair<T, T> arg) {
+    return static_cast<std::size_t>(arg.second) <= extent && arg.first >= 0 &&
+           arg.first <= arg.second;
+  }
+
+  KOKKOS_INLINE_FUNCTION static bool is_in_bounds(size_t /*extent*/,
+                                                  const Kokkos::ALL_t) {
+    return true;
+  }
+
+  template <class RT, class... RP, size_t... Idx, class... Args>
+  KOKKOS_INLINE_FUNCTION static bool subview_extents_valid(
+      const BasicView<RT, RP...> &src_view, std::index_sequence<Idx...>,
+      Args... args) {
+    return (is_in_bounds(src_view.extent(Idx), args) && ... && true);
+  }
+
+  template <class Arg>
+  static void append_error_message(std::stringstream &ss, size_t extent,
+                                   const Arg arg) {
+    ss << arg << " < " << extent;
+  }
+
+  template <class T>
+  static void append_error_message(std::stringstream &ss, size_t extent,
+                                   const std::pair<T, T> arg) {
+    ss << arg.first << " <= " << arg.second << " <= " << extent;
+  }
+
+  template <class T>
+  static void append_error_message(std::stringstream &ss, size_t extent,
+                                   const Kokkos::pair<T, T> arg) {
+    ss << arg.first << " <= " << arg.second << " <= " << extent;
+  }
+
+  static void append_error_message(std::stringstream &ss, size_t /*extent*/,
+                                   const Kokkos::ALL_t) {
+    ss << "Kokkos::ALL";
+  }
+
+  template <class RT, class... RP, size_t... Idx, class Arg0, class... Args>
+  static std::stringstream generate_error_message(
+      const BasicView<RT, RP...> &src_view, std::index_sequence<Idx...>,
+      Arg0 arg0, Args... args) {
+    std::stringstream ss;
+    ss << "Kokkos::subview bounds error (";
+    append_error_message(ss, src_view.extent(0), arg0);
+    ((ss << ", ", append_error_message(ss, src_view.extent(Idx + 1), args)),
+     ...);
+    ss << ')';
+    return ss;
+  }
+#endif
+
  protected:
   template <class OtherElementType, class OtherExtents, class OtherLayoutPolicy,
             class OtherAccessorPolicy, class... SliceSpecifiers>
@@ -483,7 +564,24 @@ class BasicView {
       SliceSpecifiers... slices)
       : BasicView(submdspan(
             src_view.to_mdspan(),
-            Impl::transform_kokkos_slice_to_mdspan_slice(slices)...)) {}
+            Impl::transform_kokkos_slice_to_mdspan_slice(slices)...)) {
+#ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
+    bool valid = subview_extents_valid(
+        src_view, std::make_index_sequence<sizeof...(SliceSpecifiers)>{},
+        slices...);
+    if (!valid) {
+      KOKKOS_IF_ON_HOST(
+          Kokkos::abort(
+              generate_error_message(
+                  src_view,
+                  std::make_index_sequence<sizeof...(SliceSpecifiers) - 1>{},
+                  slices...)
+                  .str()
+                  .c_str());)
+      KOKKOS_IF_ON_DEVICE(Kokkos::abort("Kokkos::subview bounds error");)
+    }
+#endif
+  }
 
  public:
   //----------------------------------------
@@ -539,7 +637,6 @@ class BasicView {
   // [mdspan.mdspan.members], members
 
 // Introducing the C++20 and C++23 variants of the operators already
-#ifndef KOKKOS_ENABLE_CXX17
 #ifndef KOKKOS_ENABLE_CXX20
   // C++23 only operator[]
   template <class... OtherIndexTypes>
@@ -566,38 +663,6 @@ class BasicView {
     return m_acc.access(m_ptr,
                         m_map(static_cast<index_type>(std::move(indices))...));
   }
-#else
-  // C++17 variant of operator()
-
-  // Some weird unexplained issue in compiling the SFINAE version with MSVC
-  // So we just use post factor check here with static_assert
-#if defined(_WIN32)
-  template <class... OtherIndexTypes>
-  KOKKOS_FUNCTION constexpr reference operator()(
-      OtherIndexTypes... indices) const {
-    static_assert((std::is_convertible_v<OtherIndexTypes, index_type> && ...));
-    static_assert(
-        (std::is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...));
-    static_assert((sizeof...(OtherIndexTypes)) == rank());
-    KOKKOS_IMPL_BASICVIEW_OPERATOR_VERIFY(indices...)
-    return m_acc.access(m_ptr,
-                        m_map(static_cast<index_type>(std::move(indices))...));
-  }
-#else
-  template <class... OtherIndexTypes>
-  KOKKOS_FUNCTION constexpr std::enable_if_t<
-      ((std::is_convertible_v<OtherIndexTypes, index_type> && ...)) &&
-          ((std::is_nothrow_constructible_v<index_type, OtherIndexTypes> &&
-            ...)) &&
-          ((sizeof...(OtherIndexTypes)) == rank()),
-      reference>
-  operator()(OtherIndexTypes... indices) const {
-    KOKKOS_IMPL_BASICVIEW_OPERATOR_VERIFY(indices...)
-    return m_acc.access(m_ptr,
-                        m_map(static_cast<index_type>(std::move(indices))...));
-  }
-#endif
-#endif
 
 #undef KOKKOS_IMPL_BASICVIEW_OPERATOR_VERIFY
 
@@ -650,40 +715,38 @@ class BasicView {
 
   KOKKOS_FUNCTION constexpr const extents_type &extents() const noexcept {
     return m_map.extents();
-  };
+  }
   KOKKOS_FUNCTION constexpr const data_handle_type &data_handle()
       const noexcept {
     return m_ptr;
-  };
+  }
   KOKKOS_FUNCTION constexpr const mapping_type &mapping() const noexcept {
     return m_map;
-  };
+  }
   KOKKOS_FUNCTION constexpr const accessor_type &accessor() const noexcept {
     return m_acc;
-  };
+  }
 
   KOKKOS_FUNCTION static constexpr bool is_always_unique() noexcept {
     return mapping_type::is_always_unique();
-  };
+  }
   KOKKOS_FUNCTION static constexpr bool is_always_exhaustive() noexcept {
     return mapping_type::is_always_exhaustive();
-  };
+  }
   KOKKOS_FUNCTION static constexpr bool is_always_strided() noexcept {
     return mapping_type::is_always_strided();
-  };
+  }
 
-  KOKKOS_FUNCTION constexpr bool is_unique() const {
-    return m_map.is_unique();
-  };
+  KOKKOS_FUNCTION constexpr bool is_unique() const { return m_map.is_unique(); }
   KOKKOS_FUNCTION constexpr bool is_exhaustive() const {
     return m_map.is_exhaustive();
-  };
+  }
   KOKKOS_FUNCTION constexpr bool is_strided() const {
     return m_map.is_strided();
-  };
+  }
   KOKKOS_FUNCTION constexpr index_type stride(rank_type r) const {
     return m_map.stride(r);
-  };
+  }
 
  protected:
 #ifndef __NVCC__

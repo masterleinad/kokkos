@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 /*--------------------------------------------------------------------------*/
 /* Kokkos interfaces */
@@ -87,7 +74,7 @@ int HIPInternal::concurrency() {
 void HIPInternal::print_configuration(std::ostream &s) const {
   s << "macro  KOKKOS_ENABLE_HIP : defined" << '\n';
 #if defined(HIP_VERSION)
-  s << "macro  HIP_VERSION = " << HIP_VERSION << " = version "
+  s << "macro  HIP_VERSION : " << HIP_VERSION << " = version "
     << HIP_VERSION_MAJOR << '.' << HIP_VERSION_MINOR << '.' << HIP_VERSION_PATCH
     << '\n';
 #endif
@@ -113,7 +100,10 @@ void HIPInternal::print_configuration(std::ostream &s) const {
 
     s << "Kokkos::HIP[ " << i << " ] "
       << "gcnArch " << hipProp.gcnArchName;
-    if (m_hipDev == i) s << " : Selected";
+    if (m_hipDev == i)
+      s << " : Selected";
+    else
+      s << " : Not Selected";
     s << '\n'
       << "  Total Global Memory: "
       << ::Kokkos::Impl::human_memory_size(hipProp.totalGlobalMem) << '\n'
@@ -186,24 +176,13 @@ void HIPInternal::initialize(hipStream_t stream) {
   if (was_finalized)
     Kokkos::abort("Calling HIP::initialize after HIP::finalize is illegal\n");
 
-    // Get the device ID. If this is ROCm 5.6 or later, we can query this from
-    // the provided stream and potentially use multiple GPU devices. For
-    // ROCm 5.5 or earlier, we must use the singleton device id and there are no
-    // checks possible for the device id matching the device the stream was
-    // created on.
-#if (HIP_VERSION_MAJOR > 5 || \
-     (HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR >= 6))
   KOKKOS_IMPL_HIP_SAFE_CALL(hipStreamGetDevice(stream, &m_hipDev));
-#else
-  m_hipDev = singleton().m_hipDev;
-#endif
   KOKKOS_IMPL_HIP_SAFE_CALL(hipSetDevice(m_hipDev));
   hip_devices.insert(m_hipDev);
 
   m_stream = stream;
 
-  // Allocate a staging buffer for constant mem in pinned host memory
-  // and an event to avoid overwriting driver for previous kernel launches
+  // Allocate a staging buffer for constant mem in pinned host memory.
   if (!constantMemHostStaging[m_hipDev]) {
     void *constant_mem_void_ptr = nullptr;
     KOKKOS_IMPL_HIP_SAFE_CALL(hip_host_malloc_wrapper(
@@ -211,9 +190,10 @@ void HIPInternal::initialize(hipStream_t stream) {
     constantMemHostStaging[m_hipDev] =
         static_cast<unsigned long *>(constant_mem_void_ptr);
   }
-  if (!constantMemReusable[m_hipDev])
-    KOKKOS_IMPL_HIP_SAFE_CALL(hip_event_create_with_flags_wrapper(
-        &constantMemReusable[m_hipDev], hipEventDisableTiming));
+
+  // Initialize the shared resource locking to avoid overwriting the driver of
+  // the previous kernel launch.
+  constantMemReusable[m_hipDev].initialize();
 
   //----------------------------------
   // Multiblock reduction uses scratch flags for counters
@@ -371,7 +351,17 @@ void HIPInternal::release_team_scratch_space(int scratch_pool_id) {
 //----------------------------------------------------------------------------
 
 void HIPInternal::finalize() {
+  // First, lock the shared resource locking helper.
+  // Then, fence the stream and check if it was involved in the last constant
+  // memory launch.
+  // Locking is required to avoid a race condition, i.e. it prevents another
+  // thread from launching another kernel in-between the fence
+  // and the 'check_if_involved_and_unlock'.
+  auto lock = HIPInternal::constantMemReusable[m_hipDev].lock();
   this->fence("Kokkos::HIPInternal::finalize: fence on finalization");
+  HIPInternal::constantMemReusable[m_hipDev].check_if_involved_and_unlock(
+      std::move(lock), m_stream);
+
   was_finalized = true;
 
   auto device_mem_space = Kokkos::HIPSpace::impl_create(m_hipDev, m_stream);
@@ -418,8 +408,7 @@ std::mutex HIPInternal::scratchFunctorMutex;
 
 std::set<int> HIPInternal::hip_devices                             = {};
 std::map<int, unsigned long *> HIPInternal::constantMemHostStaging = {};
-std::map<int, hipEvent_t> HIPInternal::constantMemReusable         = {};
-std::map<int, std::mutex> HIPInternal::constantMemMutex            = {};
+std::map<int, SharedResourceLock> HIPInternal::constantMemReusable = {};
 
 //----------------------------------------------------------------------------
 
@@ -458,13 +447,3 @@ void hip_internal_error_throw(hipError_t e, const char *name, const char *file,
 }  // namespace Kokkos
 
 //----------------------------------------------------------------------------
-
-void Kokkos::Impl::create_HIP_instances(std::vector<HIP> &instances) {
-  for (int s = 0; s < int(instances.size()); s++) {
-    hipStream_t stream;
-    KOKKOS_IMPL_HIP_SAFE_CALL(
-        instances[s].impl_internal_space_instance()->hip_stream_create_wrapper(
-            &stream));
-    instances[s] = HIP(stream, ManageStream::yes);
-  }
-}
