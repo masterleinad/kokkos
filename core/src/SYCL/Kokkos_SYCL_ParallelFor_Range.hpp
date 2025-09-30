@@ -21,19 +21,17 @@ struct FunctorWrapperRangePolicyParallelFor {
   // might execute the functor for multiple indices.
   // Choosing INT_MAX aligns well with -fsycl-id-queries-fit-in-int.
   void operator()(sycl::item<1> item) const {
-    typename Policy::index_type id  = item.get_linear_id() + m_begin;
-    typename Policy::index_type end = m_work_size + m_begin;
-    if (id < end) {
-      while (true) {
-        if constexpr (std::is_void_v<WorkTag>)
-          m_functor_wrapper.get_functor()(id);
-        else
-          m_functor_wrapper.get_functor()(WorkTag(), id);
-        // We need to execute for another index if id + INT_MAX < end, and need
-        // to take care for this check to not overflow.
-        if (end <= INT_MAX || (id >= (end - INT_MAX))) break;
-        id += INT_MAX;
-      }
+    typename Policy::index_type id        = item.get_linear_id() + m_begin;
+    const typename Policy::index_type end = m_work_size + m_begin;
+    while (true) {
+      if constexpr (std::is_void_v<WorkTag>)
+        m_functor_wrapper.get_functor()(id);
+      else
+        m_functor_wrapper.get_functor()(WorkTag(), id);
+      // We need to execute for another index if id + INT_MAX < end, and need
+      // to take care for this check to not overflow.
+      if (end <= INT_MAX || (id >= (end - INT_MAX))) break;
+      id += INT_MAX;
     }
   }
 
@@ -52,8 +50,8 @@ struct FunctorWrapperRangePolicyParallelForCustom {
   // might execute the functor for multiple indices.
   // Choosing INT_MAX aligns well with -fsycl-id-queries-fit-in-int.
   void operator()(sycl::nd_item<1> item) const {
-    typename Policy::index_type id  = item.get_global_linear_id() + m_begin;
-    typename Policy::index_type end = m_work_size + m_begin;
+    typename Policy::index_type id = item.get_global_linear_id() + m_begin;
+    const typename Policy::index_type end = m_work_size + m_begin;
     if (id < end) {
       while (true) {
         if constexpr (std::is_void_v<WorkTag>)
