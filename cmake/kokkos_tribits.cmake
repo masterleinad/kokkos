@@ -109,7 +109,6 @@ function(KOKKOS_ADD_EXECUTABLE_AND_TEST ROOT_NAME)
       OR Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES
       OR Kokkos_ENABLE_SYCL
       OR Kokkos_ENABLE_HPX
-      OR (KOKKOS_CXX_COMPILER_ID STREQUAL "NVIDIA" AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 11.3.0)
       OR (KOKKOS_CXX_COMPILER_ID STREQUAL "NVIDIA" AND KOKKOS_CXX_HOST_COMPILER_ID STREQUAL "MSVC"))
   )
     if(MSVC)
@@ -162,7 +161,6 @@ macro(KOKKOS_SETUP_BUILD_ENVIRONMENT)
     include(${KOKKOS_SRC_PATH}/cmake/kokkos_arch.cmake)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${Kokkos_SOURCE_DIR}/cmake/Modules/")
     include(${KOKKOS_SRC_PATH}/cmake/kokkos_tpls.cmake)
-    include(${KOKKOS_SRC_PATH}/cmake/kokkos_corner_cases.cmake)
   endif()
 endmacro()
 
@@ -197,6 +195,9 @@ macro(KOKKOS_CONFIGURE_CORE)
     KokkosCore_Config_HeaderSet.in KokkosCore_Config_DeclareBackend.hpp "KOKKOS_DECLARE" "decl/Kokkos_Declare"
     "${KOKKOS_ENABLED_DEVICES}"
   )
+  if(BUILD_SHARED_LIBS)
+    set(KOKKOS_IMPL_BUILD_SHARED_LIBS ON)
+  endif()
   configure_file(cmake/KokkosCore_config.h.in KokkosCore_config.h @ONLY)
 endmacro()
 
@@ -378,7 +379,9 @@ function(KOKKOS_ADD_LIBRARY LIBRARY_NAME)
   if(PARSE_SHARED OR BUILD_SHARED_LIBS)
     set_target_properties(
       ${LIBRARY_NAME} PROPERTIES VERSION ${Kokkos_VERSION} SOVERSION ${Kokkos_VERSION_MAJOR}.${Kokkos_VERSION_MINOR}
+                                 WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
+    target_compile_definitions(${LIBRARY_NAME} PRIVATE KOKKOS_IMPL_EXPORT_SYMBOLS)
   endif()
 
   kokkos_internal_add_library_install(${LIBRARY_NAME})

@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_CUDA_INSTANCE_HPP_
 #define KOKKOS_CUDA_INSTANCE_HPP_
@@ -94,7 +81,7 @@ class CudaInternal {
   static int m_cudaArch;
   static int concurrency();
 
-  static cudaDeviceProp m_deviceProp;
+  KOKKOS_IMPL_EXPORT static cudaDeviceProp m_deviceProp;
 
   // Scratch Spaces for Reductions
   mutable std::size_t m_scratchSpaceCount;
@@ -121,9 +108,11 @@ class CudaInternal {
   bool was_finalized   = false;
 
   static std::set<int> cuda_devices;
-  static std::map<int, unsigned long*> constantMemHostStagingPerDevice;
-  static std::map<int, cudaEvent_t> constantMemReusablePerDevice;
-  static std::map<int, std::mutex> constantMemMutexPerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, unsigned long*>
+      constantMemHostStagingPerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, cudaEvent_t>
+      constantMemReusablePerDevice;
+  KOKKOS_IMPL_EXPORT static std::map<int, std::mutex> constantMemMutexPerDevice;
 
   static CudaInternal& singleton();
 
