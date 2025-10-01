@@ -57,6 +57,12 @@ class OpenMPInternal {
       : m_pool_size{arg_pool_size}, m_level{omp_get_level()}, m_pool() {
     // guard pushing to all_instances
     {
+#ifndef KOKKOS_ENABLE_DEPRECATED_CODE_4
+      if (omp_get_level() != 0)
+        Kokkos::abort(
+            "Kokkos::OpenMP instances can only be created outside OpenMP "
+            "regions!");
+#endif
       std::scoped_lock lock(all_instances_mutex);
       all_instances.push_back(this);
     }
