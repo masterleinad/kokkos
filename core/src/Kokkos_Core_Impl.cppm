@@ -22,6 +22,8 @@ export {
   namespace BV {
   using ::Kokkos::Impl::BV::BasicView;
   }
+  using ::Kokkos::Impl::AccessorArg_t;
+  using ::Kokkos::Impl::AccessorTypeTag;
   using ::Kokkos::Impl::append_formatted_multidimensional_index;
   using ::Kokkos::Impl::ApplyToViewOfStaticRank;
   using ::Kokkos::Impl::are_integral;
@@ -50,15 +52,18 @@ export {
   using ::Kokkos::Impl::ReferenceCountedAccessor;
   using ::Kokkos::Impl::ReferenceCountedDataHandle;
   using ::Kokkos::Impl::runtime_check_memory_access_violation;
+  using ::Kokkos::Impl::SharedAllocationHeader;
   using ::Kokkos::Impl::SharedAllocationRecord;
   using ::Kokkos::Impl::SharedAllocationTracker;
   using ::Kokkos::Impl::size_mismatch;
   using ::Kokkos::Impl::SpaceAwareAccessor;
   using ::Kokkos::Impl::SubviewExtents;
   using ::Kokkos::Impl::SubviewLegalArgsCompileTime;
+  using ::Kokkos::Impl::ViewArguments;
   using ::Kokkos::Impl::ViewArrayAnalysis;
   using ::Kokkos::Impl::ViewCopy;
   using ::Kokkos::Impl::ViewCtorProp;
+  using ::Kokkos::Impl::ViewCustomArguments;
   using ::Kokkos::Impl::ViewDataAnalysis;
   using ::Kokkos::Impl::ViewDataHandle;
   using ::Kokkos::Impl::ViewDimension;
@@ -71,6 +76,7 @@ export {
 
   // execution policies
   namespace Impl {
+  using ::Kokkos::Impl::get_tile_size_properties;
   using ::Kokkos::Impl::ParallelConstructName;
   using ::Kokkos::Impl::PolicyTraits;
   using ::Kokkos::Impl::WorkTagTrait;
@@ -78,8 +84,10 @@ export {
 
   // miscellaneous
   namespace Impl {
+  using ::Kokkos::Impl::FunctorAnalysis;
   using ::Kokkos::Impl::python_view_type_impl_t;
   using ::Kokkos::Impl::throw_runtime_exception;
+  using ::Kokkos::Impl::TypeInfo;
   }  // namespace Impl
 
   // initialization/finalization
