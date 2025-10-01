@@ -128,7 +128,7 @@ inline bool execute_in_serial(OpenMP const& space = OpenMP()) {
     _OPENMP >= 201511
   bool is_nested = omp_get_max_active_levels() > 1;
 #else
-  bool is_nested = static_cast<bool>(omp_get_nested());
+  bool is_nested  = static_cast<bool>(omp_get_nested());
 #endif
   bool max_parallel_level_exceeded =
       (space.impl_internal_space_instance()->get_level() < omp_get_level() &&
@@ -177,16 +177,26 @@ inline std::vector<int> calculate_omp_pool_sizes(
 template <class T>
 std::vector<OpenMP> impl_partition_space(const OpenMP& base_instance,
                                          const std::vector<T>& weights) {
-  const auto pool_sizes =
-      Impl::calculate_omp_pool_sizes(base_instance, weights);
+#if (!defined(KOKKOS_COMPILER_GNU) || KOKKOS_COMPILER_GNU >= 1110) && \
+    _OPENMP >= 201511
+  bool has_nested = omp_get_max_active_levels() > 1;
+#else
+  bool has_nested = static_cast<bool>(omp_get_nested());
+#endif
+  if (!has_nested || omp_get_level() != 0) {
+    return {weights.size(), Kokkos::OpenMP{}};
+  } else {
+    const auto pool_sizes =
+        Impl::calculate_omp_pool_sizes(base_instance, weights);
 
-  std::vector<OpenMP> instances;
-  instances.reserve(pool_sizes.size());
-  for (size_t i = 0; i < pool_sizes.size(); ++i) {
-    instances.emplace_back(OpenMP(pool_sizes[i]));
+    std::vector<OpenMP> instances;
+    instances.reserve(pool_sizes.size());
+    for (size_t i = 0; i < pool_sizes.size(); ++i) {
+      instances.emplace_back(OpenMP(pool_sizes[i]));
+    }
+
+    return instances;
   }
-
-  return instances;
 }
 }  // namespace Experimental::Impl
 }  // namespace Kokkos
