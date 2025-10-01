@@ -7,7 +7,12 @@
 // mesh in order to represent particular boundaries or the interior of
 // the mesh.
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 #include <Kokkos_Timer.hpp>
 #include <cstdio>
 

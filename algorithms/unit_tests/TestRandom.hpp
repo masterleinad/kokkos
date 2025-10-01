@@ -9,7 +9,12 @@
 #include <cstdlib>
 #include <cstdio>
 #include <Kokkos_Timer.hpp>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 #include <Kokkos_Macros.hpp>
 #ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.dyn_rank_view;
@@ -18,6 +23,7 @@ import kokkos.random;
 #include <Kokkos_DynRankView.hpp>
 #include <Kokkos_Random.hpp>
 #endif
+#include <impl/Kokkos_Half_FloatingPointWrapper.hpp>
 #include <cmath>
 #include <chrono>
 #include <vector>

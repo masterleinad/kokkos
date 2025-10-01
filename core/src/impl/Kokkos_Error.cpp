@@ -9,7 +9,12 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
-#include <Kokkos_Core.hpp>  // show_warnings
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
+#include <Kokkos_Core.hpp>
+#endif  // show_warnings
 #include <impl/Kokkos_Error.hpp>
 
 void Kokkos::Impl::throw_runtime_exception(const std::string &msg) {

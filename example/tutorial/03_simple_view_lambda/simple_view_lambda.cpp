@@ -12,7 +12,12 @@
 // define the loop bodies of the parallel_for and parallel_reduce.
 //
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 #include <cstdio>
 
 // A Kokkos::View is an array of zero or more dimensions.  The number

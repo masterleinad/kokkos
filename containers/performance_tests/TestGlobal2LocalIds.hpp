@@ -4,7 +4,12 @@
 #ifndef KOKKOS_TEST_GLOBAL_TO_LOCAL_IDS_HPP
 #define KOKKOS_TEST_GLOBAL_TO_LOCAL_IDS_HPP
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 #include <Kokkos_Macros.hpp>
 #ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.unordered_map;

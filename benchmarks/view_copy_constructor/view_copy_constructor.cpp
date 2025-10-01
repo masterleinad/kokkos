@@ -10,7 +10,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/time.h>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 #include <iostream>
 
 // NVIEWS is the number of Kokkos View objects in our ViewCollection object

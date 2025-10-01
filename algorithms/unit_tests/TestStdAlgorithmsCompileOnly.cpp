@@ -7,7 +7,12 @@ import kokkos.std_algorithms;
 #else
 #include <Kokkos_StdAlgorithms.hpp>
 #endif
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 #include <string>
 
 namespace Test {
