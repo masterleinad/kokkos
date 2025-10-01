@@ -10,6 +10,8 @@ import kokkos.core;
 #include <benchmark/benchmark.h>
 #include "Benchmark_Context.hpp"
 
+#include <cmath>
+
 namespace Test {
 
 static constexpr int N = 10;

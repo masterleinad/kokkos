@@ -8,6 +8,8 @@ import kokkos.core;
 #include <Kokkos_Core.hpp>
 #endif
 
+#include <cstddef>
+
 template <class ViewType>
 struct ParallelScanFunctor {
   using value_type = double;

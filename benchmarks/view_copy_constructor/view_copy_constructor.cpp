@@ -6,6 +6,7 @@
 // Please see the lines marked by "NOTE".
 
 #include <limits>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

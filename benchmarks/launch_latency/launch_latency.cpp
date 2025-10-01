@@ -27,6 +27,9 @@ import kokkos.core;
 #include <Kokkos_Core.hpp>
 #endif
 
+#include <iostream>
+#include <string>
+
 template <int V>
 struct TestFunctor {
   double values[V] = {};

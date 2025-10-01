@@ -9,6 +9,8 @@ import kokkos.core;
 #endif
 #include "policy_perf_test.hpp"
 
+#include <iostream>
+
 int main(int argc, char* argv[]) {
   Kokkos::initialize(argc, argv);
 

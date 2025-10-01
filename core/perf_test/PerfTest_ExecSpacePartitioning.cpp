@@ -7,6 +7,8 @@ import kokkos.core;
 #else
 #include <Kokkos_Core.hpp>
 #endif
+#include <Kokkos_Assert.hpp>
+
 #include <benchmark/benchmark.h>
 #include "PerfTest_Category.hpp"
 
