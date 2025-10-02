@@ -44,7 +44,8 @@ void test_moving_view_does_not_change_use_count(ViewType v) {
   EXPECT_EQ(v.data(), w.data());
 #else
   EXPECT_EQ(v.use_count(), 0);
-  // EXPECT_EQ(v.data(), nullptr);
+  // FIXME should be nullptr
+  EXPECT_EQ(v.data(), ptr);
 #endif
 
   v = std::move(w);  // move assignment
@@ -62,7 +63,8 @@ void test_moving_view_does_not_change_use_count(ViewType v) {
   EXPECT_EQ(w.data(), v.data());
 #else
   EXPECT_EQ(w.use_count(), 0);
-  // EXPECT_EQ(w.data(), nullptr);
+  // FIXME should be nullptr
+  EXPECT_EQ(w.data(), ptr);
 #endif
 
   // NOLINTEND(bugprone-use-after-move)
@@ -116,7 +118,9 @@ KOKKOS_FUNCTION int check_moved_from_view_state(ViewType v) {
 
 template <class ViewType>
 void test_moved_from_view(ViewType v) {
-  // EXPECT_EQ(check_moved_from_view_state(v), 0) << "outside parallel region";
+  // The comparison fails because we don't reset extents or span in either
+  // implementation EXPECT_EQ(check_moved_from_view_state(v), 0) << "outside
+  // parallel region";
 
   using ExexutionSpace = typename ViewType::execution_space;
   int errors;
@@ -124,7 +128,8 @@ void test_moved_from_view(ViewType v) {
       Kokkos::RangePolicy<ExexutionSpace>(0, 1),
       KOKKOS_LAMBDA(int, int& err) { err += check_moved_from_view_state(v); },
       errors);
-  // EXPECT_EQ(errors, 0) << "within parallel region";
+  // The comparison fails because we don't reset extents or span in either
+  // implementation EXPECT_EQ(errors, 0) << "within parallel region";
 }
 
 TEST(TEST_CATEGORY, view_moved_from) {
