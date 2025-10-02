@@ -31,10 +31,7 @@ void test_moving_view_does_not_change_use_count(ViewType v) {
 
   ViewType w(std::move(v));  // move construction
 #ifdef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
-  if (w.use_count() != 0)
-    EXPECT_EQ(w.use_count(), cnt + 1);
-  else
-    EXPECT_EQ(w.use_count(), 0);
+  if (w.use_count() != 0) EXPECT_EQ(w.use_count(), cnt + 1);
 #else
   EXPECT_EQ(w.use_count(), cnt);
 #endif
@@ -50,10 +47,7 @@ void test_moving_view_does_not_change_use_count(ViewType v) {
 
   v = std::move(w);  // move assignment
 #ifdef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
-  if (v.use_count() != 0)
-    EXPECT_EQ(v.use_count(), cnt + 1);
-  else
-    EXPECT_EQ(w.use_count(), 0);
+  if (v.use_count() != 0) EXPECT_EQ(v.use_count(), cnt + 1);
 #else
   EXPECT_EQ(v.use_count(), cnt);
 #endif
