@@ -87,7 +87,6 @@ export {
   using ::Kokkos::Impl::FunctorAnalysis;
   using ::Kokkos::Impl::python_view_type_impl_t;
   using ::Kokkos::Impl::throw_runtime_exception;
-  using ::Kokkos::Impl::TypeInfo;
   }  // namespace Impl
 
   // initialization/finalization

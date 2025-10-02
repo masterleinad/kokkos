@@ -8,6 +8,7 @@ import kokkos.core_impl;
 #else
 #include <Kokkos_Core.hpp>
 #endif
+#include <Kokkos_TypeInfo.hpp>
 
 #include <gtest/gtest.h>
 
