@@ -301,28 +301,6 @@ class ReferenceCountedDataHandle {
       const ReferenceCountedDataHandle<OtherElementType, memory_space>& other)
       : m_tracker(other.m_tracker), m_handle(other.m_handle) {}
 
-  KOKKOS_FUNCTION ReferenceCountedDataHandle(
-      const ReferenceCountedDataHandle& other) = default;
-
-  KOKKOS_FUNCTION ReferenceCountedDataHandle(ReferenceCountedDataHandle&& other)
-      : m_tracker(std::move(other.m_tracker)),
-        m_handle(std::move(other.m_handle)) {
-    other.m_handle = nullptr;
-  }
-
-  KOKKOS_FUNCTION ReferenceCountedDataHandle& operator=(
-      const ReferenceCountedDataHandle& other) = default;
-
-  KOKKOS_FUNCTION ReferenceCountedDataHandle& operator=(
-      ReferenceCountedDataHandle&& other) {
-    m_tracker      = std::move(other.m_tracker);
-    m_handle       = std::move(other.m_handle);
-    other.m_handle = nullptr;
-    return *this;
-  }
-
-  ~ReferenceCountedDataHandle() = default;
-
   template <
       class OtherElementType, class OtherSpace,
       class = std::enable_if_t<

@@ -40,16 +40,15 @@ static_assert(false,
 #define KOKKOS_IMPL_BASICVIEW_OPERATOR_VERIFY(...)                             \
   if constexpr (Impl::IsReferenceCountedDataHandle<data_handle_type>::value) { \
     Kokkos::Impl::runtime_check_memory_access_violation<memory_space>(         \
-        m_ptr.m_data_handle.tracker());                                        \
+        m_ptr.tracker());                                                      \
     Kokkos::Impl::view_verify_operator_bounds(                                 \
-        m_ptr.m_data_handle.tracker(), m_map.extents(),                        \
-        m_ptr.m_data_handle.get(), __VA_ARGS__);                               \
+        m_ptr.tracker(), m_map.extents(), m_ptr.get(), __VA_ARGS__);           \
   } else {                                                                     \
     Kokkos::Impl::runtime_check_memory_access_violation<memory_space>(         \
         Kokkos::Impl::SharedAllocationTracker());                              \
     Kokkos::Impl::view_verify_operator_bounds(                                 \
-        Kokkos::Impl::SharedAllocationTracker(), m_map.extents(),              \
-        m_ptr.m_data_handle, __VA_ARGS__);                                     \
+        Kokkos::Impl::SharedAllocationTracker(), m_map.extents(), m_ptr,       \
+        __VA_ARGS__);                                                          \
   }
 
 #else
@@ -57,7 +56,7 @@ static_assert(false,
 #define KOKKOS_IMPL_BASICVIEW_OPERATOR_VERIFY(...)                             \
   if constexpr (Impl::IsReferenceCountedDataHandle<data_handle_type>::value) { \
     Kokkos::Impl::runtime_check_memory_access_violation<memory_space>(         \
-        m_ptr.m_data_handle.tracker());                                        \
+        m_ptr.tracker());                                                      \
   } else {                                                                     \
     Kokkos::Impl::runtime_check_memory_access_violation<memory_space>(         \
         Kokkos::Impl::SharedAllocationTracker());                              \
@@ -137,49 +136,6 @@ KOKKOS_INLINE_FUNCTION constexpr auto accessor_from_mapping_and_accessor_arg(
 #endif
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
-
-template <typename DataHandle, bool = std::is_pointer_v<DataHandle>>
-struct DataHandleWrapper;
-
-template <typename DataHandle>
-struct DataHandleWrapper<DataHandle, false> {
-  KOKKOS_DEFAULTED_FUNCTION DataHandleWrapper() = default;
-  template <typename OtherDataHandle>
-  KOKKOS_FUNCTION DataHandleWrapper(const OtherDataHandle &data_handle)
-      : m_data_handle(data_handle) {}
-  template <typename OtherDataHandle>
-  KOKKOS_FUNCTION DataHandleWrapper(OtherDataHandle &&data_handle)
-      : m_data_handle(std::move(data_handle)) {}
-
-  DataHandle m_data_handle;
-};
-
-template <typename DataHandle>
-struct DataHandleWrapper<DataHandle, true> {
-  KOKKOS_DEFAULTED_FUNCTION DataHandleWrapper() = default;
-  KOKKOS_FUNCTION DataHandleWrapper(const DataHandle &data_handle)
-      : m_data_handle(data_handle) {}
-  KOKKOS_FUNCTION DataHandleWrapper(DataHandle &&data_handle)
-      : m_data_handle(data_handle) {
-    data_handle = nullptr;
-  }
-  KOKKOS_DEFAULTED_FUNCTION DataHandleWrapper(const DataHandleWrapper &) =
-      default;
-  KOKKOS_FUNCTION DataHandleWrapper(DataHandleWrapper &&other)
-      : m_data_handle(other.m_data_handle) {
-    other.m_data_handle = nullptr;
-  }
-  KOKKOS_DEFAULTED_FUNCTION DataHandleWrapper &operator=(
-      const DataHandleWrapper &) = default;
-  KOKKOS_FUNCTION DataHandleWrapper &operator=(DataHandleWrapper &&other) {
-    m_data_handle       = other.m_data_handle;
-    other.m_data_handle = nullptr;
-    return *this;
-  }
-  KOKKOS_DEFAULTED_FUNCTION ~DataHandleWrapper() = default;
-
-  DataHandle m_data_handle;
-};
 
 // BasicView has to be in a different namespace than Impl;
 // The reason for this is that if BasicView is in Impl, View (which derives from
@@ -342,9 +298,7 @@ class BasicView {
       !std::is_convertible_v<const OtherA &, accessor_type>)
       KOKKOS_INLINE_FUNCTION
       BasicView(const BasicView<OtherT, OtherE, OtherL, OtherA> &other)
-      : m_ptr(static_cast<data_handle_type>(other.m_ptr.m_data_handle)),
-        m_map(other.m_map),
-        m_acc(other.m_acc) {
+      : m_ptr(other.m_ptr), m_map(other.m_map), m_acc(other.m_acc) {
     // Kokkos View precondition checks happen in release builds
     check_basic_view_constructibility(other.mapping());
 
@@ -654,7 +608,7 @@ class BasicView {
   KOKKOS_INLINE_FUNCTION constexpr
   operator mdspan<OtherElementType, OtherExtents, OtherLayoutPolicy,
                   OtherAccessor>() const {
-    return mdspan_type(m_ptr.m_data_handle, m_map, m_acc);
+    return mdspan_type(m_ptr, m_map, m_acc);
   }
 
   // Here we use an overload instead of a default parameter as a workaround
@@ -719,7 +673,7 @@ class BasicView {
   KOKKOS_FUNCTION constexpr reference operator()(
       OtherIndexTypes... indices) const {
     KOKKOS_IMPL_BASICVIEW_OPERATOR_VERIFY(indices...);
-    return m_acc.access(m_ptr.m_data_handle,
+    return m_acc.access(m_ptr,
                         m_map(static_cast<index_type>(std::move(indices))...));
   }
 
@@ -777,7 +731,7 @@ class BasicView {
   }
   KOKKOS_FUNCTION constexpr const data_handle_type &data_handle()
       const noexcept {
-    return m_ptr.m_data_handle;
+    return m_ptr;
   }
   KOKKOS_FUNCTION constexpr const mapping_type &mapping() const noexcept {
     return m_map;
@@ -809,11 +763,11 @@ class BasicView {
 
  protected:
 #ifndef __NVCC__
-  KOKKOS_IMPL_NO_UNIQUE_ADDRESS DataHandleWrapper<data_handle_type> m_ptr{};
+  KOKKOS_IMPL_NO_UNIQUE_ADDRESS data_handle_type m_ptr{};
   KOKKOS_IMPL_NO_UNIQUE_ADDRESS mapping_type m_map{};
   KOKKOS_IMPL_NO_UNIQUE_ADDRESS accessor_type m_acc{};
 #else
-  struct DataHandleWrapper DataHandleWrapper<data_handle_type> m_ptr {};
+  data_handle_type m_ptr{};
   mapping_type m_map{};
   accessor_type m_acc{};
 #endif
