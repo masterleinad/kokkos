@@ -19,6 +19,8 @@ import kokkos.core_impl;
 #endif
 #include <impl/Kokkos_Error.hpp>
 
+#include <cstdint>
+
 namespace Kokkos {
 namespace Experimental {
 

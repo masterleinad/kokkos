@@ -11,6 +11,8 @@ import kokkos.core;
 #else
 #include <Kokkos_Core.hpp>
 #endif
+
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 
