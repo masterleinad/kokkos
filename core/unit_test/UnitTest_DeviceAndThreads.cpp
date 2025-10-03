@@ -9,6 +9,10 @@ import kokkos.core;
 #endif
 #include <Kokkos_Assert.hpp>
 
+#ifdef KOKKOS_ENABLE_OPENMP
+#include <omp.h>
+#endif
+
 #include <iostream>
 #include <string>
 #include <thread>

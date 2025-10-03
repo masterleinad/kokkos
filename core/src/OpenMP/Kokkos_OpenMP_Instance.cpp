@@ -12,6 +12,7 @@ import kokkos.core;
 #include <Kokkos_Core.hpp>
 #endif
 
+#include <OpenMP/Kokkos_OpenMP_Instance.hpp>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_CPUDiscovery.hpp>
 #include <impl/Kokkos_Tools.hpp>

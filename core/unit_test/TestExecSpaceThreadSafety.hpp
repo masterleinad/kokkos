@@ -9,6 +9,10 @@ import kokkos.core;
 #endif
 #include <thread>
 
+#ifdef KOKKOS_ENABLE_OPENMP
+#include <omp.h>
+#endif
+
 namespace {
 
 #ifdef KOKKOS_COMPILER_NVHPC
