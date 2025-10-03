@@ -18,6 +18,8 @@ import kokkos.sort;
 #include <Kokkos_Sort.hpp>
 #endif
 
+#include <algorithm>
+
 namespace Test {
 namespace SortImpl {
 

@@ -15,7 +15,9 @@ import kokkos.sort;
 #include <Kokkos_Random.hpp>
 #include <Kokkos_Sort.hpp>
 #endif
+
 #include <random>
+#include <algorithm>
 
 namespace Test {
 namespace BinSortSetA {
