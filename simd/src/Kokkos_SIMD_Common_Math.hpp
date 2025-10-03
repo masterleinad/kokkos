@@ -6,10 +6,10 @@
 
 #include <Kokkos_Macros.hpp>
 #ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
-import kokkos.core;
+import kokkos.core; // Kokkos::min, etc.
 #else
-#include <Kokkos_Core.hpp>
-#endif  // Kokkos::min, etc.
+#include <Kokkos_Core.hpp>  // Kokkos::min, etc.
+#endif
 
 namespace Kokkos {
 
