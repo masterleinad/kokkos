@@ -21,7 +21,6 @@ import kokkos.core;
 #include <HIP/Kokkos_HIP_IsXnack.hpp>
 #include <impl/Kokkos_CheckedIntegerOps.hpp>
 #include <impl/Kokkos_DeviceManagement.hpp>
-#include <impl/Kokkos_Error.hpp>
 
 /*--------------------------------------------------------------------------*/
 /* Standard 'C' libraries */
@@ -29,7 +28,6 @@ import kokkos.core;
 
 /* Standard 'C++' libraries */
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -431,23 +429,6 @@ Kokkos::HIP::size_type *hip_internal_scratch_flags(const HIP &instance,
   return instance.impl_internal_space_instance()->scratch_flags(size);
 }
 
-}  // namespace Impl
-}  // namespace Kokkos
-
-//----------------------------------------------------------------------------
-
-namespace Kokkos {
-namespace Impl {
-void hip_internal_error_throw(hipError_t e, const char *name, const char *file,
-                              const int line) {
-  std::ostringstream out;
-  out << name << " error( " << hipGetErrorName(e)
-      << "): " << hipGetErrorString(e);
-  if (file) {
-    out << " " << file << ":" << line;
-  }
-  throw_runtime_exception(out.str());
-}
 }  // namespace Impl
 }  // namespace Kokkos
 

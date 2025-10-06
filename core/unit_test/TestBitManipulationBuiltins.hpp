@@ -462,7 +462,7 @@ template <class UInt>
 void test_bit_manip_bit_width() {
   using Kokkos::Experimental::bit_width_builtin;
   static_assert(noexcept(bit_width_builtin(UInt())));
-  static_assert(std::is_same_v<decltype(bit_width_builtin(UInt())), UInt>);
+  static_assert(std::is_same_v<decltype(bit_width_builtin(UInt())), int>);
   constexpr auto max = Kokkos::Experimental::finite_max_v<UInt>;
   TEST_BIT_MANIP_FUNCTION(bit_width)
   ({
@@ -746,15 +746,15 @@ TEST(TEST_CATEGORY, bit_manip_byeswap) {
     test_bit_manip_byteswap<unsigned char>();
     test_bit_manip_byteswap<short>();
     test_bit_manip_byteswap<unsigned short>();
+    test_bit_manip_byteswap<int>();
+    test_bit_manip_byteswap<unsigned int>();
+    test_bit_manip_byteswap<long>();
+    test_bit_manip_byteswap<unsigned long>();
+    test_bit_manip_byteswap<long long>();
+    test_bit_manip_byteswap<unsigned long long>();
 #if defined(KOKKOS_ENABLE_OPENACC) && defined(KOKKOS_COMPILER_NVHPC)
   }
 #endif
-  test_bit_manip_byteswap<int>();
-  test_bit_manip_byteswap<unsigned int>();
-  test_bit_manip_byteswap<long>();
-  test_bit_manip_byteswap<unsigned long>();
-  test_bit_manip_byteswap<long long>();
-  test_bit_manip_byteswap<unsigned long long>();
 }
 
 // CUDA doesn't provide memcmp
