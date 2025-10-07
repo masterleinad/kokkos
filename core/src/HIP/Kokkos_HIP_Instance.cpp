@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 /*--------------------------------------------------------------------------*/
 /* Kokkos interfaces */
@@ -29,7 +16,6 @@
 #include <HIP/Kokkos_HIP_IsXnack.hpp>
 #include <impl/Kokkos_CheckedIntegerOps.hpp>
 #include <impl/Kokkos_DeviceManagement.hpp>
-#include <impl/Kokkos_Error.hpp>
 
 /*--------------------------------------------------------------------------*/
 /* Standard 'C' libraries */
@@ -37,7 +23,6 @@
 
 /* Standard 'C++' libraries */
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -439,23 +424,6 @@ Kokkos::HIP::size_type *hip_internal_scratch_flags(const HIP &instance,
   return instance.impl_internal_space_instance()->scratch_flags(size);
 }
 
-}  // namespace Impl
-}  // namespace Kokkos
-
-//----------------------------------------------------------------------------
-
-namespace Kokkos {
-namespace Impl {
-void hip_internal_error_throw(hipError_t e, const char *name, const char *file,
-                              const int line) {
-  std::ostringstream out;
-  out << name << " error( " << hipGetErrorName(e)
-      << "): " << hipGetErrorString(e);
-  if (file) {
-    out << " " << file << ":" << line;
-  }
-  throw_runtime_exception(out.str());
-}
 }  // namespace Impl
 }  // namespace Kokkos
 

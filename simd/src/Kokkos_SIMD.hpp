@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_SIMD_HPP
 #define KOKKOS_SIMD_HPP
@@ -256,6 +243,32 @@ using simd = basic_simd<T, simd_abi::Impl::native_abi<T, N>>;
 
 template <class T, int N = 0>
 using simd_mask = basic_simd_mask<T, simd_abi::Impl::native_abi<T, N>>;
+
+template <
+    typename T, typename... Flags,
+    std::enable_if_t<
+        !std::is_same_v<basic_simd<T, simd_abi::Impl::host_fixed_native<T>>,
+                        basic_simd<T, simd_abi::scalar>>,
+        bool> = false>
+KOKKOS_IMPL_HOST_FORCEINLINE_FUNCTION
+    basic_simd<T, simd_abi::Impl::host_fixed_native<T>>
+    simd_unchecked_load(const T* ptr,
+                        simd_flags<Flags...> flag = simd_flag_default) {
+  return simd_unchecked_load<
+      basic_simd<T, simd_abi::Impl::host_fixed_native<T>>>(ptr, flag);
+}
+
+template <
+    typename T, typename... Flags,
+    std::enable_if_t<
+        std::is_same_v<basic_simd<T, simd_abi::Impl::host_fixed_native<T>>,
+                       basic_simd<T, simd_abi::scalar>>,
+        bool> = false>
+KOKKOS_FORCEINLINE_FUNCTION constexpr basic_simd<T, simd_abi::scalar>
+simd_unchecked_load(const T* ptr,
+                    simd_flags<Flags...> flag = simd_flag_default) {
+  return simd_unchecked_load<basic_simd<T, simd_abi::scalar>>(ptr, flag);
+}
 
 namespace Impl {
 

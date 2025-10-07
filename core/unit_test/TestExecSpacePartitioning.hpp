@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <cstdio>
 #include <sstream>
@@ -95,6 +82,11 @@ void check_distinctive([[maybe_unused]] ExecSpace exec1,
 #ifdef KOKKOS_ENABLE_HPX
   if constexpr (std::is_same_v<ExecSpace, Kokkos::Experimental::HPX>) {
     ASSERT_NE(exec1.impl_instance_id(), exec2.impl_instance_id());
+  }
+#endif
+#ifdef KOKKOS_ENABLE_OPENACC
+  if constexpr (std::is_same_v<ExecSpace, Kokkos::Experimental::OpenACC>) {
+    ASSERT_NE(exec1.acc_async_queue(), exec2.acc_async_queue());
   }
 #endif
 }
