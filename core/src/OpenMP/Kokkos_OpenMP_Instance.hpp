@@ -171,7 +171,7 @@ std::vector<OpenMP> impl_partition_space(const OpenMP& base_instance,
   bool has_nested = static_cast<bool>(omp_get_nested());
 #endif
   if (!has_nested || omp_get_level() != 0) {
-    return {weights.size(), Kokkos::OpenMP{}};
+    return std::vector<OpenMP>(weights.size());
   } else {
     const auto pool_sizes =
         Impl::calculate_omp_pool_sizes(base_instance, weights);
