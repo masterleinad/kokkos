@@ -30,8 +30,10 @@ template <class T>
 struct Schedule {
   static_assert(std::is_same_v<T, Static> || std::is_same_v<T, Dynamic>,
                 "Kokkos: Invalid Schedule<> type.");
+
   using schedule_type = Schedule;
-  using type          = T;
+
+  using type = T;
 };
 
 // Specify Iteration Index Type
