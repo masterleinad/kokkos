@@ -9,25 +9,24 @@ import kokkos.core;
 // example, we need it for KOKKOS_LAMBDA in particular.
 #include <Kokkos_Macros.hpp>
 
-#include <cstdio>
 #include <iostream>
+#include <format>
 
 int main(int argc, char* argv[]) {
   Kokkos::initialize(argc, argv);
   Kokkos::DefaultExecutionSpace{}.print_configuration(std::cout);
 
   if (argc < 2) {
-    fprintf(stderr, "Usage: %s [<kokkos_options>] <size>\n", argv[0]);
+    std::cerr << std::format("Usage: {} [<kokkos_options>] <size>\n", argv[0]);
     Kokkos::finalize();
     exit(1);
   }
 
   const long n = strtol(argv[1], nullptr, 10);
 
-  printf("Number of even integers from 0 to %ld\n", n - 1);
+  std::cout << std::format("Number of even integers from 0 to %ld\n", n - 1);
 
   Kokkos::Timer timer;
-  timer.reset();
 
   // Compute the number of even integers from 0 to n-1, in parallel.
   long count = 0;
@@ -36,7 +35,7 @@ int main(int argc, char* argv[]) {
       count);
 
   double count_time = timer.seconds();
-  printf("  Parallel: %ld    %10.6f\n", count, count_time);
+  std::cout << std::format("  Parallel: %ld    %10.6f\n", count, count_time);
 
   timer.reset();
 
@@ -47,7 +46,8 @@ int main(int argc, char* argv[]) {
   }
 
   count_time = timer.seconds();
-  printf("Sequential: %ld    %10.6f\n", seq_count, count_time);
+  std::cout << std::format("Sequential: %ld    %10.6f\n", seq_count,
+                           count_time);
 
   Kokkos::finalize();
 
