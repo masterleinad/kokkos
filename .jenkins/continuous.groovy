@@ -64,7 +64,7 @@ pipeline {
                                 -B build \
                                 -GNinja \
                                 -DCMAKE_CXX_COMPILER=clang++-19 \
-                                -DCMAKE_CXX_FLAGS=-Werror && \
+                                -DCMAKE_CXX_FLAGS="-stdlib=libc++ -Werror" && \
                               cmake --build build -j 8 && \
                               ctest --test-dir build --verbose'''
                     }
