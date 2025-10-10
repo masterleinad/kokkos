@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
-#include <Kokkos_Macros.hpp>
+// Replaces the usual #include <Kokkos_Core.hpp>
 import kokkos.core;
+// We don't get any transitive includes or macro definitions when importing
+// C++20 modules. Since pretty much every Kokkos-based code needs configuration
+// macros, it's recommended to always include Kokkos_Macros.hpp. In this
+// example, we need it for KOKKOS_LAMBDA in particular.
+#include <Kokkos_Macros.hpp>
 
 #include <cstdio>
 #include <iostream>
