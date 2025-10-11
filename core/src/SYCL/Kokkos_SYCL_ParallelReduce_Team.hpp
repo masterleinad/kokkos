@@ -185,8 +185,8 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
                                   ReducerType>) {
                   reference_type update =
                       reducer.init(&local_mem[local_id * value_count]);
-                  for (int league_rank = group_id; league_rank < league_size;
-                       league_rank += n_wgroups) {
+                  for (size_type league_rank = group_id;
+                       league_rank < league_size; league_rank += n_wgroups) {
                     const member_type team_member(
                         team_scratch_memory_L0
                             .get_multi_ptr<sycl::access::decorated::yes>(),
@@ -456,7 +456,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
 
     const Kokkos::Impl::SYCLInternal& instance =
         *m_policy.space().impl_internal_space_instance();
-    if (static_cast<int>(instance.m_maxShmemPerBlock) <
+    if (static_cast<size_type>(instance.m_maxShmemPerBlock) <
         m_shmem_size - m_shmem_begin) {
       std::stringstream out;
       out << "Kokkos::Impl::ParallelFor<SYCL> insufficient shared memory! "
