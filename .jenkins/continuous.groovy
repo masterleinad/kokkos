@@ -43,7 +43,8 @@ pipeline {
                         }
                     }
                     steps {
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh label: "C++20-Modules-Clang-19", script:
+                           '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
                               cmake \
                                 -B build \
