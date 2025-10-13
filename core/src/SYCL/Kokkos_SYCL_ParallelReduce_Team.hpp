@@ -40,8 +40,8 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
   const Policy m_policy;
   const pointer_type m_result_ptr;
   const bool m_result_ptr_device_accessible;
-  size_type m_shmem_begin;
-  size_type m_shmem_size;
+  int m_shmem_begin;
+  int m_shmem_size;
   size_t m_scratch_size[2];
   const size_type m_league_size;
   int m_team_size;
@@ -456,7 +456,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
 
     const Kokkos::Impl::SYCLInternal& instance =
         *m_policy.space().impl_internal_space_instance();
-    if (static_cast<size_type>(instance.m_maxShmemPerBlock) <
+    if (static_cast<int>(instance.m_maxShmemPerBlock) <
         m_shmem_size - m_shmem_begin) {
       std::stringstream out;
       out << "Kokkos::Impl::ParallelFor<SYCL> insufficient shared memory! "
