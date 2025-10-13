@@ -24,11 +24,11 @@ pipeline {
                     filename 'Dockerfile.clang'
                     dir 'scripts/docker'
                     label 'nvidia-docker || docker'
-                    args '-v /tmp/ccache.kokkos:/tmp/ccache'
+                    args '-v /tmp/ccache.kokkos:/tmp/ccache --env NODE_NAME=${env.NODE_NAME}'
                 }
             }
             steps {
-                sh 'echo "Hostname: ${env.NODE_NAME}" && ./scripts/docker/check_format_cpp.sh'
+                sh 'echo "Hostname: ${NODE_NAME}" && ./scripts/docker/check_format_cpp.sh'
             }
         }
         stage('Build-1') {
@@ -39,10 +39,11 @@ pipeline {
                             filename 'Dockerfile.modules'
                             dir 'scripts/docker'
                             label 'docker'
+                            args '-v --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     steps {
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
                               cmake \
                                 -B build \
@@ -72,6 +73,7 @@ pipeline {
                              filename 'Dockerfile.gcc'
                              dir 'scripts/docker'
                              label 'docker'
+                             args '-v --env NODE_NAME=${env.NODE_NAME}'
                          }
                      }
                     environment {
@@ -81,7 +83,7 @@ pipeline {
                         OMP_PROC_BIND = 'true'
                     }
                     steps {
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
@@ -112,12 +114,12 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=rocm/dev-ubuntu-22.04:6.2.4-complete@sha256:6604a97283a218fc62ab59e23c54ec34ad634be9201b001435844a59ba1b8eb5'
                             label 'rocm-docker'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
@@ -160,7 +162,7 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04@sha256:5f603101462baa721ff6ddc44af82f6e9ba7cbd92a424c9f9f348e6e9d6d64c3 --build-arg ADDITIONAL_PACKAGES="gfortran clang" --build-arg CMAKE_VERSION=3.25.3'
                             label 'nvidia-docker && (volta || ampere)'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     environment {
@@ -174,7 +176,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf install && mkdir -p install && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
@@ -246,14 +248,14 @@ pipeline {
                             filename 'Dockerfile.nvhpc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && volta && large_images'
-                            args '--env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES'
+                            args '--env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     environment {
                         NVHPC_CUDA_HOME = '/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/cuda/12.2'
                     }
                     steps {
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
@@ -280,7 +282,7 @@ pipeline {
                             filename 'Dockerfile.nvhpc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && large_images && volta'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     environment {
@@ -293,7 +295,7 @@ pipeline {
                         NVHPC_CUDA_HOME = '/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/cuda/12.2'
                     }
                     steps {
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -322,12 +324,12 @@ pipeline {
                             filename 'Dockerfile.sycl'
                             dir 'scripts/docker'
                             label 'nvidia-docker && ampere'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
@@ -363,7 +365,7 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=rocm/dev-ubuntu-24.04:6.3.4-complete@sha256:76e99e263ef6ce69ba5d32905623c801fff3f85a6108e931820f6eb1d13eac67'
                             label 'rocm-docker '
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     environment {
@@ -375,7 +377,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh 'echo "/opt/rocm/llvm/lib" > /etc/ld.so.conf.d/llvm.conf && ldconfig'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Debug \
@@ -408,7 +410,7 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=rocm/dev-ubuntu-24.04:6.2-complete@sha256:c7049ac3ae8516c7b230deec6dc6dd678a0b3f7215d5a7f7fe2f2b71880b62f8 --build-arg ADDITIONAL_PACKAGES="clang-tidy"'
                             label 'rocm-docker'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     environment {
@@ -417,7 +419,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
@@ -449,12 +451,12 @@ pipeline {
                             filename 'Dockerfile.openmptarget'
                             dir 'scripts/docker'
                             label 'nvidia-docker && volta'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -485,13 +487,13 @@ pipeline {
                             filename 'Dockerfile.nvcc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && volta'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04 --build-arg ADDITIONAL_PACKAGES="clang-15 clang-tidy-15"'
                         }
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -524,13 +526,13 @@ pipeline {
                             filename 'Dockerfile.nvcc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && volta'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:12.5.1-devel-ubuntu24.04 --build-arg ADDITIONAL_PACKAGES="clang-17 clang-tidy-17"'
                         }
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -565,12 +567,12 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:13.0.0-devel-ubuntu24.04@sha256:435220c0fef35cbf712e11999f8670a83835ef3cdd18564e5e8122f83078c88c --build-arg CMAKE_VERSION=3.22.6'
                             label 'nvidia-docker && ampere && cuda-13-driver'
-                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME}'
                         }
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${env.NODE_NAME}" && \
+                        sh '''echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
