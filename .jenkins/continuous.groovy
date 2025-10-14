@@ -84,7 +84,7 @@ pipeline {
                         OMP_PROC_BIND = 'true'
                     }
                     steps {
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
@@ -120,7 +120,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
@@ -177,7 +177,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf install && mkdir -p install && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
@@ -256,7 +256,7 @@ pipeline {
                         NVHPC_CUDA_HOME = '/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/cuda/12.2'
                     }
                     steps {
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
@@ -296,7 +296,7 @@ pipeline {
                         NVHPC_CUDA_HOME = '/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/cuda/12.2'
                     }
                     steps {
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -330,7 +330,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
@@ -378,7 +378,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh 'echo "/opt/rocm/llvm/lib" > /etc/ld.so.conf.d/llvm.conf && ldconfig'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Debug \
@@ -420,7 +420,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
@@ -457,7 +457,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -494,7 +494,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -533,7 +533,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -573,7 +573,7 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''echo "Hostname: ${NODE_NAME}" && \
+                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
