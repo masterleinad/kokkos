@@ -43,7 +43,8 @@ pipeline {
                         }
                     }
                     steps {
-                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
+                        sh '''#!/bin/bash
+                              exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
                               cmake \
@@ -84,7 +85,8 @@ pipeline {
                         OMP_PROC_BIND = 'true'
                     }
                     steps {
-                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
+                        sh '''#!/bin/bash
+                              exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
@@ -120,7 +122,8 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
+                        sh '''#!/bin/bash
+                              exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
@@ -177,7 +180,8 @@ pipeline {
                     }
                     steps {
                         sh 'ccache --zero-stats'
-                        sh '''exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
+                        sh '''#!/bin/bash
+                              exec > >(awk '{ print "[C++20-Modules-Clang-19]", $0 }') 2>&1 && \
                               rm -rf install && mkdir -p install && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
