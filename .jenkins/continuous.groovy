@@ -44,7 +44,6 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
                               cmake \
@@ -86,7 +85,6 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
