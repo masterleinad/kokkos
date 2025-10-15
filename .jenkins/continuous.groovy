@@ -39,11 +39,12 @@ pipeline {
                             filename 'Dockerfile.modules'
                             dir 'scripts/docker'
                             label 'docker'
-                            args '-v --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
+                            args '--env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
                     steps {
                         sh '''#!/bin/bash
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
                               cmake \
@@ -74,7 +75,7 @@ pipeline {
                              filename 'Dockerfile.gcc'
                              dir 'scripts/docker'
                              label 'docker'
-                             args '-v --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
+                             args '--env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                          }
                      }
                     environment {
@@ -85,6 +86,8 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
@@ -122,6 +125,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
@@ -180,6 +184,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf install && mkdir -p install && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
@@ -260,6 +265,7 @@ pipeline {
                     steps {
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
@@ -301,6 +307,7 @@ pipeline {
                     steps {
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -336,6 +343,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
@@ -385,6 +393,7 @@ pipeline {
                         sh 'echo "/opt/rocm/llvm/lib" > /etc/ld.so.conf.d/llvm.conf && ldconfig'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Debug \
@@ -428,6 +437,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
@@ -466,6 +476,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -504,6 +515,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -544,6 +556,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -585,6 +598,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DBUILD_SHARED_LIBS=ON \
