@@ -28,7 +28,10 @@ pipeline {
                 }
             }
             steps {
-                sh 'echo "Hostname: ${NODE_NAME}" && ./scripts/docker/check_format_cpp.sh'
+                sh '''#!/bin/bash
+                      exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                      echo "Hostname: ${NODE_NAME}" && \
+                      ./scripts/docker/check_format_cpp.sh'''
             }
         }
         stage('Build-1') {
