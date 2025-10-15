@@ -23,11 +23,10 @@ void DeepCopySYCL(void* dst, const void* src, size_t n) {
   SYCL exec;
 #if defined(SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS) && \
     defined(KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES)
-  sycl::ext::oneapi::experimental::memcpy(
-      *exec.sycl_queue().m_queue, dst, src, n);
+  sycl::ext::oneapi::experimental::memcpy(exec.sycl_queue(), dst, src, n);
 #else
   // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-  exec.sycl_queue().m_queue->memcpy(dst, src, n);
+  exec.sycl_queue().memcpy(dst, src, n);
 #endif
 }
 
@@ -49,10 +48,9 @@ void DeepCopyAsyncSYCL(void* dst, const void* src, size_t n) {
   SYCL exec;
 #if defined(SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS) && \
     defined(KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES)
-  sycl::ext::oneapi::experimental::memcpy(
-      *exec.sycl_queue().m_queue, dst, src, n);
+  sycl::ext::oneapi::experimental::memcpy(exec.sycl_queue(), dst, src, n);
 #else
-  exec.sycl_queue().m_queue->memcpy(dst, src, n);
+  exec.sycl_queue().memcpy(dst, src, n);
 #endif
   exec.fence("Kokkos::Impl::DeepCopyAsyncSYCL: fence after memcpy");
 }

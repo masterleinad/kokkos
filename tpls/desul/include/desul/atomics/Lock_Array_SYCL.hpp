@@ -158,23 +158,12 @@ inline static
     copy_sycl_lock_arrays_to_device(sycl::queue q) {
   static bool once = [&q]() {
 #ifdef SYCL_EXT_ONEAPI_DEVICE_GLOBAL
-#ifdef SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS
-      sycl::ext::oneapi::experimental::memcpy(
-q, SYCL_SPACE_ATOMIC_LOCKS_DEVICE,
-             &SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h,
-             sizeof(int32_t*));
-            sycl::ext::oneapi::experimental::memcpy(
-    q, SYCL_SPACE_ATOMIC_LOCKS_NODE,
-             &SYCL_SPACE_ATOMIC_LOCKS_NODE_h,
-             sizeof(int32_t*));
-#else
     q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_DEVICE,
              &SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h,
              sizeof(int32_t*));
     q.memcpy(SYCL_SPACE_ATOMIC_LOCKS_NODE,
              &SYCL_SPACE_ATOMIC_LOCKS_NODE_h,
              sizeof(int32_t*));
-#endif
 #else
     auto device_ptr = SYCL_SPACE_ATOMIC_LOCKS_DEVICE_h;
     auto node_ptr = SYCL_SPACE_ATOMIC_LOCKS_NODE_h;
