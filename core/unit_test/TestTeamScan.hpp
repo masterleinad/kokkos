@@ -1,21 +1,15 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+import kokkos.core_impl;
+#else
 #include <Kokkos_Core.hpp>
-#include <impl/Kokkos_Stacktrace.hpp>
+#endif
+#include <Kokkos_TypeInfo.hpp>
+
 #include <cstdio>
 #include <cstdint>
 #include <sstream>
@@ -56,7 +50,7 @@ struct TestTeamScan {
 
   auto operator()(int32_t M_, int32_t N_) {
     std::stringstream ss;
-    ss << Kokkos::Impl::demangle(typeid(*this).name());
+    ss << Kokkos::Impl::TypeInfo<decltype(*this)>::name();
     ss << "(/*M=*/" << M_ << ", /*N=*/" << N_ << ")";
     std::string const test_id = ss.str();
 
@@ -93,7 +87,7 @@ struct TestTeamScan {
       for (int32_t j = 0; j < N; ++j) {
         scan_ref += a_i(i, j);
         scan_calc = a_o(i, j);
-        if (std::is_integral<value_type>::value) {
+        if (std::is_integral_v<value_type>) {
           ASSERT_EQ(scan_ref, scan_calc)
               << test_id
               << " calculated scan output value differs from reference at "
@@ -174,7 +168,7 @@ struct TestTeamScanRetVal {
 
   auto operator()(int32_t M_, int32_t N_) {
     std::stringstream ss;
-    ss << Kokkos::Impl::demangle(typeid(*this).name());
+    ss << Kokkos::Impl::TypeInfo<decltype(*this)>::name();
     ss << "(/*M=*/" << M_ << ", /*N=*/" << N_ << ")";
     std::string const test_id = ss.str();
 
@@ -215,7 +209,7 @@ struct TestTeamScanRetVal {
       for (int32_t j = 0; j < N; ++j) {
         scan_ref += a_i(i, j);
         scan_calc = a_o(i, j);
-        if (std::is_integral<value_type>::value) {
+        if (std::is_integral_v<value_type>) {
           ASSERT_EQ(scan_ref, scan_calc)
               << test_id
               << " calculated scan output value differs from reference at "
@@ -231,7 +225,7 @@ struct TestTeamScanRetVal {
         }
       }
       // Validate return value from parallel_scan
-      if (std::is_integral<value_type>::value) {
+      if (std::is_integral_v<value_type>) {
         ASSERT_EQ(scan_ref, a_os(i));
       } else {
         ASSERT_NEAR(scan_ref, a_os(i), abs_err);

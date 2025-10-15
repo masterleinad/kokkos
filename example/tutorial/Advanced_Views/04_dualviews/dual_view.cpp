@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <Kokkos_Core.hpp>
 #include <Kokkos_DualView.hpp>
@@ -131,7 +118,7 @@ int main(int narg, char* arg[]) {
   {
     ParticleTypes test("Test");
     Kokkos::fence();
-    test.h_view(0) = ParticleType(-1e4, 1);
+    test.view_host()(0) = ParticleType(-1e4, 1);
     Kokkos::fence();
 
     int size = 1000000;
@@ -146,7 +133,7 @@ int main(int narg, char* arg[]) {
 
     // Get a reference to the host view of idx directly (equivalent to
     // idx.view<idx_type::host_mirror_space>() )
-    idx_type::t_host h_idx = idx.h_view;
+    idx_type::t_host h_idx = idx.view_host();
     using size_type        = view_type::size_type;
     for (int i = 0; i < size; ++i) {
       for (size_type j = 0; j < static_cast<size_type>(h_idx.extent(1)); ++j) {

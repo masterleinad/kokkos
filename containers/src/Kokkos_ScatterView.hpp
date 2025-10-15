@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 /// \file Kokkos_ScatterView.hpp
 /// \brief Declaration and definition of Kokkos::ScatterView.
@@ -27,8 +14,16 @@
 #define KOKKOS_IMPL_PUBLIC_INCLUDE_NOTDEFINED_SCATTERVIEW
 #endif
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+import kokkos.core_impl;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 #include <utility>
+#include <cstddef>
+#include <string>
 
 namespace Kokkos {
 namespace Experimental {
@@ -532,31 +527,55 @@ void args_to_array(size_t* array, int pos, T dim0, Dims... dims) {
    subview where the index specified is the largest-stride one. */
 template <typename Layout, int rank, typename V, typename... Args>
 struct Slice {
-  using next       = Slice<Layout, rank - 1, V, Kokkos::ALL_t, Args...>;
-  using value_type = typename next::value_type;
-
-  static value_type get(V const& src, const size_t i, Args... args) {
+  using next = Slice<Layout, rank - 1, V, Kokkos::ALL_t, Args...>;
+  static auto get(V const& src, const size_t i, Args... args) {
     return next::get(src, i, Kokkos::ALL, args...);
   }
 };
 
 template <typename V, typename... Args>
 struct Slice<Kokkos::LayoutRight, 1, V, Args...> {
-  using value_type =
-      typename Kokkos::Impl::ViewMapping<void, V, const size_t, Args...>::type;
-  static value_type get(V const& src, const size_t i, Args... args) {
+  static auto get(V const& src, const size_t i, Args... args) {
     return Kokkos::subview(src, i, args...);
   }
 };
 
 template <typename V, typename... Args>
 struct Slice<Kokkos::LayoutLeft, 1, V, Args...> {
-  using value_type =
-      typename Kokkos::Impl::ViewMapping<void, V, Args..., const size_t>::type;
-  static value_type get(V const& src, const size_t i, Args... args) {
+  static auto get(V const& src, const size_t i, Args... args) {
     return Kokkos::subview(src, args..., i);
   }
 };
+
+#ifdef KOKKOS_ENABLE_IMPL_MDSPAN
+template <typename V, typename... Args>
+struct Slice<Kokkos::layout_right, 1, V, Args...> {
+  static auto get(V const& src, const size_t i, Args... args) {
+    return Kokkos::subview(src, i, args...);
+  }
+};
+
+template <typename V, typename... Args>
+struct Slice<Kokkos::layout_left, 1, V, Args...> {
+  static auto get(V const& src, const size_t i, Args... args) {
+    return Kokkos::subview(src, args..., i);
+  }
+};
+
+template <size_t Pad, typename V, typename... Args>
+struct Slice<Kokkos::Experimental::layout_right_padded<Pad>, 1, V, Args...> {
+  static auto get(V const& src, const size_t i, Args... args) {
+    return Kokkos::subview(src, i, args...);
+  }
+};
+
+template <size_t Pad, typename V, typename... Args>
+struct Slice<Kokkos::Experimental::layout_left_padded<Pad>, 1, V, Args...> {
+  static auto get(V const& src, const size_t i, Args... args) {
+    return Kokkos::subview(src, args..., i);
+  }
+};
+#endif
 
 template <typename ExecSpace, typename ValueType, typename Op>
 struct ReduceDuplicates;
@@ -764,7 +783,7 @@ class ScatterView<DataType, Layout, DeviceType, Op, ScatterNonDuplicated,
   void contribute_into(execution_space const& exec_space,
                        View<DT, RP...> const& dest) const {
     using dest_type = View<DT, RP...>;
-    static_assert(std::is_same<typename dest_type::array_layout, Layout>::value,
+    static_assert(std::is_same_v<typename dest_type::array_layout, Layout>,
                   "ScatterView contribute destination has different layout");
     static_assert(
         Kokkos::SpaceAccessibility<
@@ -1028,10 +1047,7 @@ class ScatterView<DataType, Kokkos::LayoutRight, DeviceType, Op,
         *this);
   }
 
-  typename Kokkos::Impl::Experimental::Slice<Kokkos::LayoutRight,
-                                             internal_view_type::rank,
-                                             internal_view_type>::value_type
-  subview() const {
+  auto subview() const {
     return Kokkos::Impl::Experimental::Slice<
         Kokkos::LayoutRight, internal_view_type::rank,
         internal_view_type>::get(internal_view, 0);
@@ -1050,9 +1066,9 @@ class ScatterView<DataType, Kokkos::LayoutRight, DeviceType, Op,
   void contribute_into(execution_space const& exec_space,
                        View<DT, RP...> const& dest) const {
     using dest_type = View<DT, RP...>;
-    static_assert(std::is_same<typename dest_type::array_layout,
-                               Kokkos::LayoutRight>::value,
-                  "ScatterView deep_copy destination has different layout");
+    static_assert(
+        std::is_same_v<typename dest_type::array_layout, Kokkos::LayoutRight>,
+        "ScatterView deep_copy destination has different layout");
     static_assert(
         Kokkos::SpaceAccessibility<
             execution_space, typename dest_type::memory_space>::accessible,
@@ -1310,10 +1326,7 @@ class ScatterView<DataType, Kokkos::LayoutLeft, DeviceType, Op,
         *this);
   }
 
-  typename Kokkos::Impl::Experimental::Slice<Kokkos::LayoutLeft,
-                                             internal_view_type::rank,
-                                             internal_view_type>::value_type
-  subview() const {
+  auto subview() const {
     return Kokkos::Impl::Experimental::Slice<
         Kokkos::LayoutLeft, internal_view_type::rank,
         internal_view_type>::get(internal_view, 0);
@@ -1333,12 +1346,12 @@ class ScatterView<DataType, Kokkos::LayoutLeft, DeviceType, Op,
                        View<RP...> const& dest) const {
     using dest_type = View<RP...>;
     static_assert(
-        std::is_same<typename dest_type::value_type,
-                     typename original_view_type::non_const_value_type>::value,
+        std::is_same_v<typename dest_type::value_type,
+                       typename original_view_type::non_const_value_type>,
         "ScatterView deep_copy destination has wrong value_type");
-    static_assert(std::is_same<typename dest_type::array_layout,
-                               Kokkos::LayoutLeft>::value,
-                  "ScatterView deep_copy destination has different layout");
+    static_assert(
+        std::is_same_v<typename dest_type::array_layout, Kokkos::LayoutLeft>,
+        "ScatterView deep_copy destination has different layout");
     static_assert(
         Kokkos::SpaceAccessibility<
             execution_space, typename dest_type::memory_space>::accessible,

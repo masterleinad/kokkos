@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_EXPERIMENTAL_VIEW_MAPPING_HPP
 #define KOKKOS_EXPERIMENTAL_VIEW_MAPPING_HPP
@@ -29,6 +16,7 @@
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Traits.hpp>
 #include <View/Kokkos_ViewTracker.hpp>
+#include <View/Kokkos_ViewTraits.hpp>
 #include <View/Kokkos_ViewCtor.hpp>
 #include <View/Kokkos_ViewAtomic.hpp>
 #include <impl/Kokkos_Tools.hpp>
@@ -41,29 +29,9 @@
 //----------------------------------------------------------------------------
 
 namespace Kokkos {
-
-struct ALL_t {
-  KOKKOS_INLINE_FUNCTION
-  constexpr const ALL_t& operator()() const { return *this; }
-
-  KOKKOS_INLINE_FUNCTION
-  constexpr bool operator==(const ALL_t&) const { return true; }
-};
-
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-namespace Impl {
-// TODO This alias declaration forces us to fully qualify ALL_t inside the
-// Kokkos::Impl namespace to avoid deprecation warnings. Replace the
-// fully-qualified name when we remove Kokkos::Impl::ALL_t.
-using ALL_t KOKKOS_DEPRECATED_WITH_COMMENT("Use Kokkos::ALL_t instead!") =
-    Kokkos::ALL_t;
-}  // namespace Impl
-#endif
-}  // namespace Kokkos
-
-namespace Kokkos {
 namespace Impl {
 
+// NOLINTBEGIN(bugprone-non-zero-enum-to-bool-conversion)
 template <class T>
 struct is_integral_extent_type {
   enum : bool { value = std::is_same_v<T, Kokkos::ALL_t> ? 1 : 0 };
@@ -183,6 +151,7 @@ struct SubviewLegalArgsCompileTime<Kokkos::LayoutStride, Kokkos::LayoutStride,
                                    SubViewArgs...> {
   enum : bool { value = true };
 };
+// NOLINTEND(bugprone-non-zero-enum-to-bool-conversion)
 
 template <unsigned DomainRank, unsigned RangeRank>
 struct SubviewExtents {
@@ -390,7 +359,7 @@ struct SubviewExtents {
          const int n = snprintf(buffer, LEN, "Kokkos::subview bounds error (");
          error(buffer + n, LEN - n, 0, 0, dim, args...);
 
-         Kokkos::Impl::throw_runtime_exception(std::string(buffer));))
+         Kokkos::abort(buffer);))
 
     KOKKOS_IF_ON_DEVICE(((void)dim;
                          Kokkos::abort("Kokkos::subview bounds error");
@@ -883,14 +852,17 @@ struct ViewOffset<
   KOKKOS_INLINE_FUNCTION
   constexpr array_layout layout() const {
     constexpr auto r = dimension_type::rank;
-    return array_layout((r > 0 ? m_dim.N0 : KOKKOS_INVALID_INDEX),
-                        (r > 1 ? m_dim.N1 : KOKKOS_INVALID_INDEX),
-                        (r > 2 ? m_dim.N2 : KOKKOS_INVALID_INDEX),
-                        (r > 3 ? m_dim.N3 : KOKKOS_INVALID_INDEX),
-                        (r > 4 ? m_dim.N4 : KOKKOS_INVALID_INDEX),
-                        (r > 5 ? m_dim.N5 : KOKKOS_INVALID_INDEX),
-                        (r > 6 ? m_dim.N6 : KOKKOS_INVALID_INDEX),
-                        (r > 7 ? m_dim.N7 : KOKKOS_INVALID_INDEX));
+    array_layout l((r > 0 ? m_dim.N0 : KOKKOS_INVALID_INDEX),
+                   (r > 1 ? m_dim.N1 : KOKKOS_INVALID_INDEX),
+                   (r > 2 ? m_dim.N2 : KOKKOS_INVALID_INDEX),
+                   (r > 3 ? m_dim.N3 : KOKKOS_INVALID_INDEX),
+                   (r > 4 ? m_dim.N4 : KOKKOS_INVALID_INDEX),
+                   (r > 5 ? m_dim.N5 : KOKKOS_INVALID_INDEX),
+                   (r > 6 ? m_dim.N6 : KOKKOS_INVALID_INDEX),
+                   (r > 7 ? m_dim.N7 : KOKKOS_INVALID_INDEX));
+    // Without span_is_contiguous Sacado hidden dimensions get messed up
+    l.stride = span_is_contiguous() ? KOKKOS_IMPL_CTOR_DEFAULT_ARG : m_stride;
+    return l;
   }
 
   KOKKOS_INLINE_FUNCTION constexpr size_type dimension_0() const {
@@ -1044,8 +1016,8 @@ struct ViewOffset<
     KOKKOS_INLINE_FUNCTION
     static constexpr size_t stride(size_t const N) {
       return ((align != 0) &&
-              ((static_cast<int>(Kokkos::Impl::MEMORY_ALIGNMENT_THRESHOLD) *
-                static_cast<int>(align)) < N) &&
+              ((static_cast<size_t>(Kokkos::Impl::MEMORY_ALIGNMENT_THRESHOLD) *
+                align) < N) &&
               ((N % div_ok) != 0))
                  ? N + align - (N % div_ok)
                  : N;
@@ -1084,7 +1056,11 @@ struct ViewOffset<
               arg_layout.dimension[2], arg_layout.dimension[3],
               arg_layout.dimension[4], arg_layout.dimension[5],
               arg_layout.dimension[6], arg_layout.dimension[7]),
-        m_stride(Padding<TrivialScalarSize>::stride(arg_layout.dimension[0])) {}
+        m_stride(
+            arg_layout.stride != KOKKOS_IMPL_CTOR_DEFAULT_ARG
+                ? arg_layout.stride
+                : Padding<TrivialScalarSize>::stride(arg_layout.dimension[0])) {
+  }
 
   template <class DimRHS>
   KOKKOS_INLINE_FUNCTION constexpr ViewOffset(
@@ -1563,14 +1539,17 @@ struct ViewOffset<
   KOKKOS_INLINE_FUNCTION
   constexpr array_layout layout() const {
     constexpr auto r = dimension_type::rank;
-    return array_layout((r > 0 ? m_dim.N0 : KOKKOS_INVALID_INDEX),
-                        (r > 1 ? m_dim.N1 : KOKKOS_INVALID_INDEX),
-                        (r > 2 ? m_dim.N2 : KOKKOS_INVALID_INDEX),
-                        (r > 3 ? m_dim.N3 : KOKKOS_INVALID_INDEX),
-                        (r > 4 ? m_dim.N4 : KOKKOS_INVALID_INDEX),
-                        (r > 5 ? m_dim.N5 : KOKKOS_INVALID_INDEX),
-                        (r > 6 ? m_dim.N6 : KOKKOS_INVALID_INDEX),
-                        (r > 7 ? m_dim.N7 : KOKKOS_INVALID_INDEX));
+    array_layout l((r > 0 ? m_dim.N0 : KOKKOS_INVALID_INDEX),
+                   (r > 1 ? m_dim.N1 : KOKKOS_INVALID_INDEX),
+                   (r > 2 ? m_dim.N2 : KOKKOS_INVALID_INDEX),
+                   (r > 3 ? m_dim.N3 : KOKKOS_INVALID_INDEX),
+                   (r > 4 ? m_dim.N4 : KOKKOS_INVALID_INDEX),
+                   (r > 5 ? m_dim.N5 : KOKKOS_INVALID_INDEX),
+                   (r > 6 ? m_dim.N6 : KOKKOS_INVALID_INDEX),
+                   (r > 7 ? m_dim.N7 : KOKKOS_INVALID_INDEX));
+    // Without span_is_contiguous Sacado hidden dimensions get messed up
+    l.stride = span_is_contiguous() ? KOKKOS_IMPL_CTOR_DEFAULT_ARG : m_stride;
+    return l;
   }
 
   KOKKOS_INLINE_FUNCTION constexpr size_type dimension_0() const {
@@ -1612,8 +1591,8 @@ struct ViewOffset<
   }
 
   KOKKOS_INLINE_FUNCTION constexpr bool span_is_contiguous() const {
-    return m_stride == m_dim.N7 * m_dim.N6 * m_dim.N5 * m_dim.N4 * m_dim.N3 *
-                           m_dim.N2 * m_dim.N1;
+    return m_stride == static_cast<size_type>(m_dim.N7) * m_dim.N6 * m_dim.N5 *
+                           m_dim.N4 * m_dim.N3 * m_dim.N2 * m_dim.N1;
   }
 
   /* Strides of dimensions */
@@ -1622,19 +1601,21 @@ struct ViewOffset<
     return m_dim.N7;
   }
   KOKKOS_INLINE_FUNCTION constexpr size_type stride_5() const {
-    return m_dim.N7 * m_dim.N6;
+    return static_cast<size_type>(m_dim.N7) * m_dim.N6;
   }
   KOKKOS_INLINE_FUNCTION constexpr size_type stride_4() const {
-    return m_dim.N7 * m_dim.N6 * m_dim.N5;
+    return static_cast<size_type>(m_dim.N7) * m_dim.N6 * m_dim.N5;
   }
   KOKKOS_INLINE_FUNCTION constexpr size_type stride_3() const {
-    return m_dim.N7 * m_dim.N6 * m_dim.N5 * m_dim.N4;
+    return static_cast<size_type>(m_dim.N7) * m_dim.N6 * m_dim.N5 * m_dim.N4;
   }
   KOKKOS_INLINE_FUNCTION constexpr size_type stride_2() const {
-    return m_dim.N7 * m_dim.N6 * m_dim.N5 * m_dim.N4 * m_dim.N3;
+    return static_cast<size_type>(m_dim.N7) * m_dim.N6 * m_dim.N5 * m_dim.N4 *
+           m_dim.N3;
   }
   KOKKOS_INLINE_FUNCTION constexpr size_type stride_1() const {
-    return m_dim.N7 * m_dim.N6 * m_dim.N5 * m_dim.N4 * m_dim.N3 * m_dim.N2;
+    return static_cast<size_type>(m_dim.N7) * m_dim.N6 * m_dim.N5 * m_dim.N4 *
+           m_dim.N3 * m_dim.N2;
   }
   KOKKOS_INLINE_FUNCTION constexpr size_type stride_0() const {
     return m_stride;
@@ -1721,8 +1702,8 @@ struct ViewOffset<
     KOKKOS_INLINE_FUNCTION
     static constexpr size_t stride(size_t const N) {
       return ((align != 0) &&
-              ((static_cast<int>(Kokkos::Impl::MEMORY_ALIGNMENT_THRESHOLD) *
-                static_cast<int>(align)) < N) &&
+              ((static_cast<size_t>(Kokkos::Impl::MEMORY_ALIGNMENT_THRESHOLD) *
+                align) < N) &&
               ((N % div_ok) != 0))
                  ? N + align - (N % div_ok)
                  : N;
@@ -1754,6 +1735,24 @@ struct ViewOffset<
 
   /* Enable padding for trivial scalar types with non-zero trivial scalar size.
    */
+
+ private:
+  template <unsigned TrivialScalarSize>
+  KOKKOS_FUNCTION constexpr size_type compute_stride(
+      const Kokkos::LayoutRight& arg_layout) {
+    if (arg_layout.stride != KOKKOS_IMPL_CTOR_DEFAULT_ARG)
+      return arg_layout.stride;
+    size_type value = m_dim.N1;
+    if constexpr (dimension_type::rank > 2) value *= m_dim.N2;
+    if constexpr (dimension_type::rank > 3) value *= m_dim.N3;
+    if constexpr (dimension_type::rank > 4) value *= m_dim.N4;
+    if constexpr (dimension_type::rank > 5) value *= m_dim.N5;
+    if constexpr (dimension_type::rank > 6) value *= m_dim.N6;
+    if constexpr (dimension_type::rank > 7) value *= m_dim.N7;
+    return Padding<TrivialScalarSize>::stride(value);
+  }
+
+ public:
   template <unsigned TrivialScalarSize>
   KOKKOS_INLINE_FUNCTION constexpr ViewOffset(
       std::integral_constant<unsigned, TrivialScalarSize> const&,
@@ -1762,37 +1761,7 @@ struct ViewOffset<
               arg_layout.dimension[2], arg_layout.dimension[3],
               arg_layout.dimension[4], arg_layout.dimension[5],
               arg_layout.dimension[6], arg_layout.dimension[7]),
-        m_stride(
-            Padding<TrivialScalarSize>::
-                stride(/* 2 <= rank */
-                       m_dim.N1 *
-                       (dimension_type::rank == 2
-                            ? size_t(1)
-                            : m_dim.N2 *
-                                  (dimension_type::rank == 3
-                                       ? size_t(1)
-                                       : m_dim.N3 *
-                                             (dimension_type::rank == 4
-                                                  ? size_t(1)
-                                                  : m_dim.N4 *
-                                                        (dimension_type::rank ==
-                                                                 5
-                                                             ? size_t(1)
-                                                             : m_dim.N5 *
-                                                                   (dimension_type::
-                                                                                rank ==
-                                                                            6
-                                                                        ? size_t(
-                                                                              1)
-                                                                        : m_dim.N6 *
-                                                                              (dimension_type::
-                                                                                           rank ==
-                                                                                       7
-                                                                                   ? size_t(
-                                                                                         1)
-                                                                                   : m_dim
-                                                                                         .N7)))))))) {
-  }
+        m_stride(compute_stride<TrivialScalarSize>(arg_layout)) {}
 
   template <class DimRHS>
   KOKKOS_INLINE_FUNCTION constexpr ViewOffset(
@@ -2451,8 +2420,7 @@ struct ViewDataHandle<
   // typedef work-around for intel compilers error #3186: expected typedef
   // declaration
   // NOLINTNEXTLINE(modernize-use-using)
-  typedef value_type* KOKKOS_IMPL_ALIGN_PTR(KOKKOS_MEMORY_ALIGNMENT)
-      handle_type;
+  typedef value_type* KOKKOS_IMPL_ALIGN_PTR(Impl::MEMORY_ALIGNMENT) handle_type;
   using return_type = typename Traits::value_type&;
   using track_type  = Kokkos::Impl::SharedAllocationTracker;
 
@@ -2489,8 +2457,7 @@ struct ViewDataHandle<
   // typedef work-around for intel compilers error #3186: expected typedef
   // declaration
   // NOLINTNEXTLINE(modernize-use-using)
-  typedef value_type* KOKKOS_IMPL_ALIGN_PTR(KOKKOS_MEMORY_ALIGNMENT)
-      handle_type;
+  typedef value_type* KOKKOS_IMPL_ALIGN_PTR(Impl::MEMORY_ALIGNMENT) handle_type;
   using return_type = typename Traits::value_type& KOKKOS_RESTRICT;
   using track_type  = Kokkos::Impl::SharedAllocationTracker;
 
@@ -2551,7 +2518,7 @@ class ViewMapping<
 
  public:
   using printable_label_typedef = void;
-  enum { is_managed = Traits::is_managed };
+  enum { is_managed = !Traits::memory_traits::is_unmanaged };
 
   //----------------------------------------
   // Domain dimensions
@@ -3333,25 +3300,32 @@ class ViewMapping<
   KOKKOS_INLINE_FUNCTION static void assign(
       ViewMapping<DstTraits, void>& dst,
       ViewMapping<SrcTraits, void> const& src, Args... args) {
-    static_assert(ViewMapping<DstTraits, traits_type, void>::is_assignable,
-                  "Subview destination type must be compatible with subview "
-                  "derived type");
+    // Create ViewMapping based on traits_type, which was determined by this
+    // class. We cannot assume that aligned src memory implies the subview will
+    // be aligned, so remove aligned memory trait before mapping.
+    using traits_type_wo_align =
+        typename apply<typename Impl::RemoveAlignedMemoryTrait<
+            typename traits_type::memory_traits>::type::memory_traits>::
+            traits_type;
+    using base_dst_type        = ViewMapping<traits_type_wo_align, void>;
+    using base_dst_offset_type = typename base_dst_type::offset_type;
 
-    using DstType = ViewMapping<DstTraits, void>;
-
-    using dst_offset_type = typename DstType::offset_type;
-
+    base_dst_type base_dst;
     const SubviewExtents<SrcTraits::rank, rank> extents(src.m_impl_offset.m_dim,
                                                         args...);
-
-    dst.m_impl_offset = dst_offset_type(src.m_impl_offset, extents);
-
-    dst.m_impl_handle = ViewDataHandle<DstTraits>::assign(
+    base_dst.m_impl_offset = base_dst_offset_type(src.m_impl_offset, extents);
+    base_dst.m_impl_handle = ViewDataHandle<traits_type_wo_align>::assign(
         src.m_impl_handle,
         src.m_impl_offset(extents.domain_offset(0), extents.domain_offset(1),
                           extents.domain_offset(2), extents.domain_offset(3),
                           extents.domain_offset(4), extents.domain_offset(5),
                           extents.domain_offset(6), extents.domain_offset(7)));
+
+    // Map from base dst to dst requested.
+    Kokkos::Impl::SharedAllocationTracker dummy_track;
+    ViewMapping<DstTraits, traits_type_wo_align,
+                typename DstTraits::specialize>::assign(dst, base_dst,
+                                                        dummy_track);
   }
 };
 
@@ -3373,6 +3347,9 @@ KOKKOS_FUNCTION bool within_range(Map const& map,
   return (((std::size_t)indices < map.extent(Enumerate)) && ...);
 }
 
+// Disabled when using MDSpan because the MDSpan implementation has its own
+// version
+#ifndef KOKKOS_ENABLE_IMPL_MDSPAN
 template <class... Indices>
 KOKKOS_FUNCTION constexpr char* append_formatted_multidimensional_index(
     char* dest, Indices... indices) {
@@ -3390,6 +3367,7 @@ KOKKOS_FUNCTION constexpr char* append_formatted_multidimensional_index(
   d[strlen(d) - 1] = ']';  // overwrite trailing comma
   return dest;
 }
+#endif
 
 template <class Map, class... Indices, std::size_t... Enumerate>
 KOKKOS_FUNCTION void print_extents(char* dest, Map const& map,

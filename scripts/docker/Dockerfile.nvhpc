@@ -1,7 +1,15 @@
-ARG BASE=nvcr.io/nvidia/nvhpc:23.7-devel-cuda12.2-ubuntu20.04
+ARG BASE=nvcr.io/nvidia/nvhpc:23.7-devel-cuda12.2-ubuntu22.04@sha256:d06b3185fe53e8d2d31482c974dcf6023efe857ebf2c1d9625a29b394560ac91
 FROM $BASE
 
-RUN KEYDUMP_URL=https://cloud.cees.ornl.gov/download && \
+ARG ADDITIONAL_PACKAGES
+
+RUN apt-get update && apt-get install -y \
+        ${ADDITIONAL_PACKAGES} \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN KEYDUMP_URL=https://cloud1.cees.ornl.gov/download && \
     KEYDUMP_FILE=keydump && \
     wget --quiet ${KEYDUMP_URL}/${KEYDUMP_FILE} && \
     wget --quiet ${KEYDUMP_URL}/${KEYDUMP_FILE}.sig && \

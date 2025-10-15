@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_HIP_REDUCESCAN_HPP
 #define KOKKOS_HIP_REDUCESCAN_HPP
@@ -252,9 +239,8 @@ __device__ void hip_intra_block_reduce_scan(
     typename FunctorType::pointer_type const base_data) {
   using pointer_type = typename FunctorType::pointer_type;
 
-  const unsigned value_count = functor.length();
   const unsigned not_less_power_of_two =
-      (1 << (Impl::int_log2(blockDim.y - 1) + 1));
+      Kokkos::Experimental::bit_ceil_builtin<unsigned>(blockDim.y);
   const unsigned BlockSizeMask = not_less_power_of_two - 1;
   // There is at most one warp that is neither completely full or empty.
   // For that warp, we shift all indices logically to the end and ignore join
@@ -263,15 +249,19 @@ __device__ void hip_intra_block_reduce_scan(
   const bool is_full_warp = (((threadIdx.y >> HIPTraits::WarpIndexShift) + 1)
                              << HIPTraits::WarpIndexShift) <= blockDim.y;
 
-  auto block_reduce_step = [&functor, value_count](
-                               int const R, pointer_type const TD, int const S,
-                               pointer_type memory_start, int index_shift) {
+  auto block_reduce_step = [&functor](int const R, pointer_type const TD,
+                                      int const S, pointer_type memory_start,
+                                      int index_shift) {
+    // FIXME_HIP define value_count inside the lambda instead of capturing it to
+    // avoid a warning when using ROCm 7.0 with C++ 23
+    const unsigned value_count = functor.length();
     const auto join_ptr = TD - (value_count << S) + value_count * index_shift;
     if (R > ((1 << S) - 1) && join_ptr >= memory_start) {
       functor.join(TD, join_ptr);
     }
   };
 
+  const unsigned value_count = functor.length();
   // Intra-warp reduction:
   int bit_shift = 0;
   {
@@ -369,11 +359,13 @@ __device__ bool hip_single_inter_block_reduce_scan_impl(
         "blockDim");
   }
 
+  // NOLINTBEGIN(bugprone-sizeof-expression)
   const integral_nonzero_constant<
-      size_type, std::is_pointer<typename FunctorType::reference_type>::value
+      size_type, std::is_pointer_v<typename FunctorType::reference_type>
                      ? 0
                      : sizeof(value_type) / sizeof(size_type)>
       word_count((sizeof(value_type) * functor.length()) / sizeof(size_type));
+  // NOLINTEND(bugprone-sizeof-expression)
 
   // Reduce the accumulation for the entire block.
   hip_intra_block_reduce_scan<false>(functor, pointer_type(shared_data));
@@ -449,7 +441,7 @@ __device__ bool hip_single_inter_block_reduce_scan(
   // If we are doing a reduction and we don't do an array reduction, we use the
   // reduction-only path. Otherwise, we use the common path between reduction
   // and scan.
-  if (!DoScan && !std::is_pointer<typename FunctorType::reference_type>::value)
+  if (!DoScan && !std::is_pointer_v<typename FunctorType::reference_type>)
     // FIXME_HIP_PERFORMANCE I don't know where 16 comes from. This inequality
     // determines if we use shared memory (false) or shuffle (true)
     return Kokkos::Impl::HIPReductionsFunctor<

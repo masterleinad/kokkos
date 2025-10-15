@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_THREADS_PARALLEL_REDUCE_TEAM_HPP
 #define KOKKOS_THREADS_PARALLEL_REDUCE_TEAM_HPP
@@ -106,9 +93,14 @@ class ParallelReduce<CombinedFunctorReducerType,
       policy.impl_set_vector_length(1);
     }
     if (policy.team_size() < 0) {
-      policy.impl_set_team_size(policy.team_size_recommended(
+      int team_size = policy.team_size_recommended(
           m_functor_reducer.get_functor(), m_functor_reducer.get_reducer(),
-          ParallelReduceTag{}));
+          ParallelReduceTag{});
+      if (team_size <= 0)
+        Kokkos::Impl::throw_runtime_exception(
+            "Kokkos::Impl::ParallelReduce<Threads, TeamPolicy> could not find "
+            "a valid execution configuration.");
+      policy.impl_set_team_size(team_size);
     }
     return policy;
   }

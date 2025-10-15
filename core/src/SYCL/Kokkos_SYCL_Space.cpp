@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #define KOKKOS_IMPL_PUBLIC_INCLUDE
@@ -33,18 +20,20 @@ namespace Kokkos {
 namespace Impl {
 
 void DeepCopySYCL(void* dst, const void* src, size_t n) {
+  SYCL exec;
 #if defined(SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS) && \
     defined(KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES)
   sycl::ext::oneapi::experimental::memcpy(
-      *Impl::SYCLInternal::singleton().m_queue, dst, src, n);
+      *exec.sycl_queue().m_queue, dst, src, n);
 #else
-  Impl::SYCLInternal::singleton().m_queue->memcpy(dst, src, n);
+  // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+  exec.sycl_queue().m_queue->memcpy(dst, src, n);
 #endif
 }
 
 void DeepCopyAsyncSYCL(const Kokkos::SYCL& instance, void* dst, const void* src,
                        size_t n) {
-  sycl::queue& q = *instance.impl_internal_space_instance()->m_queue;
+  sycl::queue& q = instance.sycl_queue();
 #if defined(SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS) && \
     defined(KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES)
   sycl::ext::oneapi::experimental::memcpy(q, dst, src, n);
@@ -57,14 +46,15 @@ void DeepCopyAsyncSYCL(const Kokkos::SYCL& instance, void* dst, const void* src,
 }
 
 void DeepCopyAsyncSYCL(void* dst, const void* src, size_t n) {
+  SYCL exec;
 #if defined(SYCL_EXT_ONEAPI_ENQUEUE_FUNCTIONS) && \
     defined(KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES)
   sycl::ext::oneapi::experimental::memcpy(
-      *Impl::SYCLInternal::singleton().m_queue, dst, src, n);
+      *exec.sycl_queue().m_queue, dst, src, n);
 #else
-  Impl::SYCLInternal::singleton().m_queue->memcpy(dst, src, n);
+  exec.sycl_queue().m_queue->memcpy(dst, src, n);
 #endif
-  SYCL().fence("Kokkos::Impl::DeepCopyAsyncSYCL: fence after memcpy");
+  exec.fence("Kokkos::Impl::DeepCopyAsyncSYCL: fence after memcpy");
 }
 
 }  // namespace Impl
@@ -89,18 +79,15 @@ std::string_view get_memory_space_name(sycl::usm::alloc allocation_kind) {
 
 namespace Kokkos {
 
-SYCLDeviceUSMSpace::SYCLDeviceUSMSpace()
-    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+SYCLDeviceUSMSpace::SYCLDeviceUSMSpace() : m_queue(SYCL().sycl_queue()) {}
 SYCLDeviceUSMSpace::SYCLDeviceUSMSpace(sycl::queue queue)
     : m_queue(std::move(queue)) {}
 
-SYCLSharedUSMSpace::SYCLSharedUSMSpace()
-    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+SYCLSharedUSMSpace::SYCLSharedUSMSpace() : m_queue(SYCL().sycl_queue()) {}
 SYCLSharedUSMSpace::SYCLSharedUSMSpace(sycl::queue queue)
     : m_queue(std::move(queue)) {}
 
-SYCLHostUSMSpace::SYCLHostUSMSpace()
-    : m_queue(*SYCL().impl_internal_space_instance()->m_queue) {}
+SYCLHostUSMSpace::SYCLHostUSMSpace() : m_queue(SYCL().sycl_queue()) {}
 SYCLHostUSMSpace::SYCLHostUSMSpace(sycl::queue queue)
     : m_queue(std::move(queue)) {}
 
@@ -137,8 +124,7 @@ void* SYCLDeviceUSMSpace::allocate(const Kokkos::SYCL& exec_space,
                                    const size_t arg_logical_size) const {
   return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
                        Kokkos::Tools::make_space_handle(name()),
-                       sycl::usm::alloc::device,
-                       *exec_space.impl_internal_space_instance()->m_queue);
+                       sycl::usm::alloc::device, exec_space.sycl_queue());
 }
 
 void* SYCLDeviceUSMSpace::allocate(const size_t arg_alloc_size) const {
@@ -163,8 +149,7 @@ void* SYCLSharedUSMSpace::allocate(const SYCL& exec_space,
                                    const size_t arg_logical_size) const {
   return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
                        Kokkos::Tools::make_space_handle(name()),
-                       sycl::usm::alloc::shared,
-                       *exec_space.impl_internal_space_instance()->m_queue);
+                       sycl::usm::alloc::shared, exec_space.sycl_queue());
 }
 
 void* SYCLSharedUSMSpace::allocate(const size_t arg_alloc_size) const {
@@ -187,8 +172,7 @@ void* SYCLHostUSMSpace::allocate(const SYCL& exec_space, const char* arg_label,
                                  const size_t arg_logical_size) const {
   return allocate_sycl(arg_label, arg_alloc_size, arg_logical_size,
                        Kokkos::Tools::make_space_handle(name()),
-                       sycl::usm::alloc::host,
-                       *exec_space.impl_internal_space_instance()->m_queue);
+                       sycl::usm::alloc::host, exec_space.sycl_queue());
 }
 
 void* SYCLHostUSMSpace::allocate(const size_t arg_alloc_size) const {

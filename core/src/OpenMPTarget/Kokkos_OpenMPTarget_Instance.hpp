@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_OPENMPTARGET_INSTANCE_HPP
 #define KOKKOS_OPENMPTARGET_INSTANCE_HPP
@@ -52,12 +39,6 @@ class OpenMPTargetInternal {
   void impl_initialize();
 
   static OpenMPTargetInternal* impl_singleton();
-
-  // FIXME_OPENMPTARGET - Currently the maximum number of
-  // teams possible is calculated based on NVIDIA's Volta GPU. In
-  // future this value should be based on the chosen architecture for the
-  // OpenMPTarget backend.
-  int MAX_ACTIVE_THREADS = 0;
 
   static void verify_is_process(const char* const);
   static void verify_initialized(const char* const);

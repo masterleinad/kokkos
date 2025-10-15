@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <TestStdAlgorithmsCommon.hpp>
 #include <utility>
@@ -107,7 +94,7 @@ std::size_t fill_view(ViewType dest_view, const std::string& name,
   }
 
   else {
-    throw std::runtime_error("invalid choice");
+    Kokkos::abort("invalid choice");
   }
 
   Kokkos::deep_copy(aux_view, v_h);
@@ -202,7 +189,7 @@ void verify_data(const std::string& name, ViewTypeFrom view_from,
   }
 
   else {
-    throw std::runtime_error("invalid choice");
+    FAIL() << "invalid choice";
   }
 }
 

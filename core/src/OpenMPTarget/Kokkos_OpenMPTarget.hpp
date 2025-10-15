@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #include <Kokkos_Macros.hpp>
@@ -33,7 +20,6 @@ static_assert(false,
 #include <OpenMPTarget/Kokkos_OpenMPTargetSpace.hpp>
 #include <Kokkos_ScratchSpace.hpp>
 #include <Kokkos_Parallel.hpp>
-#include <Kokkos_TaskScheduler.hpp>
 #include <Kokkos_Layout.hpp>
 #include <impl/Kokkos_Profiling_Interface.hpp>
 #include <impl/Kokkos_InitializationSettings.hpp>
@@ -148,7 +134,6 @@ struct DeviceTypeTraits<::Kokkos::Experimental::OpenMPTarget> {
 #include <OpenMPTarget/Kokkos_OpenMPTarget_Parallel.hpp>
 #include <OpenMPTarget/Kokkos_OpenMPTarget_ParallelFor_MDRange.hpp>
 #include <OpenMPTarget/Kokkos_OpenMPTarget_ParallelReduce_MDRange.hpp>
-#include <OpenMPTarget/Kokkos_OpenMPTarget_Task.hpp>
 
 /*--------------------------------------------------------------------------*/
 

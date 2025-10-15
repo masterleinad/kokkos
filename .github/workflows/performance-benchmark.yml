@@ -3,10 +3,7 @@ on:
   push:
     branches:
       - develop
-  pull_request:
-    paths-ignore:
-      - '**/*.md'
-    types: [ opened, reopened, synchronize ]
+  workflow_call:
 
 permissions: read-all
 
@@ -14,6 +11,8 @@ jobs:
   CI:
     continue-on-error: true
     strategy:
+      # We must avoid pushing to the benchmark repository concurrently.
+      max-parallel: 1
       matrix:
         distro: ['ubuntu:latest']
         cxx: ['g++', 'clang++']
@@ -25,8 +24,8 @@ jobs:
       BUILD_ID: ${{ matrix.distro }}-${{ matrix.cxx }}-${{ matrix.backend }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ccache
           key: kokkos-${{ matrix.distro }}-${{ matrix.cxx }}-${{ matrix.backend }}-${{ github.ref }}-${{ github.sha }}
@@ -53,6 +52,11 @@ jobs:
         run: |
           mkdir ${{ env.BUILD_ID }}
           find builddir/core/perf_test/ -name "*.json" -exec mv {} ${{ env.BUILD_ID }}/  \;
+      - name: Archive benchmark results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ matrix.cxx }}-${{ matrix.backend }}
+          path: ${{ env.BUILD_ID }}
       - name: Push benchmark results
         if: ${{ github.ref == 'refs/heads/develop' }}
         uses: dmnemec/copy_file_to_another_repo_action@bbebd3da22e4a37d04dca5f782edd5201cb97083 # main
