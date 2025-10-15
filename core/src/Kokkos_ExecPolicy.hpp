@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #include <Kokkos_Macros.hpp>
@@ -52,6 +39,14 @@ struct ChunkSize {
   ChunkSize(int value_) : value(value_) {}
 #endif
 };
+
+namespace Impl {
+// Private tag that can be used to make a copy of another execution policy
+// and set the underlying execution space instance.
+// It does NOT perform any sanity check.
+// For now, it is used in Kokkos::Experimental::Graph.
+struct PolicyUpdate {};
+}  // namespace Impl
 
 /** \brief  Execution policy for work over a range of an integral type.
  *
@@ -177,6 +172,12 @@ class RangePolicy : public Impl::PolicyTraits<Properties...> {
               const ChunkSize chunk_size)
       : RangePolicy(typename traits::execution_space(), work_begin, work_end,
                     chunk_size) {}
+
+  RangePolicy(const Impl::PolicyUpdate, const RangePolicy& other,
+              typename traits::execution_space space)
+      : RangePolicy(other) {
+    this->m_space = std::move(space);
+  }
 
  public:
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -680,6 +681,10 @@ class TeamPolicy
     // it is not a direct base.
     internal_policy::traits::operator=(p);
   }
+
+  TeamPolicy(const Impl::PolicyUpdate tag, const TeamPolicy& other,
+             typename traits::execution_space space)
+      : internal_policy(tag, other, std::move(space)) {}
 
  private:
   TeamPolicy(const internal_policy& p) : internal_policy(p) {}
