@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 static_assert(false,
@@ -347,6 +334,13 @@ class ReferenceCountedDataHandle {
   pointer m_handle = nullptr;
 };
 
+// Helper function used by View to extract raw pointer from data_handle
+template <class ElementType, class MemorySpace>
+KOKKOS_INLINE_FUNCTION constexpr auto ptr_from_data_handle(
+    const ReferenceCountedDataHandle<ElementType, MemorySpace>& handle) {
+  return handle.get();
+}
+
 template <class T>
 struct IsReferenceCountedDataHandle : std::false_type {};
 
@@ -442,7 +436,7 @@ class ReferenceCountedAccessor {
       data_handle_type p,
 #endif
       size_t i) const {
-    return data_handle_type(p, m_nested_acc.offset(p.get(), i));
+    return data_handle_type{p, m_nested_acc.offset(p.get(), i)};
   }
 
   KOKKOS_FUNCTION

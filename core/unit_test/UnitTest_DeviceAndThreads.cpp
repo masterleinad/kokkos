@@ -1,23 +1,22 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
 #include <Kokkos_Core.hpp>
+#endif
+#include <Kokkos_Assert.hpp>
+
+#ifdef KOKKOS_ENABLE_OPENMP
+#include <omp.h>
+#endif
+
 #include <iostream>
 #include <string>
 #include <thread>
+#include <vector>
 
 int get_num_devices() {
   int num_devices;
@@ -116,7 +115,7 @@ int print_flag(std::string const& flag) {
   return EXIT_FAILURE;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {  // NOLINT(bugprone-exception-escape)
   Kokkos::ScopeGuard guard(argc, argv);
   if (argc != 2) {
     std::cerr << "Usage: <executable> NAME_OF_FLAG\n";

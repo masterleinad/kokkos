@@ -1,20 +1,18 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+import kokkos.core_impl;
+#else
 #include <Kokkos_Core.hpp>
+#endif
+
+#include <desul/atomics.hpp>
+
+#include <cstddef>
+#include <type_traits>
 
 namespace {
 
@@ -120,30 +118,30 @@ constexpr bool test_view_typedefs_impl() {
   // FIXME: uniformtype removes all memorytraits?
   static_assert(std::is_same_v<typename ViewType::uniform_type,
                                Kokkos::View<typename ViewType::data_type, uniform_layout_type,
-                                            typename ViewType::device_type, Kokkos::MemoryTraits<0>>>);
+                                            typename ViewType::device_type, Kokkos::MemoryTraits<>>>);
   static_assert(std::is_same_v<typename ViewType::uniform_const_type,
                                Kokkos::View<typename ViewType::const_data_type, uniform_layout_type,
-                                            typename ViewType::device_type, Kokkos::MemoryTraits<0>>>);
+                                            typename ViewType::device_type, Kokkos::MemoryTraits<>>>);
   static_assert(std::is_same_v<typename ViewType::uniform_runtime_type,
                                Kokkos::View<typename data_analysis<DataType>::runtime_data_type, uniform_layout_type,
-                                            typename ViewType::device_type, Kokkos::MemoryTraits<0>>>);
+                                            typename ViewType::device_type, Kokkos::MemoryTraits<>>>);
   static_assert(std::is_same_v<typename ViewType::uniform_runtime_const_type,
                                Kokkos::View<typename data_analysis<DataType>::runtime_const_data_type, uniform_layout_type,
-                                            typename ViewType::device_type, Kokkos::MemoryTraits<0>>>);
+                                            typename ViewType::device_type, Kokkos::MemoryTraits<>>>);
 
   using anonymous_device_type = Kokkos::Device<typename ViewType::execution_space, Kokkos::AnonymousSpace>;
   static_assert(std::is_same_v<typename ViewType::uniform_nomemspace_type,
                                Kokkos::View<typename ViewType::data_type, uniform_layout_type,
-                                            anonymous_device_type, Kokkos::MemoryTraits<0>>>);
+                                            anonymous_device_type, Kokkos::MemoryTraits<>>>);
   static_assert(std::is_same_v<typename ViewType::uniform_const_nomemspace_type,
                                Kokkos::View<typename ViewType::const_data_type, uniform_layout_type,
-                                            anonymous_device_type, Kokkos::MemoryTraits<0>>>);
+                                            anonymous_device_type, Kokkos::MemoryTraits<>>>);
   static_assert(std::is_same_v<typename ViewType::uniform_runtime_nomemspace_type,
                                Kokkos::View<typename data_analysis<DataType>::runtime_data_type, uniform_layout_type,
-                                            anonymous_device_type, Kokkos::MemoryTraits<0>>>);
+                                            anonymous_device_type, Kokkos::MemoryTraits<>>>);
   static_assert(std::is_same_v<typename ViewType::uniform_runtime_const_nomemspace_type,
                                Kokkos::View<typename data_analysis<DataType>::runtime_const_data_type, uniform_layout_type,
-                                            anonymous_device_type, Kokkos::MemoryTraits<0>>>);
+                                            anonymous_device_type, Kokkos::MemoryTraits<>>>);
 
 
   // ==================================
@@ -205,7 +203,7 @@ constexpr bool has_unified_mem_space = false;
 namespace TestInt {
   using layout_type = Kokkos::DefaultExecutionSpace::array_layout;
   using space = Kokkos::DefaultExecutionSpace;
-  using memory_traits = Kokkos::MemoryTraits<0>;
+  using memory_traits = Kokkos::MemoryTraits<>;
   // HostMirrorSpace is a mess so: if the default exec is a host exec, that is it
   using host_mirror_space = std::conditional_t<is_host_exec, Kokkos::DefaultExecutionSpace,
   // otherwise if unified memory is not on its HostSpace
@@ -220,7 +218,7 @@ namespace TestInt {
 namespace TestIntDefaultExecutionSpace {
   using layout_type = Kokkos::DefaultExecutionSpace::array_layout;
   using space = Kokkos::DefaultExecutionSpace;
-  using memory_traits = Kokkos::MemoryTraits<0>;
+  using memory_traits = Kokkos::MemoryTraits<>;
   // HostMirrorSpace is a mess so: if the default exec is a host exec, it is HostSpace (note difference from View<int> ...)
   using host_mirror_space = std::conditional_t<is_host_exec, Kokkos::HostSpace,
   // otherwise if unified memory is not on its also HostSpace!
@@ -235,7 +233,7 @@ namespace TestIntDefaultExecutionSpace {
 namespace TestFloatPPHostSpace {
   using layout_type = Kokkos::LayoutRight;
   using space = Kokkos::HostSpace;
-  using memory_traits = Kokkos::MemoryTraits<0>;
+  using memory_traits = Kokkos::MemoryTraits<>;
   using host_mirror_space = Kokkos::HostSpace;
   static_assert(test_view_typedefs<layout_type, space, memory_traits, host_mirror_space, const float, const float&>(
                      ViewParams<const float**, Kokkos::HostSpace>{}));
@@ -245,7 +243,7 @@ namespace TestFloatPPHostSpace {
 namespace TestFloatP3LayoutLeft {
   using layout_type = Kokkos::LayoutLeft;
   using space = Kokkos::DefaultExecutionSpace;
-  using memory_traits = Kokkos::MemoryTraits<0>;
+  using memory_traits = Kokkos::MemoryTraits<>;
   // HostMirrorSpace is a mess so: if the default exec is a host exec, that is it
   using host_mirror_space = std::conditional_t<is_host_exec, Kokkos::DefaultExecutionSpace,
   // otherwise if unified memory is not on its HostSpace
@@ -260,7 +258,7 @@ namespace TestFloatP3LayoutLeft {
 namespace TestFloatPPDeviceDefaultHostExecHostSpace {
   using layout_type = Kokkos::LayoutRight;
   using space = Kokkos::Device<Kokkos::DefaultHostExecutionSpace, Kokkos::HostSpace>;
-  using memory_traits = Kokkos::MemoryTraits<0>;
+  using memory_traits = Kokkos::MemoryTraits<>;
   using host_mirror_space = Kokkos::HostSpace;
   static_assert(test_view_typedefs<layout_type, space, memory_traits, host_mirror_space, float, float&>(
                      ViewParams<float[2][3], Kokkos::LayoutRight, Kokkos::Device<Kokkos::DefaultHostExecutionSpace, Kokkos::HostSpace>>{}));
