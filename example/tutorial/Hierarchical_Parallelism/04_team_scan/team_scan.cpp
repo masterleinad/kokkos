@@ -90,8 +90,7 @@ int main(int narg, char* args[]) {
     int team_size         = TEAM_SIZE;
     find_2_tuples functor(chunk_size, data, histogram);
     int const max_team_size =
-        Kokkos::TeamPolicy<ExecSpace, ScheduleType>(1, 1).team_size_max(
-            functor, Kokkos::ParallelForTag{});
+        team_policy(1, 1).team_size_max(functor, Kokkos::ParallelForTag{});
     if (team_size > max_team_size) team_size = max_team_size;
     Kokkos::parallel_for(team_policy(nchunks, team_size), functor);
     Kokkos::fence();
