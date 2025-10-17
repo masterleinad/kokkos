@@ -38,7 +38,7 @@ pipeline {
                         dockerfile {
                             filename 'Dockerfile.modules'
                             dir 'scripts/docker'
-                            label 'docker'
+                            label 'nvidia-docker || docker'
                         }
                     }
                     steps {
@@ -79,7 +79,7 @@ pipeline {
                          dockerfile {
                              filename 'Dockerfile.gcc'
                              dir 'scripts/docker'
-                             label 'docker'
+                             label 'nvidia-docker || docker'
                          }
                      }
                     environment {
