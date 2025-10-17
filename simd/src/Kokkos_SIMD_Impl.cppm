@@ -10,6 +10,7 @@ export module kokkos.simd_impl;
 export {
   namespace Kokkos::Experimental {
   namespace simd_abi::Impl {
+  using ::Kokkos::Experimental::simd_abi::Impl::host_fixed_native;
   using ::Kokkos::Experimental::simd_abi::Impl::native_abi;
   using ::Kokkos::Experimental::simd_abi::Impl::native_fixed_abi;
   }  // namespace simd_abi::Impl
