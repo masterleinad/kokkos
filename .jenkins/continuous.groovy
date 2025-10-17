@@ -439,6 +439,7 @@ pipeline {
                     post {
                         always {
                             sh 'ccache --show-stats'
+                            xunit([CTest(deleteOutputFiles: true, failIfNotNew: true, pattern: 'build/Testing/**/Test.xml', skipNoTestFiles: false, stopProcessingIfError: true)])
                         }
                     }
                 }
