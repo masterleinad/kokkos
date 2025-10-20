@@ -3347,28 +3347,6 @@ KOKKOS_FUNCTION bool within_range(Map const& map,
   return (((std::size_t)indices < map.extent(Enumerate)) && ...);
 }
 
-// Disabled when using MDSpan because the MDSpan implementation has its own
-// version
-#ifndef KOKKOS_ENABLE_IMPL_MDSPAN
-template <class... Indices>
-KOKKOS_FUNCTION constexpr char* append_formatted_multidimensional_index(
-    char* dest, Indices... indices) {
-  char* d = dest;
-  strcat(d, "[");
-  (
-      [&] {
-        d += strlen(d);
-        to_chars_i(d,
-                   d + 20,  // 20 digits ought to be enough
-                   indices);
-        strcat(d, ",");
-      }(),
-      ...);
-  d[strlen(d) - 1] = ']';  // overwrite trailing comma
-  return dest;
-}
-#endif
-
 template <class Map, class... Indices, std::size_t... Enumerate>
 KOKKOS_FUNCTION void print_extents(char* dest, Map const& map,
                                    std::index_sequence<Enumerate...>) {

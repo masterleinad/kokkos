@@ -98,11 +98,7 @@ set(COMPILE_ONLY_SOURCES
     view/TestConversionFromPointer.cpp
 )
 
-if(NOT Kokkos_ENABLE_IMPL_MDSPAN OR KOKKOS_CXX_COMPILER_ID STREQUAL "Intel")
-  list(REMOVE_ITEM COMPILE_ONLY_SOURCES view/TestBasicViewMDSpanConversion.cpp)
-endif()
-
-if(NOT Kokkos_ENABLE_IMPL_MDSPAN OR Kokkos_ENABLE_IMPL_VIEW_LEGACY)
+if(Kokkos_ENABLE_IMPL_VIEW_LEGACY)
   list(REMOVE_ITEM COMPILE_ONLY_SOURCES view/TestViewCustomization.cpp)
 endif()
 
@@ -226,11 +222,6 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
         SpaceAwareAccessor
         Swap
     )
-    if(NOT Kokkos_ENABLE_IMPL_MDSPAN)
-      list(REMOVE_ITEM ${Tag}_TESTNAMES1B MDSpanAtomicAccessor MDSpanConversion SpaceAwareAccessorAccessViolation
-           SpaceAwareAccessor
-      )
-    endif()
     # This test case causes MSVC to fail with "number of sections exceeded object file format limit"
     if(MSVC)
       list(REMOVE_ITEM ${Tag}_TESTNAMES1B Reducers_d)
@@ -358,24 +349,22 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenMPTarget;OpenACC;HIP;SYCL)
 
     # ViewSupport should eventually contain the new implementation
     # detail tests for the mdspan based View
-    if(Kokkos_ENABLE_IMPL_MDSPAN)
-      set(BV_TestNames BasicView ReferenceCountedAccessor ReferenceCountedDataHandle)
-      if(NOT Kokkos_ENABLE_IMPL_VIEW_LEGACY AND NOT Kokkos_ENABLE_OPENACC)
-        list(APPEND BV_TestNames ViewCustomizationAccessorArg ViewCustomizationAllocationType
-             ViewCustomizationAccessorFromMapping
-        )
-      endif()
-      set(${Tag}_VIEWSUPPORT)
-      foreach(Name IN LISTS BV_TestNames)
-        set(file ${dir}/Test${Tag}_View_${Name}.cpp)
-        # Write to a temporary intermediate file and call configure_file to avoid
-        # updating timestamps triggering unnecessary rebuilds on subsequent cmake runs.
-        file(WRITE ${dir}/dummy.cpp "#include <Test${Tag}_Category.hpp>\n" "#include <view/Test${Name}.hpp>\n")
-        configure_file(${dir}/dummy.cpp ${file})
-        list(APPEND ${Tag}_VIEWSUPPORT ${file})
-      endforeach()
-      kokkos_add_executable_and_test(CoreUnitTest_${Tag}_ViewSupport SOURCES UnitTestMainInit.cpp ${${Tag}_VIEWSUPPORT})
+    set(BV_TestNames BasicView ReferenceCountedAccessor ReferenceCountedDataHandle)
+    if(NOT Kokkos_ENABLE_IMPL_VIEW_LEGACY AND NOT Kokkos_ENABLE_OPENACC)
+      list(APPEND BV_TestNames ViewCustomizationAccessorArg ViewCustomizationAllocationType
+           ViewCustomizationAccessorFromMapping
+      )
     endif()
+    set(${Tag}_VIEWSUPPORT)
+    foreach(Name IN LISTS BV_TestNames)
+      set(file ${dir}/Test${Tag}_View_${Name}.cpp)
+      # Write to a temporary intermediate file and call configure_file to avoid
+      # updating timestamps triggering unnecessary rebuilds on subsequent cmake runs.
+      file(WRITE ${dir}/dummy.cpp "#include <Test${Tag}_Category.hpp>\n" "#include <view/Test${Name}.hpp>\n")
+      configure_file(${dir}/dummy.cpp ${file})
+      list(APPEND ${Tag}_VIEWSUPPORT ${file})
+    endforeach()
+    kokkos_add_executable_and_test(CoreUnitTest_${Tag}_ViewSupport SOURCES UnitTestMainInit.cpp ${${Tag}_VIEWSUPPORT})
   endif()
 endforeach()
 

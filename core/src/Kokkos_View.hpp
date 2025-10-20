@@ -11,9 +11,7 @@ static_assert(false,
 #define KOKKOS_VIEW_HPP
 
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_IMPL_MDSPAN
 #include <View/Kokkos_BasicView.hpp>
-#endif
 #ifdef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
 #include <View/Kokkos_ViewLegacy.hpp>
 #else

@@ -12,17 +12,9 @@ static_assert(false,
 #include <cstddef>
 #include <type_traits>
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_IMPL_MDSPAN
 #include <View/MDSpan/Kokkos_MDSpan_Header.hpp>
-#else
-#include <limits>
-#endif
 
 namespace Kokkos {
-
-#ifndef KOKKOS_ENABLE_IMPL_MDSPAN
-constexpr size_t dynamic_extent = std::numeric_limits<size_t>::max();
-#endif
 
 namespace Experimental {
 

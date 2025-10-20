@@ -23,11 +23,9 @@ static_assert(false,
 #include <impl/Kokkos_Tools.hpp>
 #include <impl/Kokkos_Utilities.hpp>
 
-#ifdef KOKKOS_ENABLE_IMPL_MDSPAN
 #include <View/MDSpan/Kokkos_MDSpan_Extents.hpp>
 #include <View/MDSpan/Kokkos_MDSpan_Layout.hpp>
 #include <View/MDSpan/Kokkos_MDSpan_Accessor.hpp>
-#endif
 #include <Kokkos_MinMax.hpp>
 
 #include <View/Kokkos_ViewTraits.hpp>
@@ -1287,7 +1285,6 @@ class View : public ViewTraits<DataType, Properties...> {
 
   //----------------------------------------
   // MDSpan converting constructors
-#ifdef KOKKOS_ENABLE_IMPL_MDSPAN
   template <typename U = typename Impl::MDSpanViewTraits<traits>::mdspan_type>
   KOKKOS_INLINE_FUNCTION explicit(!traits::memory_traits::is_unmanaged) View(
       const typename Impl::MDSpanViewTraits<traits>::mdspan_type& mds,
@@ -1348,7 +1345,6 @@ class View : public ViewTraits<DataType, Properties...> {
                            Impl::mapping_from_view_mapping<mdspan_type>(m_map),
                            other_accessor};
   }
-#endif  // KOKKOS_ENABLE_IMPL_MDSPAN
 };
 
 template <typename D, class... P>

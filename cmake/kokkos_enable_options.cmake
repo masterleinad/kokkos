@@ -132,35 +132,26 @@ if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES)
   endif()
 endif()
 
-kokkos_enable_option(IMPL_MDSPAN ON "Whether to enable mdspan support (internal use only)")
 kokkos_enable_option(MDSPAN_EXTERNAL OFF "Whether to use an external version of mdspan")
 kokkos_enable_option(
   IMPL_CHECK_POSSIBLY_BREAKING_LAYOUTS
   OFF
   "Whether to check for uses of LayoutRight that have an explicit stride that may have changed in the new View implementation."
 )
-mark_as_advanced(Kokkos_ENABLE_IMPL_MDSPAN)
 mark_as_advanced(Kokkos_ENABLE_MDSPAN_EXTERNAL)
 mark_as_advanced(IMPL_CHECK_POSSIBLY_BREAKING_LAYOUTS)
 
-if(Kokkos_ENABLE_IMPL_MDSPAN)
-  # CUDA 12.9 has a bug that causes it to segfault when mdspan-based view is used:
-  #   see https://github.com/kokkos/kokkos/issues/8126
-  if(KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA AND KOKKOS_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.9
-     AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 13
-  )
-    set(VIEW_LEGACY_DEFAULT ON)
-  else()
-    set(VIEW_LEGACY_DEFAULT OFF)
-  endif()
-else()
+# CUDA 12.9 has a bug that causes it to segfault when mdspan-based view is used:
+#   see https://github.com/kokkos/kokkos/issues/8126
+if(KOKKOS_CXX_COMPILER_ID STREQUAL NVIDIA AND KOKKOS_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 12.9
+   AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 13
+)
   set(VIEW_LEGACY_DEFAULT ON)
+else()
+  set(VIEW_LEGACY_DEFAULT OFF)
 endif()
 kokkos_enable_option(IMPL_VIEW_LEGACY ${VIEW_LEGACY_DEFAULT} "Whether to use the legacy implementation of View")
 mark_as_advanced(Kokkos_ENABLE_IMPL_VIEW_LEGACY)
-if(NOT Kokkos_ENABLE_IMPL_VIEW_LEGACY AND NOT Kokkos_ENABLE_IMPL_MDSPAN)
-  message(FATAL_ERROR "Kokkos_ENABLE_IMPL_MDSPAN must be set to use the new View implementation")
-endif()
 
 kokkos_enable_option(COMPLEX_ALIGN ON "Whether to align Kokkos::complex to 2*alignof(RealType)")
 
