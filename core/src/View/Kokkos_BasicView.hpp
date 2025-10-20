@@ -116,11 +116,9 @@ KOKKOS_INLINE_FUNCTION constexpr auto accessor_from_mapping_and_accessor_arg(
 
 // FIXME spurious warnings like
 // error: 'SR.14123' may be used uninitialized [-Werror=maybe-uninitialized]
-#if defined(__GNUC__)
+#if defined(KOKKOS_COMPILER_GNU) && KOKKOS_COMPILER_GNU >= 1500
 #pragma GCC diagnostic push
-#if !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
 
@@ -774,7 +772,7 @@ class BasicView {
   friend class BasicView;
 };
 
-#if defined(__GNUC__)
+#if defined(KOKKOS_COMPILER_GNU) && KOKKOS_COMPILER_GNU >= 1500
 #pragma GCC diagnostic pop
 #endif
 
