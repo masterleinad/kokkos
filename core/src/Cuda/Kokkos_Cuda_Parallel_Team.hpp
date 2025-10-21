@@ -557,20 +557,30 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
         m_policy.space().cuda_device_prop().sharedMemPerBlock;
     const int shmem_size_total = m_shmem_begin + m_shmem_size;
     if (maxShmemPerBlock < shmem_size_total) {
-      printf("%i %i\n", maxShmemPerBlock, shmem_size_total);
-      Kokkos::Impl::throw_runtime_exception(std::string(
-          "Kokkos::Impl::ParallelFor< Cuda > insufficient shared memory"));
+      std::stringstream error;
+      error << "Kokkos::parallel_for<Cuda>: Requested too much scratch memory "
+               "on level 0. Requested: "
+            << m_shmem_size
+            << ", Maximum: " << maxShmemPerBlock - m_shmem_begin;
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
 
     if (m_scratch_size[1] > static_cast<size_t>(m_policy.scratch_size_max(1))) {
-      Kokkos::Impl::throw_runtime_exception(
-          std::string("Kokkos::Impl::ParallelFor< Cuda > insufficient level 1 "
-                      "scratch memory"));
+      std::stringstream error;
+      error << "Kokkos::parallel_for<Cuda>: Requested too much scratch memory "
+               "on level 1. Requested: "
+            << m_scratch_size[1]
+            << ", Maximum: " << m_policy.scratch_size_max(1);
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
 
     if (m_team_size > arg_policy.team_size_max(arg_functor, ParallelForTag())) {
-      Kokkos::Impl::throw_runtime_exception(std::string(
-          "Kokkos::Impl::ParallelFor< Cuda > requested too large team size."));
+      std::stringstream error;
+      error << "Kokkos::parallel_for<Cuda>: Requested too large team size. "
+               "Requested: "
+            << m_team_size << ", Maximum: "
+            << arg_policy.team_size_max(arg_functor, ParallelForTag());
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
   }
 
@@ -952,24 +962,33 @@ class ParallelReduce<CombinedFunctorReducerType,
     }
 
     if (maxShmemPerBlock < shmem_size_total) {
-      Kokkos::Impl::throw_runtime_exception(
-          std::string("Kokkos::Impl::ParallelReduce< Cuda > requested too much "
-                      "L0 scratch memory"));
+      std::stringstream error;
+      error
+          << "Kokkos::parallel_reduce<Cuda>: Requested too much scratch memory "
+             "on level 0. Requested: "
+          << m_shmem_size
+          << ", Maximum: " << maxShmemPerBlock - m_shmem_begin - m_team_begin;
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
 
     if (m_scratch_size[1] > static_cast<size_t>(m_policy.scratch_size_max(1))) {
-      Kokkos::Impl::throw_runtime_exception(
-          std::string("Kokkos::Impl::ParallelFor< Cuda > requested too much L1 "
-                      "scratch memory"));
+      std::stringstream error;
+      error
+          << "Kokkos::parallel_reduce<Cuda>: Requested too much scratch memory "
+             "on level 1. Requested: "
+          << m_scratch_size[1] << ", Maximum: " << m_policy.scratch_size_max(1);
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
 
-    if (int(m_team_size) >
-        arg_policy.team_size_max(m_functor_reducer.get_functor(),
-                                 m_functor_reducer.get_reducer(),
-                                 ParallelReduceTag())) {
-      Kokkos::Impl::throw_runtime_exception(
-          std::string("Kokkos::Impl::ParallelReduce< Cuda > requested too "
-                      "large team size."));
+    if (m_team_size > arg_policy.team_size_max(m_functor_reducer.get_functor(),
+                                               m_functor_reducer.get_reducer(),
+                                               ParallelReduceTag())) {
+      std::stringstream error;
+      error << "Kokkos::parallel_reduce<Cuda>: Requested too large team size. "
+               "Requested: "
+            << m_team_size << ", Maximum: "
+            << arg_policy.team_size_max(arg_functor, ParallelForTag());
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
   }
 
