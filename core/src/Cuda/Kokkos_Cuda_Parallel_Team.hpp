@@ -987,7 +987,9 @@ class ParallelReduce<CombinedFunctorReducerType,
       error << "Kokkos::parallel_reduce<Cuda>: Requested too large team size. "
                "Requested: "
             << m_team_size << ", Maximum: "
-            << arg_policy.team_size_max(arg_functor, ParallelForTag());
+            << arg_policy.team_size_max(m_functor_reducer.get_functor(),
+                                        m_functor_reducer.get_reducer(),
+                                        ParallelReduceTag());
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
   }
