@@ -93,7 +93,6 @@ export {
   using ::Kokkos::ALL;
   using ::Kokkos::ALL_t;
   using ::Kokkos::AllowPadding;
-  using ::Kokkos::ArrayLayout;
   using ::Kokkos::common_view_alloc_prop;
   using ::Kokkos::create_mirror;
   using ::Kokkos::create_mirror_view;

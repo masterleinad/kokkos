@@ -143,7 +143,7 @@ KOKKOS_IMPL_IS_CONCEPT(memory_space, MemorySpace)
 KOKKOS_IMPL_IS_CONCEPT_IMPL(memory_traits)
 KOKKOS_IMPL_IS_CONCEPT(execution_space, ExecutionSpace)
 KOKKOS_IMPL_IS_CONCEPT(execution_policy, ExecutionPolicy)
-KOKKOS_IMPL_IS_CONCEPT(array_layout, ArrayLayout)
+KOKKOS_IMPL_IS_CONCEPT_IMPL(array_layout)
 KOKKOS_IMPL_IS_CONCEPT(reducer, Reducer)
 KOKKOS_IMPL_IS_CONCEPT(team_handle, TeamHandle)
 namespace Experimental {
