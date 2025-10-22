@@ -220,7 +220,7 @@ void test_exceed_max_team_scratch_size_0() {
               policy.set_scratch_size(level,
                                       Kokkos::PerTeam(max_scratch_size + 1)),
               dummy_functor);
-        } catch (std::runtime_error e) {
+        } catch (const std::runtime_error& e) {
           std::cmatch base_match;
           const char* regex_string =
               "Requested too much scratch memory on level 0. Requested: "
@@ -256,7 +256,7 @@ void test_exceed_max_team_scratch_size_1() {
               policy.set_scratch_size(level,
                                       Kokkos::PerTeam(max_scratch_size + 1)),
               dummy_functor);
-        } catch (std::runtime_error e) {
+        } catch (const std::runtime_error& e) {
           std::cmatch base_match;
           const char* regex_string =
               "Requested too much scratch memory on level 1. Requested: "
@@ -288,7 +288,7 @@ void test_exceed_max_team_size() {
           Kokkos::parallel_for(
               Kokkos::TeamPolicy<TEST_EXECSPACE>(1, max_team_size + 1),
               dummy_functor);
-        } catch (std::runtime_error e) {
+        } catch (const std::runtime_error& e) {
           std::cmatch base_match;
           const char* regex_string =
               "Requested too large team size. Requested: "
