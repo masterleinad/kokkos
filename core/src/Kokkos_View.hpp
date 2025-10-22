@@ -148,6 +148,14 @@ struct is_view<const View<D, P...> > : public std::true_type {};
 template <class T>
 inline constexpr bool is_view_v = is_view<T>::value;
 
+// FIXME spurious warnings like
+// error: 'SR.14123' may be used uninitialized [-Werror=maybe-uninitialized]
+#if defined(KOKKOS_COMPILER_GNU) && KOKKOS_COMPILER_GNU >= 1500
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
+
 template <class DataType, class... Properties>
 class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   // We are deriving from BasicView, but need a helper to translate
@@ -1101,6 +1109,10 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
     return value == Kokkos::dynamic_extent ? 0 : value;
   }
 };
+
+#if defined(KOKKOS_COMPILER_GNU) && KOKKOS_COMPILER_GNU >= 1500
+#pragma GCC diagnostic pop
+#endif
 
 template <typename D, class... P>
 KOKKOS_INLINE_FUNCTION constexpr unsigned rank(const View<D, P...>&) {
