@@ -226,7 +226,7 @@ void test_exceed_max_team_scratch_size_0() {
               "Requested too much scratch memory on level 0. Requested: "
               "[0-9]*, Maximum: [0-9]*";
           const std::regex regex(regex_string);
-          bool match = std::regex_match(e.what(), base_match, regex);
+          bool match = std::regex_search(e.what(), base_match, regex);
           EXPECT_TRUE(match)
               << "Expected:\n  " << regex_string << "\nGot:\n  " << e.what();
           throw;
@@ -262,7 +262,7 @@ void test_exceed_max_team_scratch_size_1() {
               "Requested too much scratch memory on level 1. Requested: "
               "[0-9]*, Maximum: [0-9]*";
           const std::regex regex(regex_string);
-          bool match = std::regex_match(e.what(), base_match, regex);
+          bool match = std::regex_search(e.what(), base_match, regex);
           EXPECT_TRUE(match)
               << "Expected:\n  " << regex_string << "\nGot:\n  " << e.what();
           throw;
@@ -294,7 +294,7 @@ void test_exceed_max_team_size() {
               "Requested too large team size. Requested: "
               "[0-9]*, Maximum: [0-9]*";
           const std::regex regex(regex_string);
-          bool match = std::regex_match(e.what(), base_match, regex);
+          bool match = std::regex_search(e.what(), base_match, regex);
           EXPECT_TRUE(match)
               << "Expected:\n  " << regex_string << "\nGot:\n  " << e.what();
           throw;
