@@ -176,13 +176,13 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
     if (m_team_size * m_vector_length >
         static_cast<int>(
             m_space.impl_internal_space_instance()->m_maxWorkgroupSize)) {
-      Impl::throw_runtime_exception(
-          std::string("Kokkos::TeamPolicy<SYCL> the team size is too large. "
-                      "Team size x vector length is " +
-                      std::to_string(m_team_size * m_vector_length) +
-                      " but must be smaller than ") +
-          std::to_string(
-              m_space.impl_internal_space_instance()->m_maxWorkgroupSize));
+      std::stringstream error;
+      error << "Kokkos::TeamPolicy<SYCL>: Requested too large team size. "
+               "Requested: "
+            << m_team_size << ", Maximum: "
+            << m_space.impl_internal_space_instance()->m_maxWorkgroupSize /
+                   m_vector_length;
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
   }
 
