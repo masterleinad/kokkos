@@ -791,9 +791,13 @@ class TeamPolicyInternal<Kokkos::Experimental::HPX, Properties...>
     const int max_team_size = 1;  // TODO: Can't use team_size_max(...) because
                                   // it requires a functor as argument.
 
-    if (team_size_request > max_team_size)
-      Kokkos::Impl::throw_runtime_exception(
-          "Kokkos::abort: Requested Team Size is too large!");
+    if (team_size_request > max_team_size) {
+      std::stringstream error;
+      error << "Requested too large team size. "
+               "Requested: "
+            << team_size_request << ", Maximum: " << max_time_size;
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
+    }
 
     m_team_size = team_size_request;
 

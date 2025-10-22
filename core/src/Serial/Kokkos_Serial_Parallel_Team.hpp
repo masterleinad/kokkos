@@ -109,9 +109,13 @@ class TeamPolicyInternal<Kokkos::Serial, Properties...>
         m_league_size(league_size_request),
         m_chunk_size(32),
         m_space(space) {
-    if (team_size_request > 1)
-      Kokkos::Impl::throw_runtime_exception(
-          "Kokkos::abort: Requested Team Size is too large!");
+    if (team_size_request > 1) {
+      std::stringstream error;
+      error << "Requested too large team size. "
+               "Requested: "
+            << team_size_request << ", Maximum: 1";
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
+    }
   }
 
   TeamPolicyInternal(const execution_space& space, int league_size_request,

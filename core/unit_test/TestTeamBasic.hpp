@@ -214,9 +214,24 @@ void test_exceed_max_team_scratch_size_0() {
   policy.impl_set_team_size(max_team_size);
   auto max_scratch_size = policy.scratch_size_max(level);
   ASSERT_THROW(
-      Kokkos::parallel_for(
-          policy.set_scratch_size(level, Kokkos::PerTeam(max_scratch_size + 1)),
-          dummy_functor),
+      {
+        try {
+          Kokkos::parallel_for(
+              policy.set_scratch_size(level,
+                                      Kokkos::PerTeam(max_scratch_size + 1)),
+              dummy_functor);
+        } catch (std::runtime_error e) {
+          std::cmatch base_match;
+          const char* regex_string =
+              "Requested too much scratch memory on level 0. Requested: "
+              "[0-9]*, Maximum: [0-9]*";
+          const std::regex regex(regex_string);
+          bool match = std::regex_match(e.what(), base_match, regex);
+          EXPECT_TRUE(match)
+              << "Expected:\n  " << regex_string << "\nGot:\n  " << e.what();
+          throw;
+        }
+      },
       std::runtime_error);
 }
 
@@ -243,11 +258,13 @@ void test_exceed_max_team_scratch_size_1() {
               dummy_functor);
         } catch (std::runtime_error e) {
           std::cmatch base_match;
-          const std::regex regex(
+          const char* regex_string =
               "Requested too much scratch memory on level 1. Requested: "
-              "[0-9]*, Maximum: [0-9]*");
+              "[0-9]*, Maximum: [0-9]*";
+          const std::regex regex(regex_string);
           bool match = std::regex_match(e.what(), base_match, regex);
-          EXPECT_TRUE(match);
+          EXPECT_TRUE(match)
+              << "Expected:\n  " << regex_string << "\nGot:\n  " << e.what();
           throw;
         }
       },
@@ -265,10 +282,25 @@ void test_exceed_max_team_size() {
       KOKKOS_LAMBDA(Kokkos::TeamPolicy<TEST_EXECSPACE>::member_type){};
   auto max_team_size =
       policy.team_size_max(dummy_functor, Kokkos::ParallelForTag{});
-  ASSERT_THROW(Kokkos::parallel_for(
-                   Kokkos::TeamPolicy<TEST_EXECSPACE>(1, max_team_size + 1),
-                   dummy_functor),
-               std::runtime_error);
+  ASSERT_THROW(
+      {
+        try {
+          Kokkos::parallel_for(
+              Kokkos::TeamPolicy<TEST_EXECSPACE>(1, max_team_size + 1),
+              dummy_functor);
+        } catch (std::runtime_error e) {
+          std::cmatch base_match;
+          const char* regex_string =
+              "Requested too large team size. Requested: "
+              "[0-9]*, Maximum: [0-9]*";
+          const std::regex regex(regex_string);
+          bool match = std::regex_match(e.what(), base_match, regex);
+          EXPECT_TRUE(match)
+              << "Expected:\n  " << regex_string << "\nGot:\n  " << e.what();
+          throw;
+        }
+      },
+      std::runtime_error);
 }
 
 TEST(TEST_CATEGORY_DEATH, exceed_max_team_size) {
