@@ -459,24 +459,41 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
     if (static_cast<int>(instance.m_maxShmemPerBlock) <
         m_shmem_size + m_shmem_begin) {
       std::stringstream out;
-      out << "Kokkos::Impl::ParallelFor<SYCL> insufficient shared memory! "
+      out << "Kokkos::parallel_reduce<SYCL> insufficient shared memory! "
              "Requested "
           << m_shmem_size + m_shmem_begin << " bytes but maximum is "
           << instance.m_maxShmemPerBlock << '\n';
       Kokkos::Impl::throw_runtime_exception(out.str());
     }
-
-    if (m_scratch_size[1] > static_cast<size_t>(m_policy.scratch_size_max(1))) {
-      Kokkos::Impl::throw_runtime_exception(
-          std::string("Kokkos::Impl::ParallelFor<SYCL> insufficient level 1 "
-                      "scratch memory"));
+    const auto& instance = *m_policy.space().impl_internal_space_instance();
+    if (static_cast<int>(instance.m_maxShmemPerBlock) <
+        m_shmem_size + m_shmem_begin) {
+      std::stringstream out;
+      out << "Kokkos::parallel_reduce<SYCL> Requested too much scratch memory "
+             "on level 0. Requested: "
+          << m_shmem_size + m_shmem_begin << ", Maximum "
+          << instance.m_maxShmemPerBlock;
+      Kokkos::Impl::throw_runtime_exception(out.str());
     }
 
-    if (m_team_size > m_policy.team_size_max(m_functor_reducer.get_functor(),
-                                             m_functor_reducer.get_reducer(),
-                                             ParallelReduceTag{}))
-      Kokkos::Impl::throw_runtime_exception(
-          "Kokkos::Impl::ParallelFor<SYCL> requested too large team size.");
+    if (m_scratch_size[1] > static_cast<size_t>(m_policy.scratch_size_max(1))) {
+      std::stringstream out;
+      out << "Kokkos::parallel_reduce<SYCL> Requested too much scratch memory "
+             "on level 1. Requested: "
+          << m_scratch_size[1] << ", Maximum " << m_policy.scratch_size_max(1);
+      Kokkos::Impl::throw_runtime_exception(out.str());
+    }
+
+    const auto max_team_size = m_policy.team_size_max(
+        m_functor_reducer.get_functor(), m_functor_reducer.get_reducer(),
+        ParallelReduceTag{});
+    if (m_team_size > max_team_size) {
+      std::stringstream error;
+      error << "Kokkos::parallel_for<SYCL>: Requested too large team size. "
+               "Requested: "
+            << m_team_size << ", Maximum: " << max_team_size;
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
+    }
   }
 };
 
