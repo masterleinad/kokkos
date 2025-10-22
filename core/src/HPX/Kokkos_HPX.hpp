@@ -795,7 +795,7 @@ class TeamPolicyInternal<Kokkos::Experimental::HPX, Properties...>
       std::stringstream error;
       error << "Requested too large team size. "
                "Requested: "
-            << team_size_request << ", Maximum: " << max_time_size;
+            << team_size_request << ", Maximum: " << max_team_size;
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
 
