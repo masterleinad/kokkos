@@ -4,6 +4,7 @@
 #ifndef KOKKOS_TEST_TEAM_BASIC_HPP
 #define KOKKOS_TEST_TEAM_BASIC_HPP
 #include <TestTeam.hpp>
+#include <regex>
 
 namespace Test {
 
@@ -234,9 +235,22 @@ void test_exceed_max_team_scratch_size_1() {
   policy.impl_set_team_size(max_team_size);
   auto max_scratch_size = policy.scratch_size_max(level);
   ASSERT_THROW(
-      Kokkos::parallel_for(
-          policy.set_scratch_size(level, Kokkos::PerTeam(max_scratch_size + 1)),
-          dummy_functor),
+      {
+        try {
+          Kokkos::parallel_for(
+              policy.set_scratch_size(level,
+                                      Kokkos::PerTeam(max_scratch_size + 1)),
+              dummy_functor);
+        } catch (std::runtime_error e) {
+          std::cmatch base_match;
+          const std::regex regex(
+              "Requested too much scratch memory on level 1. Requested: "
+              "[0-9]*, Maximum: [0-9]*");
+          bool match = std::regex_match(e.what(), base_match, regex);
+          EXPECT_TRUE(match);
+          throw;
+        }
+      },
       std::runtime_error);
 }
 
