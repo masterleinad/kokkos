@@ -48,7 +48,7 @@ KOKKOS_FUNCTION constexpr auto dispatch_helper_builtin(T x) noexcept {
 }
 
 #if defined(KOKKOS_COMPILER_CLANG) || defined(KOKKOS_COMPILER_INTEL_LLVM) || \
-    defined(KOKKOS_COMPILER_GNU) || KOKKOS_COMPILER_APPLECC
+    defined(KOKKOS_COMPILER_GNU)
 #define KOKKOS_IMPL_USE_GCC_BUILT_IN_FUNCTIONS
 #endif
 

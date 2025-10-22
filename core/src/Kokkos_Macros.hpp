@@ -61,7 +61,6 @@
  *  KOKKOS_COMPILER_GNU
  *  KOKKOS_COMPILER_INTEL_LLVM
  *  KOKKOS_COMPILER_CRAYC
- *  KOKKOS_COMPILER_APPLECC
  *  KOKKOS_COMPILER_CLANG
  *  KOKKOS_COMPILER_NVHPC
  *  KOKKOS_COMPILER_MSVC
@@ -127,9 +126,6 @@
 #elif defined(_CRAYC)
 // CRAY compiler for host code
 #define KOKKOS_COMPILER_CRAYC _CRAYC
-
-#elif defined(__APPLE_CC__)
-#define KOKKOS_COMPILER_APPLECC __APPLE_CC__
 
 #elif defined(__NVCOMPILER)
 #define KOKKOS_COMPILER_NVHPC                                 \

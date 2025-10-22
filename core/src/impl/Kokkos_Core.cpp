@@ -484,10 +484,6 @@ void pre_initialize_internal(const Kokkos::InitializationSettings& settings) {
 
   // clang-format off
   declare_configuration_metadata("version_info", "Kokkos Version", version_string_from_int(KOKKOS_VERSION));
-#ifdef KOKKOS_COMPILER_APPLECC
-  declare_configuration_metadata("compiler_version", "KOKKOS_COMPILER_APPLECC", std::to_string(KOKKOS_COMPILER_APPLECC));
-  declare_configuration_metadata("tools_only", "compiler_family", "apple");
-#endif
 #ifdef KOKKOS_COMPILER_CLANG
   declare_configuration_metadata("compiler_version", "KOKKOS_COMPILER_CLANG", std::to_string(KOKKOS_COMPILER_CLANG));
   declare_configuration_metadata("tools_only", "compiler_family", "clang");
