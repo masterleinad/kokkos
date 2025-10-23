@@ -174,8 +174,8 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
       std::stringstream out;
       out << "Kokkos::parallel_for<SYCL> Requested too much scratch memory on "
              "level 0. Requested: "
-          << m_shmem_size + m_shmem_begin << ", Maximum "
-          << instance.m_maxShmemPerBlock;
+          << m_shmem_size + m_shmem_begin
+          << ", Maximum: " << instance.m_maxShmemPerBlock;
       Kokkos::Impl::throw_runtime_exception(out.str());
     }
 
@@ -183,7 +183,7 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
       std::stringstream out;
       out << "Kokkos::parallel_for<SYCL> Requested too much scratch memory on "
              "level 1. Requested: "
-          << m_scratch_size[1] << ", Maximum " << m_policy.scratch_size_max(1);
+          << m_scratch_size[1] << ", Maximum: " << m_policy.scratch_size_max(1);
       Kokkos::Impl::throw_runtime_exception(out.str());
     }
 
