@@ -203,12 +203,12 @@ class TeamPolicyInternal<HIP, Properties...>
 
     // Make sure total block size is permissible
     if (m_team_size * m_vector_length >
-        static_cast<int>(Impl::HIPTraits::MaxHierarchicalParallelism)) {
+        static_cast<int>(HIPTraits::MaxThreadsPerBlock)) {
       std::stringstream error;
       error << "Kokkos::TeamPolicy<HIP>: Requested too large team size. "
                "Requested: "
-            << m_team_size << ", Maximum: "
-            << Impl::HIPTraits::MaxHierarchicalParallelism / m_vector_length;
+            << m_team_size
+            << ", Maximum: " << HIPTraits::MaxThreadsPerBlock / m_vector_length;
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
   }
