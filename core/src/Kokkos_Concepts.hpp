@@ -132,20 +132,23 @@ namespace Kokkos {
   template <typename T>                                        \
   inline constexpr bool is_##CONCEPT##_v = is_##CONCEPT<T>::value;
 
-#define KOKKOS_IMPL_DEFINE_CONCEPT_FROM_TRAIT(CONCEPT, CXX20_CONCEPT) \
-  KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(CONCEPT)                      \
-  template <typename T>                                               \
+#define KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(CONCEPT,       \
+                                                          CXX20_CONCEPT) \
+  KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(CONCEPT)                         \
+  template <typename T>                                                  \
   concept CXX20_CONCEPT = is_##CONCEPT##_v<T>;
 
 // Public concept:
 
-KOKKOS_IMPL_DEFINE_CONCEPT_FROM_TRAIT(memory_space, MemorySpace)
+KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(memory_space, MemorySpace)
 KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(memory_traits)
-KOKKOS_IMPL_DEFINE_CONCEPT_FROM_TRAIT(execution_space, ExecutionSpace)
-KOKKOS_IMPL_DEFINE_CONCEPT_FROM_TRAIT(execution_policy, ExecutionPolicy)
+KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(execution_space,
+                                                  ExecutionSpace)
+KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(execution_policy,
+                                                  ExecutionPolicy)
 KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(array_layout)
-KOKKOS_IMPL_DEFINE_CONCEPT_FROM_TRAIT(reducer, Reducer)
-KOKKOS_IMPL_DEFINE_CONCEPT_FROM_TRAIT(team_handle, TeamHandle)
+KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(reducer, Reducer)
+KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(team_handle, TeamHandle)
 namespace Experimental {
 KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(work_item_property)
 KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(hooks_policy)
@@ -161,7 +164,8 @@ KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(graph_kernel)
 
 }  // namespace Impl
 
-#undef KOKKOS_IMPL_DEFINE_CONCEPT_FROM_TRAIT
+#undef KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF
+#undef KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF
 
 }  // namespace Kokkos
 
