@@ -135,13 +135,11 @@ struct is_view<const View<D, P...> > : public std::true_type {};
 template <class T>
 inline constexpr bool is_view_v = is_view<T>::value;
 
-// FIXME_HPX spurious warnings like
+// FIXME spurious warnings like
 // error: 'SR.14123' may be used uninitialized [-Werror=maybe-uninitialized]
-#if defined(KOKKOS_ENABLE_HPX)
+#if defined(KOKKOS_COMPILER_GNU) && KOKKOS_COMPILER_GNU >= 1500
 #pragma GCC diagnostic push
-#if !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
 
@@ -195,6 +193,9 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
 
  private:
   using raw_allocation_value_type = std::remove_pointer_t<pointer_type>;
+  using hooks_policy =
+      typename Impl::ViewHooksFromTraits<DataType, Properties...>::type;
+  static constexpr bool has_hooks_policy = !std::is_void_v<hooks_policy>;
 
  public:
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
@@ -213,9 +214,13 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
 
   //----------------------------------------
   // Compatible view of a data type
-  using type = View<typename traits::data_type, typename traits::array_layout,
-                    typename traits::device_type, typename traits::hooks_policy,
-                    typename traits::memory_traits>;
+  using type = std::conditional_t<
+      has_hooks_policy,
+      View<typename traits::data_type, typename traits::array_layout,
+           typename traits::device_type, typename traits::hooks_policy,
+           typename traits::memory_traits>,
+      View<typename traits::data_type, typename traits::array_layout,
+           typename traits::device_type, typename traits::memory_traits> >;
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
   //----------------------------------------
@@ -224,23 +229,33 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
 #endif
 
   // Compatible view of const data type
-  using const_type =
+  using const_type = std::conditional_t<
+      has_hooks_policy,
       View<typename traits::const_data_type, typename traits::array_layout,
            typename traits::device_type, typename traits::hooks_policy,
-           typename traits::memory_traits>;
+           typename traits::memory_traits>,
+      View<typename traits::const_data_type, typename traits::array_layout,
+           typename traits::device_type, typename traits::memory_traits> >;
 
   // Compatible view of non-const data type
-  using non_const_type =
+  using non_const_type = std::conditional_t<
+      has_hooks_policy,
       View<typename traits::non_const_data_type, typename traits::array_layout,
            typename traits::device_type, typename traits::hooks_policy,
-           typename traits::memory_traits>;
+           typename traits::memory_traits>,
+      View<typename traits::non_const_data_type, typename traits::array_layout,
+           typename traits::device_type, typename traits::memory_traits> >;
 
   // Compatible host mirror view
-  using host_mirror_type =
+  using host_mirror_type = std::conditional_t<
+      has_hooks_policy,
       View<typename traits::non_const_data_type, typename traits::array_layout,
            Device<DefaultHostExecutionSpace,
                   typename traits::host_mirror_space::memory_space>,
-           typename traits::hooks_policy>;
+           typename traits::hooks_policy>,
+      View<typename traits::non_const_data_type, typename traits::array_layout,
+           Device<DefaultHostExecutionSpace,
+                  typename traits::host_mirror_space::memory_space> > >;
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
   /** \brief  Compatible HostMirror view */
@@ -676,17 +691,117 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   KOKKOS_DEFAULTED_FUNCTION
   View() = default;
 
+// FIXME_NVCC: nvcc 12.2 and 12.3 view these as ambiguous even though they have
+// exclusive requirements clauses. 12.6 Also has some issues though it manifests
+// differently
+#if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_COMPILER_NVHPC)
+#define KOKKOS_IMPL_VIEW_HOOKS_NVCC_WORKAROUND 1
+#endif
+#ifdef KOKKOS_IMPL_VIEW_HOOKS_NVCC_WORKAROUND
+  KOKKOS_FUNCTION
+  View(const View& other) : base_t{other} {
+    if constexpr (has_hooks_policy) {
+      KOKKOS_IF_ON_HOST((hooks_policy::copy_construct(*this, other);))
+    }
+  }
+#else
   KOKKOS_DEFAULTED_FUNCTION
-  View(const View& other) = default;
+  View(const View&)
+    requires(!has_hooks_policy)
+  = default;
 
-  KOKKOS_DEFAULTED_FUNCTION
-  View(View&& other) = default;
+  KOKKOS_FUNCTION
+  View(const View& other)
+    requires(has_hooks_policy)
+      : base_t{other} {
+    KOKKOS_IF_ON_HOST((hooks_policy::copy_construct(*this, other);))
+  }
+#endif
 
+#ifdef KOKKOS_IMPL_VIEW_HOOKS_NVCC_WORKAROUND
+  KOKKOS_FUNCTION
+  View(View&& other) : base_t{std::move(static_cast<base_t&&>(other))} {
+    if constexpr (has_hooks_policy) {
+      KOKKOS_IF_ON_HOST((hooks_policy::move_construct(*this, other);))
+    }
+  }
+#else
   KOKKOS_DEFAULTED_FUNCTION
-  View& operator=(const View& other) = default;
+  View(View&&)
+    requires(!has_hooks_policy)
+  = default;
 
+  KOKKOS_FUNCTION
+  View(View&& other)
+    requires(has_hooks_policy)
+      : base_t{std::move(static_cast<base_t&&>(other))} {
+    KOKKOS_IF_ON_HOST((hooks_policy::move_construct(*this, other);))
+  }
+#endif
+
+#ifdef KOKKOS_IMPL_VIEW_HOOKS_NVCC_WORKAROUND
+  KOKKOS_FUNCTION
+  View& operator=(const View& other) {
+    base_t::operator=(other);
+
+    if constexpr (has_hooks_policy) {
+      KOKKOS_IF_ON_HOST(
+          (if (&other != this) { hooks_policy::copy_assign(*this, other); }))
+    }
+
+    return *this;
+  }
+#else
   KOKKOS_DEFAULTED_FUNCTION
-  View& operator=(View&& other) = default;
+  View& operator=(const View&)
+    requires(!has_hooks_policy)
+  = default;
+
+  KOKKOS_FUNCTION
+  View& operator=(const View& other)
+    requires(has_hooks_policy)
+  {
+    base_t::operator=(other);
+    KOKKOS_IF_ON_HOST(
+        (if (&other != this) { hooks_policy::copy_assign(*this, other); }))
+
+    return *this;
+  }
+#endif
+
+// FIXME_NVCC: nvcc 12.2 and 12.3 view these as ambiguous even though they have
+// exclusive requirements clauses. 12.6 Also has some issues though it manifests
+// differently
+#ifdef KOKKOS_IMPL_VIEW_HOOKS_NVCC_WORKAROUND
+  KOKKOS_FUNCTION
+  View& operator=(View&& other) {
+    base_t::operator=(std::move(static_cast<base_t&&>(other)));
+
+    if constexpr (has_hooks_policy) {
+      KOKKOS_IF_ON_HOST(
+          (if (&other != this) { hooks_policy::move_assign(*this, other); }))
+    }
+
+    return *this;
+  }
+#else
+  KOKKOS_DEFAULTED_FUNCTION
+  View& operator=(View&&)
+    requires(!has_hooks_policy)
+  = default;
+
+  KOKKOS_FUNCTION
+  View& operator=(View&& other)
+    requires(has_hooks_policy)
+  {
+    base_t::operator=(std::move(static_cast<base_t&&>(other)));
+    KOKKOS_IF_ON_HOST(
+        (if (&other != this) { hooks_policy::move_assign(*this, other); }))
+
+    return *this;
+  }
+#endif
+#undef KOKKOS_IMPL_VIEW_HOOKS_NVCC_WORKAROUND
 
   KOKKOS_FUNCTION
   View(typename base_t::data_handle_type p,
@@ -1279,7 +1394,7 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   }
 };
 
-#if defined(KOKKOS_ENABLE_HPX)
+#if defined(KOKKOS_COMPILER_GNU) && KOKKOS_COMPILER_GNU >= 1500
 #pragma GCC diagnostic pop
 #endif
 
