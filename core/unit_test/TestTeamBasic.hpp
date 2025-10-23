@@ -213,20 +213,19 @@ void test_exceed_max_team_scratch_size_0() {
       policy.team_size_max(dummy_functor, Kokkos::ParallelForTag{});
   policy                = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, max_team_size);
   auto max_scratch_size = policy.scratch_size_max(level);
-       policy.set_scratch_size(level,
-                                      Kokkos::PerTeam(max_scratch_size));
-          auto max_team_size_with_scratch =
+  policy.set_scratch_size(level, Kokkos::PerTeam(max_scratch_size));
+  auto max_team_size_with_scratch =
       policy.team_size_max(dummy_functor, Kokkos::ParallelForTag{});
-        policy                = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, max_team_size_with_scratch);
-	  auto new_max_scratch_size = policy.scratch_size_max(level);
+  policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, max_team_size_with_scratch);
+  auto new_max_scratch_size = policy.scratch_size_max(level);
 
   ASSERT_THROW(
       {
         try {
-	// FIXME test a tighter bound for Cuda and HIP
+          // FIXME test a tighter bound for Cuda and HIP
           Kokkos::parallel_for(
-              policy.set_scratch_size(level,
-                                      Kokkos::PerTeam(new_max_scratch_size*1.1)),
+              policy.set_scratch_size(
+                  level, Kokkos::PerTeam(new_max_scratch_size * 1.1)),
               dummy_functor);
         } catch (const std::runtime_error& e) {
           std::cmatch base_match;
