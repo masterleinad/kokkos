@@ -26,7 +26,7 @@ std::pair<double, Scalar> custom_reduction_test(int N, int R) {
   int team_size           = 32;
   int const max_team_size = Kokkos::TeamPolicy<>(1, 1).team_size_max(
       KOKKOS_LAMBDA(typename Kokkos::TeamPolicy<>::member_type){},
-      Kokkos::ParallelReduceTag{});
+      Kokkos::ParallelForTag{});
   if (team_size > max_team_size) team_size = max_team_size;
   // Warm up
   Kokkos::parallel_reduce(
