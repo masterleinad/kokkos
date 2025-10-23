@@ -264,7 +264,7 @@ parallel_reduce_needs_fence(ExecutionSpace const&, Arg const&) {
   return true;
 }
 
-template <Kokkos::ExecutionSpace ExecutionSpace, class Reducer>
+template <Kokkos::ExecutionSpace ExecutionSpace, Kokkos::Reducer Reducer>
 constexpr std::enable_if_t<
     // equivalent to:
     // (requires (Reducer const& r) {
