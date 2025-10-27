@@ -31,7 +31,8 @@ pipeline {
                 sh '''#!/bin/bash
                       exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                       echo "Hostname: ${NODE_NAME}" && \
-                      ./scripts/docker/check_format_cpp.sh'''
+                      ./scripts/docker/check_format_cpp.sh && \
+                      echo "SUCCESS" '''
             }
         }
         stage('Build-1') {
@@ -73,7 +74,8 @@ pipeline {
                                 -DCMAKE_CXX_COMPILER=clang++-19 \
                                 -DCMAKE_CXX_FLAGS="-Werror" && \
                               cmake --build build -j 8 && \
-                              ctest --test-dir build --verbose'''
+                              ctest --test-dir build --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -115,7 +117,8 @@ pipeline {
                                 -DKokkos_ENABLE_LIBQUADMATH=ON \
                                 -DKokkos_ENABLE_SERIAL=ON \
                               .. && \
-                              make -j8 && ctest --no-compress-output -T Test --verbose && gcc -I$PWD/../core/src/ ../core/unit_test/tools/TestCInterface.c'''
+                              make -j8 && ctest --no-compress-output -T Test --verbose && gcc -I$PWD/../core/src/ ../core/unit_test/tools/TestCInterface.c && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -164,7 +167,8 @@ pipeline {
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
-                              make -j8 && ctest --verbose'''
+                              make -j8 && ctest --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -249,7 +253,8 @@ pipeline {
                               cd ../.. && \
                               cmake -B build_cmake_installed_different_compiler/build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_CXX_STANDARD=20 build_cmake_installed_different_compiler && \
                               cmake --build build_cmake_installed_different_compiler/build --target all && \
-                              cmake --build build_cmake_installed_different_compiler/build --target test'''
+                              cmake --build build_cmake_installed_different_compiler/build --target test && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -289,7 +294,8 @@ pipeline {
                                 -DKokkos_ENABLE_OPENACC=ON \
                                 -DKokkos_ARCH_VOLTA70=ON \
                               .. && \
-                              make -j8 && ctest --no-compress-output -T Test --verbose'''
+                              make -j8 && ctest --no-compress-output -T Test --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -333,7 +339,8 @@ pipeline {
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_OPENMP=ON \
                               .. && \
-                              make -j8 && ctest --no-compress-output -T Test --verbose'''
+                              make -j8 && ctest --no-compress-output -T Test --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -375,7 +382,8 @@ pipeline {
                                 -DKokkos_ENABLE_UNSUPPORTED_ARCHS=ON \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
-                              make -j8 && ctest --no-compress-output -T Test --verbose'''
+                              make -j8 && ctest --no-compress-output -T Test --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -422,7 +430,8 @@ pipeline {
                                 -DKokkos_ENABLE_IMPL_MDSPAN=OFF \
                                 -DKokkos_ENABLE_HIP_MULTIPLE_KERNEL_INSTANTIATIONS=ON \
                               .. && \
-                              make -j16 && ctest --no-compress-output -T Test --verbose'''
+                              make -j16 && ctest --no-compress-output -T Test --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -466,7 +475,8 @@ pipeline {
                                 -DKokkos_ENABLE_BENCHMARKS=ON \
                                 -DKokkos_ENABLE_HIP=ON \
                               .. && \
-                              make -j16 && ctest --no-compress-output -T Test --verbose'''
+                              make -j16 && ctest --no-compress-output -T Test --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -507,7 +517,8 @@ pipeline {
                                 -DKokkos_ENABLE_TUNING=ON \
                                 -DKokkos_ARCH_VOLTA70=ON \
                               .. && \
-                              make -j8 && ctest --no-compress-output -T Test --verbose'''
+                              make -j8 && ctest --no-compress-output -T Test --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -549,7 +560,8 @@ pipeline {
                                 -DKokkos_ENABLE_TUNING=ON \
                                 -DKokkos_ARCH_VOLTA70=ON \
                               .. && \
-                              make -j8 && ctest --no-compress-output -T Test --verbose'''
+                              make -j8 && ctest --no-compress-output -T Test --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
@@ -596,7 +608,8 @@ pipeline {
                               make -j8 && ctest --no-compress-output -T Test --verbose && \
                               cd ../example/build_cmake_in_tree && \
                               rm -rf build && mkdir -p build && cd build && \
-                              cmake -DCMAKE_CXX_STANDARD=20 .. && make -j8 && ctest --verbose'''
+                              cmake -DCMAKE_CXX_STANDARD=20 .. && make -j8 && ctest --verbose && \
+                              echo "SUCCESS" '''
                     }
                     post {
                         always {
