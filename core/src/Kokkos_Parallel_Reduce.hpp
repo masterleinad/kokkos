@@ -133,7 +133,7 @@ struct ParallelReduceReturnValue<void, ReturnType, FunctorType> {
   }
 };
 
-template <class ReturnType, class FunctorType>
+template <class PolicyOrIntegralType, class FunctorType>
 struct ParallelReducePolicyType;
 
 template <Kokkos::ExecutionPolicy PolicyType, class FunctorType>
@@ -142,15 +142,15 @@ struct ParallelReducePolicyType<PolicyType, FunctorType> {
   static PolicyType policy(const PolicyType& policy_) { return policy_; }
 };
 
-template <std::integral PolicyType, class FunctorType>
-struct ParallelReducePolicyType<PolicyType, FunctorType> {
+template <std::integral IntegralType, class FunctorType>
+struct ParallelReducePolicyType<IntegralType, FunctorType> {
   using execution_space =
       typename Impl::FunctorPolicyExecutionSpace<FunctorType,
                                                  void>::execution_space;
 
   using policy_type = Kokkos::RangePolicy<execution_space>;
 
-  static policy_type policy(const PolicyType& policy_) {
+  static policy_type policy(const IntegralType& policy_) {
     return policy_type(0, policy_);
   }
 };
