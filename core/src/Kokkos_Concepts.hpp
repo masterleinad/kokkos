@@ -114,14 +114,14 @@ struct LaunchBounds {
 
 namespace Kokkos {
 
-#define KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(CONCEPT)         \
+#define KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(TYPEDEF)         \
   template <typename T>                                        \
-  struct is_##CONCEPT {                                        \
+  struct is_##TYPEDEF {                                        \
    private:                                                    \
     template <typename U>                                      \
-    using have_t = typename U::CONCEPT;                        \
+    using have_t = typename U::TYPEDEF;                        \
     template <typename U>                                      \
-    using have_type_t = typename U::CONCEPT##_type;            \
+    using have_type_t = typename U::TYPEDEF##_type;            \
                                                                \
    public:                                                     \
     static constexpr bool value =                              \
@@ -130,13 +130,13 @@ namespace Kokkos {
     constexpr operator bool() const noexcept { return value; } \
   };                                                           \
   template <typename T>                                        \
-  inline constexpr bool is_##CONCEPT##_v = is_##CONCEPT<T>::value;
+  inline constexpr bool is_##TYPEDEF##_v = is_##TYPEDEF<T>::value;
 
-#define KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(CONCEPT,       \
+#define KOKKOS_IMPL_DEFINE_CONCEPT_AND_TRAIT_FROM_TYPEDEF(TYPEDEF,       \
                                                           CXX20_CONCEPT) \
-  KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(CONCEPT)                         \
+  KOKKOS_IMPL_DEFINE_TRAIT_FROM_TYPEDEF(TYPEDEF)                         \
   template <typename T>                                                  \
-  concept CXX20_CONCEPT = is_##CONCEPT##_v<T>;
+  concept CXX20_CONCEPT = is_##TYPEDEF##_v<T>;
 
 // Public concept:
 
