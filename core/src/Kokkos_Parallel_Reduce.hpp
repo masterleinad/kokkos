@@ -122,8 +122,10 @@ struct ParallelReduceReturnValue<
   }
 };
 
-template <Kokkos::Reducer ReturnType, class FunctorType>
-struct ParallelReduceReturnValue<void, ReturnType, FunctorType> {
+template <class ReturnType, class FunctorType>
+struct ParallelReduceReturnValue<
+    std::enable_if_t<Kokkos::is_reducer<ReturnType>::value>, ReturnType,
+    FunctorType> {
   using return_type  = typename ReturnType::result_view_type;
   using reducer_type = ReturnType;
   using value_type   = typename return_type::value_type;
