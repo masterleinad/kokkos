@@ -222,7 +222,6 @@ pipeline {
                               export CMAKE_PREFIX_PATH=${PWD}/../install && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
-                                -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
                                 -DCMAKE_CXX_FLAGS="-Werror --Werror=all-warnings -Xcudafe --diag_suppress=940" \
                                 -DCMAKE_EXE_LINKER_FLAGS="-Xnvlink -suppress-stack-size-warning" \
