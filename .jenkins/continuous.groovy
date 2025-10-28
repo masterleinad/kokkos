@@ -173,6 +173,7 @@ pipeline {
                         }
                     }
                 }
+/*
                 stage('CUDA-12.2-NVCC-RDC') {
                     agent {
                         dockerfile {
@@ -257,6 +258,7 @@ pipeline {
                         }
                     }
                 }
+*/
             }
         }
         stage('Build-2') {
