@@ -115,6 +115,84 @@ pipeline {
                         }
                     }
                 }
+                stage('CUDA-12.2-NVHPC-AS-HOST-COMPILER') {
+                    agent {
+                        dockerfile {
+                            filename 'Dockerfile.nvhpc'
+                            dir 'scripts/docker'
+                            label 'nvidia-docker && large_images && volta'
+                            args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
+                        }
+                    }
+                    environment {
+                        OMP_NUM_THREADS = 8
+                        // Nested OpenMP does not work for this configuration,
+                        // so disabling it
+                        OMP_MAX_ACTIVE_LEVELS = 1
+                        OMP_PLACES = 'threads'
+                        OMP_PROC_BIND = 'spread'
+                        NVHPC_CUDA_HOME = '/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/cuda/12.2'
+                    }
+                    steps {
+                        sh '''#!/bin/bash
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
+                              rm -rf build && mkdir -p build && cd build && \
+                              /opt/cmake/bin/cmake \
+                                -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                                -DCMAKE_CXX_COMPILER=nvc++ \
+                                -DCMAKE_CXX_STANDARD=20 \
+                                -DCMAKE_CXX_FLAGS="-Werror --diag_suppress=implicit_return_from_non_void_function" \
+                                -DKokkos_ARCH_NATIVE=ON \
+                                -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
+                                -DKokkos_ENABLE_DEPRECATED_CODE_4=OFF \
+                                -DKokkos_ENABLE_TESTS=ON \
+                                -DKokkos_ENABLE_CUDA=ON \
+                                -DKokkos_ENABLE_OPENMP=ON \
+                              .. && \
+                              make -j8 && ctest --no-compress-output -T Test --verbose'''
+                    }
+                    post {
+                        always {
+                            xunit([CTest(deleteOutputFiles: true, failIfNotNew: true, pattern: 'build/Testing/**/Test.xml', skipNoTestFiles: false, stopProcessingIfError: true)])
+                        }
+                    }
+                }
+                stage('OPENACC-NVHPC-CUDA-12.2') {
+                    agent {
+                        dockerfile {
+                            filename 'Dockerfile.nvhpc'
+                            dir 'scripts/docker'
+                            label 'nvidia-docker && volta && large_images'
+                            args '--env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
+                        }
+                    }
+                    environment {
+                        NVHPC_CUDA_HOME = '/opt/nvidia/hpc_sdk/Linux_x86_64/23.7/cuda/12.2'
+                    }
+                    steps {
+                        sh '''#!/bin/bash
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
+                              rm -rf build && mkdir -p build && cd build && \
+                              /opt/cmake/bin/cmake \
+                                -DCMAKE_CXX_COMPILER=nvc++ \
+                                -DCMAKE_CXX_STANDARD=20 \
+                                -DCMAKE_CXX_FLAGS=-Werror \
+                                -DKokkos_ARCH_NATIVE=ON \
+                                -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
+                                -DKokkos_ENABLE_TESTS=ON \
+                                -DKokkos_ENABLE_OPENACC=ON \
+                                -DKokkos_ARCH_VOLTA70=ON \
+                              .. && \
+                              make -j8 && ctest --no-compress-output -T Test --verbose'''
+                    }
+                    post {
+                        always {
+                            xunit([CTest(deleteOutputFiles: true, failIfNotNew: true, pattern: 'build/Testing/**/Test.xml', skipNoTestFiles: false, stopProcessingIfError: true)])
+                        }
+                    }
+                }
             }
         }
     }
