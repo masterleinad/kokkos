@@ -22,9 +22,6 @@ if(Kokkos_ENABLE_TESTS OR Kokkos_INSTALL_TESTING)
     if(CMAKE_CXX_CLANG_TIDY)
       set_target_properties(gtest PROPERTIES CXX_CLANG_TIDY "")
     endif()
-
-    # Suppress compiler warnings.  TODO use SYSTEM when CMake 3.25 is available
-    set_target_properties(gtest PROPERTIES COMPILE_OPTIONS -w)
   endif()
 endif()
 
