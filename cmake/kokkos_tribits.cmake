@@ -188,9 +188,11 @@ macro(KOKKOS_ADD_TEST_EXECUTABLE ROOT_NAME)
     # Suppress compiler warnings when not using an external gtest version.
     # TODO use SYSTEM within the FetchContent_Declare call when CMake 3.25 is required
     get_target_property(GTEST_INCLUDES GTest::gtest INCLUDE_DIRECTORIES)
-    foreach(dir ${GTEST_INCLUDES})
-      target_include_directories(${EXE_NAME} SYSTEM PRIVATE "${dir}")
-    endforeach()
+    if(NOT GTEST_INCLUDES MATCHES "NOTFOUND")
+      foreach(dir ${GTEST_INCLUDES})
+        target_include_directories(${EXE_NAME} SYSTEM PRIVATE "${dir}")
+      endforeach()
+    endif()
   endif()
 endmacro()
 
