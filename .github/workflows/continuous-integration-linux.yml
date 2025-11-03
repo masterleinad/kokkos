@@ -156,7 +156,6 @@ jobs:
         run: |
           cmake -B builddir_buildtree -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCMAKE_CXX_STANDARD=${{ matrix.stdcxx }} -DKokkos_ROOT=../../builddir
           cmake --build builddir_buildtree
-          export CTEST_OUTPUT_ON_FAILURE=1
           cmake --build builddir_buildtree --target test
       - name: Test DESTDIR Install
         run: DESTDIR=${PWD}/install cmake --build builddir --target install && rm -rf ${PWD}/install/usr && rmdir ${PWD}/install
@@ -168,5 +167,4 @@ jobs:
         run: |
           cmake -B builddir -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCMAKE_CXX_STANDARD=${{ matrix.stdcxx }}
           cmake --build builddir
-          export CTEST_OUTPUT_ON_FAILURE=1
           cmake --build builddir --target test
