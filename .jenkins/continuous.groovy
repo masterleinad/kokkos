@@ -185,6 +185,7 @@ pipeline {
                         }
                     }
                     environment {
+                        CTEST_OUTPUT_ON_FAILURE = 1
                         OMP_NUM_THREADS = 8
                         // Nested OpenMP does not work for this configuration,
                         // so disabling it
@@ -250,7 +251,6 @@ pipeline {
                               cd ../.. && \
                               cmake -B build_cmake_installed_different_compiler/build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_CXX_STANDARD=20 build_cmake_installed_different_compiler && \
                               cmake --build build_cmake_installed_different_compiler/build --target all && \
-                              export CTEST_OUTPUT_ON_FAILURE=1 && \
                               cmake --build build_cmake_installed_different_compiler/build --target test'''
                     }
                     post {
