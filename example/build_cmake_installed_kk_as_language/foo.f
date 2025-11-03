@@ -1,4 +1,3 @@
-        FUNCTION print_fortran()
+        SUBROUTINE print_fortran()
           PRINT *, 'Hello World from Fortran'
-          RETURN
-        END
+        END SUBROUTINE
