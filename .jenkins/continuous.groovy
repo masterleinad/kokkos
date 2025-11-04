@@ -201,6 +201,8 @@ pipeline {
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
+                              find /usr -name "libcuda.so" && \
+                              find /usr -name "libcudart.so" && \
                               rm -rf install && mkdir -p install && \
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
@@ -285,6 +287,8 @@ pipeline {
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
+                              find /usr -name "libcuda.so" && \
+                              find /usr -name "libcudart.so" && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
@@ -328,6 +332,8 @@ pipeline {
                         sh '''#!/bin/bash
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
+                              find /usr -name "libcuda.so" && \
+                              find /usr -name "libcudart.so" && \
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
