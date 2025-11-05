@@ -382,7 +382,7 @@ __device__ bool hip_single_inter_block_reduce_scan_impl(
     for (size_t i = threadIdx.y; i < word_count.value; i += blockDim.y) {
       global[i] = shared[i];
     }
-    __syncthreads();
+    __threadfence();
   }
 
   // Contributing blocks note that their contribution has been completed via an
