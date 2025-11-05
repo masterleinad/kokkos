@@ -372,6 +372,7 @@ __device__ bool hip_single_inter_block_reduce_scan_impl(
 
   // Reduce the accumulation for the entire block.
   hip_intra_block_reduce_scan<false>(functor, pointer_type(shared_data));
+  __syncthreads();
 
   {
     // Write accumulation total to global scratch space.
@@ -382,7 +383,7 @@ __device__ bool hip_single_inter_block_reduce_scan_impl(
     for (size_t i = threadIdx.y; i < word_count.value; i += blockDim.y) {
       global[i] = shared[i];
     }
-    __threadfence();
+    __syncthreads();
   }
 
   // Contributing blocks note that their contribution has been completed via an
@@ -412,7 +413,11 @@ __device__ bool hip_single_inter_block_reduce_scan_impl(
       }
     }
 
+    __syncthreads();
+
     hip_intra_block_reduce_scan<DoScan>(functor, pointer_type(shared_data));
+
+    __syncthreads();
 
     if (DoScan) {
       pointer_type const shared_value = reinterpret_cast<pointer_type>(
