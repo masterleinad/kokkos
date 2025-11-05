@@ -109,7 +109,6 @@ class ParallelScanHIPBase {
       this->template exec_range<WorkTag>(
           iwork, final_reducer.reference(shared_value), false);
     }
-    __syncthreads();
 
     // Reduce and scan, writing out scan of blocks' totals and block-groups'
     // totals. Blocks' scan values are written to 'blockIdx.x' location.
@@ -186,7 +185,7 @@ class ParallelScanHIPBase {
       hip_intra_block_reduce_scan<true>(
           final_reducer,
           typename Analysis::pointer_type(shared_data + word_count.value));
-      __syncthreads();
+
       {
         word_size_type* const block_total =
             shared_data + word_count.value * blockDim.y;
