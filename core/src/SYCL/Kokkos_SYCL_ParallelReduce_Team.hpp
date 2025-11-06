@@ -456,15 +456,6 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
 
     const Kokkos::Impl::SYCLInternal& instance =
         *m_policy.space().impl_internal_space_instance();
-    if (static_cast<int>(instance.m_maxShmemPerBlock) <
-        m_shmem_size + m_shmem_begin) {
-      std::stringstream out;
-      out << "Kokkos::parallel_reduce<SYCL> insufficient shared memory! "
-             "Requested "
-          << m_shmem_size + m_shmem_begin << " bytes but maximum is "
-          << instance.m_maxShmemPerBlock << '\n';
-      Kokkos::Impl::throw_runtime_exception(out.str());
-    }
 
     if (static_cast<int>(instance.m_maxShmemPerBlock) <
         m_shmem_size + m_shmem_begin) {
