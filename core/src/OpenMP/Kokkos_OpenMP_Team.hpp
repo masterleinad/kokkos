@@ -118,7 +118,7 @@ class TeamPolicyInternal<Kokkos::OpenMP, Properties...>
 
     if (team_size_request > team_max) {
       std::stringstream error;
-      error << "Requested too large team size. "
+      error << "Kokkos::TeamPolicy<OpenMP>: Requested too large team size. "
                "Requested: "
             << team_size_request << ", Maximum: " << team_max;
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
