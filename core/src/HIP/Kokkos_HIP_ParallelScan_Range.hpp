@@ -169,7 +169,7 @@ class ParallelScanHIPBase {
       }
 
       // Make sure the write is seen by all threads
-      __syncthreads();
+      __threadfence_block();
 
       // Call functor to accumulate inclusive scan value for this work item
       const bool doWork = (iwork < range.end());
