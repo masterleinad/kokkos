@@ -384,7 +384,8 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
                                         m_functor, m_policy.team_size())) >
         static_cast<size_t>(TeamPolicy<Kokkos::OpenMP>::scratch_size_max(0))) {
       std::stringstream error;
-      error << "Kokkos::parallel_for<OpenMP>: Requested too much scratch memory on level 0. Requested: "
+      error << "Kokkos::parallel_for<OpenMP>: Requested too much scratch "
+               "memory on level 0. Requested: "
             << m_policy.scratch_size(0) +
                    FunctorTeamShmemSize<FunctorType>::value(
                        m_functor, m_policy.team_size())
@@ -394,7 +395,8 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     if (m_policy.scratch_size(1) >
         static_cast<size_t>(TeamPolicy<Kokkos::OpenMP>::scratch_size_max(1))) {
       std::stringstream error;
-      error << "Kokkos::parallel_for<OpenMP>: Requested too much scratch memory on level 1. Requested: "
+      error << "Kokkos::parallel_for<OpenMP>: Requested too much scratch "
+               "memory on level 1. Requested: "
             << m_policy.scratch_size(1)
             << ", Maximum: " << TeamPolicy<Kokkos::OpenMP>::scratch_size_max(1);
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
