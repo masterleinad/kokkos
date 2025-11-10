@@ -49,8 +49,9 @@ std::pair<double, Scalar> custom_reduction_test(int N, int R) {
 
   int team_size = 32;
   Kokkos::Max<Scalar> reducer(max);
+  // FIXME Use reducer
   int const max_team_size = Kokkos::TeamPolicy<>(1, 1).team_size_max(
-      reduction_lambda, reducer, Kokkos::ParallelReduceTag{});
+      reduction_lambda, Kokkos::ParallelReduceTag{});
   if (team_size > max_team_size) team_size = max_team_size;
   // Warm up
   Kokkos::parallel_reduce(Kokkos::TeamPolicy<>(N / 1024, team_size),

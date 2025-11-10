@@ -396,17 +396,16 @@ class ParallelReduce<CombinedFunctorReducerType,
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
 
-    if (m_team_size >
-        arg_policy.team_size_max_internal(m_functor_reducer.get_functor(),
-                                          m_functor_reducer.get_reducer(),
-                                          ParallelReduceTag())) {
+    if (m_team_size > arg_policy.team_size_max(m_functor_reducer.get_functor(),
+                                               m_functor_reducer.get_reducer(),
+                                               ParallelReduceTag())) {
       std::stringstream error;
       error << "Kokkos::parallel_reduce<HIP>: Requested too large team size. "
                "Requested: "
             << m_team_size << ", Maximum: "
-            << arg_policy.team_size_max_internal(
-                   m_functor_reducer.get_functor(),
-                   m_functor_reducer.get_reducer(), ParallelReduceTag());
+            << arg_policy.team_size_max(m_functor_reducer.get_functor(),
+                                        m_functor_reducer.get_reducer(),
+                                        ParallelReduceTag());
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
   }

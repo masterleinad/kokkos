@@ -108,19 +108,9 @@ class TeamPolicyInternal<Kokkos::Cuda, Properties...>
     return internal_team_size_max<closure_type>(f);
   }
 
-  template <typename FunctorType, typename ReducerType>
-  inline int team_size_max(const FunctorType& f, const ReducerType& reducer,
-                           const ParallelReduceTag& tag) const {
-    using functor_analysis_type =
-        Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
-                              TeamPolicyInternal, ReducerType, void>;
-    return team_size_max_internal(
-        f, typename functor_analysis_type::Reducer{reducer}, tag);
-  }
-
-  template <typename FunctorType, typename ReducerType>
-  inline int team_size_max_internal(const FunctorType& f, const ReducerType&,
-                                    const ParallelReduceTag&) const {
+  template <class FunctorType, class ReducerType>
+  inline int team_size_max(const FunctorType& f, const ReducerType& /*r*/,
+                           const ParallelReduceTag&) const {
     using closure_type =
         Impl::ParallelReduce<CombinedFunctorReducer<FunctorType, ReducerType>,
                              TeamPolicy<Properties...>, Kokkos::Cuda>;
@@ -993,17 +983,16 @@ class ParallelReduce<CombinedFunctorReducerType,
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
 
-    if (m_team_size >
-        arg_policy.team_size_max_internal(m_functor_reducer.get_functor(),
-                                          m_functor_reducer.get_reducer(),
-                                          ParallelReduceTag())) {
+    if (m_team_size > arg_policy.team_size_max(m_functor_reducer.get_functor(),
+                                               m_functor_reducer.get_reducer(),
+                                               ParallelReduceTag())) {
       std::stringstream error;
       error << "Kokkos::parallel_reduce<Cuda>: Requested too large team size. "
                "Requested: "
             << m_team_size << ", Maximum: "
-            << arg_policy.team_size_max_internal(
-                   m_functor_reducer.get_functor(),
-                   m_functor_reducer.get_reducer(), ParallelReduceTag());
+            << arg_policy.team_size_max(m_functor_reducer.get_functor(),
+                                        m_functor_reducer.get_reducer(),
+                                        ParallelReduceTag());
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
     }
   }

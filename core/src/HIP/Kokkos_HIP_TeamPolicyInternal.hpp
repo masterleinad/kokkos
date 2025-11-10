@@ -74,18 +74,8 @@ class TeamPolicyInternal<HIP, Properties...>
   }
 
   template <typename FunctorType, typename ReducerType>
-  inline int team_size_max(const FunctorType& f, const ReducerType& reducer,
-                           const ParallelReduceTag& tag) const {
-    using functor_analysis_type =
-        Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
-                              TeamPolicyInternal, ReducerType, void>;
-    return team_size_max_internal(
-        f, typename functor_analysis_type::Reducer{reducer}, tag);
-  }
-
-  template <typename FunctorType, typename ReducerType>
-  inline int team_size_max_internal(const FunctorType& f, const ReducerType&,
-                                    const ParallelReduceTag&) const {
+  inline int team_size_max(const FunctorType& f, const ReducerType&,
+                           const ParallelReduceTag&) const {
     using closure_type =
         Impl::ParallelReduce<CombinedFunctorReducer<FunctorType, ReducerType>,
                              TeamPolicy<Properties...>, Kokkos::HIP>;
