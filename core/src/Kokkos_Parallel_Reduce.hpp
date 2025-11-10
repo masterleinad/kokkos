@@ -207,7 +207,7 @@ struct ParallelReduceAdaptor {
         static_assert(
             ReturnType::rank == 1,
             "Array reductions with a View result type require a rank-1 View!");
-      if constexpr (!is_array_reduction)
+      else
         static_assert(
             ReturnType::rank == 0,
             "Scalar reductions with a View result type require a rank-0 View!");
