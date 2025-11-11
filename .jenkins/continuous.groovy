@@ -214,6 +214,7 @@ pipeline {
                                 -DKokkos_ARCH_NATIVE=ON \
                                 -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
                                 -DKokkos_ENABLE_OPENMP=OFF \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_CUDA_LAMBDA=OFF \
                                 -DKokkos_ENABLE_CUDA_UVM=ON \
@@ -345,6 +346,7 @@ pipeline {
                                 -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
                                 -DKokkos_ENABLE_DEPRECATED_CODE_4=OFF \
                                 -DKokkos_ENABLE_TESTS=ON \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_OPENMP=ON \
                               .. && \
@@ -520,6 +522,7 @@ pipeline {
                                 -DKokkos_ENABLE_DEPRECATED_CODE_4=ON \
                                 -DKokkos_ENABLE_TESTS=ON \
                                 -DKokkos_ENABLE_BENCHMARKS=ON \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_TUNING=ON \
                                 -DKokkos_ARCH_VOLTA70=ON \
@@ -561,6 +564,7 @@ pipeline {
                                 -DKokkos_ENABLE_DEPRECATED_CODE_4=ON \
                                 -DKokkos_ENABLE_TESTS=ON \
                                 -DKokkos_ENABLE_BENCHMARKS=ON \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE=ON \
                                 -DKokkos_ENABLE_TUNING=ON \
@@ -605,6 +609,7 @@ pipeline {
                                 -DKokkos_ENABLE_DEPRECATED_CODE_4=OFF \
                                 -DKokkos_ENABLE_TESTS=ON \
                                 -DKokkos_ENABLE_BENCHMARKS=ON \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_LIBDL=OFF \
                                 -DKokkos_ENABLE_OPENMP=ON \
