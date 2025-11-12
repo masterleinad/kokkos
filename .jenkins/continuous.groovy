@@ -247,6 +247,7 @@ pipeline {
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
@@ -256,13 +257,20 @@ pipeline {
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
                               make -j8 && ctest --verbose && \
                               cd ../.. && \
-                              cmake -B build_cmake_installed_different_compiler/build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS=-Werror -DCMAKE_CXX_STANDARD=20 build_cmake_installed_different_compiler && \
+                              cmake \
+                                -B build_cmake_installed_different_compiler/build \
+                                -DCMAKE_CXX_COMPILER=clang++ \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
+                                -DCMAKE_CXX_FLAGS=-Werror \
+                                -DCMAKE_CXX_STANDARD=20 \
+                                build_cmake_installed_different_compiler && \
                               cmake --build build_cmake_installed_different_compiler/build --target all && \
                               cmake --build build_cmake_installed_different_compiler/build --target test'''
                     }
@@ -628,7 +636,11 @@ pipeline {
                               make -j8 && ctest --no-compress-output -T Test --verbose && \
                               cd ../example/build_cmake_in_tree && \
                               rm -rf build && mkdir -p build && cd build && \
-                              cmake -DCMAKE_CXX_STANDARD=20 .. && make -j8 && ctest --verbose'''
+                              cmake \
+                                -DCMAKE_CXX_STANDARD=20 \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
+                                .. && \
+                              make -j8 && ctest --verbose'''
                     }
                     post {
                         always {
