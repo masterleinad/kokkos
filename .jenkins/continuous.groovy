@@ -233,6 +233,7 @@ pipeline {
                               export CMAKE_PREFIX_PATH=${PWD}/../install && \
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
+                                -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
                                 -DCMAKE_VERBOSE_MAKEFILE=ON \
