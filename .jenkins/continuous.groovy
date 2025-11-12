@@ -29,7 +29,6 @@ pipeline {
             }
             steps {
                 sh '''#!/bin/bash
-                      set -x && \
                       exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                       echo "Hostname: ${NODE_NAME}" && \
                       ./scripts/docker/check_format_cpp.sh'''
@@ -48,7 +47,6 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
@@ -57,7 +55,6 @@ pipeline {
                                 -B build \
                                 -GNinja \
                                 -DCMAKE_CXX_COMPILER=clang++-19 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
@@ -77,7 +74,6 @@ pipeline {
                                 -B build \
                                 -GNinja \
                                 -DCMAKE_CXX_COMPILER=clang++-19 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror" && \
                               set +x && \
                               cmake --build build -j 8 && \
@@ -106,7 +102,6 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -147,7 +142,6 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -156,7 +150,6 @@ pipeline {
                                 -DBUILD_SHARED_LIBS=ON \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=hipcc \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unused-command-line-argument" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -177,7 +170,6 @@ pipeline {
                               set -x && \
                               cmake \
                                 -DCMAKE_CXX_COMPILER=hipcc \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
@@ -214,7 +206,6 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf install && mkdir -p install && \
@@ -223,7 +214,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -250,7 +240,6 @@ pipeline {
                                 -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
                                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror --Werror=all-warnings -Xcudafe --diag_suppress=940" \
                                 -DCMAKE_EXE_LINKER_FLAGS="-Xnvlink -suppress-stack-size-warning" \
                                 -DCMAKE_CXX_STANDARD=20 \
@@ -264,7 +253,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
                                 -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
@@ -276,7 +264,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
                                 -DCUDA_cuda_driver_LIBRARY=/usr/lib64/libcuda.so \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
@@ -318,14 +305,12 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -364,7 +349,6 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -372,7 +356,6 @@ pipeline {
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DCMAKE_CXX_FLAGS="-Werror --diag_suppress=implicit_return_from_non_void_function" \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -404,7 +387,6 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -413,7 +395,6 @@ pipeline {
                                 -DCMAKE_BUILD_TYPE=Release \
                                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=icpx \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-fsycl-device-code-split=per_kernel -fp-model=precise -Wno-deprecated-declarations -Werror -Wno-gnu-zero-variadic-macro-arguments -Wno-unknown-cuda-version -Wno-sycl-target" \
                                 -DKokkos_ARCH_NATIVE=ON \
                                 -DKokkos_ARCH_AMPERE80=ON \
@@ -458,7 +439,6 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh 'echo "/opt/rocm/llvm/lib" > /etc/ld.so.conf.d/llvm.conf && ldconfig'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -466,7 +446,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Debug \
                                 -DCMAKE_CXX_COMPILER=hipcc \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unused-command-line-argument -DNDEBUG" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -506,7 +485,6 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -515,7 +493,6 @@ pipeline {
                                 -DBUILD_SHARED_LIBS=ON \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/amdclang++ \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*" \
                                 -DCMAKE_PREFIX_PATH=/opt/rocm/lib \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unused-command-line-argument" \
@@ -550,7 +527,6 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -559,7 +535,6 @@ pipeline {
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=clang++-15 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_CLANG_TIDY="clang-tidy-15;-warnings-as-errors=*" \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unknown-cuda-version -Wno-pass-failed" \
                                 -DCMAKE_CXX_STANDARD=20 \
@@ -595,7 +570,6 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -604,7 +578,6 @@ pipeline {
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=clang++-17 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_CLANG_TIDY="clang-tidy-17;-warnings-as-errors=*" \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unknown-cuda-version -Wno-pass-failed" \
                                 -DCMAKE_CXX_STANDARD=20 \
@@ -641,7 +614,6 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              set -x && \
                               exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -651,7 +623,6 @@ pipeline {
                                 -DCMAKE_BUILD_TYPE=Debug \
                                 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
                                 -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror -Werror=all-warnings" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
