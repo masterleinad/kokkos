@@ -13,10 +13,11 @@ import kokkos.core;
 #endif
 
 #include <Serial/Kokkos_Serial.hpp>
-#include <impl/Kokkos_Traits.hpp>
+#include <impl/Kokkos_CheckUsage.hpp>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_ExecSpaceManager.hpp>
 #include <impl/Kokkos_SharedAlloc.hpp>
+#include <impl/Kokkos_Traits.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -145,15 +146,24 @@ void SerialInternal::resize_thread_team_data(size_t pool_reduce_bytes,
 }
 }  // namespace Impl
 
+Serial::~Serial() {
+  Impl::check_execution_space_destructor_precondition(name());
+}
+
 Serial::Serial()
-    : m_space_instance(&Impl::SerialInternal::singleton(),
-                       [](Impl::SerialInternal*) {}) {}
+    : m_space_instance(
+          (Impl::check_execution_space_constructor_precondition(name()),
+           Impl::HostSharedPtr(&Impl::SerialInternal::singleton(),
+                               [](Impl::SerialInternal*) {}))) {}
 
 Serial::Serial(NewInstance)
-    : m_space_instance(new Impl::SerialInternal, [](Impl::SerialInternal* ptr) {
-        ptr->finalize();
-        delete ptr;
-      }) {
+    : m_space_instance(
+          (Impl::check_execution_space_constructor_precondition(name()),
+           Impl::HostSharedPtr(new Impl::SerialInternal,
+                               [](Impl::SerialInternal* ptr) {
+                                 ptr->finalize();
+                                 delete ptr;
+                               }))) {
   m_space_instance->initialize();
 }
 

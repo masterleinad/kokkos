@@ -23,7 +23,7 @@ if(Kokkos_ENABLE_TESTS OR Kokkos_INSTALL_TESTING)
       set_target_properties(gtest PROPERTIES CXX_CLANG_TIDY "")
     endif()
 
-    # Suppress compiler warnings.  TODO use SYSTEM when CMake 3.25 is available
+    # Suppress compiler warnings. TODO use SYSTEM within the FetchContent_Declare call when CMake 3.25 is required
     set_target_properties(gtest PROPERTIES COMPILE_OPTIONS -w)
   endif()
 endif()
@@ -184,6 +184,15 @@ macro(KOKKOS_ADD_TEST_EXECUTABLE ROOT_NAME)
   if(NOT ${PACKAGE_NAME}_${ROOT_NAME}_DISABLE)
     kokkos_add_executable(${ROOT_NAME} SOURCES ${PARSE_SOURCES} ${PARSE_UNPARSED_ARGUMENTS} TESTONLYLIBS GTest::gtest)
     set(EXE_NAME ${PACKAGE_NAME}_${ROOT_NAME})
+
+    # Suppress compiler warnings when not using an external gtest version.
+    # TODO use SYSTEM within the FetchContent_Declare call when CMake 3.25 is required
+    get_target_property(GTEST_INCLUDES GTest::gtest INCLUDE_DIRECTORIES)
+    if(GTEST_INCLUDES)
+      foreach(dir ${GTEST_INCLUDES})
+        target_include_directories(${EXE_NAME} SYSTEM PRIVATE "${dir}")
+      endforeach()
+    endif()
   endif()
 endmacro()
 

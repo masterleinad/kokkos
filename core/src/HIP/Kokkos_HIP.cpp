@@ -15,6 +15,7 @@ import kokkos.core;
 #include <HIP/Kokkos_HIP_Instance.hpp>
 #include <HIP/Kokkos_HIP_IsXnack.hpp>
 
+#include <impl/Kokkos_CheckUsage.hpp>
 #include <impl/Kokkos_DeviceManagement.hpp>
 #include <impl/Kokkos_ExecSpaceManager.hpp>
 
@@ -124,24 +125,25 @@ void HIP::impl_finalize() {
       hipStreamDestroy(Impl::HIPInternal::singleton().m_stream));
 }
 
+HIP::~HIP() { Impl::check_execution_space_destructor_precondition(name()); }
+
 HIP::HIP()
-    : m_space_instance(&Impl::HIPInternal::singleton(),
-                       [](Impl::HIPInternal*) {}) {
-  Impl::HIPInternal::singleton().verify_is_initialized(
-      "HIP instance constructor");
-}
+    : m_space_instance(
+          (Impl::check_execution_space_constructor_precondition(name()),
+           Impl::HostSharedPtr(&Impl::HIPInternal::singleton(),
+                               [](Impl::HIPInternal*) {}))) {}
 
 HIP::HIP(hipStream_t const stream, Impl::ManageStream manage_stream)
     : m_space_instance(
-          new Impl::HIPInternal, [manage_stream](Impl::HIPInternal* ptr) {
-            ptr->finalize();
-            if (static_cast<bool>(manage_stream)) {
-              KOKKOS_IMPL_HIP_SAFE_CALL(hipStreamDestroy(ptr->m_stream));
-            }
-            delete ptr;
-          }) {
-  Impl::HIPInternal::singleton().verify_is_initialized(
-      "HIP instance constructor");
+          (Impl::check_execution_space_constructor_precondition(name()),
+           Impl::HostSharedPtr(
+               new Impl::HIPInternal, [manage_stream](Impl::HIPInternal* ptr) {
+                 ptr->finalize();
+                 if (static_cast<bool>(manage_stream)) {
+                   KOKKOS_IMPL_HIP_SAFE_CALL(hipStreamDestroy(ptr->m_stream));
+                 }
+                 delete ptr;
+               }))) {
   m_space_instance->initialize(stream);
 }
 
