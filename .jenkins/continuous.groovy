@@ -54,7 +54,6 @@ pipeline {
                                 -B build \
                                 -GNinja \
                                 -DCMAKE_CXX_COMPILER=clang++-19 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
@@ -72,7 +71,6 @@ pipeline {
                                 -B build \
                                 -GNinja \
                                 -DCMAKE_CXX_COMPILER=clang++-19 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror" && \
                               cmake --build build -j 8 && \
                               ctest --test-dir build --verbose'''
@@ -145,7 +143,6 @@ pipeline {
                                 -DBUILD_SHARED_LIBS=ON \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=hipcc \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unused-command-line-argument" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -164,7 +161,6 @@ pipeline {
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_CXX_COMPILER=hipcc \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
@@ -208,7 +204,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -231,7 +226,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
                                 -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror --Werror=all-warnings -Xcudafe --diag_suppress=940" \
                                 -DCMAKE_EXE_LINKER_FLAGS="-Xnvlink -suppress-stack-size-warning" \
                                 -DCMAKE_CXX_STANDARD=20 \
@@ -242,7 +236,6 @@ pipeline {
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
@@ -251,7 +244,6 @@ pipeline {
                               rm -rf build && mkdir -p build && cd build && \
                               cmake \
                                 -DCMAKE_CXX_COMPILER=g++-11 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DCMAKE_CXX_STANDARD=20 \
                               .. && \
@@ -293,7 +285,6 @@ pipeline {
                               rm -rf build && mkdir -p build && cd build && \
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DCMAKE_CXX_FLAGS=-Werror \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -339,7 +330,6 @@ pipeline {
                               /opt/cmake/bin/cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=nvc++ \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DCMAKE_CXX_FLAGS="-Werror --diag_suppress=implicit_return_from_non_void_function" \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -376,7 +366,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Release \
                                 -DCMAKE_CXX_COMPILER=icpx \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-fsycl-device-code-split=per_kernel -fp-model=precise -Wno-deprecated-declarations -Werror -Wno-gnu-zero-variadic-macro-arguments -Wno-unknown-cuda-version -Wno-sycl-target" \
                                 -DKokkos_ARCH_NATIVE=ON \
                                 -DKokkos_ARCH_AMPERE80=ON \
@@ -426,7 +415,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=Debug \
                                 -DCMAKE_CXX_COMPILER=hipcc \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unused-command-line-argument -DNDEBUG" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
@@ -472,7 +460,6 @@ pipeline {
                                 -DBUILD_SHARED_LIBS=ON \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/amdclang++ \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-warnings-as-errors=*" \
                                 -DCMAKE_PREFIX_PATH=/opt/rocm/lib \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unused-command-line-argument" \
@@ -512,7 +499,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=clang++-15 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_CLANG_TIDY="clang-tidy-15;-warnings-as-errors=*" \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unknown-cuda-version -Wno-pass-failed" \
                                 -DCMAKE_CXX_STANDARD=20 \
@@ -553,7 +539,6 @@ pipeline {
                               cmake \
                                 -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                                 -DCMAKE_CXX_COMPILER=clang++-17 \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_CLANG_TIDY="clang-tidy-17;-warnings-as-errors=*" \
                                 -DCMAKE_CXX_FLAGS="-Werror -Wno-unknown-cuda-version -Wno-pass-failed" \
                                 -DCMAKE_CXX_STANDARD=20 \
@@ -596,7 +581,6 @@ pipeline {
                                 -DBUILD_SHARED_LIBS=ON \
                                 -DCMAKE_BUILD_TYPE=Debug \
                                 -DCMAKE_CXX_COMPILER=$WORKSPACE/bin/nvcc_wrapper \
-                                -DCMAKE_VERBOSE_MAKEFILE=ON \
                                 -DCMAKE_CXX_FLAGS="-Werror -Werror=all-warnings" \
                                 -DCMAKE_CXX_STANDARD=20 \
                                 -DKokkos_ARCH_NATIVE=ON \
