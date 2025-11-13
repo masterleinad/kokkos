@@ -183,7 +183,7 @@ pipeline {
                         }
                     }
                 }
-/*
+
                 stage('CUDA-12.2-NVCC-RDC') {
                     agent {
                         dockerfile {
@@ -274,10 +274,11 @@ pipeline {
                     post {
                         always {
                             sh 'ccache --show-stats'
+                            xunit([CTest(deleteOutputFiles: true, failIfNotNew: true, pattern: 'build-tests/Testing/**/Test.xml', skipNoTestFiles: false, stopProcessingIfError: true)])
                         }
                     }
                 }
-*/
+
             }
         }
         stage('Build-2') {
