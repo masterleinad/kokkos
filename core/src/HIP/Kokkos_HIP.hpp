@@ -34,6 +34,10 @@ class HIP {
 
   using scratch_memory_space = ScratchMemorySpace<HIP>;
 
+  HIP(const HIP&)            = default;
+  HIP(HIP&&)                 = default;
+  HIP& operator=(const HIP&) = default;
+  HIP& operator=(HIP&&)      = default;
   ~HIP();
   HIP();
 
