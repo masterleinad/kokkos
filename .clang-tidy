@@ -25,7 +25,7 @@ CheckOptions:
   - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
     value: true
   - key: cppcoreguidelines-special-member-functions.AllowImplicitlyDeletedCopyOrMove
-    value: true
+    value: false
 
 FormatStyle: file
 HeaderFilterRegex: '(algorithms|benchmarks|containers|core|example|simd).*\.hpp'
