@@ -248,6 +248,10 @@ bool s_can_bind_threads(true);
 struct Sentinel {
   ~Sentinel();
   Sentinel();
+  Sentinel(const Sentinel&)            = delete;
+  Sentinel(Sentinel&&)                 = delete;
+  Sentinel& operator=(const Sentinel&) = delete;
+  Sentinel& operator=(Sentinel&&)      = delete;
 };
 
 bool sentinel() {
