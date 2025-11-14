@@ -941,8 +941,6 @@ class ScatterAccess<DataType, Op, DeviceType, Layout, ScatterNonDuplicated,
 
   KOKKOS_INLINE_FUNCTION
   ScatterAccess(view_type const& view_in) : view(view_in) {}
-  KOKKOS_DEFAULTED_FUNCTION
-  ~ScatterAccess() = default;
 
   template <typename... Args>
   KOKKOS_FORCEINLINE_FUNCTION value_type operator()(Args... args) const {

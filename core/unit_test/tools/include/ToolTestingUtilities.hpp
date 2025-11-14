@@ -294,6 +294,13 @@ auto check_match(const event_vector& events, Matchers&&... matchers) {
  * represent yourself as a string for debugging purposes
  */
 struct EventBase {
+  EventBase() = default;
+
+  EventBase(const EventBase&)            = default;
+  EventBase(EventBase&&)                 = default;
+  EventBase& operator=(const EventBase&) = default;
+  EventBase& operator=(EventBase&&)      = default;
+
   using PtrHandle                        = const void* const;
   virtual ~EventBase()                   = default;
   virtual std::string descriptor() const = 0;

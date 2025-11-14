@@ -780,9 +780,6 @@ class DynRankView : private View<DataType*******, Properties...> {
   //----------------------------------------
   // Standard constructor, destructor, and assignment operators...
 
-  KOKKOS_DEFAULTED_FUNCTION
-  ~DynRankView() = default;
-
   KOKKOS_DEFAULTED_FUNCTION DynRankView() = default;
 
   //----------------------------------------
