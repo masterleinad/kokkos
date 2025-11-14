@@ -28,21 +28,6 @@ struct my_complex {
   }
 
   KOKKOS_INLINE_FUNCTION
-  my_complex(const my_complex& src) {
-    re    = src.re;
-    im    = src.im;
-    dummy = src.dummy;
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  my_complex& operator=(const my_complex& src) {
-    re    = src.re;
-    im    = src.im;
-    dummy = src.dummy;
-    return *this;
-  }
-
-  KOKKOS_INLINE_FUNCTION
   my_complex(const double& val) {
     re    = val;
     im    = 0.0;

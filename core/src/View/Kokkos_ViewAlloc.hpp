@@ -60,9 +60,7 @@ struct ViewValueFunctor {
 #endif
   }
 
-  ViewValueFunctor()                                   = default;
-  ViewValueFunctor(const ViewValueFunctor&)            = default;
-  ViewValueFunctor& operator=(const ViewValueFunctor&) = default;
+  ViewValueFunctor() = default;
 
   ViewValueFunctor(ExecSpace const& arg_space, ValueType* const arg_ptr,
                    size_t const arg_n, std::string arg_name)

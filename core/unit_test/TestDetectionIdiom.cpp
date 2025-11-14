@@ -21,7 +21,9 @@ using copy_assign_t = decltype(std::declval<T&>() = std::declval<const T&>());
 
 struct Meow {};
 struct Purr {
+  Purr(const Purr&)           = default;
   void operator=(const Purr&) = delete;
+  ~Purr()                     = default;
 };
 
 static_assert(Kokkos::is_detected<copy_assign_t, Meow>::value,

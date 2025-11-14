@@ -48,6 +48,8 @@ struct ViewTracker {
     assign(vt);
   }
 
+  ~ViewTracker() = default;
+
   template <class RT, class... RP>
   KOKKOS_INLINE_FUNCTION void assign(const View<RT, RP...>& vt) {
     if (this == reinterpret_cast<const ViewTracker*>(&vt.m_track)) return;

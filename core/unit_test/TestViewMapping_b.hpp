@@ -103,21 +103,17 @@ namespace Test {
 
 struct MappingClassValueType {
   KOKKOS_INLINE_FUNCTION
-  MappingClassValueType() {
-#if 0
-    KOKKOS_IF_ON_DEVICE(
-        (printf("TestViewMappingClassValue construct on Device\n");))
-    KOKKOS_IF_ON_HOST((printf("TestViewMappingClassValue construct on Host\n");))
-#endif
-  }
+  MappingClassValueType() {}
+  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType(
+      const MappingClassValueType &) = default;
+  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType(MappingClassValueType &&) =
+      default;
+  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType &operator=(
+      const MappingClassValueType &) = default;
+  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType &operator=(
+      MappingClassValueType &&) = default;
   KOKKOS_INLINE_FUNCTION
-  ~MappingClassValueType() {
-#if 0
-    KOKKOS_IF_ON_DEVICE(
-        (printf("TestViewMappingClassValue destruct on Device\n");))
-    KOKKOS_IF_ON_HOST((printf("TestViewMappingClassValue destruct on Host\n");))
-#endif
-  }
+  ~MappingClassValueType() {}
 };
 
 template <class Space>

@@ -221,7 +221,15 @@ class SharedAllocationRecordCommon : public SharedAllocationRecord<void, void> {
   static void deallocate(record_base_t* arg_rec);
 
  public:
+  SharedAllocationRecordCommon(const SharedAllocationRecordCommon&) = default;
+  SharedAllocationRecordCommon(SharedAllocationRecordCommon&&)      = default;
+  SharedAllocationRecordCommon& operator=(const SharedAllocationRecordCommon&) =
+      default;
+  SharedAllocationRecordCommon& operator=(SharedAllocationRecordCommon&&) =
+      default;
+
   ~SharedAllocationRecordCommon();
+
   template <class ExecutionSpace>
   SharedAllocationRecordCommon(
       ExecutionSpace const& exec, MemorySpace const& space,
@@ -305,7 +313,17 @@ class HostInaccessibleSharedAllocationRecordCommon
   static void deallocate(record_base_t* arg_rec);
 
  public:
+  HostInaccessibleSharedAllocationRecordCommon(
+      const HostInaccessibleSharedAllocationRecordCommon&) = default;
+  HostInaccessibleSharedAllocationRecordCommon(
+      HostInaccessibleSharedAllocationRecordCommon&&) = default;
+  HostInaccessibleSharedAllocationRecordCommon& operator=(
+      const HostInaccessibleSharedAllocationRecordCommon&) = default;
+  HostInaccessibleSharedAllocationRecordCommon& operator=(
+      HostInaccessibleSharedAllocationRecordCommon&&) = default;
+
   ~HostInaccessibleSharedAllocationRecordCommon();
+
   template <class ExecutionSpace>
   HostInaccessibleSharedAllocationRecordCommon(
       ExecutionSpace const& exec, MemorySpace const& space,
@@ -468,11 +486,12 @@ class SharedAllocationRecord
             &Kokkos::Impl::deallocate<MemorySpace, DestroyFunctor>),
         m_destroy() {}
 
+ public:
   SharedAllocationRecord()                                         = delete;
   SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
+  ~SharedAllocationRecord()                                        = default;
 
- public:
   DestroyFunctor m_destroy;
 
   // Allocate with a zero use count.  Incrementing the use count from zero to

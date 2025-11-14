@@ -172,13 +172,7 @@ class basic_simd<T, simd_abi::scalar> {
 
   KOKKOS_FORCEINLINE_FUNCTION static constexpr std::size_t size() { return 1; }
 
-  KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd() noexcept         = default;
-  KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd(basic_simd const&) = default;
-  KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd(basic_simd&&)      = default;
-  KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd& operator=(basic_simd const&) =
-      default;
-  KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd& operator=(basic_simd&&) =
-      default;
+  KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd() noexcept = default;
   template <class U>
     requires std::convertible_to<U, value_type>
   // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)

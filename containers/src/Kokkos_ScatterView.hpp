@@ -217,8 +217,11 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterSum, DeviceType,
  public:
   KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ValueType& value_in)
       : value(value_in) {}
-  KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ScatterValue&& other)
-      : value(other.value) {}
+  KOKKOS_FUNCTION ScatterValue(const ScatterValue&)                 = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue(ScatterValue&&)            = default;
+  KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&)      = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue& operator=(ScatterValue&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                         = default;
   KOKKOS_FORCEINLINE_FUNCTION void operator+=(ValueType const& rhs) {
     update(rhs);
   }
@@ -294,8 +297,13 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterProd, DeviceType,
  public:
   KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ValueType& value_in)
       : value(value_in) {}
-  KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ScatterValue&& other)
-      : value(other.value) {}
+
+  KOKKOS_FUNCTION ScatterValue(const ScatterValue&)                 = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue(ScatterValue&&)            = default;
+  KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&)      = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue& operator=(ScatterValue&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                         = default;
+
   KOKKOS_FORCEINLINE_FUNCTION void operator*=(ValueType const& rhs) {
     value *= rhs;
   }
@@ -325,8 +333,12 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterProd, DeviceType,
  public:
   KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ValueType& value_in)
       : value(value_in) {}
-  KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ScatterValue&& other)
-      : value(other.value) {}
+
+  KOKKOS_FUNCTION ScatterValue(const ScatterValue&)                 = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue(ScatterValue&&)            = default;
+  KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&)      = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue& operator=(ScatterValue&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                         = default;
 
   KOKKOS_FORCEINLINE_FUNCTION void operator*=(ValueType const& rhs) {
     Kokkos::atomic_mul(&value, rhs);
@@ -360,10 +372,13 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterMin, DeviceType,
   ValueType& value;
   KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ValueType& value_in)
       : value(value_in) {}
-  KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ScatterValue&& other)
-      : value(other.value) {}
 
- public:
+  KOKKOS_FUNCTION ScatterValue(const ScatterValue&)                 = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue(ScatterValue&&)            = default;
+  KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&)      = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue& operator=(ScatterValue&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                         = default;
+
   KOKKOS_FORCEINLINE_FUNCTION void update(ValueType const& rhs) {
     value = rhs < value ? rhs : value;
   }
@@ -386,8 +401,12 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterMin, DeviceType,
  public:
   KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ValueType& value_in)
       : value(value_in) {}
-  KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ScatterValue&& other)
-      : value(other.value) {}
+
+  KOKKOS_FUNCTION ScatterValue(const ScatterValue&)                 = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue(ScatterValue&&)            = default;
+  KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&)      = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue& operator=(ScatterValue&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                         = default;
 
   KOKKOS_INLINE_FUNCTION
   void join(ValueType& dest, const ValueType& src) const {
@@ -416,8 +435,13 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterMax, DeviceType,
  public:
   KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ValueType& value_in)
       : value(value_in) {}
-  KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ScatterValue&& other)
-      : value(other.value) {}
+
+  KOKKOS_FUNCTION ScatterValue(const ScatterValue&)                 = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue(ScatterValue&&)            = default;
+  KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&)      = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue& operator=(ScatterValue&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                         = default;
+
   KOKKOS_FORCEINLINE_FUNCTION void update(ValueType const& rhs) {
     value = rhs > value ? rhs : value;
   }
@@ -440,8 +464,11 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterMax, DeviceType,
  public:
   KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ValueType& value_in)
       : value(value_in) {}
-  KOKKOS_FORCEINLINE_FUNCTION ScatterValue(ScatterValue&& other)
-      : value(other.value) {}
+  KOKKOS_FUNCTION ScatterValue(const ScatterValue&)                 = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue(ScatterValue&&)            = default;
+  KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&)      = delete;
+  KOKKOS_DEFAULTED_FUNCTION ScatterValue& operator=(ScatterValue&&) = default;
+  KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                         = default;
 
   KOKKOS_INLINE_FUNCTION
   void join(ValueType& dest, const ValueType& src) const {

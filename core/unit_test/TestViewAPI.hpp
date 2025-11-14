@@ -1348,6 +1348,17 @@ class TestViewAPI {
       throw std::bad_alloc();
     }
 
+    test_refcount_poison_copy_functor(test_refcount_poison_copy_functor &&other)
+        : view(other.view) {
+      throw std::bad_alloc();
+    }
+
+    test_refcount_poison_copy_functor &operator=(
+        const test_refcount_poison_copy_functor &) = default;
+    test_refcount_poison_copy_functor &operator=(
+        test_refcount_poison_copy_functor &&) = default;
+    ~test_refcount_poison_copy_functor()      = default;
+
     KOKKOS_INLINE_FUNCTION void operator()(int) const {}
 
     view_type view;

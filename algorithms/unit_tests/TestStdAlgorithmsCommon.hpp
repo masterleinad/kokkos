@@ -439,6 +439,8 @@ struct CustomValueType {
   KOKKOS_INLINE_FUNCTION
   CustomValueType(const CustomValueType& other) { this->value = other.value; }
 
+  KOKKOS_DEFAULTED_FUNCTION ~CustomValueType() = default;
+
   KOKKOS_INLINE_FUNCTION
   explicit operator value_type() const { return value; }
 

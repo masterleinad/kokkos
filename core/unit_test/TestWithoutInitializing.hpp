@@ -108,6 +108,9 @@ namespace {
 struct NonTriviallyCopyable {
   KOKKOS_FUNCTION NonTriviallyCopyable() {}
   KOKKOS_FUNCTION NonTriviallyCopyable(const NonTriviallyCopyable&) {}
+  KOKKOS_DEFAULTED_FUNCTION NonTriviallyCopyable& operator=(
+      const NonTriviallyCopyable&)        = default;
+  KOKKOS_FUNCTION ~NonTriviallyCopyable() = default;
 };
 }  // namespace
 

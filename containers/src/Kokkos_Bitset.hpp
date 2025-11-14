@@ -325,24 +325,12 @@ class ConstBitset {
   KOKKOS_FUNCTION
   ConstBitset() : m_size(0) {}
 
-  KOKKOS_FUNCTION
+  KOKKOS_DEFAULTED_FUNCTION
   ConstBitset(Bitset<Device> const& rhs)
       : m_size(rhs.m_size), m_blocks(rhs.m_blocks) {}
 
   KOKKOS_FUNCTION
-  ConstBitset(ConstBitset<Device> const& rhs)
-      : m_size(rhs.m_size), m_blocks(rhs.m_blocks) {}
-
-  KOKKOS_FUNCTION
   ConstBitset<Device>& operator=(Bitset<Device> const& rhs) {
-    this->m_size   = rhs.m_size;
-    this->m_blocks = rhs.m_blocks;
-
-    return *this;
-  }
-
-  KOKKOS_FUNCTION
-  ConstBitset<Device>& operator=(ConstBitset<Device> const& rhs) {
     this->m_size   = rhs.m_size;
     this->m_blocks = rhs.m_blocks;
 

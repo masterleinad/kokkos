@@ -251,9 +251,6 @@ class ReduceTeamFunctor {
   ReduceTeamFunctor(const size_type &arg_nwork) : nwork(arg_nwork) {}
 
   KOKKOS_INLINE_FUNCTION
-  ReduceTeamFunctor(const ReduceTeamFunctor &rhs) : nwork(rhs.nwork) {}
-
-  KOKKOS_INLINE_FUNCTION
   void init(value_type &dst) const {
     dst.value[0] = 0;
     dst.value[1] = 0;
