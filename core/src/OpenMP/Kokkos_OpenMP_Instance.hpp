@@ -57,7 +57,10 @@ class OpenMPInternal {
 
   OpenMPInternal()                                 = delete;
   OpenMPInternal(const OpenMPInternal&)            = delete;
+  OpenMPInternal(OpenMPInternal&&)                 = delete;
   OpenMPInternal& operator=(const OpenMPInternal&) = delete;
+  OpenMPInternal& operator=(OpenMPInternal&&)      = delete;
+  ~OpenMPInternal()                                = default;
 
   static int get_current_max_threads() noexcept;
 
