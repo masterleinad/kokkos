@@ -68,7 +68,7 @@ class hpx_thread_buffer {
   hpx_thread_buffer(const hpx_thread_buffer &)            = delete;
   hpx_thread_buffer(hpx_thread_buffer &&)                 = delete;
   hpx_thread_buffer &operator=(const hpx_thread_buffer &) = delete;
-  hpx_thread_buffer &operator=(hpx_thread_buffer)         = delete;
+  hpx_thread_buffer &operator=(hpx_thread_buffer &&)      = delete;
 
   void resize(const std::size_t num_threads, const std::size_t size_per_thread,
               const std::size_t extra_space = 0);
@@ -131,7 +131,7 @@ class HPX {
     instance_data(const instance_data &)            = delete;
     instance_data(instance_data &&)                 = delete;
     instance_data &operator=(const instance_data &) = delete;
-    instance_data &operator=(instance_data)         = delete;
+    instance_data &operator=(instance_data &&)      = delete;
 
     uint32_t m_instance_id{HPX::impl_default_instance_id()};
     hpx::execution::experimental::unique_any_sender<> m_sender{

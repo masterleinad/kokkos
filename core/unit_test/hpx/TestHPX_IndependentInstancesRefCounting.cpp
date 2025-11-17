@@ -16,6 +16,14 @@ struct dummy {
   dummy() { ++dummy_count; }
   dummy(dummy &&) { ++dummy_count; }
   dummy(dummy const &) { ++dummy_count; }
+  dummy &operator=(dummy &&) {
+    ++dummy_count;
+    return *this;
+  }
+  dummy &operator=(dummy const &) {
+    ++dummy_count;
+    return *this;
+  }
   ~dummy() { --dummy_count; }
   void f() const {}
 };
