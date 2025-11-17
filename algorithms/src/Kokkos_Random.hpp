@@ -934,12 +934,6 @@ class Random_XorShift64_Pool {
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
   KOKKOS_DEFAULTED_FUNCTION Random_XorShift64_Pool() = default;
-
-  KOKKOS_DEFAULTED_FUNCTION Random_XorShift64_Pool(
-      Random_XorShift64_Pool const&) = default;
-
-  KOKKOS_DEFAULTED_FUNCTION Random_XorShift64_Pool& operator=(
-      Random_XorShift64_Pool const&) = default;
 #else
   Random_XorShift64_Pool()   = default;
 #endif
@@ -1214,12 +1208,6 @@ class Random_XorShift1024_Pool {
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
   KOKKOS_DEFAULTED_FUNCTION Random_XorShift1024_Pool() = default;
-
-  KOKKOS_DEFAULTED_FUNCTION Random_XorShift1024_Pool(
-      Random_XorShift1024_Pool const&) = default;
-
-  KOKKOS_DEFAULTED_FUNCTION Random_XorShift1024_Pool& operator=(
-      Random_XorShift1024_Pool const&) = default;
 #else
   Random_XorShift1024_Pool() = default;
 #endif
