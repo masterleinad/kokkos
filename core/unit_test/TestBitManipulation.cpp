@@ -503,7 +503,9 @@ namespace ToNotTriviallyCopyable {
 struct To {
   char a;
   To(To const &);
+  To(To &&);
   To &operator=(To const &);
+  To &operator=(To &&);
   ~To() = default;
 };
 struct From {
@@ -519,7 +521,9 @@ struct To {
 struct From {
   char b;
   From(From const &);
+  From(From &&);
   From &operator=(From const &);
+  From &operator=(From &&);
   ~From() = default;
 };
 static_assert(test_bit_cast<To, From>().did_not_match());

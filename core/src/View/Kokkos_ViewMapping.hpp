@@ -674,10 +674,7 @@ struct ViewOffset<
 
   //----------------------------------------
 
-  ViewOffset()                             = default;
-  ViewOffset(const ViewOffset&)            = default;
-  ViewOffset& operator=(const ViewOffset&) = default;
-  ~ViewOffset()                            = default;
+  ViewOffset() = default;
 
   template <unsigned TrivialScalarSize>
   KOKKOS_INLINE_FUNCTION constexpr ViewOffset(
@@ -1014,10 +1011,7 @@ struct ViewOffset<
   };
 
  public:
-  ViewOffset()                             = default;
-  ViewOffset(const ViewOffset&)            = default;
-  ViewOffset& operator=(const ViewOffset&) = default;
-  ~ViewOffset()                            = default;
+  ViewOffset() = default;
 
   /* Enable padding for trivial scalar types with non-zero trivial scalar size
    */
@@ -1340,10 +1334,7 @@ struct ViewOffset<
     s[dimension_type::rank] = stride_fill(s);
   }
 
-  ViewOffset()                             = default;
-  ViewOffset(const ViewOffset&)            = default;
-  ViewOffset& operator=(const ViewOffset&) = default;
-  ~ViewOffset()                            = default;
+  ViewOffset() = default;
 
   template <unsigned TrivialScalarSize>
   KOKKOS_INLINE_FUNCTION constexpr ViewOffset(
@@ -1670,10 +1661,7 @@ struct ViewOffset<
   };
 
  public:
-  ViewOffset()                             = default;
-  ViewOffset(const ViewOffset&)            = default;
-  ViewOffset& operator=(const ViewOffset&) = default;
-  ~ViewOffset()                            = default;
+  ViewOffset() = default;
 
   /* Enable padding for trivial scalar types with non-zero trivial scalar size.
    */
@@ -2155,10 +2143,7 @@ struct ViewOffset<Dimension, Kokkos::LayoutStride, void> {
     s[dimension_type::rank] = stride_fill(s);
   }
 
-  ViewOffset()                             = default;
-  ViewOffset(const ViewOffset&)            = default;
-  ViewOffset& operator=(const ViewOffset&) = default;
-  ~ViewOffset()                            = default;
+  ViewOffset() = default;
 
   KOKKOS_INLINE_FUNCTION
   constexpr ViewOffset(std::integral_constant<unsigned, 0> const&,

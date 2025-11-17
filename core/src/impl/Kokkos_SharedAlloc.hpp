@@ -489,7 +489,9 @@ class SharedAllocationRecord
  public:
   SharedAllocationRecord()                                         = delete;
   SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
+  SharedAllocationRecord(SharedAllocationRecord&&)                 = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
+  SharedAllocationRecord& operator=(SharedAllocationRecord&&)      = delete;
   ~SharedAllocationRecord()                                        = default;
 
   DestroyFunctor m_destroy;

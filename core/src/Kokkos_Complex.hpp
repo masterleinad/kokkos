@@ -49,16 +49,6 @@ class
   KOKKOS_DEFAULTED_FUNCTION
   complex() = default;
 
-  //! Copy constructor.
-  KOKKOS_DEFAULTED_FUNCTION
-  complex(const complex&) noexcept = default;
-
-  KOKKOS_DEFAULTED_FUNCTION
-  complex& operator=(const complex&) noexcept = default;
-
-  KOKKOS_DEFAULTED_FUNCTION
-  ~complex() = default;
-
   /// \brief Conversion constructor from compatible RType
   template <class RType,
             std::enable_if_t<std::is_convertible_v<RType, RealType>, int> = 0>

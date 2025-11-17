@@ -43,7 +43,9 @@ class H {  // constructible and destructible only from on the host side
   H(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
   H() {}
   H(const H&)            = default;
+  H(H&&)                 = default;
   H& operator=(const H&) = default;
+  H& operator=(H&&)      = default;
   ~H() {}
 };
 

@@ -170,7 +170,6 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
   using data_type            = DataType;
   using const_data_type      = typename traits::const_data_type;
   using non_const_data_type  = typename traits::non_const_data_type;
-  using view_tracker_type    = Impl::ViewTracker<View>;
   using array_layout         = typename traits::array_layout;
   using device_type          = typename traits::device_type;
   using execution_space      = typename traits::execution_space;

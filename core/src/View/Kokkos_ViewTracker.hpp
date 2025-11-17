@@ -37,6 +37,10 @@ struct ViewTracker {
       : m_tracker(vt.m_tracker, !view_traits::memory_traits::is_unmanaged) {}
 
   KOKKOS_INLINE_FUNCTION
+  ViewTracker(ViewTracker&& vt) noexcept
+      : m_tracker(vt.m_tracker, !view_traits::memory_traits::is_unmanaged) {}
+
+  KOKKOS_INLINE_FUNCTION
   explicit ViewTracker(const ParentView& vt) noexcept : m_tracker() {
     assign(vt);
   }
@@ -64,6 +68,19 @@ struct ViewTracker {
   }
 
   KOKKOS_INLINE_FUNCTION ViewTracker& operator=(const ViewTracker& rhs) {
+    if (this == &rhs) return *this;
+    KOKKOS_IF_ON_HOST((
+        if (!view_traits::memory_traits::is_unmanaged &&
+            Kokkos::Impl::SharedAllocationRecord<void,
+                                                 void>::tracking_enabled()) {
+          m_tracker.assign_direct(rhs.m_tracker);
+        } else { m_tracker.assign_force_disable(rhs.m_tracker); }))
+
+    KOKKOS_IF_ON_DEVICE((m_tracker.assign_force_disable(rhs.m_tracker);))
+    return *this;
+  }
+
+  KOKKOS_INLINE_FUNCTION ViewTracker& operator=(ViewTracker&& rhs) {
     if (this == &rhs) return *this;
     KOKKOS_IF_ON_HOST((
         if (!view_traits::memory_traits::is_unmanaged &&

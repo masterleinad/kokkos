@@ -78,8 +78,10 @@ class EnvVarsHelper {
     teardown();
     mutex_.unlock();
   }
-  EnvVarsHelper(EnvVarsHelper&)            = delete;
-  EnvVarsHelper& operator=(EnvVarsHelper&) = delete;
+  EnvVarsHelper(const EnvVarsHelper&)             = delete;
+  EnvVarsHelper(EnvVarsHelper&&)                  = delete;
+  EnvVarsHelper& operator=(EnvVarsHelper&)        = delete;
+  EnvVarsHelper& operator=(const EnvVarsHelper&&) = delete;
   friend std::ostream& operator<<(std::ostream& os, EnvVarsHelper const& ev) {
     for (auto const& name : ev.vars_) {
       os << name << '=' << std::getenv(name.c_str()) << '\n';
@@ -301,7 +303,7 @@ TEST(defaultdevicetype, env_vars_num_threads) {
   EXPECT_TRUE(settings.has_disable_warnings());
   EXPECT_TRUE(settings.get_disable_warnings());
 
-  ev = {{
+  ev = std::unordered_map<std::string, std::string>{{
       {"KOKKOS_NUM_THREADS", "1ABC"},
   }};
   SKIP_IF_ENVIRONMENT_VARIABLE_ALREADY_SET(ev);
@@ -351,9 +353,7 @@ TEST(defaultdevicetype, env_vars_disable_warnings) {
 
 TEST(defaultdevicetype, env_vars_tune_internals) {
   for (auto const& value_true : {"1", "yES", "true", "TRUE", "tRuE"}) {
-    EnvVarsHelper ev = {{
-        {"KOKKOS_TUNE_INTERNALS", value_true},
-    }};
+    EnvVarsHelper ev = {{{"KOKKOS_TUNE_INTERNALS", value_true}}};
     SKIP_IF_ENVIRONMENT_VARIABLE_ALREADY_SET(ev);
     Kokkos::InitializationSettings settings;
     Kokkos::Impl::parse_environment_variables(settings);

@@ -40,7 +40,9 @@ class SerialInternal {
   ~SerialInternal();
 
   SerialInternal(SerialInternal const&)            = delete;
+  SerialInternal(SerialInternal&&)                 = delete;
   SerialInternal& operator=(SerialInternal const&) = delete;
+  SerialInternal& operator=(SerialInternal&&)      = delete;
 
   std::mutex m_instance_mutex;
 
