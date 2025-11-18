@@ -8,15 +8,13 @@
 
 #include <HIP/Kokkos_HIP_Space.hpp>
 #include <HIP/Kokkos_HIP_Error.hpp>
+#include <impl/Kokkos_HostSharedPtr.hpp>
 
 #include <hip/hip_runtime_api.h>
 
-#include <algorithm>
 #include <atomic>
-#include <iterator>
 #include <map>
 #include <mutex>
-#include <ranges>
 #include <set>
 
 namespace Kokkos {
@@ -45,8 +43,6 @@ struct HIPTraits {
 };
 
 //----------------------------------------------------------------------------
-
-HIP::size_type hip_internal_multiprocessor_count();
 
 HIP::size_type *hip_internal_scratch_space(const HIP &instance,
                                            const std::size_t size);
@@ -146,15 +142,13 @@ struct SharedResourceLock {
 };
 
 class HIPInternal {
- private:
-  HIPInternal(const HIPInternal &);
-  HIPInternal &operator=(const HIPInternal &);
-
  public:
   using size_type = ::Kokkos::HIP::size_type;
 
   int m_hipDev = -1;
   static int m_maxThreadsPerSM;
+
+  static HostSharedPtr<HIPInternal> default_instance;
 
   static hipDeviceProp_t m_deviceProp;
 
@@ -184,31 +178,21 @@ class HIPInternal {
   int32_t *m_scratch_locks                        = nullptr;
   size_t m_num_scratch_locks                      = 0;
 
-  bool was_finalized = false;
-
   static std::set<int> hip_devices;
   static std::map<int, unsigned long *> constantMemHostStaging;
   static std::map<int, SharedResourceLock> constantMemReusable;
 
-  static HIPInternal &singleton();
-
   int verify_is_initialized(const char *const label) const;
 
-  int is_initialized() const {
-    return nullptr != m_scratchSpace && nullptr != m_scratchFlags;
-  }
-
-  void initialize(hipStream_t stream);
-  void finalize();
+  HIPInternal(hipStream_t stream);
+  ~HIPInternal();
+  HIPInternal(const HIPInternal &)            = delete;
+  HIPInternal &operator=(const HIPInternal &) = delete;
 
   void print_configuration(std::ostream &) const;
 
   void fence() const;
   void fence(const std::string &) const;
-
-  ~HIPInternal();
-
-  HIPInternal() = default;
 
   // Using HIP API function/objects will be w.r.t. device 0 unless
   // hipSetDevice(device_id) is called with the correct device_id.
@@ -346,16 +330,20 @@ class HIPInternal {
 namespace Experimental::Impl {
 // For each space in partition, create new hipStream_t on the same device as
 // base_instance, ignoring weights
-template <std::ranges::input_range Weights, std::output_iterator<HIP> OutIter>
-void impl_partition_space(const HIP &base_instance, const Weights &weights,
-                          OutIter out) {
-  std::ranges::generate_n(out, std::ranges::size(weights), [&base_instance] {
-    hipStream_t stream;
-    KOKKOS_IMPL_HIP_SAFE_CALL(
-        base_instance.impl_internal_space_instance()->hip_stream_create_wrapper(
-            &stream));
-    return HIP(stream, Kokkos::Impl::ManageStream::yes);
-  });
+template <class T>
+std::vector<HIP> impl_partition_space(const HIP &base_instance,
+                                      const std::vector<T> &weights) {
+  std::vector<HIP> instances;
+  instances.reserve(weights.size());
+  std::generate_n(
+      std::back_inserter(instances), weights.size(), [&base_instance]() {
+        hipStream_t stream;
+        KOKKOS_IMPL_HIP_SAFE_CALL(base_instance.impl_internal_space_instance()
+                                      ->hip_stream_create_wrapper(&stream));
+        return HIP(stream, Kokkos::Impl::ManageStream::yes);
+      });
+
+  return instances;
 }
 }  // namespace Experimental::Impl
 }  // namespace Kokkos

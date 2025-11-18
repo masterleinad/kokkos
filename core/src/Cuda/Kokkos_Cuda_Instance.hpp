@@ -4,17 +4,15 @@
 #ifndef KOKKOS_CUDA_INSTANCE_HPP_
 #define KOKKOS_CUDA_INSTANCE_HPP_
 
+#include <vector>
 #include <impl/Kokkos_Tools.hpp>
+#include <atomic>
 #include <Cuda/Kokkos_Cuda_Error.hpp>
 #include <cuda_runtime_api.h>
 #include "Kokkos_CudaSpace.hpp"
 
-#include <algorithm>
-#include <atomic>
-#include <iterator>
-#include <map>
 #include <set>
-#include <ranges>
+#include <map>
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -277,17 +275,6 @@ class CudaInternal {
     return cudaMallocHost(ptr, size);
   }
 
-  cudaError_t cuda_mem_prefetch_async_wrapper(const void* devPtr, size_t count,
-                                              int dstDevice) const {
-    set_cuda_device();
-#if CUDART_VERSION >= 13000
-    cudaMemLocation loc = {cudaMemLocationTypeDevice, dstDevice};
-    return cudaMemPrefetchAsync(devPtr, count, loc, 0, m_stream);
-#else
-    return cudaMemPrefetchAsync(devPtr, count, dstDevice, m_stream);
-#endif
-  }
-
   cudaError_t cuda_memcpy_wrapper(void* dst, const void* src, size_t count,
                                   cudaMemcpyKind kind) const {
     set_cuda_device();
@@ -318,12 +305,6 @@ class CudaInternal {
                                         size_t count) const {
     set_cuda_device();
     return cudaMemsetAsync(devPtr, value, count, m_stream);
-  }
-
-  cudaError_t cuda_pointer_get_attributes_wrapper(
-      cudaPointerAttributes* attributes, const void* ptr) const {
-    set_cuda_device();
-    return cudaPointerGetAttributes(attributes, ptr);
   }
 
   cudaError_t cuda_stream_create_wrapper(cudaStream_t* pStream) const {
@@ -377,15 +358,20 @@ class CudaInternal {
 namespace Experimental::Impl {
 // For each space in partition, create new cudaStream_t on the same device as
 // base_instance, ignoring weights
-template <std::ranges::input_range Weights, std::output_iterator<Cuda> OutIter>
-void impl_partition_space(const Cuda& base_instance, const Weights& weights,
-                          OutIter out) {
-  std::ranges::generate_n(out, std::ranges::size(weights), [&base_instance] {
-    cudaStream_t stream;
-    KOKKOS_IMPL_CUDA_SAFE_CALL(base_instance.impl_internal_space_instance()
-                                   ->cuda_stream_create_wrapper(&stream));
-    return Cuda(stream, Kokkos::Impl::ManageStream::yes);
-  });
+template <class T>
+std::vector<Cuda> impl_partition_space(const Cuda& base_instance,
+                                       const std::vector<T>& weights) {
+  std::vector<Cuda> instances;
+  instances.reserve(weights.size());
+  std::generate_n(
+      std::back_inserter(instances), weights.size(), [&base_instance]() {
+        cudaStream_t stream;
+        KOKKOS_IMPL_CUDA_SAFE_CALL(base_instance.impl_internal_space_instance()
+                                       ->cuda_stream_create_wrapper(&stream));
+        return Cuda(stream, Kokkos::Impl::ManageStream::yes);
+      });
+
+  return instances;
 }
 }  // namespace Experimental::Impl
 

@@ -15,12 +15,10 @@ static_assert(false,
 #include <Kokkos_Macros.hpp>
 #if defined(KOKKOS_ENABLE_SERIAL)
 
-#include <algorithm>
 #include <cstddef>
 #include <iosfwd>
 #include <iterator>
 #include <mutex>
-#include <ranges>
 #include <thread>
 #include <Kokkos_Core_fwd.hpp>
 #include <Kokkos_Layout.hpp>
@@ -38,18 +36,15 @@ namespace Kokkos {
 namespace Impl {
 class SerialInternal {
  public:
-  SerialInternal() = default;
+  SerialInternal();
+  ~SerialInternal();
 
-  bool is_initialized();
-
-  void initialize();
-
-  void finalize();
-
-  static SerialInternal& singleton();
+  SerialInternal(SerialInternal const&)            = delete;
+  SerialInternal& operator=(SerialInternal const&) = delete;
 
   std::mutex m_instance_mutex;
 
+  static HostSharedPtr<SerialInternal> default_instance;
   static std::vector<SerialInternal*> all_instances;
   static std::mutex all_instances_mutex;
 
@@ -60,7 +55,6 @@ class SerialInternal {
                                size_t thread_local_bytes);
 
   HostThreadTeamData m_thread_team_data;
-  bool m_is_initialized = false;
 };
 }  // namespace Impl
 
@@ -102,6 +96,7 @@ class Serial {
 
   //@}
 
+  ~Serial();
   Serial();
 
   explicit Serial(NewInstance);
@@ -260,11 +255,15 @@ struct MemorySpaceAccess<Kokkos::Serial::memory_space,
 namespace Kokkos::Experimental::Impl {
 // Create new instance of Serial execution space for each partition, ignoring
 // weights
-template <std::ranges::input_range Weights,
-          std::output_iterator<Serial> OutIter>
-void impl_partition_space(const Serial&, const Weights& weights, OutIter out) {
-  std::ranges::generate_n(out, std::ranges::size(weights),
-                          [] { return Serial(NewInstance{}); });
+template <class T>
+std::vector<Serial> impl_partition_space(const Serial&,
+                                         const std::vector<T>& weights) {
+  std::vector<Serial> instances;
+  instances.reserve(weights.size());
+  std::generate_n(std::back_inserter(instances), weights.size(),
+                  []() { return Serial(NewInstance{}); });
+
+  return instances;
 }
 }  // namespace Kokkos::Experimental::Impl
 
