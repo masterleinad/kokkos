@@ -302,8 +302,22 @@ struct KOKKOS_DEPRECATED
   KOKKOS_INLINE_FUNCTION_DELETED Array()                 = delete;
   KOKKOS_INLINE_FUNCTION_DELETED Array(const Array& rhs) = delete;
   KOKKOS_INLINE_FUNCTION_DELETED Array(Array&& rhs)      = delete;
-  KOKKOS_FUNCTION Array& operator=(const Array& rhs)     = default;
-  KOKKOS_FUNCTION Array& operator=(Array&& rhs)          = default;
+
+  KOKKOS_INLINE_FUNCTION
+  Array& operator=(const Array& rhs) {
+    if (&rhs == this) return *this;
+    const size_t n = size() < rhs.size() ? size() : rhs.size();
+    for (size_t i = 0; i < n; ++i) m_elem[i] = rhs[i];
+    return *this;
+  }
+
+  KOKKOS_INLINE_FUNCTION
+  Array& operator=(Array&& rhs) {
+    if (&rhs == this) return *this;
+    const size_t n = size() < rhs.size() ? size() : rhs.size();
+    for (size_t i = 0; i < n; ++i) m_elem[i] = rhs[i];
+    return *this;
+  }
 
   template <size_t N, class P>
   KOKKOS_INLINE_FUNCTION Array& operator=(const Array<T, N, P>& rhs) {
