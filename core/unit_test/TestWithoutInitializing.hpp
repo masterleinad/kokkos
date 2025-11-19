@@ -112,8 +112,8 @@ struct NonTriviallyCopyable {
   KOKKOS_DEFAULTED_FUNCTION NonTriviallyCopyable& operator=(
       const NonTriviallyCopyable&) = default;
   KOKKOS_DEFAULTED_FUNCTION NonTriviallyCopyable& operator=(
-      NonTriviallyCopyable&&)             = default;
-  KOKKOS_FUNCTION ~NonTriviallyCopyable() = default;
+      NonTriviallyCopyable&&) = default;
+  ~NonTriviallyCopyable()     = default;
 };
 }  // namespace
 
