@@ -3,7 +3,6 @@ Checks: >
   bugprone-*,
   -bugprone-argument-comment,
   -bugprone-easily-swappable-parameters,
-  -bugprone-exception-escape,
   -bugprone-macro-parentheses,
   -bugprone-narrowing-conversions,
   -bugprone-suspicious-include,
@@ -18,14 +17,6 @@ Checks: >
 CheckOptions:
   - key: cppcoreguidelines-rvalue-reference-param-not-moved.AllowPartialMove
     value: true
-  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
-    value: false
-  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
-    value: false
-  - key: cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
-    value: false
-  - key: cppcoreguidelines-special-member-functions.AllowImplicitlyDeletedCopyOrMove
-    value: false
 
 FormatStyle: file
 HeaderFilterRegex: '(algorithms|benchmarks|containers|core|example|simd).*\.hpp'
