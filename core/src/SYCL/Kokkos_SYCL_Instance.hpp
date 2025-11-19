@@ -248,7 +248,16 @@ class SYCLFunctionWrapper<Functor, Storage, false> {
       std::memcpy(static_cast<void*>(&m_f),
                   static_cast<const void*>(&other.m_f), sizeof(m_f));
     }
+    TrivialWrapper(TrivialWrapper&& other) {
+      std::memcpy(static_cast<void*>(&m_f),
+                  static_cast<const void*>(&other.m_f), sizeof(m_f));
+    }
     TrivialWrapper& operator=(const TrivialWrapper& other) {
+      std::memcpy(static_cast<void*>(&m_f),
+                  static_cast<const void*>(&other.m_f), sizeof(m_f));
+      return *this;
+    }
+    TrivialWrapper& operator=(TrivialWrapper&& other) {
       std::memcpy(static_cast<void*>(&m_f),
                   static_cast<const void*>(&other.m_f), sizeof(m_f));
       return *this;
