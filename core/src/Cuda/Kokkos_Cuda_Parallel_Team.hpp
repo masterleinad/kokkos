@@ -588,6 +588,11 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
     }
   }
 
+  ParallelFor(ParallelFor const&)            = default;
+  ParallelFor(ParallelFor&&)                 = default;
+  ParallelFor& operator=(ParallelFor const&) = delete;
+  ParallelFor& operator=(ParallelFor&&)      = delete;
+
   ~ParallelFor() {
     if (m_scratch_pool_id >= 0) {
       m_policy.space()
@@ -980,6 +985,11 @@ class ParallelReduce<CombinedFunctorReducerType,
                       "large team size."));
     }
   }
+
+  ParallelReduce(ParallelReduce const&)            = default;
+  ParallelReduce(ParallelReduce&&)                 = default;
+  ParallelReduce& operator=(ParallelReduce const&) = delete;
+  ParallelReduce& operator=(ParallelReduce&&)      = delete;
 
   ~ParallelReduce() {
     if (m_scratch_pool_id >= 0) {

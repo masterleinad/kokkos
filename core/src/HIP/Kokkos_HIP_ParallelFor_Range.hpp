@@ -42,7 +42,10 @@ class ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>, Kokkos::HIP> {
 
   ParallelFor()                              = delete;
   ParallelFor(ParallelFor const&)            = default;
+  ParallelFor(ParallelFor&&)                 = default;
   ParallelFor& operator=(ParallelFor const&) = delete;
+  ParallelFor& operator=(ParallelFor&&)      = delete;
+  ~ParallelFor()                             = default;
 
   inline __device__ void operator()() const {
     const auto work_stride = Member(blockDim.y) * gridDim.x;

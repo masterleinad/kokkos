@@ -34,7 +34,10 @@ class ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>, HIP> {
  public:
   ParallelFor()                              = delete;
   ParallelFor(ParallelFor const&)            = default;
+  ParallelFor(ParallelFor&&)                 = default;
   ParallelFor& operator=(ParallelFor const&) = delete;
+  ParallelFor& operator=(ParallelFor&&)      = delete;
+  ~ParallelFor()                             = default;
 
   inline __device__ void operator()() const {
     Kokkos::Impl::DeviceIterateTile<Policy::rank, Policy, FunctorType,

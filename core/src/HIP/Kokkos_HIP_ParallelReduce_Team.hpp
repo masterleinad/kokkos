@@ -392,6 +392,11 @@ class ParallelReduce<CombinedFunctorReducerType,
     }
   }
 
+  ParallelReduce(ParallelReduce const&)            = default;
+  ParallelReduce(ParallelReduce&&)                 = default;
+  ParallelReduce& operator=(ParallelReduce const&) = delete;
+  ParallelReduce& operator=(ParallelReduce&&)      = delete;
+
   ~ParallelReduce() {
     if (m_scratch_pool_id >= 0) {
       m_policy.space()

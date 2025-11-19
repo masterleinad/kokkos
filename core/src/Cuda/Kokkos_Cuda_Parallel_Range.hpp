@@ -53,7 +53,10 @@ class ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>, Kokkos::Cuda> {
 
   ParallelFor()                              = delete;
   ParallelFor(const ParallelFor&)            = default;
+  ParallelFor(ParallelFor&&)                 = default;
   ParallelFor& operator=(const ParallelFor&) = delete;
+  ParallelFor& operator=(ParallelFor&&)      = delete;
+  ~ParallelFor()                             = default;
 
   Policy const& get_policy() const { return m_policy; }
 

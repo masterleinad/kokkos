@@ -106,6 +106,7 @@ struct SharedResourceLock {
   SharedResourceLock(SharedResourceLock &&other)                 = delete;
   SharedResourceLock &operator=(SharedResourceLock const &other) = delete;
   SharedResourceLock &operator=(SharedResourceLock &&other)      = delete;
+  ~SharedResourceLock()                                          = default;
 
   // Acquire the right to use the shared resource. The instance is locked first.
   [[nodiscard]] auto acquire() {
@@ -187,7 +188,9 @@ class HIPInternal {
   HIPInternal(hipStream_t stream);
   ~HIPInternal();
   HIPInternal(const HIPInternal &)            = delete;
+  HIPInternal(HIPInternal &&)                 = delete;
   HIPInternal &operator=(const HIPInternal &) = delete;
+  HIPInternal &operator=(HIPInternal &&)      = delete;
 
   void print_configuration(std::ostream &) const;
 

@@ -74,9 +74,6 @@ namespace Kokkos {
 namespace Impl {
 
 class CudaInternal {
- private:
-  CudaInternal(const CudaInternal&);
-  CudaInternal& operator=(const CudaInternal&);
 #ifdef KOKKOS_IMPL_DEBUG_CUDA_SERIAL_EXECUTION
   static bool kokkos_impl_cuda_use_serial_execution_v;
 #endif
@@ -144,6 +141,10 @@ class CudaInternal {
   void fence(const std::string&) const;
   void fence() const;
 
+  CudaInternal(const CudaInternal&)            = delete;
+  CudaInternal(CudaInternal&&)                 = delete;
+  CudaInternal& operator=(const CudaInternal&) = delete;
+  CudaInternal& operator=(CudaInternal&&)      = delete;
   ~CudaInternal();
 
   CudaInternal()

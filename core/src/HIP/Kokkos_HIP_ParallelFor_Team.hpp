@@ -60,7 +60,10 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>, HIP> {
  public:
   ParallelFor()                              = delete;
   ParallelFor(ParallelFor const&)            = default;
+  ParallelFor(ParallelFor&&)                 = default;
   ParallelFor& operator=(ParallelFor const&) = delete;
+  ParallelFor& operator=(ParallelFor&&)      = delete;
+  ~ParallelFor()                             = default;
 
   __device__ inline void operator()() const {
     // Iterate this block through the league
