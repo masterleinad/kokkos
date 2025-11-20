@@ -21,7 +21,9 @@ struct StreamsAndDevices {
     }
   }
   StreamsAndDevices(const StreamsAndDevices &)            = delete;
+  StreamsAndDevices(StreamsAndDevices &&)                 = delete;
   StreamsAndDevices &operator=(const StreamsAndDevices &) = delete;
+  StreamsAndDevices &operator=(StreamsAndDevices &&)      = delete;
   ~StreamsAndDevices() {
     for (int i = 0; i < 2; ++i) {
       KOKKOS_IMPL_CUDA_SAFE_CALL(cudaSetDevice(devices[i]));
