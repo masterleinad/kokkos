@@ -58,12 +58,7 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>, HIP> {
   }
 
  public:
-  ParallelFor()                              = delete;
-  ParallelFor(ParallelFor const&)            = default;
-  ParallelFor(ParallelFor&&)                 = default;
-  ParallelFor& operator=(ParallelFor const&) = delete;
-  ParallelFor& operator=(ParallelFor&&)      = delete;
-  ~ParallelFor()                             = default;
+  ParallelFor() = delete;
 
   __device__ inline void operator()() const {
     // Iterate this block through the league
@@ -158,6 +153,11 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>, HIP> {
           "Kokkos::Impl::ParallelFor< HIP > requested too large team size."));
     }
   }
+
+  ParallelFor(ParallelFor const&)            = default;
+  ParallelFor(ParallelFor&&)                 = default;
+  ParallelFor& operator=(ParallelFor const&) = delete;
+  ParallelFor& operator=(ParallelFor&&)      = delete;
 
   ~ParallelFor() {
     if (m_scratch_pool_id >= 0) {
