@@ -28,18 +28,6 @@ class UniqueToken<OpenMPTarget, UniqueTokenScope::Global> {
 
   explicit UniqueToken(execution_space const& = execution_space());
 
-  KOKKOS_DEFAULTED_FUNCTION
-  UniqueToken(const UniqueToken&) = default;
-
-  KOKKOS_DEFAULTED_FUNCTION
-  UniqueToken(UniqueToken&&) = default;
-
-  KOKKOS_DEFAULTED_FUNCTION
-  UniqueToken& operator=(const UniqueToken&) = default;
-
-  KOKKOS_DEFAULTED_FUNCTION
-  UniqueToken& operator=(UniqueToken&&) = default;
-
   /// \brief upper bound for acquired values, i.e. 0 <= value < size()
   KOKKOS_INLINE_FUNCTION
   size_type size() const noexcept { return m_count; }
