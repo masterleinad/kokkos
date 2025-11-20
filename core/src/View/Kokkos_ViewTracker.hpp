@@ -80,6 +80,7 @@ struct ViewTracker {
     return *this;
   }
 
+  // NOLINTNEXTLINE(bugprone-exception-escape)
   KOKKOS_INLINE_FUNCTION ViewTracker& operator=(ViewTracker&& rhs) {
     if (this == &rhs) return *this;
     KOKKOS_IF_ON_HOST((
