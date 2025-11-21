@@ -36,6 +36,35 @@ TEST(TEST_CATEGORY, execution_space_as_class_data_member) {
 }
 #endif
 
+template <class ExecutionSpace>
+struct CheckMovedFromExecutionSpaceIsUsable {
+  KOKKOS_FUNCTION void operator()(int i, int& e) const { e += i; }
+
+  void check_exec(const ExecutionSpace& exec) {
+    int errors;
+    Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecutionSpace>(exec, 0, 1),
+                            *this, errors);
+    EXPECT_EQ(errors, 0);
+  }
+
+  CheckMovedFromExecutionSpaceIsUsable() {
+    ExecutionSpace exec;
+    check_exec(exec);
+    ExecutionSpace other = std::move(exec);
+    // NOLINTNEXTLINE(bugprone-use-after-move)
+    check_exec(exec);
+    check_exec(other);
+    exec = std::move(other);
+    check_exec(exec);
+    // NOLINTNEXTLINE(bugprone-use-after-move)
+    check_exec(other);
+  }
+};
+
+TEST(TEST_CATEGORY, move_from_execution_space) {
+  CheckMovedFromExecutionSpaceIsUsable<TEST_EXECSPACE>();
+}
+
 constexpr bool test_execspace_explicit_construction() {
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 #ifdef KOKKOS_ENABLE_SERIAL
