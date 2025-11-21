@@ -112,9 +112,7 @@ class Threads {
   uint32_t impl_instance_id() const noexcept { return 1; }
 
   Threads(const Threads&)            = default;
-  Threads(Threads&&)                 = default;
   Threads& operator=(const Threads&) = default;
-  Threads& operator=(Threads&&)      = default;
 
   ~Threads() { Impl::check_execution_space_destructor_precondition(name()); }
 

@@ -199,10 +199,7 @@ class HPX {
       : HPX(std::move(sender)) {}
 #endif
 
-  HPX(HPX &&other)      = default;
-  HPX(const HPX &other) = default;
-
-  HPX &operator=(HPX &&)      = default;
+  HPX(const HPX &other)       = default;
   HPX &operator=(const HPX &) = default;
 
   void print_configuration(std::ostream &os, bool /*verbose*/ = false) const;

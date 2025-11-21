@@ -52,9 +52,7 @@ class OpenMP {
   using scratch_memory_space = ScratchMemorySpace<OpenMP>;
 
   OpenMP(const OpenMP&)            = default;
-  OpenMP(OpenMP&&)                 = default;
   OpenMP& operator=(const OpenMP&) = default;
-  OpenMP& operator=(OpenMP&&)      = default;
   ~OpenMP();
   OpenMP();
 

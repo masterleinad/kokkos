@@ -49,9 +49,7 @@ class SYCL {
   using scratch_memory_space = ScratchMemorySpace<SYCL>;
 
   SYCL(const SYCL&)            = default;
-  SYCL(SYCL&&)                 = default;
   SYCL& operator=(const SYCL&) = default;
-  SYCL& operator=(SYCL&&)      = default;
   ~SYCL();
   SYCL();
   explicit SYCL(const sycl::queue&);
