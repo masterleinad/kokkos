@@ -39,10 +39,10 @@ TEST(TEST_CATEGORY, execution_space_as_class_data_member) {
 TEST(TEST_CATEGORY, execution_space_moved_from) {
   TEST_EXECSPACE exec;
   TEST_EXECSPACE other = std::move(exec);
-  // NOLINTNEXTLINE(bugprone-use-after-move,-warnings-as-errors)
+  // NOLINTNEXTLINE(bugprone-use-after-move)
   ASSERT_EQ(other, exec);
   exec = std::move(other);
-  // NOLINTNEXTLINE(bugprone-use-after-move,-warnings-as-errors)
+  // NOLINTNEXTLINE(bugprone-use-after-move)
   ASSERT_EQ(exec, other);
 }
 
