@@ -10,6 +10,8 @@ import kokkos.core;
 #include <Kokkos_Core.hpp>
 #endif
 
+#include "tools/include/ToolTestingUtilities.hpp"
+
 namespace {
 
 template <class ExecutionSpace>
@@ -100,5 +102,29 @@ constexpr bool test_execspace_explicit_construction() {
 }
 
 static_assert(test_execspace_explicit_construction());
+
+TEST(TEST_CATEGORY, execution_space_fence_on_destruction) {
+  TEST_EXECSPACE dummy_instance =
+      Kokkos::Experimental::partition_space(TEST_EXECSPACE(), 1)[0];
+  bool created_new_instance = TEST_EXECSPACE() != dummy_instance;
+  if (!created_new_instance)
+    GTEST_SKIP() << "partition_space doesn't create a new instance";
+
+  Kokkos::Test::Tools::listen_tool_events(
+      Kokkos::Test::Tools::Config::DisableAll(),
+      Kokkos::Test::Tools::Config::EnableFences());
+
+  auto success = Kokkos::Test::Tools::validate_existence(
+      [&]() {
+        [[maybe_unused]] TEST_EXECSPACE new_instance =
+            Kokkos::Experimental::partition_space(TEST_EXECSPACE(), 1)[0];
+      },
+      [&](Kokkos::Test::Tools::BeginFenceEvent event) {
+        return Kokkos::Test::Tools::MatchDiagnostic{
+            event.descriptor().find("fence on destruction") !=
+            std::string::npos};
+      });
+  ASSERT_TRUE(success);
+}
 
 }  // namespace

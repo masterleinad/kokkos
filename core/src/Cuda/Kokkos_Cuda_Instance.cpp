@@ -461,6 +461,8 @@ void CudaInternal::finalize() {
 
   was_finalized = true;
 
+  fence("Kokkos::CudaInternal: fence on destruction");
+
   auto cuda_mem_space = Kokkos::CudaSpace::impl_create(m_cudaDev, m_stream);
   if (nullptr != m_scratchSpace || nullptr != m_scratchFlags) {
     auto host_mem_space =

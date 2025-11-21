@@ -86,6 +86,8 @@ void OpenMPTargetInternal::print_configuration(std::ostream& os,
 }
 
 void OpenMPTargetInternal::impl_finalize() {
+  fence("Kokkos::OpenMPTargetInternal::finalize: fence on destruction");
+
   if (m_uniquetoken_ptr != nullptr)
     Kokkos::kokkos_free<Kokkos::Experimental::OpenMPTargetSpace>(
         m_uniquetoken_ptr);

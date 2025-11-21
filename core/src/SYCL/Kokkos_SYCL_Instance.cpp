@@ -192,7 +192,7 @@ uint32_t SYCLInternal::impl_get_instance_id() const { return m_instance_id; }
 
 void SYCLInternal::finalize() {
   SYCLInternal::fence(*m_queue,
-                      "Kokkos::SYCLInternal::finalize: fence on finalization",
+                      "Kokkos::SYCLInternal::finalize: fence on destruction",
                       m_instance_id);
   was_finalized = true;
 
