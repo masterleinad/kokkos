@@ -51,10 +51,12 @@ class OpenMP {
   using size_type            = memory_space::size_type;
   using scratch_memory_space = ScratchMemorySpace<OpenMP>;
 
-  OpenMP(const OpenMP&)            = default;
-  OpenMP(OpenMP&&)                 = default;
+  OpenMP(const OpenMP&) = default;
+  OpenMP(OpenMP&& other) { *this = static_cast<const OpenMP&>(other); }
   OpenMP& operator=(const OpenMP&) = default;
-  OpenMP& operator=(OpenMP&&)      = default;
+  OpenMP& operator=(OpenMP&& other) {
+    return *this = static_cast<const OpenMP&>(other);
+  }
   ~OpenMP();
   OpenMP();
 

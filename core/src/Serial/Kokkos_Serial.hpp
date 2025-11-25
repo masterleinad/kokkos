@@ -98,10 +98,12 @@ class Serial {
 
   //@}
 
-  Serial(const Serial&)            = default;
-  Serial(Serial&&)                 = default;
+  Serial(const Serial&) = default;
+  Serial(Serial&& other) { *this = static_cast<const Serial&>(other); }
   Serial& operator=(const Serial&) = default;
-  Serial& operator=(Serial&&)      = default;
+  Serial& operator=(Serial&& other) {
+    return *this = static_cast<const Serial&>(other);
+  }
   ~Serial();
   Serial();
 

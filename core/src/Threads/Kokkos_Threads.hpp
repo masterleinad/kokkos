@@ -111,21 +111,27 @@ class Threads {
 
   uint32_t impl_instance_id() const noexcept { return 1; }
 
-  Threads(const Threads&)            = default;
-  Threads(Threads&&)                 = default;
+  Threads(const Threads&) = default;
+  Threads(Threads&& other {
+    *this = static_cast<const Threads&>(other);}
   Threads& operator=(const Threads&) = default;
-  Threads& operator=(Threads&&)      = default;
+  Threads& operator=(Threads&& other) {
+    return *this = static_cast<const Threads&>(other);}
 
-  ~Threads() { Impl::check_execution_space_destructor_precondition(name()); }
+  ~Threads() {
+    Impl::check_execution_space_destructor_precondition(name()); }
 
-  Threads() { Impl::check_execution_space_constructor_precondition(name()); }
+  Threads() {
+    Impl::check_execution_space_constructor_precondition(name()); }
 
   static const char* name();
   //@}
   //----------------------------------------
  private:
-  friend bool operator==(Threads const&, Threads const&) { return true; }
-  friend bool operator!=(Threads const&, Threads const&) { return false; }
+  friend bool operator==(Threads const&, Threads const&) {
+    return true; }
+  friend bool operator!=(Threads const&, Threads const&) {
+    return false; }
 };
 
 namespace Tools {

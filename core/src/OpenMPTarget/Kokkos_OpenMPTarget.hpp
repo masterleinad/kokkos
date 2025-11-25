@@ -84,10 +84,14 @@ class OpenMPTarget {
     return m_space_instance;
   }
 
-  OpenMPTarget(const OpenMPTarget&)            = default;
-  OpenMPTarget(OpenMPTarget&&)                 = default;
+  OpenMPTarget(const OpenMPTarget&) = default;
+  OpenMPTarget(OpenMPTarget&& other) {
+    *this = static_cast<const OpenMPTarget&>(other);
+  }
   OpenMPTarget& operator=(const OpenMPTarget&) = default;
-  OpenMPTarget& operator=(OpenMPTarget&&)      = default;
+  OpenMPTarget& operator=(OpenMPTarget&& other) {
+    return *this = static_cast<const OpenMPTarget&>(other);
+  }
   OpenMPTarget();
   uint32_t impl_instance_id() const noexcept;
 

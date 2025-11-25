@@ -36,6 +36,16 @@ TEST(TEST_CATEGORY, execution_space_as_class_data_member) {
 }
 #endif
 
+TEST(TEST_CATEGORY, execution_space_moved_from) {
+  TEST_EXECSPACE exec;
+  TEST_EXECSPACE other = std::move(exec);
+  // NOLINTNEXTLINE(bugprone-use-after-move)
+  ASSERT_EQ(other, exec);
+  exec = std::move(other);
+  // NOLINTNEXTLINE(bugprone-use-after-move)
+  ASSERT_EQ(exec, other);
+}
+
 constexpr bool test_execspace_explicit_construction() {
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 #ifdef KOKKOS_ENABLE_SERIAL

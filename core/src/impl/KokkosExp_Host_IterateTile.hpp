@@ -21,79 +21,6 @@
 namespace Kokkos {
 namespace Impl {
 
-#define KOKKOS_IMPL_LOOP_1L(type, tile) \
-  KOKKOS_ENABLE_IVDEP_MDRANGE           \
-  for (type i0 = 0; i0 < static_cast<type>(tile[0]); ++i0)
-
-#define KOKKOS_IMPL_LOOP_2L(type, tile)                    \
-  for (type i1 = 0; i1 < static_cast<type>(tile[1]); ++i1) \
-  KOKKOS_IMPL_LOOP_1L(type, tile)
-
-#define KOKKOS_IMPL_LOOP_3L(type, tile)                    \
-  for (type i2 = 0; i2 < static_cast<type>(tile[2]); ++i2) \
-  KOKKOS_IMPL_LOOP_2L(type, tile)
-
-#define KOKKOS_IMPL_LOOP_4L(type, tile)                    \
-  for (type i3 = 0; i3 < static_cast<type>(tile[3]); ++i3) \
-  KOKKOS_IMPL_LOOP_3L(type, tile)
-
-#define KOKKOS_IMPL_LOOP_5L(type, tile)                    \
-  for (type i4 = 0; i4 < static_cast<type>(tile[4]); ++i4) \
-  KOKKOS_IMPL_LOOP_4L(type, tile)
-
-#define KOKKOS_IMPL_LOOP_6L(type, tile)                    \
-  for (type i5 = 0; i5 < static_cast<type>(tile[5]); ++i5) \
-  KOKKOS_IMPL_LOOP_5L(type, tile)
-
-#define KOKKOS_IMPL_LOOP_7L(type, tile)                    \
-  for (type i6 = 0; i6 < static_cast<type>(tile[6]); ++i6) \
-  KOKKOS_IMPL_LOOP_6L(type, tile)
-
-#define KOKKOS_IMPL_LOOP_8L(type, tile)                    \
-  for (type i7 = 0; i7 < static_cast<type>(tile[7]); ++i7) \
-  KOKKOS_IMPL_LOOP_7L(type, tile)
-
-#define KOKKOS_IMPL_LOOP_1R(type, tile) \
-  KOKKOS_ENABLE_IVDEP_MDRANGE           \
-  for (type i0 = 0; i0 < static_cast<type>(tile[0]); ++i0)
-
-#define KOKKOS_IMPL_LOOP_2R(type, tile) \
-  KOKKOS_IMPL_LOOP_1R(type, tile)       \
-  for (type i1 = 0; i1 < static_cast<type>(tile[1]); ++i1)
-
-#define KOKKOS_IMPL_LOOP_3R(type, tile) \
-  KOKKOS_IMPL_LOOP_2R(type, tile)       \
-  for (type i2 = 0; i2 < static_cast<type>(tile[2]); ++i2)
-
-#define KOKKOS_IMPL_LOOP_4R(type, tile) \
-  KOKKOS_IMPL_LOOP_3R(type, tile)       \
-  for (type i3 = 0; i3 < static_cast<type>(tile[3]); ++i3)
-
-#define KOKKOS_IMPL_LOOP_5R(type, tile) \
-  KOKKOS_IMPL_LOOP_4R(type, tile)       \
-  for (type i4 = 0; i4 < static_cast<type>(tile[4]); ++i4)
-
-#define KOKKOS_IMPL_LOOP_6R(type, tile) \
-  KOKKOS_IMPL_LOOP_5R(type, tile)       \
-  for (type i5 = 0; i5 < static_cast<type>(tile[5]); ++i5)
-
-#define KOKKOS_IMPL_LOOP_7R(type, tile) \
-  KOKKOS_IMPL_LOOP_6R(type, tile)       \
-  for (type i6 = 0; i6 < static_cast<type>(tile[6]); ++i6)
-
-#define KOKKOS_IMPL_LOOP_8R(type, tile) \
-  KOKKOS_IMPL_LOOP_7R(type, tile)       \
-  for (type i7 = 0; i7 < static_cast<type>(tile[7]); ++i7)
-
-#define KOKKOS_IMPL_LOOP_ARGS_1 i0 + m_offset[0]
-#define KOKKOS_IMPL_LOOP_ARGS_2 KOKKOS_IMPL_LOOP_ARGS_1, i1 + m_offset[1]
-#define KOKKOS_IMPL_LOOP_ARGS_3 KOKKOS_IMPL_LOOP_ARGS_2, i2 + m_offset[2]
-#define KOKKOS_IMPL_LOOP_ARGS_4 KOKKOS_IMPL_LOOP_ARGS_3, i3 + m_offset[3]
-#define KOKKOS_IMPL_LOOP_ARGS_5 KOKKOS_IMPL_LOOP_ARGS_4, i4 + m_offset[4]
-#define KOKKOS_IMPL_LOOP_ARGS_6 KOKKOS_IMPL_LOOP_ARGS_5, i5 + m_offset[5]
-#define KOKKOS_IMPL_LOOP_ARGS_7 KOKKOS_IMPL_LOOP_ARGS_6, i6 + m_offset[6]
-#define KOKKOS_IMPL_LOOP_ARGS_8 KOKKOS_IMPL_LOOP_ARGS_7, i7 + m_offset[7]
-
 // New Loop Macros...
 // parallel_for, non-tagged
 #define KOKKOS_IMPL_APPLY(func, ...) func(__VA_ARGS__);
@@ -1845,30 +1772,6 @@ struct HostIterateTile<RP, Functor, Tag, ValueType,
 
 // ------------------------------------------------------------------ //
 
-#undef KOKKOS_IMPL_LOOP_1L
-#undef KOKKOS_IMPL_LOOP_2L
-#undef KOKKOS_IMPL_LOOP_3L
-#undef KOKKOS_IMPL_LOOP_4L
-#undef KOKKOS_IMPL_LOOP_5L
-#undef KOKKOS_IMPL_LOOP_6L
-#undef KOKKOS_IMPL_LOOP_7L
-#undef KOKKOS_IMPL_LOOP_8L
-#undef KOKKOS_IMPL_LOOP_1R
-#undef KOKKOS_IMPL_LOOP_2R
-#undef KOKKOS_IMPL_LOOP_3R
-#undef KOKKOS_IMPL_LOOP_4R
-#undef KOKKOS_IMPL_LOOP_5R
-#undef KOKKOS_IMPL_LOOP_6R
-#undef KOKKOS_IMPL_LOOP_7R
-#undef KOKKOS_IMPL_LOOP_8R
-#undef KOKKOS_IMPL_LOOP_ARGS_1
-#undef KOKKOS_IMPL_LOOP_ARGS_2
-#undef KOKKOS_IMPL_LOOP_ARGS_3
-#undef KOKKOS_IMPL_LOOP_ARGS_4
-#undef KOKKOS_IMPL_LOOP_ARGS_5
-#undef KOKKOS_IMPL_LOOP_ARGS_6
-#undef KOKKOS_IMPL_LOOP_ARGS_7
-#undef KOKKOS_IMPL_LOOP_ARGS_8
 #undef KOKKOS_IMPL_APPLY
 #undef KOKKOS_IMPL_LOOP_R_1
 #undef KOKKOS_IMPL_LOOP_R_2

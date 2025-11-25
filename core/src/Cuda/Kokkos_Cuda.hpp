@@ -143,10 +143,12 @@ class Cuda {
   //--------------------------------------------------
   //! \name  Cuda space instances
 
-  Cuda(const Cuda&)            = default;
-  Cuda(Cuda&&)                 = default;
+  Cuda(const Cuda&) = default;
+  Cuda(Cuda&& other) { *this = static_cast<const Cuda&>(other); }
   Cuda& operator=(const Cuda&) = default;
-  Cuda& operator=(Cuda&&)      = default;
+  Cuda& operator=(Cuda&& other) {
+    return *this = static_cast<const Cuda&>(other);
+  }
   ~Cuda();
   Cuda();
 
