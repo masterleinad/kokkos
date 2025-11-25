@@ -184,17 +184,13 @@ KOKKOS_INLINE_FUNCTION
 bhalf_t cast_to_bhalf(bhalf_t val) { return val; }
 
 KOKKOS_INLINE_FUNCTION
-bhalf_t cast_to_bhalf(float val) { return bhalf_t(__float2bfloat16(val)); }
+bhalf_t cast_to_bhalf(float val) { return bhalf_t::impl_type(val); }
 
 KOKKOS_INLINE_FUNCTION
-bhalf_t cast_to_bhalf(bool val) {
-  return cast_to_bhalf(static_cast<float>(val));
-}
+bhalf_t cast_to_bhalf(bool val) { return bhalf_t::impl_type(val); }
 
 KOKKOS_INLINE_FUNCTION
-bhalf_t cast_to_bhalf(double val) {
-  return bhalf_t(__float2bfloat16(static_cast<float>(val)));
-}
+bhalf_t cast_to_bhalf(double val) { return bhalf_t::impl_type(val); }
 
 KOKKOS_INLINE_FUNCTION
 bhalf_t cast_to_bhalf(short val) { return bhalf_t::impl_type(val); }
