@@ -1946,6 +1946,12 @@ KE::half_t ref_test_fallback_half(KE::half_t) {
   } else {
     return KE::half_t(1.f);
   }
+#elif defined(KOKKOS_ENABLE_HIP)
+  if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::HIP>) {
+    return KE::half_t(0.f);
+  } else {
+    return KE::half_t(1.f);
+  }
 #else
   return KE::half_t(1.f);
 #endif
@@ -1959,6 +1965,13 @@ KE::bhalf_t ref_test_fallback_bhalf(KE::bhalf_t) {
     (KOKKOS_IMPL_ARCH_NVIDIA_GPU >= 80)
   // bhalf_t support for CUDA is only available starting with Ampere (80)
   if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::Cuda>) {
+    return KE::bhalf_t(0.f);
+  } else {
+    return KE::bhalf_t(1.f);
+  }
+  return KE::bhalf_t(0.f);
+#elif defined(KOKKOS_ENABLE_HIP)
+  if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::HIP>) {
     return KE::bhalf_t(0.f);
   } else {
     return KE::bhalf_t(1.f);

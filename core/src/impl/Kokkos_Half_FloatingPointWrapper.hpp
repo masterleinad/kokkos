@@ -29,7 +29,8 @@ struct is_bfloat16 : std::false_type {};
 // floating_pointer_wrapper operator paths should be used. For CUDA, let the
 // compiler conditionally select when device ops are used For SYCL, we have a
 // full half type on both host and device
-#if defined(__CUDA_ARCH__) || defined(KOKKOS_ENABLE_SYCL)
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__) || \
+    defined(KOKKOS_ENABLE_SYCL)
 #define KOKKOS_HALF_IS_FULL_TYPE_ON_ARCH
 #endif
 
