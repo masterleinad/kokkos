@@ -1969,8 +1969,9 @@ KE::bhalf_t ref_test_fallback_bhalf(KE::bhalf_t) {
   } else {
     return KE::bhalf_t(1.f);
   }
-  return KE::bhalf_t(0.f);
 #elif defined(KOKKOS_ENABLE_HIP)
+  // bhalf_t is supported on host and device for HIP but the mathematical
+  // functions only have have a native implementation on the device
   if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::HIP>) {
     return KE::bhalf_t(0.f);
   } else {

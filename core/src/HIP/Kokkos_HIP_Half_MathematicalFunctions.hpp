@@ -9,7 +9,9 @@
 namespace Kokkos {
 namespace Impl {
 
-#ifdef KOKKOS_HALF_IS_FULL_TYPE_ON_ARCH
+// Mathematical functions are only available on the device
+#if defined(__HIP_DEVICE_COMPILE__)
+
 #define KOKKOS_HIP_HALF_UNARY_FUNCTION(OP, HIP_NAME, HALF_TYPE) \
   KOKKOS_INLINE_FUNCTION HALF_TYPE impl_##OP(HALF_TYPE x) {     \
     return HIP_NAME(HALF_TYPE::impl_type(x));                   \
@@ -37,9 +39,6 @@ KOKKOS_INLINE_FUNCTION Kokkos::Experimental::half_t impl_test_fallback_half(
   return Kokkos::Experimental::half_t(0.f);
 }
 
-// Function for bhalf are not available prior to Ampere
-#if defined(KOKKOS_IMPL_BHALF_TYPE_DEFINED)
-
 #define KOKKOS_HIP_BHALF_UNARY_FUNCTION_IMPL(OP, HIP_NAME) \
   KOKKOS_HIP_HALF_UNARY_FUNCTION(OP, HIP_NAME, Kokkos::Experimental::bhalf_t)
 #define KOKKOS_HIP_BHALF_BINARY_FUNCTION_IMPL(OP, HIP_NAME) \
@@ -51,12 +50,6 @@ KOKKOS_INLINE_FUNCTION Kokkos::Experimental::bhalf_t impl_test_fallback_bhalf(
     Kokkos::Experimental::bhalf_t) {
   return Kokkos::Experimental::bhalf_t(0.f);
 }
-
-#else
-#define KOKKOS_HIP_BHALF_UNARY_FUNCTION_IMPL(OP, HIP_NAME)
-#define KOKKOS_HIP_BHALF_BINARY_FUNCTION_IMPL(OP, HIP_NAME)
-#define KOKKOS_HIP_BHALF_UNARY_PREDICATE_IMPL(OP, HIP_NAME)
-#endif
 
 #define KOKKOS_HIP_HALF_AND_BHALF_UNARY_FUNCTION_IMPL(OP, HIP_NAME) \
   KOKKOS_HIP_HALF_UNARY_FUNCTION_IMPL(OP, HIP_NAME)                 \
@@ -142,7 +135,7 @@ KOKKOS_HIP_HALF_AND_BHALF_UNARY_PREDICATE_IMPL(isnan, __hisnan)
 #undef KOKKOS_HIP_HALF_BINARY_FUNCTION
 #undef KOKKOS_HIP_HALF_UNARY_PREDICATE
 
-#endif  // KOKKOS_HALF_IS_FULL_TYPE_ON_ARCH
+#endif  // __HIP_DEVICE_COMPILE__
 
 }  // namespace Impl
 }  // namespace Kokkos
