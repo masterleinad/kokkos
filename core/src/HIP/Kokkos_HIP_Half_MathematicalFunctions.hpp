@@ -10,8 +10,7 @@ namespace Kokkos {
 namespace Impl {
 
 // Mathematical functions are only available on the device
-#if defined(__HIP_DEVICE_COMPILE__)
-
+#if defined(KOKKOS_HALF_IS_FULL_TYPE_ON_ARCH) && defined(__HIP_DEVICE_COMPILE__)
 #define KOKKOS_HIP_HALF_UNARY_FUNCTION(OP, HIP_NAME, HALF_TYPE) \
   KOKKOS_INLINE_FUNCTION HALF_TYPE impl_##OP(HALF_TYPE x) {     \
     return HIP_NAME(HALF_TYPE::impl_type(x));                   \
@@ -135,7 +134,8 @@ KOKKOS_HIP_HALF_AND_BHALF_UNARY_PREDICATE_IMPL(isnan, __hisnan)
 #undef KOKKOS_HIP_HALF_BINARY_FUNCTION
 #undef KOKKOS_HIP_HALF_UNARY_PREDICATE
 
-#endif  // __HIP_DEVICE_COMPILE__
+#endif  // defined(KOKKOS_HALF_IS_FULL_TYPE_ON_ARCH) &&
+        // defined(__HIP_DEVICE_COMPILE__)
 
 }  // namespace Impl
 }  // namespace Kokkos
