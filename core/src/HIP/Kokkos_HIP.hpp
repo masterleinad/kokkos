@@ -34,10 +34,12 @@ class HIP {
 
   using scratch_memory_space = ScratchMemorySpace<HIP>;
 
-  HIP(const HIP&) = default;
-  HIP(HIP&& other) { *this = static_cast<const HIP&>(other); }
-  HIP& operator=(const HIP&) = default;
-  HIP& operator=(HIP&& other) { return *this = static_cast<const HIP&>(other); }
+  KOKKOS_DEFAULTED_FUNCTION HIP(const HIP&) = default;
+  KOKKOS_FUNCTION HIP(HIP&& other) { *this = static_cast<const HIP&>(other); }
+  KOKKOS_DEFAULTED_FUNCTION HIP& operator=(const HIP&) = default;
+  KOKKOS_FUNCTION HIP& operator=(HIP&& other) {
+    return *this = static_cast<const HIP&>(other);
+  }
   ~HIP();
   HIP();
 

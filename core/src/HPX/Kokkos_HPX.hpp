@@ -199,9 +199,10 @@ class HPX {
       : HPX(std::move(sender)) {}
 #endif
 
-  HPX(HPX &&other) { *this = static_cast<const HPX &>(other); }
-  HPX &operator=(const HPX &) = default;
-  HPX &operator=(HPX &&other) {
+  KOKKOS_DEFAULTED_FUNCTION HPX(const HPX &) = default;
+  KOKKOS_FUNCTION HPX(HPX &&other) { *this = static_cast<const HPX &>(other); }
+  KOKKOS_DEFAULTED_FUNCTION HPX &operator=(const HPX &) = default;
+  KOKKOS_FUNCTION HPX &operator=(HPX &&other) {
     return *this = static_cast<const HPX &>(other);
   }
 

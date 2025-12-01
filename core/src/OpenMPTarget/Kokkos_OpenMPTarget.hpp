@@ -84,12 +84,13 @@ class OpenMPTarget {
     return m_space_instance;
   }
 
-  OpenMPTarget(const OpenMPTarget&) = default;
-  OpenMPTarget(OpenMPTarget&& other) {
+  KOKKOS_DEFAULTED_FUNCTION OpenMPTarget(const OpenMPTarget&) = default;
+  KOKKOS_FUNCTION OpenMPTarget(OpenMPTarget&& other) {
     *this = static_cast<const OpenMPTarget&>(other);
   }
-  OpenMPTarget& operator=(const OpenMPTarget&) = default;
-  OpenMPTarget& operator=(OpenMPTarget&& other) {
+  KOKKOS_DEFAULTED_FUNCTION OpenMPTarget& operator=(const OpenMPTarget&) =
+      default;
+  KOKKOS_FUNCTION OpenMPTarget& operator=(OpenMPTarget&& other) {
     return *this = static_cast<const OpenMPTarget&>(other);
   }
   OpenMPTarget();

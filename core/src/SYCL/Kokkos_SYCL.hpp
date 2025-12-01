@@ -48,10 +48,12 @@ class SYCL {
 
   using scratch_memory_space = ScratchMemorySpace<SYCL>;
 
-  SYCL(const SYCL&) = default;
-  SYCL(SYCL&& other) { *this = static_cast<const SYCL&>(other); }
-  SYCL& operator=(const SYCL&) = default;
-  SYCL& operator=(SYCL&& other) {
+  KOKKOS_DEFAULTED_FUNCTION SYCL(const SYCL&) = default;
+  KOKKOS_FUNCTION SYCL(SYCL&& other) {
+    *this = static_cast<const SYCL&>(other);
+  }
+  KOKKOS_DEFAULTED_FUNCTION SYCL& operator=(const SYCL&) = default;
+  KOKKOS_FUNCTION SYCL& operator=(SYCL&& other) {
     return *this = static_cast<const SYCL&>(other);
   }
   ~SYCL();
