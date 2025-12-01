@@ -156,9 +156,6 @@ class ParallelScanHIPBase {
          iwork_base < range.end(); iwork_base += blockDim.y) {
       const typename Policy::member_type iwork = iwork_base + threadIdx.y;
 
-      __syncthreads();  // Don't overwrite previous iteration values until they
-                        // are used
-
       final_reducer.init(
           reinterpret_cast<pointer_type>(shared_prefix + word_count.value));
 
@@ -202,10 +199,11 @@ class ParallelScanHIPBase {
                 reinterpret_cast<pointer_type>(shared_prefix)),
             true);
       }
-      __threadfence_block();
       if (iwork + 1 == m_policy.end() && m_policy.end() == range.end() &&
           m_result_ptr_device_accessible)
         *m_result_ptr = *reinterpret_cast<pointer_type>(shared_prefix);
+      // Don't overwrite previous iteration values until they are used
+      __syncthreads();
     }
   }
 
