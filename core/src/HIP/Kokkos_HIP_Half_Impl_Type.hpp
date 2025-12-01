@@ -22,7 +22,7 @@ struct half_impl_t {
 #include <hip/hip_bf16.h>
 
 #ifndef KOKKOS_IMPL_BHALF_TYPE_DEFINED
-// Make sure no one else tries to define half_t
+// Make sure no one else tries to define bhalf_t
 #define KOKKOS_IMPL_BHALF_TYPE_DEFINED
 namespace Kokkos::Impl {
 struct bhalf_impl_t {
