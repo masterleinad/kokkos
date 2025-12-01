@@ -1426,6 +1426,10 @@ struct TestReducers {
                               reducer_scalar);
       ASSERT_EQ(band_scalar, reference_band);
 
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_EQ(band_scalar, ~Scalar{});
+
       band_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
                               f_tag, reducer_scalar);
@@ -1477,6 +1481,10 @@ struct TestReducers {
                               reducer_scalar);
       ASSERT_EQ(bor_scalar, reference_bor);
 
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_EQ(bor_scalar, Scalar{});
+
       bor_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
                               f_tag, reducer_scalar);
@@ -1527,6 +1535,10 @@ struct TestReducers {
                               reducer_scalar);
       ASSERT_EQ(land_scalar, reference_land);
 
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_TRUE(land_scalar);
+
       land_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
                               f_tag, reducer_scalar);
@@ -1576,6 +1588,10 @@ struct TestReducers {
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, N), f,
                               reducer_scalar);
       ASSERT_EQ(lor_scalar, reference_lor);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_FALSE(lor_scalar);
 
       lor_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
