@@ -5,6 +5,7 @@
 #define KOKKOS_HIP_HALF_IMPL_TYPE_HPP_
 
 #include <hip/hip_fp16.h>
+#include <hip/hip_bf16.h>
 
 #ifndef KOKKOS_IMPL_HALF_TYPE_DEFINED
 // Make sure no one else tries to define half_t
@@ -18,8 +19,6 @@ struct half_impl_t {
 }  // namespace Impl
 }  // namespace Kokkos
 #endif  // KOKKOS_IMPL_HALF_TYPE_DEFINED
-
-#include <hip/hip_bf16.h>
 
 #ifndef KOKKOS_IMPL_BHALF_TYPE_DEFINED
 // Make sure no one else tries to define bhalf_t
