@@ -774,8 +774,6 @@ TEST(TEST_CATEGORY, reduction_identity_bitwise_logical_reducers) {
   TestReductionIdentityLogicalReducers<unsigned short>();
   TestReductionIdentityLogicalReducers<int>();
   TestReductionIdentityLogicalReducers<unsigned int>();
-  TestReductionIdentityLogicalReducers<short>();
-  TestReductionIdentityLogicalReducers<unsigned short>();
   TestReductionIdentityLogicalReducers<long>();
   TestReductionIdentityLogicalReducers<unsigned long>();
   TestReductionIdentityLogicalReducers<long long>();
