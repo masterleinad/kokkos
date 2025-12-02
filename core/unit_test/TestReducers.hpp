@@ -1426,10 +1426,6 @@ struct TestReducers {
                               reducer_scalar);
       ASSERT_EQ(band_scalar, reference_band);
 
-      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
-                              reducer_scalar);
-      ASSERT_EQ(band_scalar, ~Scalar{});
-
       band_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
                               f_tag, reducer_scalar);
@@ -1438,6 +1434,24 @@ struct TestReducers {
       Scalar band_scalar_view = reducer_scalar.reference();
 
       ASSERT_EQ(band_scalar_view, reference_band);
+    }
+
+    {
+      Scalar band_scalar = 1;
+      Kokkos::BAnd<Scalar> reducer_scalar(band_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_EQ(band_scalar, ~Scalar{});
+
+      band_scalar = 1;
+      Kokkos::parallel_reduce(
+          Kokkos::RangePolicy<ExecSpace>(0, N),
+          KOKKOS_LAMBDA(const int, Scalar& value) {
+            value = value & ~Scalar{};
+          },
+          reducer_scalar);
+      ASSERT_EQ(band_scalar, ~Scalar{});
     }
 
     {
@@ -1481,10 +1495,6 @@ struct TestReducers {
                               reducer_scalar);
       ASSERT_EQ(bor_scalar, reference_bor);
 
-      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
-                              reducer_scalar);
-      ASSERT_EQ(bor_scalar, Scalar{});
-
       bor_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
                               f_tag, reducer_scalar);
@@ -1492,6 +1502,22 @@ struct TestReducers {
 
       Scalar bor_scalar_view = reducer_scalar.reference();
       ASSERT_EQ(bor_scalar_view, reference_bor);
+    }
+
+    {
+      Scalar bor_scalar = 1;
+      Kokkos::BOr<Scalar> reducer_scalar(bor_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_EQ(bor_scalar, Scalar{});
+
+      bor_scalar = 1;
+      Kokkos::parallel_reduce(
+          Kokkos::RangePolicy<ExecSpace>(0, N),
+          KOKKOS_LAMBDA(const int, Scalar& value) { value = value | Scalar{}; },
+          reducer_scalar);
+      ASSERT_EQ(bor_scalar, Scalar{});
     }
 
     {
@@ -1535,10 +1561,6 @@ struct TestReducers {
                               reducer_scalar);
       ASSERT_EQ(land_scalar, reference_land);
 
-      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
-                              reducer_scalar);
-      ASSERT_TRUE(land_scalar);
-
       land_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
                               f_tag, reducer_scalar);
@@ -1546,6 +1568,22 @@ struct TestReducers {
 
       Scalar land_scalar_view = reducer_scalar.reference();
       ASSERT_EQ(land_scalar_view, reference_land);
+    }
+
+    {
+      Scalar land_scalar = 0;
+      Kokkos::LAnd<Scalar> reducer_scalar(land_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_TRUE(land_scalar);
+
+      land_scalar = 0;
+      Kokkos::parallel_reduce(
+          Kokkos::RangePolicy<ExecSpace>(0, N),
+          KOKKOS_LAMBDA(const int, Scalar& value) { value = value && true; },
+          reducer_scalar);
+      ASSERT_TRUE(land_scalar);
     }
 
     {
@@ -1600,6 +1638,22 @@ struct TestReducers {
 
       Scalar lor_scalar_view = reducer_scalar.reference();
       ASSERT_EQ(lor_scalar_view, reference_lor);
+    }
+
+    {
+      Scalar lor_scalar = 1;
+      Kokkos::LOr<Scalar> reducer_scalar(lor_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_FALSE(lor_scalar);
+
+      lor_scalar = 1;
+      Kokkos::parallel_reduce(
+          Kokkos::RangePolicy<ExecSpace>(0, N),
+          KOKKOS_LAMBDA(const int, Scalar& value) { value = value || false; },
+          reducer_scalar);
+      ASSERT_FALSE(lor_scalar);
     }
 
     {
