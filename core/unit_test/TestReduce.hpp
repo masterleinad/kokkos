@@ -14,6 +14,7 @@ import kokkos.core;
 #include <Kokkos_TypeInfo.hpp>
 
 #include <cmath>
+#include <random>
 
 namespace Test {
 
@@ -736,5 +737,49 @@ TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
 #endif
 }
 KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_POP()
+
+template <typename ScalarType>
+class TestReductionIdentityLogicalReducers {
+ public:
+  TestReductionIdentityLogicalReducers() { runTest(); }
+
+  void runTest() {
+    const unsigned int N = 100;
+
+    std::random_device r;
+
+    std::default_random_engine e(r());
+    std::uniform_int_distribution<ScalarType> uniform_dist(
+        std::numeric_limits<ScalarType>::min(),
+        std::numeric_limits<ScalarType>::max());
+
+    ScalarType bor_identity = Kokkos::reduction_identity<ScalarType>::bor();
+    for (int i = 0; i < N; ++i) {
+      ScalarType value = uniform_dist(e);
+      EXPECT_EQ(value | bor_identity, value);
+    }
+
+    ScalarType band_identity = Kokkos::reduction_identity<ScalarType>::band();
+    for (int i = 0; i < N; ++i) {
+      ScalarType value = uniform_dist(e);
+      EXPECT_EQ(value & band_identity, value);
+    }
+  }
+};
+
+TEST(TEST_CATEGORY, reduction_identity_bitwise_logical_reducers) {
+  TestReductionIdentityLogicalReducers<signed char>();
+  TestReductionIdentityLogicalReducers<unsigned char>();
+  TestReductionIdentityLogicalReducers<short>();
+  TestReductionIdentityLogicalReducers<unsigned short>();
+  TestReductionIdentityLogicalReducers<int>();
+  TestReductionIdentityLogicalReducers<unsigned int>();
+  TestReductionIdentityLogicalReducers<short>();
+  TestReductionIdentityLogicalReducers<unsigned short>();
+  TestReductionIdentityLogicalReducers<long>();
+  TestReductionIdentityLogicalReducers<unsigned long>();
+  TestReductionIdentityLogicalReducers<long long>();
+  TestReductionIdentityLogicalReducers<unsigned long long>();
+}
 
 }  // namespace Test
