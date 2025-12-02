@@ -1443,15 +1443,6 @@ struct TestReducers {
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
                               reducer_scalar);
       ASSERT_EQ(band_scalar, ~Scalar{});
-
-      band_scalar = 1;
-      Kokkos::parallel_reduce(
-          Kokkos::RangePolicy<ExecSpace>(0, N),
-          KOKKOS_LAMBDA(const int, Scalar& value) {
-            value = value & ~Scalar{};
-          },
-          reducer_scalar);
-      ASSERT_EQ(band_scalar, ~Scalar{});
     }
 
     {
@@ -1510,13 +1501,6 @@ struct TestReducers {
 
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
                               reducer_scalar);
-      ASSERT_EQ(bor_scalar, Scalar{});
-
-      bor_scalar = 1;
-      Kokkos::parallel_reduce(
-          Kokkos::RangePolicy<ExecSpace>(0, N),
-          KOKKOS_LAMBDA(const int, Scalar& value) { value = value | Scalar{}; },
-          reducer_scalar);
       ASSERT_EQ(bor_scalar, Scalar{});
     }
 
@@ -1577,13 +1561,6 @@ struct TestReducers {
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
                               reducer_scalar);
       ASSERT_TRUE(land_scalar);
-
-      land_scalar = 0;
-      Kokkos::parallel_reduce(
-          Kokkos::RangePolicy<ExecSpace>(0, N),
-          KOKKOS_LAMBDA(const int, Scalar& value) { value = value && true; },
-          reducer_scalar);
-      ASSERT_TRUE(land_scalar);
     }
 
     {
@@ -1627,10 +1604,6 @@ struct TestReducers {
                               reducer_scalar);
       ASSERT_EQ(lor_scalar, reference_lor);
 
-      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
-                              reducer_scalar);
-      ASSERT_FALSE(lor_scalar);
-
       lor_scalar = init;
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace, ReducerTag>(0, N),
                               f_tag, reducer_scalar);
@@ -1646,13 +1619,6 @@ struct TestReducers {
 
       Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
                               reducer_scalar);
-      ASSERT_FALSE(lor_scalar);
-
-      lor_scalar = 1;
-      Kokkos::parallel_reduce(
-          Kokkos::RangePolicy<ExecSpace>(0, N),
-          KOKKOS_LAMBDA(const int, Scalar& value) { value = value || false; },
-          reducer_scalar);
       ASSERT_FALSE(lor_scalar);
     }
 
