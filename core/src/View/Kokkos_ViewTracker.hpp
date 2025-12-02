@@ -82,16 +82,7 @@ struct ViewTracker {
 
   // NOLINTNEXTLINE(bugprone-exception-escape)
   KOKKOS_INLINE_FUNCTION ViewTracker& operator=(ViewTracker&& rhs) {
-    if (this == &rhs) return *this;
-    KOKKOS_IF_ON_HOST((
-        if (!view_traits::memory_traits::is_unmanaged &&
-            Kokkos::Impl::SharedAllocationRecord<void,
-                                                 void>::tracking_enabled()) {
-          m_tracker.assign_direct(rhs.m_tracker);
-        } else { m_tracker.assign_force_disable(rhs.m_tracker); }))
-
-    KOKKOS_IF_ON_DEVICE((m_tracker.assign_force_disable(rhs.m_tracker);))
-    return *this;
+    return *this = static_cast<const ViewTracker&>(rhs);
   }
 
   KOKKOS_INLINE_FUNCTION
