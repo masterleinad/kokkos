@@ -101,20 +101,7 @@ TEST(TEST_CATEGORY, view_mapping_atomic) {
 
 namespace Test {
 
-struct MappingClassValueType {
-  KOKKOS_INLINE_FUNCTION
-  MappingClassValueType() {}
-  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType(
-      const MappingClassValueType &) = default;
-  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType(MappingClassValueType &&) =
-      default;
-  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType &operator=(
-      const MappingClassValueType &) = default;
-  KOKKOS_DEFAULTED_FUNCTION MappingClassValueType &operator=(
-      MappingClassValueType &&) = default;
-  KOKKOS_INLINE_FUNCTION
-  ~MappingClassValueType() {}
-};
+struct MappingClassValueType {};
 
 template <class Space>
 void test_view_mapping_class_value() {
