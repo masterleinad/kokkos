@@ -461,12 +461,7 @@ class DynamicView : public Kokkos::ViewTraits<DataType, P...> {
 
   //----------------------------------------------------------------------
 
-  ~DynamicView()                             = default;
-  DynamicView()                              = default;
-  DynamicView(DynamicView&&)                 = default;
-  DynamicView(const DynamicView&)            = default;
-  DynamicView& operator=(DynamicView&&)      = default;
-  DynamicView& operator=(const DynamicView&) = default;
+  DynamicView() = default;
 
   template <class RT, class... RP>
   DynamicView(const DynamicView<RT, RP...>& rhs)
