@@ -17,7 +17,7 @@ struct MyMovableType {
 
   MyMovableType() = default;
 
-  MyMovableType(MyMovableType&) = delete;
+  MyMovableType(const MyMovableType&) = delete;
 
   MyMovableType(MyMovableType&& other) {
     if (this != &other) {
@@ -26,7 +26,7 @@ struct MyMovableType {
     }
   }
 
-  MyMovableType& operator=(MyMovableType&) = delete;
+  MyMovableType& operator=(const MyMovableType&) = delete;
 
   MyMovableType& operator=(MyMovableType&& other) {
     if (this != &other) {
