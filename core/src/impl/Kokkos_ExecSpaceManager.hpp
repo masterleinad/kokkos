@@ -97,11 +97,7 @@ constexpr bool check_valid_execution_space() {
 struct ExecSpaceBase {
   ExecSpaceBase() = default;
 
-  ExecSpaceBase(const ExecSpaceBase&)            = default;
-  ExecSpaceBase(ExecSpaceBase&&)                 = default;
-  ExecSpaceBase& operator=(const ExecSpaceBase&) = default;
-  ExecSpaceBase& operator=(ExecSpaceBase&&)      = default;
-  virtual ~ExecSpaceBase()                       = default;
+  virtual ~ExecSpaceBase() = default;
 
   virtual void initialize(InitializationSettings const&)           = 0;
   virtual void finalize()                                          = 0;

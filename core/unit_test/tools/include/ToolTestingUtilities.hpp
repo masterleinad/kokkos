@@ -296,11 +296,7 @@ auto check_match(const event_vector& events, Matchers&&... matchers) {
 struct EventBase {
   EventBase() = default;
 
-  EventBase(const EventBase&)            = default;
-  EventBase(EventBase&&)                 = default;
-  EventBase& operator=(const EventBase&) = default;
-  EventBase& operator=(EventBase&&)      = default;
-  virtual ~EventBase()                   = default;
+  virtual ~EventBase() = default;
 
   using PtrHandle                        = const void* const;
   virtual std::string descriptor() const = 0;
