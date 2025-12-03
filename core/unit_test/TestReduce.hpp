@@ -744,7 +744,7 @@ class TestReductionIdentityLogicalReducers {
   TestReductionIdentityLogicalReducers() { runTest(); }
 
   void runTest() {
-    const unsigned int N = 100;
+    const int N = 100;
 
     std::random_device r;
 
