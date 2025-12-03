@@ -171,12 +171,7 @@ class GraphNodeRef {
   // <editor-fold desc="rule of 6 ctors"> {{{3
 
   // Copyable and movable (basically just shared_ptr semantics
-  GraphNodeRef() noexcept                          = default;
-  GraphNodeRef(GraphNodeRef const&)                = default;
-  GraphNodeRef(GraphNodeRef&&) noexcept            = default;
-  GraphNodeRef& operator=(GraphNodeRef const&)     = default;
-  GraphNodeRef& operator=(GraphNodeRef&&) noexcept = default;
-  ~GraphNodeRef()                                  = default;
+  GraphNodeRef() noexcept = default;
 
   // </editor-fold> end rule of 6 ctors }}}3
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
