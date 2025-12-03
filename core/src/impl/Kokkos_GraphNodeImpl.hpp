@@ -39,9 +39,6 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
   using implementation_base_t = GraphNodeBackendSpecificDetails<ExecutionSpace>;
   using execution_space_storage_base_t = InstanceStorage<ExecutionSpace>;
 
- public:
-  virtual ~GraphNodeImpl() = default;
-
  protected:
   //----------------------------------------------------------------------------
   // <editor-fold desc="protected ctors and destructors"> {{{2
@@ -73,6 +70,7 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
   GraphNodeImpl(GraphNodeImpl&&)                 = delete;
   GraphNodeImpl& operator=(GraphNodeImpl const&) = delete;
   GraphNodeImpl& operator=(GraphNodeImpl&&)      = delete;
+  virtual ~GraphNodeImpl()                       = default;
 
   // </editor-fold> end no other constructors }}}2
   //----------------------------------------------------------------------------

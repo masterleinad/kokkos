@@ -101,12 +101,12 @@ struct ExecSpaceBase {
   ExecSpaceBase(ExecSpaceBase&&)                 = default;
   ExecSpaceBase& operator=(const ExecSpaceBase&) = default;
   ExecSpaceBase& operator=(ExecSpaceBase&&)      = default;
+  virtual ~ExecSpaceBase()                       = default;
 
   virtual void initialize(InitializationSettings const&)           = 0;
   virtual void finalize()                                          = 0;
   virtual void static_fence(std::string const&)                    = 0;
   virtual void print_configuration(std::ostream& os, bool verbose) = 0;
-  virtual ~ExecSpaceBase()                                         = default;
 };
 
 template <class ExecutionSpace>

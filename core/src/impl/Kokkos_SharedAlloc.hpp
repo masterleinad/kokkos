@@ -92,6 +92,7 @@ class SharedAllocationRecord<void, void> {
   SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
   SharedAllocationRecord& operator=(SharedAllocationRecord&&)      = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
+  virtual ~SharedAllocationRecord()                                = default;
 
   /**\brief  Construct and insert into 'arg_root' tracking set.
    *         use_count is zero.
@@ -129,8 +130,6 @@ class SharedAllocationRecord<void, void> {
    *        shared allocation tracking flag.
    */
   static void tracking_enable() { t_tracking_enabled = 1; }
-
-  virtual ~SharedAllocationRecord() = default;
 
   SharedAllocationRecord()
       : m_alloc_ptr(nullptr),

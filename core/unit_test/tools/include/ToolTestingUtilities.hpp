@@ -300,9 +300,9 @@ struct EventBase {
   EventBase(EventBase&&)                 = default;
   EventBase& operator=(const EventBase&) = default;
   EventBase& operator=(EventBase&&)      = default;
+  virtual ~EventBase()                   = default;
 
   using PtrHandle                        = const void* const;
-  virtual ~EventBase()                   = default;
   virtual std::string descriptor() const = 0;
   virtual uintptr_t kind() const         = 0;
 };
