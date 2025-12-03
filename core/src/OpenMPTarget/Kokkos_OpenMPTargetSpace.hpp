@@ -79,11 +79,6 @@ class OpenMPTargetSpace {
 
   /**\brief  Default memory space instance */
   OpenMPTargetSpace();
-  OpenMPTargetSpace(OpenMPTargetSpace&& rhs)             = default;
-  OpenMPTargetSpace(const OpenMPTargetSpace& rhs)        = default;
-  OpenMPTargetSpace& operator=(OpenMPTargetSpace&&)      = default;
-  OpenMPTargetSpace& operator=(const OpenMPTargetSpace&) = default;
-  ~OpenMPTargetSpace()                                   = default;
 
   /**\brief  Allocate untracked memory in the space */
   // FIXME_OPENMPTARGET Use execution space instance
