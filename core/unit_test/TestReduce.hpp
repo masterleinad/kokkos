@@ -767,7 +767,7 @@ class TestReductionIdentityLogicalReducers {
   }
 };
 
-TEST(TEST_CATEGORY, reduction_identity_bitwise_logical_reducers) {
+TEST(TEST_CATEGORY, reduction_identity_bitwise_and_or_integral_types) {
   TestReductionIdentityLogicalReducers<signed char>();
   TestReductionIdentityLogicalReducers<unsigned char>();
   TestReductionIdentityLogicalReducers<short>();
