@@ -739,9 +739,9 @@ TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
 KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_POP()
 
 template <typename ScalarType>
-class TestReductionIdentityLogicalReducers {
+class TestReductionIdentityBitwiseAndOr {
  public:
-  TestReductionIdentityLogicalReducers() { runTest(); }
+  TestReductionIdentityBitwiseAndOr() { runTest(); }
 
   void runTest() {
     const int N = 100;
@@ -768,16 +768,16 @@ class TestReductionIdentityLogicalReducers {
 };
 
 TEST(TEST_CATEGORY, reduction_identity_bitwise_and_or_integral_types) {
-  TestReductionIdentityLogicalReducers<signed char>();
-  TestReductionIdentityLogicalReducers<unsigned char>();
-  TestReductionIdentityLogicalReducers<short>();
-  TestReductionIdentityLogicalReducers<unsigned short>();
-  TestReductionIdentityLogicalReducers<int>();
-  TestReductionIdentityLogicalReducers<unsigned int>();
-  TestReductionIdentityLogicalReducers<long>();
-  TestReductionIdentityLogicalReducers<unsigned long>();
-  TestReductionIdentityLogicalReducers<long long>();
-  TestReductionIdentityLogicalReducers<unsigned long long>();
+  TestReductionIdentityBitwiseAndOr<signed char>();
+  TestReductionIdentityBitwiseAndOr<unsigned char>();
+  TestReductionIdentityBitwiseAndOr<short>();
+  TestReductionIdentityBitwiseAndOr<unsigned short>();
+  TestReductionIdentityBitwiseAndOr<int>();
+  TestReductionIdentityBitwiseAndOr<unsigned int>();
+  TestReductionIdentityBitwiseAndOr<long>();
+  TestReductionIdentityBitwiseAndOr<unsigned long>();
+  TestReductionIdentityBitwiseAndOr<long long>();
+  TestReductionIdentityBitwiseAndOr<unsigned long long>();
 }
 
 }  // namespace Test
