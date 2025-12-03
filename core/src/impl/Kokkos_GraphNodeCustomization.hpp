@@ -36,14 +36,8 @@ struct GraphNodeBackendDetailsBeforeTypeErasure {
   GraphNodeBackendDetailsBeforeTypeErasure(
       GraphNodeBackendDetailsBeforeTypeErasure const&) = delete;
 
-  GraphNodeBackendDetailsBeforeTypeErasure(
-      GraphNodeBackendDetailsBeforeTypeErasure&&) = delete;
-
   GraphNodeBackendDetailsBeforeTypeErasure& operator=(
       GraphNodeBackendDetailsBeforeTypeErasure const&) = delete;
-
-  GraphNodeBackendDetailsBeforeTypeErasure& operator=(
-      GraphNodeBackendDetailsBeforeTypeErasure&&) = delete;
 
   ~GraphNodeBackendDetailsBeforeTypeErasure() = default;
 

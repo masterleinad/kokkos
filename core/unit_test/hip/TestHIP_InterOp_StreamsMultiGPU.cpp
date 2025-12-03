@@ -21,9 +21,7 @@ struct StreamsAndDevices {
     }
   }
   StreamsAndDevices(const StreamsAndDevices &)            = delete;
-  StreamsAndDevices(StreamsAndDevices &&)                 = delete;
   StreamsAndDevices &operator=(const StreamsAndDevices &) = delete;
-  StreamsAndDevices &operator=(StreamsAndDevices &&)      = delete;
   ~StreamsAndDevices() {
     for (int i = 0; i < 2; ++i) {
       KOKKOS_IMPL_HIP_SAFE_CALL(hipSetDevice(devices[i]));

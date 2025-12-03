@@ -67,9 +67,7 @@ struct GraphNodeImpl<ExecutionSpace, Kokkos::Experimental::TypeErasedTag,
 
   GraphNodeImpl()                                = delete;
   GraphNodeImpl(GraphNodeImpl const&)            = delete;
-  GraphNodeImpl(GraphNodeImpl&&)                 = delete;
   GraphNodeImpl& operator=(GraphNodeImpl const&) = delete;
-  GraphNodeImpl& operator=(GraphNodeImpl&&)      = delete;
   virtual ~GraphNodeImpl()                       = default;
 
   // </editor-fold> end no other constructors }}}2
@@ -142,9 +140,7 @@ struct GraphNodeImpl<ExecutionSpace, Kernel,
   // Not copyable or movable
   GraphNodeImpl()                                = delete;
   GraphNodeImpl(GraphNodeImpl const&)            = delete;
-  GraphNodeImpl(GraphNodeImpl&&)                 = delete;
   GraphNodeImpl& operator=(GraphNodeImpl const&) = delete;
-  GraphNodeImpl& operator=(GraphNodeImpl&&)      = delete;
   ~GraphNodeImpl() override                      = default;
 
   // </editor-fold> end Rule of 6 for not copyable or movable }}}3
@@ -215,9 +211,7 @@ struct GraphNodeImpl
   // Not copyable or movable
   GraphNodeImpl()                                = delete;
   GraphNodeImpl(GraphNodeImpl const&)            = delete;
-  GraphNodeImpl(GraphNodeImpl&&)                 = delete;
   GraphNodeImpl& operator=(GraphNodeImpl const&) = delete;
-  GraphNodeImpl& operator=(GraphNodeImpl&&)      = delete;
   ~GraphNodeImpl() override                      = default;
 
   // Normal kernel-and-predecessor or capture-and-predecessor constructor.

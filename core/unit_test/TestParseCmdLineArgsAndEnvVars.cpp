@@ -78,10 +78,8 @@ class EnvVarsHelper {
     teardown();
     mutex_.unlock();
   }
-  EnvVarsHelper(const EnvVarsHelper&)             = delete;
-  EnvVarsHelper(EnvVarsHelper&&)                  = delete;
-  EnvVarsHelper& operator=(EnvVarsHelper&)        = delete;
-  EnvVarsHelper& operator=(const EnvVarsHelper&&) = delete;
+  EnvVarsHelper(const EnvVarsHelper&)      = delete;
+  EnvVarsHelper& operator=(EnvVarsHelper&) = delete;
   friend std::ostream& operator<<(std::ostream& os, EnvVarsHelper const& ev) {
     for (auto const& name : ev.vars_) {
       os << name << '=' << std::getenv(name.c_str()) << '\n';

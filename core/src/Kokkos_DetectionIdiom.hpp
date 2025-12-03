@@ -43,9 +43,7 @@ struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
 struct nonesuch : private Impl::nonesuch_base {
   ~nonesuch()                      = delete;
   nonesuch(nonesuch const &)       = delete;
-  nonesuch(nonesuch &&)            = delete;
   void operator=(nonesuch const &) = delete;
-  void operator=(nonesuch &&)      = delete;
 };
 
 template <template <class...> class Op, class... Args>

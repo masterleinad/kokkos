@@ -352,11 +352,6 @@ struct KOKKOS_DEPRECATED
   KOKKOS_INLINE_FUNCTION_DELETED Array(const Array&) = delete;
   KOKKOS_INLINE_FUNCTION_DELETED Array(Array&&)      = delete;
 
-  // Some supported compilers are not sufficiently C++11 compliant
-  // for default move constructor and move assignment operator.
-  // Array( Array && rhs ) = default ;
-  // Array & operator = ( Array && rhs ) = delete ;
-
   KOKKOS_INLINE_FUNCTION
   Array& operator=(const Array& rhs) {
     if (&rhs == this) return *this;

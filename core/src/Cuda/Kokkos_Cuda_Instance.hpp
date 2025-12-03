@@ -142,9 +142,7 @@ class CudaInternal {
   void fence() const;
 
   CudaInternal(const CudaInternal&)            = delete;
-  CudaInternal(CudaInternal&&)                 = delete;
   CudaInternal& operator=(const CudaInternal&) = delete;
-  CudaInternal& operator=(CudaInternal&&)      = delete;
   ~CudaInternal();
 
   CudaInternal()

@@ -18,9 +18,7 @@ namespace Kokkos::Profiling {
 class [[nodiscard]] ScopedRegion {
  public:
   ScopedRegion(ScopedRegion const &)            = delete;
-  ScopedRegion(ScopedRegion &&)                 = delete;
   ScopedRegion &operator=(ScopedRegion const &) = delete;
-  ScopedRegion &operator=(ScopedRegion &&)      = delete;
 
 #if defined(__has_cpp_attribute) && __has_cpp_attribute(nodiscard) >= 201907
   [[nodiscard]]

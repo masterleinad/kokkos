@@ -66,9 +66,7 @@ class hpx_thread_buffer {
   hpx_thread_buffer()                                     = default;
   ~hpx_thread_buffer()                                    = default;
   hpx_thread_buffer(const hpx_thread_buffer &)            = delete;
-  hpx_thread_buffer(hpx_thread_buffer &&)                 = delete;
   hpx_thread_buffer &operator=(const hpx_thread_buffer &) = delete;
-  hpx_thread_buffer &operator=(hpx_thread_buffer &&)      = delete;
 
   void resize(const std::size_t num_threads, const std::size_t size_per_thread,
               const std::size_t extra_space = 0);
@@ -129,9 +127,7 @@ class HPX {
         : m_instance_id(instance_id), m_sender{std::move(sender)} {}
 
     instance_data(const instance_data &)            = delete;
-    instance_data(instance_data &&)                 = delete;
     instance_data &operator=(const instance_data &) = delete;
-    instance_data &operator=(instance_data &&)      = delete;
 
     uint32_t m_instance_id{HPX::impl_default_instance_id()};
     hpx::execution::experimental::unique_any_sender<> m_sender{
@@ -221,19 +217,14 @@ class HPX {
   struct impl_in_parallel_scope {
     impl_in_parallel_scope() noexcept;
     ~impl_in_parallel_scope() noexcept;
-    impl_in_parallel_scope(impl_in_parallel_scope &&)                 = delete;
     impl_in_parallel_scope(impl_in_parallel_scope const &)            = delete;
-    impl_in_parallel_scope &operator=(impl_in_parallel_scope &&)      = delete;
     impl_in_parallel_scope &operator=(impl_in_parallel_scope const &) = delete;
   };
 
   struct impl_not_in_parallel_scope {
     impl_not_in_parallel_scope() noexcept;
     ~impl_not_in_parallel_scope() noexcept;
-    impl_not_in_parallel_scope(impl_not_in_parallel_scope &&)      = delete;
     impl_not_in_parallel_scope(impl_not_in_parallel_scope const &) = delete;
-    impl_not_in_parallel_scope &operator=(impl_not_in_parallel_scope &&) =
-        delete;
     impl_not_in_parallel_scope &operator=(impl_not_in_parallel_scope const &) =
         delete;
   };

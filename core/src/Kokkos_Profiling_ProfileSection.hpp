@@ -20,9 +20,7 @@ class [[nodiscard]] ProfilingSection {
 
  public:
   ProfilingSection(ProfilingSection const&)            = delete;
-  ProfilingSection(ProfilingSection&&)                 = delete;
   ProfilingSection& operator=(ProfilingSection const&) = delete;
-  ProfilingSection& operator=(ProfilingSection&&)      = delete;
 
 #if defined(__has_cpp_attribute) && __has_cpp_attribute(nodiscard) >= 201907
   [[nodiscard]]

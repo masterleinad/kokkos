@@ -88,9 +88,7 @@ class ThreadsInternal {
   static void driver(void);
 
   ThreadsInternal(const ThreadsInternal &)            = delete;
-  ThreadsInternal(ThreadsInternal &&)                 = delete;
   ThreadsInternal &operator=(const ThreadsInternal &) = delete;
-  ThreadsInternal &operator=(ThreadsInternal &&)      = delete;
   ~ThreadsInternal();
   ThreadsInternal();
 

@@ -48,9 +48,7 @@ struct GraphImpl : private InstanceStorage<ExecutionSpace> {
   // Graph object
   GraphImpl()                            = default;
   GraphImpl(GraphImpl const&)            = delete;
-  GraphImpl(GraphImpl&&)                 = delete;
   GraphImpl& operator=(GraphImpl const&) = delete;
-  GraphImpl& operator=(GraphImpl&&)      = delete;
   ~GraphImpl()                           = default;
 
   explicit GraphImpl(ExecutionSpace arg_space)

@@ -36,9 +36,7 @@ class GraphImpl<Kokkos::SYCL> {
   // Graph object.
   GraphImpl()                            = delete;
   GraphImpl(GraphImpl const&)            = delete;
-  GraphImpl(GraphImpl&&)                 = delete;
   GraphImpl& operator=(GraphImpl const&) = delete;
-  GraphImpl& operator=(GraphImpl&&)      = delete;
 
   ~GraphImpl();
 

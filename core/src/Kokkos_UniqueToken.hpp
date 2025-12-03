@@ -96,9 +96,7 @@ class AcquireUniqueToken {
       : my_token(t), my_acquired_val(my_token.acquire()) {}
 
   AcquireUniqueToken(const AcquireUniqueToken&)            = delete;
-  AcquireUniqueToken(AcquireUniqueToken&&)                 = delete;
   AcquireUniqueToken& operator=(const AcquireUniqueToken&) = delete;
-  AcquireUniqueToken& operator=(AcquireUniqueToken&&)      = delete;
 
   KOKKOS_FUNCTION ~AcquireUniqueToken() { my_token.release(my_acquired_val); }
 
@@ -138,9 +136,7 @@ class AcquireTeamUniqueToken {
   // hurt readability.
   KOKKOS_FUNCTION AcquireTeamUniqueToken(token_type t, team_member_type team);
   AcquireTeamUniqueToken(const AcquireTeamUniqueToken&)            = delete;
-  AcquireTeamUniqueToken(AcquireTeamUniqueToken&&)                 = delete;
   AcquireTeamUniqueToken& operator=(const AcquireTeamUniqueToken&) = delete;
-  AcquireTeamUniqueToken& operator=(AcquireTeamUniqueToken&&)      = delete;
   KOKKOS_FUNCTION ~AcquireTeamUniqueToken();
   KOKKOS_FUNCTION size_type value() const { return my_acquired_val; }
   static std::size_t shmem_size() { return scratch_view::shmem_size(); }
