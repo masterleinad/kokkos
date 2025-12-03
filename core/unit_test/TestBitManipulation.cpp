@@ -500,13 +500,10 @@ static_assert(test_bit_cast<To, From>().did_not_match());
 }  // namespace TypesNotTheSameSize
 
 namespace ToNotTriviallyCopyable {
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 struct To {
   char a;
   To(To const &);
-  To(To &&);
-  To &operator=(To const &);
-  To &operator=(To &&);
-  ~To() = default;
 };
 struct From {
   char b;
@@ -518,13 +515,10 @@ namespace FromNotTriviallyCopyable {
 struct To {
   char a;
 };
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 struct From {
   char b;
   From(From const &);
-  From(From &&);
-  From &operator=(From const &);
-  From &operator=(From &&);
-  ~From() = default;
 };
 static_assert(test_bit_cast<To, From>().did_not_match());
 }  // namespace FromNotTriviallyCopyable

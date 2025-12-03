@@ -20,12 +20,9 @@ template <class T>
 using copy_assign_t = decltype(std::declval<T&>() = std::declval<const T&>());
 
 struct Meow {};
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 struct Purr {
-  Purr(const Purr&)           = default;
-  Purr(Purr&&)                = default;
   void operator=(const Purr&) = delete;
-  void operator=(Purr&&)      = delete;
-  ~Purr()                     = default;
 };
 
 static_assert(Kokkos::is_detected<copy_assign_t, Meow>::value,

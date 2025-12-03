@@ -301,7 +301,7 @@ TEST(defaultdevicetype, env_vars_num_threads) {
   EXPECT_TRUE(settings.has_disable_warnings());
   EXPECT_TRUE(settings.get_disable_warnings());
 
-  ev = std::unordered_map<std::string, std::string>{{
+  ev = {{
       {"KOKKOS_NUM_THREADS", "1ABC"},
   }};
   SKIP_IF_ENVIRONMENT_VARIABLE_ALREADY_SET(ev);
