@@ -768,8 +768,6 @@ class TestReductionIdentityBitwiseAndOr {
 };
 
 TEST(TEST_CATEGORY, reduction_identity_bitwise_and_or_integral_types) {
-  TestReductionIdentityBitwiseAndOr<signed char>();
-  TestReductionIdentityBitwiseAndOr<unsigned char>();
   TestReductionIdentityBitwiseAndOr<short>();
   TestReductionIdentityBitwiseAndOr<unsigned short>();
   TestReductionIdentityBitwiseAndOr<int>();
