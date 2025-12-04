@@ -595,6 +595,9 @@ pipeline {
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
+                    environment {
+                        KOKKOS_NUM_THREADS = 8
+                    }
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
