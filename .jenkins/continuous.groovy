@@ -617,7 +617,7 @@ pipeline {
                                 -DKokkos_ENABLE_TESTS=ON \
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_LIBDL=OFF \
-                                -DKokkos_ENABLE_OPENMP=ON \
+                                -DKokkos_ENABLE_THREADS=ON \
                                 -DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=ON \
                               .. && \
                               set +x && \
