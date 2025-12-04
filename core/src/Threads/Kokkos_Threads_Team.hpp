@@ -64,36 +64,43 @@ class ThreadsExecTeamMember {
   }
 
  public:
+  // clang-format off
+
   // Fan-in and wait until the matching fan-out is called.
   // The root thread which does not wait will return true.
   // All other threads will return false during the fan-out.
   KOKKOS_INLINE_FUNCTION bool team_fan_in() const {
-    int n, j;
+    KOKKOS_IF_ON_HOST((
+      int n, j;
 
-    // Wait for fan-in threads
-    for (n = 1;
-         (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
-         n <<= 1) {
-      spinwait_while_equal(m_team_base[j]->state(), ThreadState::Active);
-    }
+      // Wait for fan-in threads
+      for (n = 1;
+           (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
+           n <<= 1) {
+        spinwait_while_equal(m_team_base[j]->state(), ThreadState::Active);
+      }
 
-    // If not root then wait for release
-    if (m_team_rank_rev) {
-      m_instance->state() = ThreadState::Rendezvous;
-      spinwait_while_equal(m_instance->state(), ThreadState::Rendezvous);
-    }
+      // If not root then wait for release
+      if (m_team_rank_rev) {
+        m_instance->state() = ThreadState::Rendezvous;
+        spinwait_while_equal(m_instance->state(), ThreadState::Rendezvous);
+      }
+    ))
 
     return !m_team_rank_rev;
   }
 
   KOKKOS_INLINE_FUNCTION void team_fan_out() const {
-    int n, j;
-    for (n = 1;
-         (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
-         n <<= 1) {
-      m_team_base[j]->state() = ThreadState::Active;
-    }
+    KOKKOS_IF_ON_HOST((
+      int n, j;
+      for (n = 1;
+           (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
+           n <<= 1) {
+        m_team_base[j]->state() = ThreadState::Active;
+      }
+    ))
   }
+  // clang-format on
 
  public:
   KOKKOS_INLINE_FUNCTION static int team_reduce_size() {
