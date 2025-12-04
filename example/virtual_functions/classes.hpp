@@ -15,11 +15,7 @@ class Foo {
 
   KOKKOS_FUNCTION virtual int value() { return 0; }
 
-  KOKKOS_DEFAULTED_FUNCTION Foo(const Foo&)            = default;
-  KOKKOS_DEFAULTED_FUNCTION Foo(Foo&&)                 = default;
-  KOKKOS_DEFAULTED_FUNCTION Foo& operator=(const Foo&) = default;
-  KOKKOS_DEFAULTED_FUNCTION Foo& operator=(Foo&&)      = default;
-  KOKKOS_FUNCTION virtual ~Foo() {}
+  KOKKOS_DEFAULTED_FUNCTION virtual ~Foo() = default;
 };
 
 class Foo_1 : public Foo {

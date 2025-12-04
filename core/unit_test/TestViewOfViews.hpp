@@ -35,6 +35,7 @@ class N {  // not default constructible
 };
 
 template <class V>
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 class H {  // constructible and destructible only from on the host side
   V v_;
 
@@ -42,10 +43,6 @@ class H {  // constructible and destructible only from on the host side
   template <class... Extents>
   H(std::string label, Extents... extents) : v_(std::move(label), extents...) {}
   H() {}
-  H(const H&)            = default;
-  H(H&&)                 = default;
-  H& operator=(const H&) = default;
-  H& operator=(H&&)      = default;
   ~H() {}
 };
 
