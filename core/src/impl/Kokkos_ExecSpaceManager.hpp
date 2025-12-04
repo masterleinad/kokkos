@@ -95,14 +95,11 @@ constexpr bool check_valid_execution_space() {
 }
 
 struct ExecSpaceBase {
-  ExecSpaceBase() = default;
-
-  virtual ~ExecSpaceBase() = default;
-
   virtual void initialize(InitializationSettings const&)           = 0;
   virtual void finalize()                                          = 0;
   virtual void static_fence(std::string const&)                    = 0;
   virtual void print_configuration(std::ostream& os, bool verbose) = 0;
+  virtual ~ExecSpaceBase()                                         = default;
 };
 
 template <class ExecutionSpace>
