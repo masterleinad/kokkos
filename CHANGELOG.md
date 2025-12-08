@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 4.7.02
+
+### Bug Fixes
+* Link kokkoscore directly with CMAKE_DL_LIBS [\#8456](https://github.com/kokkos/kokkos/pull/8456)
+
 ## 4.7.01
 
 [Full Changelog](https://github.com/kokkos/kokkos/compare/4.7.00...4.7.01)
