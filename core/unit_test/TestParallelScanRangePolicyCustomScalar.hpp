@@ -361,6 +361,7 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy_customscalar) {
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
   }
+#ifndef KOKKOS_IMPL_32BIT
   {
     TestParallelScanRangePolicyCustomScalar<scalar_type> f;
 
@@ -369,6 +370,7 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy_customscalar) {
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
   }
+#endif
   using scalar_type2 = ArrayValueType<double, 2>;
   {
     TestParallelScanRangePolicyCustomScalar<scalar_type2> f;
@@ -378,6 +380,7 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy_customscalar) {
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
   }
+#ifndef KOKKOS_IMPL_32BIT
   {
     TestParallelScanRangePolicyCustomScalar<scalar_type2> f;
 
@@ -386,5 +389,6 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy_customscalar) {
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
   }
+#endif
 }
 }  // namespace
