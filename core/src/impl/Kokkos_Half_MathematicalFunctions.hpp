@@ -17,6 +17,10 @@
 #include <Cuda/Kokkos_Cuda_Half_MathematicalFunctions.hpp>
 #endif
 
+#ifdef KOKKOS_ENABLE_HIP
+#include <HIP/Kokkos_HIP_Half_MathematicalFunctions.hpp>
+#endif
+
 #ifdef KOKKOS_ENABLE_SYCL
 #include <SYCL/Kokkos_SYCL_Half_MathematicalFunctions.hpp>
 #endif

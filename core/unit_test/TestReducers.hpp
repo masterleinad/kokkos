@@ -1437,6 +1437,15 @@ struct TestReducers {
     }
 
     {
+      Scalar band_scalar = 1;
+      Kokkos::BAnd<Scalar> reducer_scalar(band_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_EQ(band_scalar, ~Scalar{});
+    }
+
+    {
       Kokkos::View<Scalar, Kokkos::HostSpace> band_view("View");
       band_view() = init;
       Kokkos::BAnd<Scalar> reducer_view(band_view);
@@ -1484,6 +1493,15 @@ struct TestReducers {
 
       Scalar bor_scalar_view = reducer_scalar.reference();
       ASSERT_EQ(bor_scalar_view, reference_bor);
+    }
+
+    {
+      Scalar bor_scalar = 1;
+      Kokkos::BOr<Scalar> reducer_scalar(bor_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_EQ(bor_scalar, Scalar{});
     }
 
     {
@@ -1537,6 +1555,15 @@ struct TestReducers {
     }
 
     {
+      Scalar land_scalar = 0;
+      Kokkos::LAnd<Scalar> reducer_scalar(land_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_TRUE(land_scalar);
+    }
+
+    {
       Kokkos::View<Scalar, Kokkos::HostSpace> land_view("View");
       land_view() = init;
       Kokkos::LAnd<Scalar> reducer_view(land_view);
@@ -1584,6 +1611,15 @@ struct TestReducers {
 
       Scalar lor_scalar_view = reducer_scalar.reference();
       ASSERT_EQ(lor_scalar_view, reference_lor);
+    }
+
+    {
+      Scalar lor_scalar = 1;
+      Kokkos::LOr<Scalar> reducer_scalar(lor_scalar);
+
+      Kokkos::parallel_reduce(Kokkos::RangePolicy<ExecSpace>(0, 0), f,
+                              reducer_scalar);
+      ASSERT_FALSE(lor_scalar);
     }
 
     {
