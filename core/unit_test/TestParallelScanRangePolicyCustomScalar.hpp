@@ -345,4 +345,3 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy_customscalar) {
   }
 }
 }  // namespace
-
