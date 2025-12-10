@@ -5,7 +5,7 @@
 ### Bug Fixes
 * Link kokkoscore directly with CMAKE_DL_LIBS [\#8456](https://github.com/kokkos/kokkos/pull/8456)
 * mdspan fixes for cuda >= 12.9 [\#8562](https://github.com/kokkos/kokkos/pull/8562), [\#8615](https://github.com/kokkos/kokkos/pull/8615)
-* Cuda/13 fix - replace cudaMemAdvise_v2 with cudaMemAdvise when CUDART_VERSION >= 13000 [\#8726](https://github.com/kokkos/kokkos/pull/8726)
+* Replace cudaMemAdvise_v2 with cudaMemAdvise when CUDART_VERSION >= 13000 [\#8726](https://github.com/kokkos/kokkos/pull/8726)
 
 ## 4.7.01
 
