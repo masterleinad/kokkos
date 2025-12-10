@@ -56,9 +56,9 @@ static KOKKOS_INLINE_FUNCTION void operator+=(ArrayValueType<T, N>& a,
   for (int i = 0; i < N; ++i) a.v[i] += b.v[i];
 }
 
-template <typename T, int N>
-static KOKKOS_INLINE_FUNCTION void operator+=(ArrayValueType<T, N>& a,
-                                              const T& b) {
+template <typename T1, typename T2, int N>
+static KOKKOS_INLINE_FUNCTION void operator+=(ArrayValueType<T1, N>& a,
+                                              const T2& b) {
   for (int i = 0; i < N; ++i) a.v[i] += b;
 }
 
@@ -363,6 +363,23 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy_customscalar) {
   }
   {
     TestParallelScanRangePolicyCustomScalar<scalar_type> f;
+
+    std::vector<size_t> work_sizes{1048576, 2097152, 4194304};
+    f.test_scan<>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
+  }
+  using scalar_type2 = ArrayValueType<double, 2>;
+  {
+    TestParallelScanRangePolicyCustomScalar<scalar_type2> f;
+
+    std::vector<size_t> work_sizes{0, 1, 2, 13, 34, 1000, 1001};
+    f.test_scan<>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
+  }
+  {
+    TestParallelScanRangePolicyCustomScalar<scalar_type2> f;
 
     std::vector<size_t> work_sizes{1048576, 2097152, 4194304};
     f.test_scan<>(work_sizes);
