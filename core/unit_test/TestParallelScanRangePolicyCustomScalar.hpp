@@ -112,9 +112,11 @@ struct TestParallelScanRangePolicyCustomScalar {
       for (size_t i = 0; i < work_size; ++i) {
         // Check prefix sum
         ASSERT_EQ(i * (i - 1) / 2, prefix_h(i).v[0]);
+        ASSERT_EQ(i * (i - 1) / 2, prefix_h(i).v[1]);
 
         // Check postfix sum
         ASSERT_EQ(i * (i + 1) / 2, postfix_h(i).v[0]);
+        ASSERT_EQ(i * (i + 1) / 2, postfix_h(i).v[1]);
       }
 
       // Reset results
@@ -133,9 +135,11 @@ struct TestParallelScanRangePolicyCustomScalar {
       for (size_t i = 2; i < work_size; ++i) {
         // Check prefix sum
         ASSERT_EQ((i + 1) * (i - 2) / 2, prefix_h(i).v[0]);
+        ASSERT_EQ((i + 1) * (i - 2) / 2, prefix_h(i).v[1]);
 
         // Check postfix sum
         ASSERT_EQ((i + 2) * (i - 1) / 2, postfix_h(i).v[0]);
+        ASSERT_EQ((i + 2) * (i - 1) / 2, postfix_h(i).v[1]);
       }
 
       // Reset results
@@ -166,6 +170,8 @@ struct TestParallelScanRangePolicyCustomScalar {
         check_scan_results();
         ASSERT_EQ(work_size * (work_size - 1) / 2,
                   return_val.v[0]);  // sum( 0 .. N-1 )
+        ASSERT_EQ(work_size * (work_size - 1) / 2,
+                  return_val.v[1]);  // sum( 0 .. N-1 )
       }
 
       // Input: work_count, functor
@@ -176,6 +182,8 @@ struct TestParallelScanRangePolicyCustomScalar {
         check_scan_results();
         ASSERT_EQ(work_size * (work_size - 1) / 2,
                   return_val.v[0]);  // sum( 0 .. N-1 )
+        ASSERT_EQ(work_size * (work_size - 1) / 2,
+                  return_val.v[1]);  // sum( 0 .. N-1 )
       }
 
       // Input: work_count, functor
@@ -186,6 +194,8 @@ struct TestParallelScanRangePolicyCustomScalar {
         check_scan_results();
         ASSERT_EQ(work_size * (work_size - 1) / 2,
                   return_view().v[0]);  // sum( 0 .. N-1 )
+        ASSERT_EQ(work_size * (work_size - 1) / 2,
+                  return_view().v[1]);  // sum( 0 .. N-1 )
       }
     } else {
       // Construct RangePolicy for parallel_scan
@@ -208,6 +218,8 @@ struct TestParallelScanRangePolicyCustomScalar {
         check_scan_results();
         ASSERT_EQ(work_size * (work_size - 1) / 2,
                   return_val.v[0]);  // sum( 0 .. N-1 )
+        ASSERT_EQ(work_size * (work_size - 1) / 2,
+                  return_val.v[1]);  // sum( 0 .. N-1 )
       }
 
       // Input: work_count, functor
@@ -218,6 +230,8 @@ struct TestParallelScanRangePolicyCustomScalar {
         check_scan_results();
         ASSERT_EQ(work_size * (work_size - 1) / 2,
                   return_val.v[0]);  // sum( 0 .. N-1 )
+        ASSERT_EQ(work_size * (work_size - 1) / 2,
+                  return_val.v[1]);  // sum( 0 .. N-1 )
       }
 
       // Input: work_count, functor
@@ -231,6 +245,8 @@ struct TestParallelScanRangePolicyCustomScalar {
         Kokkos::deep_copy(total, return_view);
         ASSERT_EQ(work_size * (work_size - 1) / 2,
                   total.v[0]);  // sum( 0 .. N-1 )
+        ASSERT_EQ(work_size * (work_size - 1) / 2,
+                  total.v[1]);  // sum( 0 .. N-1 )
       }
 
       // Check Kokkos::Experimental::require()
@@ -248,6 +264,8 @@ struct TestParallelScanRangePolicyCustomScalar {
         check_scan_results();
         ASSERT_EQ(work_size * (work_size - 1) / 2,
                   return_val.v[0]);  // sum( 0 .. N-1 )
+        ASSERT_EQ(work_size * (work_size - 1) / 2,
+                  return_val.v[1]);  // sum( 0 .. N-1 )
       }
 
       if (work_size >= 2) {
@@ -271,6 +289,8 @@ struct TestParallelScanRangePolicyCustomScalar {
           check_scan_results_start2();
           ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
                     return_val.v[0]);  // sum( 2 .. N-1 )
+          ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
+                    return_val.v[1]);  // sum( 2 .. N-1 )
         }
 
         // Input: work_count, functor
@@ -281,6 +301,8 @@ struct TestParallelScanRangePolicyCustomScalar {
           check_scan_results_start2();
           ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
                     return_val.v[0]);  // sum( 2 .. N-1 )
+          ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
+                    return_val.v[1]);  // sum( 2 .. N-1 )
         }
 
         // Input: work_count, functor
@@ -294,6 +316,8 @@ struct TestParallelScanRangePolicyCustomScalar {
           Kokkos::deep_copy(total, return_view);
           ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
                     total.v[0]);  // sum( 2 .. N-1 )
+          ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
+                    total.v[1]);  // sum( 2 .. N-1 )
         }
 
         // Check Kokkos::Experimental::require()
@@ -311,6 +335,8 @@ struct TestParallelScanRangePolicyCustomScalar {
           check_scan_results_start2();
           ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
                     return_val.v[0]);  // sum( 2 .. N-1 )
+          ASSERT_EQ((work_size + 1) * (work_size - 2) / 2,
+                    return_val.v[1]);  // sum( 2 .. N-1 )
         }
       }
     }
