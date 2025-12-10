@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: checkout_kokkos
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: kokkos/kokkos
           path: kokkos
@@ -49,6 +49,7 @@ jobs:
             -DKokkos_ENABLE_TESTS=ON \
             -DKokkos_ENABLE_EXAMPLES=ON \
             -DKokkos_ENABLE_BENCHMARKS=ON \
+            -DKokkos_ENABLE_BENCHMARKS_HEAVY=${{ matrix.view_legacy == 'ON' && 'OFF' || 'ON' }} \
             ./
 
       - name: build_and_install_kokkos
@@ -72,7 +73,7 @@ jobs:
 
     steps:
       - name: checkout_kokkos
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: kokkos/kokkos
           path: kokkos
@@ -113,7 +114,7 @@ jobs:
 
     steps:
       - name: checkout_kokkos
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: kokkos/kokkos
           path: kokkos
@@ -158,7 +159,7 @@ jobs:
 
     steps:
       - name: checkout_kokkos
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: kokkos/kokkos
           path: kokkos
@@ -178,7 +179,8 @@ jobs:
             -DKokkos_ENABLE_IMPL_VIEW_LEGACY=${{ matrix.view_legacy }} \
             -DKokkos_ENABLE_TESTS=ON \
             -DKokkos_ENABLE_EXAMPLES=ON \
-            -DKokkos_ENABLE_BENCHMARKS=ON
+            -DKokkos_ENABLE_BENCHMARKS=ON \
+            -DKokkos_ENABLE_BENCHMARKS_HEAVY=${{ matrix.view_legacy == 'ON' && 'OFF' || 'ON' }}
 
       - name: build_and_install_kokkos
         working-directory: kokkos
@@ -201,7 +203,7 @@ jobs:
 
     steps:
       - name: checkout_kokkos
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: kokkos/kokkos
           path: kokkos
@@ -241,7 +243,7 @@ jobs:
 
     steps:
       - name: checkout_kokkos
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           repository: kokkos/kokkos
           path: kokkos
@@ -258,6 +260,7 @@ jobs:
             -DKokkos_ENABLE_HPX=ON \
             -DKokkos_ENABLE_TESTS=ON \
             -DKokkos_ENABLE_BENCHMARKS=ON \
+            -DKokkos_ENABLE_BENCHMARKS_HEAVY=${{ matrix.view_legacy == 'ON' && 'OFF' || 'ON' }} \
             -DKokkos_ENABLE_EXAMPLES=ON \
             -DKokkos_ENABLE_DEPRECATED_CODE_4=ON \
             -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
