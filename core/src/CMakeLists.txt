@@ -158,7 +158,7 @@ if(Kokkos_ENABLE_IMPL_MDSPAN)
     message(STATUS "Using external mdspan")
     target_link_libraries(kokkoscore PUBLIC std::mdspan)
   else()
-    target_include_directories(kokkoscore SYSTEM PUBLIC $<BUILD_INTERFACE:${KOKKOS_SOURCE_DIR}/tpls/mdspan/include>)
+    target_include_directories(kokkoscore PUBLIC $<BUILD_INTERFACE:${KOKKOS_SOURCE_DIR}/tpls/mdspan/include>)
 
     append_glob(KOKKOS_CORE_HEADERS ${KOKKOS_SOURCE_DIR}/tpls/mdspan/include/experimental/__p0009_bits/*.hpp)
     append_glob(KOKKOS_CORE_HEADERS ${KOKKOS_SOURCE_DIR}/tpls/mdspan/include/experimental/mdspan)
