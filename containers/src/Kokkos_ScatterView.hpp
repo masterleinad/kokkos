@@ -195,9 +195,7 @@ struct DefaultContribution<Kokkos::SYCL,
 #endif
 
 // FIXME All these scatter values need overhaul:
-//   - like should they be copyable at all?
 //   - what is the internal handle type
-//   - remove join
 //   - consistently use the update function in operators
 template <typename ValueType, typename Op, typename DeviceType,
           typename Contribution>
@@ -255,27 +253,22 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterSum, DeviceType,
   KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&) = delete;
   KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                    = default;
   KOKKOS_FORCEINLINE_FUNCTION void operator+=(ValueType const& rhs) {
-    this->join(value, rhs);
+    Kokkos::atomic_add(&value, rhs);
   }
-  KOKKOS_FORCEINLINE_FUNCTION void operator++() { this->join(value, 1); }
-  KOKKOS_FORCEINLINE_FUNCTION void operator++(int) { this->join(value, 1); }
+  KOKKOS_FORCEINLINE_FUNCTION void operator++() { Kokkos::atomic_inc(&value); }
+  KOKKOS_FORCEINLINE_FUNCTION void operator++(int) {
+    Kokkos::atomic_inc(&value);
+  }
   KOKKOS_FORCEINLINE_FUNCTION void operator-=(ValueType const& rhs) {
-    this->join(value, ValueType(-rhs));
+    Kokkos::atomic_sub(&value, rhs);
   }
-  KOKKOS_FORCEINLINE_FUNCTION void operator--() {
-    this->join(value, ValueType(-1));
-  }
+  KOKKOS_FORCEINLINE_FUNCTION void operator--() { Kokkos::atomic_dec(&value); }
   KOKKOS_FORCEINLINE_FUNCTION void operator--(int) {
-    this->join(value, ValueType(-1));
-  }
-
-  KOKKOS_INLINE_FUNCTION
-  void join(ValueType& dest, const ValueType& src) const {
-    Kokkos::atomic_add(&dest, src);
+    Kokkos::atomic_dec(&value);
   }
 
   KOKKOS_FORCEINLINE_FUNCTION void update(ValueType const& rhs) {
-    this->join(value, rhs);
+    Kokkos::atomic_add(&value, rhs);
   }
 
   KOKKOS_FORCEINLINE_FUNCTION void reset() {
@@ -343,11 +336,6 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterProd, DeviceType,
     Kokkos::atomic_div(&value, rhs);
   }
 
-  KOKKOS_INLINE_FUNCTION
-  void join(ValueType& dest, const ValueType& src) const {
-    atomic_prod(&dest, src);
-  }
-
   KOKKOS_FORCEINLINE_FUNCTION void update(ValueType const& rhs) {
     atomic_prod(&value, rhs);
   }
@@ -399,13 +387,8 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterMin, DeviceType,
   KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&) = delete;
   KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                    = default;
 
-  KOKKOS_INLINE_FUNCTION
-  void join(ValueType& dest, const ValueType& src) const {
-    atomic_min(&dest, src);
-  }
-
   KOKKOS_FORCEINLINE_FUNCTION void update(ValueType const& rhs) {
-    this->join(value, rhs);
+    Kokkos::atomic_min(&value, rhs);
   }
   KOKKOS_FORCEINLINE_FUNCTION void reset() {
     value = reduction_identity<ValueType>::min();
@@ -457,13 +440,8 @@ struct ScatterValue<ValueType, Kokkos::Experimental::ScatterMax, DeviceType,
   KOKKOS_FUNCTION ScatterValue& operator=(const ScatterValue&) = delete;
   KOKKOS_DEFAULTED_FUNCTION ~ScatterValue()                    = default;
 
-  KOKKOS_INLINE_FUNCTION
-  void join(ValueType& dest, const ValueType& src) const {
-    atomic_max(&dest, src);
-  }
-
   KOKKOS_FORCEINLINE_FUNCTION void update(ValueType const& rhs) {
-    this->join(value, rhs);
+    Kokkos::atomic_max(&value, rhs);
   }
   KOKKOS_FORCEINLINE_FUNCTION void reset() {
     value = reduction_identity<ValueType>::max();
