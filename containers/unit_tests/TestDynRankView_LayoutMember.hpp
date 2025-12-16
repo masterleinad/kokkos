@@ -9,7 +9,6 @@ namespace {
 
 template <class Layout>
 void test_dyn_rank_view_layout_member() {
-  bool is_ll = std::is_same_v<Layout, Kokkos::LayoutLeft>;
   {
     Kokkos::DynRankView<int, Layout> a(
         Kokkos::View<int***, Layout>("A", 11, 7, 5));
@@ -20,7 +19,9 @@ void test_dyn_rank_view_layout_member() {
 #ifdef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
     ASSERT_EQ(l.stride, KOKKOS_INVALID_INDEX);
 #else
-    ASSERT_EQ(l.stride, (is_ll ? 11lu : KOKKOS_INVALID_INDEX));
+    ASSERT_EQ(l.stride, (std::is_same_v<Layout, Kokkos::LayoutLeft>
+                             ? 11lu
+                             : KOKKOS_INVALID_INDEX));
 #endif
   }
   {
@@ -31,7 +32,8 @@ void test_dyn_rank_view_layout_member() {
 #ifdef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
     ASSERT_EQ(l.stride, KOKKOS_INVALID_INDEX);
 #else
-    ASSERT_EQ(l.stride, (is_ll ? 7lu : 5lu));
+    ASSERT_EQ(l.stride,
+              (std::is_same_v<Layout, Kokkos::LayoutLeft> ? 7lu : 5lu));
 #endif
   }
 }
