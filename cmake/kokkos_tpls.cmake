@@ -21,31 +21,8 @@ endfunction()
 
 kokkos_tpl_option(HWLOC Off TRIBITS HWLOC)
 kokkos_tpl_option(CUDA ${Kokkos_ENABLE_CUDA} TRIBITS CUDA)
-if(KOKKOS_ENABLE_HIP AND NOT KOKKOS_CXX_COMPILER_ID STREQUAL HIPCC)
-  set(ROCM_DEFAULT ON)
-else()
-  set(ROCM_DEFAULT OFF)
-endif()
-if(KOKKOS_ENABLE_HIP)
-  set(ROCTHRUST_DEFAULT ON)
-else()
-  set(ROCTHRUST_DEFAULT OFF)
-endif()
-kokkos_tpl_option(ROCM ${ROCM_DEFAULT})
-kokkos_tpl_option(ROCTHRUST ${ROCTHRUST_DEFAULT})
-if(Kokkos_ENABLE_ROCTHRUST)
-  include(CheckCXXSourceCompiles)
-  check_cxx_source_compiles(
-    "
-    #include <ios>
-    int main() {
-      static_assert(_GLIBCXX_RELEASE < 9);
-      return 0;
-    }
-    "
-    Kokkos_ENABLE_IMPL_SKIP_NO_RTTI_FLAG
-  )
-endif()
+kokkos_tpl_option(ROCM ${Kokkos_ENABLE_HIP})
+kokkos_tpl_option(ROCTHRUST ${Kokkos_ENABLE_HIP})
 
 if(KOKKOS_ENABLE_SYCL)
   set(ONEDPL_DEFAULT ON)
