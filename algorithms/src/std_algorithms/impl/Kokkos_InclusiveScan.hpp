@@ -185,11 +185,7 @@ OutputIteratorType inclusive_scan_default_op_exespace_impl(
 
   Kokkos::Profiling::popRegion();
 
-#if CUDA_VERSION >= 13010
-  const auto num_elements = cuda::std::distance(first_from, last_from);
-#else
   const auto num_elements = thrust::distance(first_from, last_from);
-#endif
 
   return first_dest + num_elements;
 }
@@ -280,11 +276,8 @@ OutputIteratorType inclusive_scan_custom_binary_op_exespace_impl(
                          binary_op);
 
   Kokkos::Profiling::popRegion();
-#if CUDA_VERSION >= 13010
-  const auto num_elements = cuda::std::distance(first_from, last_from);
-#else
+
   const auto num_elements = thrust::distance(first_from, last_from);
-#endif
 
   return first_dest + num_elements;
 }
