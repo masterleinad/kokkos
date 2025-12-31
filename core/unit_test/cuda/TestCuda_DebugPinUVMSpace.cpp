@@ -34,8 +34,8 @@ struct CopyFunctor {
 };
 
 TEST(cuda, debug_pin_um_to_host) {
-#if defined(KOKKOS_ARCH_AMPERE87) || defined(KOKKOS_ARCH_HOPPER90)
-  GTEST_SKIP() << "skipping for devices that have integrated memory";
+#ifdef KOKKOS_ARCH_AMPERE87
+  GTEST_SKIP() << "skipping for Jetson devices that have integrated memory";
 #endif
   double time_cuda_space;
   double time_cuda_host_pinned_space;
