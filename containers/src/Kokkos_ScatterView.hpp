@@ -202,10 +202,7 @@ template <typename ValueType, typename Op, typename DeviceType,
 struct ScatterValue;
 
 /* ScatterValue <Op=ScatterSum, Contribution=ScatterNonAtomic> is
-   the object returned by the access operator() of ScatterAccess.
-   operator+=, etc. Note the addition of update(ValueType const& rhs) and
-   reset()  so that all reducers can have common functions See ReduceDuplicates
-   and ResetDuplicates ) */
+   the object returned by the access operator() of ScatterAccess. */
 template <typename ValueType, typename DeviceType>
 struct ScatterValue<ValueType, Kokkos::Experimental::ScatterSum, DeviceType,
                     Kokkos::Experimental::ScatterNonAtomic> {
