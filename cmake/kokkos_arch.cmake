@@ -315,10 +315,18 @@ function(kokkos_use_sve_if_compiler_allows_it)
   check_source_compiles(
     ${KOKKOS_COMPILE_LANGUAGE}
     "
+    #include <arm_neon.h>
     #include <arm_sve.h>
     int main() {
-    auto a = svcntb();
-    return 0;
+      svuint64_t z;
+      uint64x2_t res;
+
+      svbool_t pg0 = svpfirst(svptrue_b64(), svpfalse());
+      svbool_t pg1 = svpnext_b64(pg0, pg0);
+
+      res[0] = svlastb(pg0, z);
+      res[1] = svlastb(pg1, z);
+      return 0;
     }
     "
     KOKKOS_COMPILER_HAS_ARM_SVE
