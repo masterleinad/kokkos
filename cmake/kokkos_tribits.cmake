@@ -276,16 +276,6 @@ function(KOKKOS_SET_LIBRARY_PROPERTIES LIBRARY_NAME)
     target_link_options(${LIBRARY_NAME} PUBLIC ${KOKKOS_LINK_OPTIONS})
   endif()
 
-  #exclude case of compiler_launcher. The launcher forwards to nvcc_wrapper and shadow the CXX compiler that CMake sees (compiler_launcher changes the compiler).
-  #The CXX compiler CMake will invoke for the check is not able to consume the cuda flags if it is not nvcc_wrapper or clang+cuda.
-  #FIXME_NVHPC nvc++ is failing the check spuriously with various version numbers.
-  if(NOT (KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)
-     AND (NOT (KOKKOS_ENABLE_CUDA) OR ("${CMAKE_CXX_COMPILER}" MATCHES "nvcc_wrapper") OR (${KOKKOS_CXX_COMPILER_ID}
-                                                                                           STREQUAL Clang))
-  )
-    kokkos_check_flags(LINKER LANGUAGE ${KOKKOS_COMPILE_LANGUAGE} FLAGS ${KOKKOS_LINK_OPTIONS})
-  endif()
-
   list(APPEND ALL_KOKKOS_COMPILER_FLAGS ${KOKKOS_COMPILE_OPTIONS})
   target_compile_options(${LIBRARY_NAME} PUBLIC $<$<COMPILE_LANGUAGE:${Kokkos_LANGUAGES}>:${KOKKOS_COMPILE_OPTIONS}>)
 
@@ -340,17 +330,14 @@ function(KOKKOS_SET_LIBRARY_PROPERTIES LIBRARY_NAME)
   #FIXME_NVHPC nvc++ is failing the check spuriously with various version numbers.
   #FIXME CLANG+RDC with std=c++20 and CMake 3.22+ the runtime is not linked in the CheckCompilerFlag leading to false positives
   if(NOT (KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)
-     AND (NOT (KOKKOS_ENABLE_CUDA) OR ("${CMAKE_CXX_COMPILER}" MATCHES "nvcc_wrapper")
-          OR (${KOKKOS_CXX_COMPILER_ID} STREQUAL Clang AND NOT KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE))
+     AND (NOT (KOKKOS_ENABLE_CUDA)
+          OR ("${CMAKE_CXX_COMPILER}" MATCHES "nvcc_wrapper")
+          OR Kokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE
+          OR (${KOKKOS_CXX_COMPILER_ID} STREQUAL Clang AND NOT KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE)
+         )
   )
     kokkos_check_flags(
-      COMPILER
-      LANGUAGE
-      ${KOKKOS_COMPILE_LANGUAGE}
-      FLAGS
-      ${ALL_KOKKOS_COMPILER_FLAGS}
-      LINKER_FLAGS
-      ${KOKKOS_LINK_OPTIONS}
+      LANGUAGE ${KOKKOS_COMPILE_LANGUAGE} FLAGS ${ALL_KOKKOS_COMPILER_FLAGS} LINKER_FLAGS ${KOKKOS_LINK_OPTIONS}
     )
   endif()
 

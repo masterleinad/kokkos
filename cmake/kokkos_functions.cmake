@@ -962,7 +962,7 @@ endfunction()
 #       FLAGS       --> flags to check
 #
 function(kokkos_check_flags)
-  cmake_parse_arguments(INP "COMPILER;LINKER" "LANGUAGE" "FLAGS;LINKER_FLAGS" ${ARGN})
+  cmake_parse_arguments(INP "" "LANGUAGE" "FLAGS;LINKER_FLAGS" ${ARGN})
 
   # do nothing if no flags are given
   if(NOT INP_FLAGS)
@@ -973,42 +973,25 @@ function(kokkos_check_flags)
     message(FATAL_ERROR "'kokkos_check_flags' requires LANGUAGE keyword")
   endif()
 
-  #check_compiler/linker_flag requires a whitespace separated list
-  string(REPLACE ";" " " WHITESPACE_FLAGS "${INP_FLAGS}")
-  # icpx adds "-device ..." options that need quotes (which CMake removes). We need to add them here again.
-  string(REGEX REPLACE "(-device [A-Za-z0-9_\\\\.]*)" "\"\\1\"" QUOTED_FLAGS "${WHITESPACE_FLAGS}")
-
-  if(INP_COMPILER)
-    include(CheckCompilerFlag)
-    #delete cache so we always do the check
-    unset(KOKKOS_COMPILE_OPTIONS_CHECK CACHE)
-    if(INP_LINKER_FLAGS)
-      # icpx adds "-device ..." options that need quotes (which CMake removes). We need to add them here again.
-      string(REGEX REPLACE "(-device [A-Za-z0-9_\\\\.]*)" "\"\\1\"" QUOTED_LINKER_FLAGS "${INP_LINKER_FLAGS}")
-      set(CMAKE_REQUIRED_LINK_OPTIONS "${QUOTED_LINKER_FLAGS}")
-    endif()
-    check_compiler_flag(${INP_LANGUAGE} "${QUOTED_FLAGS}" KOKKOS_COMPILE_OPTIONS_CHECK)
-    if(NOT KOKKOS_COMPILE_OPTIONS_CHECK)
-      message(
-        FATAL_ERROR
-          "The compiler for ${KOKKOS_COMPILE_LANGUAGE} can not consume flag(s) ${QUOTED_FLAGS} in combination with the CMAKE_${KOKKOS_COMPILE_LANGUAGE}_FLAGS=${CMAKE_${KOKKOS_COMPILE_LANGUAGE}_FLAGS}. Please check the given configuration."
-      )
-    endif()
-  endif()
-
-  if(INP_LINKER)
-    include(CheckLinkerFlag)
-    # temporarily set language flags to nothing ... the linker often cannot handle these which leads to false errors
-    set(CMAKE_${INP_LANGUAGE}_FLAGS "")
-    #delete cache so we always do the check
-    unset(KOKKOS_LINK_OPTIONS_CHECK CACHE)
-    check_linker_flag(${INP_LANGUAGE} "${QUOTED_FLAGS}" KOKKOS_LINK_OPTIONS_CHECK)
-    if(NOT KOKKOS_LINK_OPTIONS_CHECK)
-      message(
-        FATAL_ERROR
-          "The linker for ${KOKKOS_COMPILE_LANGUAGE} can not consume flag(s) ${QUOTED_FLAGS}. Please check the given configuration."
-      )
-    endif()
+  include(CheckCompilerFlag)
+  #delete cache so we always do the check
+  unset(KOKKOS_COMPILE_OPTIONS_CHECK CACHE)
+  try_compile(
+    KOKKOS_COMPILE_OPTIONS_CHECK ${CMAKE_BINARY_DIR}/check_compilation
+    ${CMAKE_SOURCE_DIR}/cmake/compile_tests/check_compilation CheckCompilation
+    CMAKE_FLAGS
+      "-DCMAKE_${INP_LANGUAGE}_COMPILER=${CMAKE_${INP_LANGUAGE}_COMPILER}"
+      "-DCMAKE_${INP_LANGUAGE}_ARCHITECTURES=${KOKKOS_CUDA_ARCHITECTURES}" "-DCMAKE_VERBOSE_MAKEFILE=ON"
+      "-DTEST_LANGUAGE=${INP_LANGUAGE}" "-DTEST_COMPILE_FLAGS=${INP_FLAGS}" "-DTEST_LINK_OPTIONS=${INP_LINKER_FLAGS}"
+    OUTPUT_VARIABLE ERROR_OUTPUT
+  )
+  if(KOKKOS_COMPILE_OPTIONS_CHECK)
+    message(STATUS "Performing Test KOKKOS_COMPILE_OPTIONS_CHECK - Success")
+  else()
+    message(
+      FATAL_ERROR
+        "The compiler for ${KOKKOS_COMPILE_LANGUAGE} can not consume flag(s) ${QUOTED_FLAGS} in combination with the CMAKE_${KOKKOS_COMPILE_LANGUAGE}_FLAGS=${CMAKE_${KOKKOS_COMPILE_LANGUAGE}_FLAGS}. Please check the given configuration. The compiler error message is:\n${ERROR_OUTPUT}"
+    )
   endif()
 endfunction()
 
