@@ -30,7 +30,6 @@ kokkos_add_library(
   MODULE_INTERFACE
   ${SIMD_MODULES}
 )
-set_target_properties(kokkossimd PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 if(KOKKOS_CXX_COMPILER_ID STREQUAL IntelLLVM)
   find_library(INTEL_SVML NAMES svml)

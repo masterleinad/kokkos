@@ -30,7 +30,6 @@ kokkos_add_library(
   SOURCES
   ${ALGO_SOURCES}
 )
-set_target_properties(kokkosalgorithms PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 kokkos_lib_include_directories(
   kokkosalgorithms ${KOKKOS_TOP_BUILD_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
 )
