@@ -35,7 +35,7 @@ pipeline {
                           rm -rf spack && \
                           git clone https://github.com/spack/spack.git && \
                           . ./spack/share/spack/setup-env.sh && \
-                          spack install --only=dependencies kokkos@develop+tests && \
+                          spack install -v --only=dependencies kokkos@develop+tests && \
                           spack install -v --only=package ${CDASH_ARGS} kokkos@develop+tests cxxstd=20 && \
                           spack load cmake && \
                           spack test run ${CDASH_ARGS} kokkos && \
@@ -67,7 +67,7 @@ pipeline {
                           rm -rf spack && \
                           git clone https://github.com/spack/spack.git && \
                           . ./spack/share/spack/setup-env.sh && \
-                          spack install --only=dependencies kokkos@develop+cuda+wrapper+tests cuda_arch=80 ^cuda@12.9.0 && \
+                          spack install -v --only=dependencies kokkos@develop+cuda+wrapper+tests cuda_arch=80 ^cuda@12.9.0 && \
                           spack install -v --only=package ${CDASH_ARGS} kokkos@develop+cuda+wrapper+tests cuda_arch=80 ^cuda@12.9.0 && \
                           spack load cmake  && \
                           spack load kokkos-nvcc-wrapper && \
