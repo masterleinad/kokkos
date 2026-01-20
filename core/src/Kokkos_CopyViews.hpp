@@ -70,12 +70,20 @@ template <class ViewType, class Layout, class ExecSpace, typename iType>
 struct ViewFill<ViewType, Layout, ExecSpace, 1, iType> {
   ViewType a;
   typename ViewType::const_value_type val;
-  // It was found empirically that increasing the number of elements per thread
-  // by a factor of 16 gives good results for configurations that support
-  // StaticBatchSize.
+  // Increasing the number of elements per thread improves throughput for
+  // configurations that support StaticBatchSize. The values were found
+  // empirically.
+#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
   using policy_type =
       Kokkos::RangePolicy<ExecSpace, Kokkos::IndexType<iType>,
                           Kokkos::Experimental::StaticBatchSize<16>>;
+#elif defined(KOKKOS_ARCH_AMD_GPU)
+  using policy_type =
+      Kokkos::RangePolicy<ExecSpace, Kokkos::IndexType<iType>,
+                          Kokkos::Experimental::StaticBatchSize<4>>;
+#else
+  using policy_type = Kokkos::RangePolicy<ExecSpace, Kokkos::IndexType<iType>>;
+#endif
 
   ViewFill(const ViewType& a_, typename ViewType::const_value_type& val_,
            const ExecSpace& space)
