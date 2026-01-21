@@ -66,24 +66,34 @@ struct ViewFill<ViewType, Layout, ExecSpace, 0, iType> {
   void operator()(const iType&) const { a() = val; }
 };
 
+// Increasing the number of elements per thread improves throughput for
+// configurations that support StaticBatchSize. The values were found
+// empirically.
+template <Kokkos::ExecutionSpace>
+struct ViewFillStaticBatchSize {
+  static constexpr int value = 1;
+};
+#ifdef KOKKOS_ENABLE_CUDA
+template <>
+struct ViewFillStaticBatchSize<Kokkos::Cuda> {
+  static constexpr int value = 16;
+};
+#endif
+#ifdef KOKKOS_ENABLE_HIP
+template <>
+struct ViewFillStaticBatchSize<Kokkos::HIP> {
+  static constexpr int value = 4;
+};
+#endif
+
 template <class ViewType, class Layout, class ExecSpace, typename iType>
 struct ViewFill<ViewType, Layout, ExecSpace, 1, iType> {
   ViewType a;
   typename ViewType::const_value_type val;
-  // Increasing the number of elements per thread improves throughput for
-  // configurations that support StaticBatchSize. The values were found
-  // empirically.
-#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
   using policy_type =
       Kokkos::RangePolicy<ExecSpace, Kokkos::IndexType<iType>,
-                          Kokkos::Experimental::StaticBatchSize<16>>;
-#elif defined(KOKKOS_ARCH_AMD_GPU)
-  using policy_type =
-      Kokkos::RangePolicy<ExecSpace, Kokkos::IndexType<iType>,
-                          Kokkos::Experimental::StaticBatchSize<4>>;
-#else
-  using policy_type = Kokkos::RangePolicy<ExecSpace, Kokkos::IndexType<iType>>;
-#endif
+                          Kokkos::Experimental::StaticBatchSize<
+                              ViewFillStaticBatchSize<ExecSpace>::value>>;
 
   ViewFill(const ViewType& a_, typename ViewType::const_value_type& val_,
            const ExecSpace& space)
