@@ -69,7 +69,7 @@ struct ViewFill<ViewType, Layout, ExecSpace, 0, iType> {
 // Increasing the number of elements per thread improves throughput for
 // configurations that support StaticBatchSize. The values were found
 // empirically.
-template <Kokkos::ExecutionSpace>
+template <class ExecutionSpace>
 struct ViewFillStaticBatchSize {
   static constexpr int value = 1;
 };
