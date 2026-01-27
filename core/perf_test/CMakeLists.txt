@@ -58,9 +58,8 @@ macro(KOKKOS_ADD_BENCHMARK NAME)
   add_test(NAME ${BENCHMARK_NAME} COMMAND ${BENCHMARK_NAME} ${BENCHMARK_ARGS})
 endmacro()
 
-# FIXME_OPENMPTARGET - the NVIDIA HPC compiler nvc++ in the OpenMPTarget backend does not pass the perf_tests.
 # FIXME_OPENACC - temporarily disabled due to unimplemented features
-if((KOKKOS_ENABLE_OPENMPTARGET OR KOKKOS_ENABLE_OPENACC) AND KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)
+if(KOKKOS_ENABLE_OPENACC AND KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)
   return()
 endif()
 if(KOKKOS_ENABLE_OPENACC AND KOKKOS_CXX_COMPILER_ID STREQUAL Clang)
@@ -85,6 +84,7 @@ set(BENCHMARK_SOURCES
     PerfTestHexGrad.cpp
     PerfTest_MallocFree.cpp
     PerfTest_Stream.cpp
+    PerfTestMDRange_Stencil.cpp
     PerfTest_ViewAllocate.cpp
     PerfTest_ViewCopy_a123.cpp
     PerfTest_ViewCopy_b123.cpp
@@ -121,13 +121,6 @@ set(BENCHMARK_SOURCES
     PerfTest_ViewResize_Raw.cpp
 )
 
-if(Kokkos_ENABLE_OPENMPTARGET)
-  # FIXME OPENMPTARGET requires TeamPolicy Reductions and Custom Reduction
-  list(REMOVE_ITEM BENCHMARK_SOURCES PerfTestGramSchmidt.cpp PerfTest_CustomReduction.cpp
-       PerfTest_ExecSpacePartitioning.cpp
-  )
-endif()
-
 kokkos_add_benchmark(PerformanceTest_Benchmark SOURCES ${BENCHMARK_SOURCES})
 
 kokkos_add_benchmark(Benchmark_Atomic_MinMax SOURCES test_atomic_minmax_simple.cpp)
@@ -136,6 +129,8 @@ kokkos_add_benchmark(
   PerformanceTest_ViewFirstTouch SOURCES PerfTest_ViewFirstTouch_Initialize.cpp PerfTest_ViewFirstTouch_ParallelFor.cpp
   PerfTest_ViewFirstTouch_DeepCopy.cpp
 )
+
+kokkos_add_benchmark(PerformanceTest_MDRangePolicy_Stream SOURCES PerfTestMDRange_Stream.cpp)
 
 # FIXME_NVHPC
 if(NOT KOKKOS_CXX_COMPILER_ID STREQUAL NVHPC)

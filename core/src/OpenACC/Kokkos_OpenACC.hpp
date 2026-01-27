@@ -62,6 +62,8 @@ class OpenACC {
 
   using scratch_memory_space = ScratchMemorySpace<OpenACC>;
 
+  OpenACC(const OpenACC&)            = default;
+  OpenACC& operator=(const OpenACC&) = default;
   ~OpenACC();
   OpenACC();
 

@@ -199,10 +199,7 @@ class HPX {
       : HPX(std::move(sender)) {}
 #endif
 
-  HPX(HPX &&other)      = default;
-  HPX(const HPX &other) = default;
-
-  HPX &operator=(HPX &&)      = default;
+  HPX(const HPX &other)       = default;
   HPX &operator=(const HPX &) = default;
 
   void print_configuration(std::ostream &os, bool /*verbose*/ = false) const;
@@ -358,6 +355,7 @@ class HPX {
                        hpx::threads::thread_stacksize stacksize =
                            hpx::threads::thread_stacksize::default_) const {
     impl_bulk_plain_erased(force_synchronous, is_light_weight_policy,
+                           // NOLINTNEXTLINE(bugprone-exception-escape)
                            {[functor](Index i) {
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
                              impl_in_parallel_scope p;

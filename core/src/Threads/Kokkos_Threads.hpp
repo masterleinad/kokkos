@@ -111,6 +111,9 @@ class Threads {
 
   uint32_t impl_instance_id() const noexcept { return 1; }
 
+  Threads(const Threads&)            = default;
+  Threads& operator=(const Threads&) = default;
+
   ~Threads() { Impl::check_execution_space_destructor_precondition(name()); }
 
   Threads() { Impl::check_execution_space_constructor_precondition(name()); }

@@ -96,6 +96,8 @@ class Serial {
 
   //@}
 
+  Serial(const Serial&)            = default;
+  Serial& operator=(const Serial&) = default;
   ~Serial();
   Serial();
 

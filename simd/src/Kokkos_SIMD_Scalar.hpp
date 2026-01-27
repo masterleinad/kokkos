@@ -33,7 +33,7 @@ class basic_simd_mask<T, simd_abi::scalar> {
   using simd_type  = basic_simd<T, simd_abi::scalar>;
   using abi_type   = simd_abi::scalar;
 
-  KOKKOS_FORCEINLINE_FUNCTION static constexpr std::size_t size() { return 1; }
+  static constexpr Kokkos::Impl::integral_constant<Impl::simd_size_t, 1> size{};
 
   KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd_mask() noexcept = default;
 
@@ -53,7 +53,7 @@ class basic_simd_mask<T, simd_abi::scalar> {
       : m_value(gen(0)) {}
 
   KOKKOS_FORCEINLINE_FUNCTION constexpr value_type operator[](
-      std::size_t) const {
+      Impl::simd_size_t) const {
     return m_value;
   }
 
@@ -170,7 +170,7 @@ class basic_simd<T, simd_abi::scalar> {
   using abi_type   = simd_abi::scalar;
   using mask_type  = basic_simd_mask<T, abi_type>;
 
-  KOKKOS_FORCEINLINE_FUNCTION static constexpr std::size_t size() { return 1; }
+  static constexpr Kokkos::Impl::integral_constant<Impl::simd_size_t, 1> size{};
 
   KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd() noexcept         = default;
   KOKKOS_DEFAULTED_FUNCTION constexpr basic_simd(basic_simd const&) = default;
@@ -192,7 +192,7 @@ class basic_simd<T, simd_abi::scalar> {
       : m_value(static_cast<U>(other)) {}
   template <class G>
     requires Impl::InvocableWithReturnType<
-        G, value_type, std::integral_constant<std::size_t, 0>>
+        G, value_type, std::integral_constant<Impl::simd_size_t, 0>>
   // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
   KOKKOS_FORCEINLINE_FUNCTION constexpr explicit basic_simd(G&& gen) noexcept
       : m_value(gen(0)) {}
@@ -234,7 +234,7 @@ class basic_simd<T, simd_abi::scalar> {
 #endif
 
   KOKKOS_FORCEINLINE_FUNCTION constexpr value_type operator[](
-      std::size_t) const {
+      Impl::simd_size_t) const {
     return m_value;
   }
 
@@ -295,7 +295,7 @@ class basic_simd<T, simd_abi::scalar> {
     return lhs.m_value ^ rhs.m_value;
   }
   KOKKOS_FORCEINLINE_FUNCTION friend constexpr basic_simd operator<<(
-      basic_simd const& lhs, int rhs) noexcept {
+      basic_simd const& lhs, Impl::simd_size_t rhs) noexcept {
     return basic_simd(lhs.m_value << rhs);
   }
   KOKKOS_FORCEINLINE_FUNCTION friend constexpr basic_simd operator<<(
@@ -303,7 +303,7 @@ class basic_simd<T, simd_abi::scalar> {
     return basic_simd(lhs.m_value << rhs.m_value);
   }
   KOKKOS_FORCEINLINE_FUNCTION friend constexpr basic_simd operator>>(
-      basic_simd const& lhs, int rhs) noexcept {
+      basic_simd const& lhs, Impl::simd_size_t rhs) noexcept {
     return basic_simd(lhs.m_value >> rhs);
   }
   KOKKOS_FORCEINLINE_FUNCTION friend constexpr basic_simd operator>>(

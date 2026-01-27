@@ -47,9 +47,6 @@ export {
 #ifdef KOKKOS_ENABLE_HPX
   using ::Kokkos::Experimental::HPX;
 #endif
-#ifdef KOKKOS_ENABLE_OPENMPTARGET
-  using ::Kokkos::Experimental::OpenMPTarget;
-#endif
 #ifdef KOKKOS_ENABLE_OPENACC
   using ::Kokkos::Experimental::OpenACC;
 #endif
@@ -491,12 +488,22 @@ export {
   using ::Kokkos::hypot;
   using ::Kokkos::hypotf;
   using ::Kokkos::hypotl;
+  using ::Kokkos::ilogb;
+  using ::Kokkos::ilogbf;
+  using ::Kokkos::ilogbl;
   using ::Kokkos::isfinite;
   using ::Kokkos::isinf;
   using ::Kokkos::isnan;
+  using ::Kokkos::isnormal;
   using ::Kokkos::lgamma;
   using ::Kokkos::lgammaf;
   using ::Kokkos::lgammal;
+  using ::Kokkos::llrint;
+  using ::Kokkos::llrintf;
+  using ::Kokkos::llrintl;
+  using ::Kokkos::llround;
+  using ::Kokkos::llroundf;
+  using ::Kokkos::llroundl;
   using ::Kokkos::log;
   using ::Kokkos::log10;
   using ::Kokkos::log10f;
@@ -512,6 +519,15 @@ export {
   using ::Kokkos::logbl;
   using ::Kokkos::logf;
   using ::Kokkos::logl;
+  using ::Kokkos::lrint;
+  using ::Kokkos::lrintf;
+  using ::Kokkos::lrintl;
+  using ::Kokkos::lround;
+  using ::Kokkos::lroundf;
+  using ::Kokkos::lroundl;
+  using ::Kokkos::modf;
+  using ::Kokkos::modff;
+  using ::Kokkos::modfl;
   using ::Kokkos::nan;
   using ::Kokkos::nanf;
   using ::Kokkos::nanl;
@@ -524,9 +540,16 @@ export {
   using ::Kokkos::pow;
   using ::Kokkos::powf;
   using ::Kokkos::powl;
+  using ::Kokkos::rcp;
   using ::Kokkos::remainder;
   using ::Kokkos::remainderf;
   using ::Kokkos::remainderl;
+  using ::Kokkos::remquo;
+  using ::Kokkos::remquof;
+  using ::Kokkos::remquol;
+  using ::Kokkos::rint;
+  using ::Kokkos::rintf;
+  using ::Kokkos::rintl;
   using ::Kokkos::round;
   using ::Kokkos::roundf;
   using ::Kokkos::roundl;
