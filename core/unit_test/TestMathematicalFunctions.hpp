@@ -1964,8 +1964,6 @@ TEST(TEST_CATEGORY, mathematical_functions_remainder_function) {
   TestFloatingPointRemainderFunction<TEST_EXECSPACE>();
 }
 
-#if 0
-// TODO: Adjust expected values, see https://github.com/kokkos/kokkos/issues/6275
 template <class Space>
 struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
   TestIEEEFloatingPointRemainderFunction() { run(); }
@@ -1976,37 +1974,37 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
   }
   KOKKOS_FUNCTION void operator()(int, int& e) const {
     using Kokkos::remainder;
-    if (!compare(remainder(6.2f, 4.f), 2.2f, 2) ||
-        !compare(remainder(-6.2f, 4.f), 2.2f, 1)) {
+    if (!compare(remainder(6.2f, 4.f), -1.8f, 2) ||
+        !compare(remainder(-6.2f, 4.f), 1.8f, 2)) {
       ++e;
       Kokkos::printf("failed remainder(float)\n");
     }
     if (!compare(remainder(static_cast<KE::half_t>(6.2f),
                            static_cast<KE::half_t>(4.f)),
-                 static_cast<KE::half_t>(2.2f), 1) ||
+                 static_cast<KE::half_t>(-1.8f), 2) ||
         !compare(remainder(static_cast<KE::half_t>(-6.2f),
                            static_cast<KE::half_t>(4.f)),
-                 -static_cast<KE::half_t>(2.2f), 1)) {
+                 static_cast<KE::half_t>(1.8f), 2)) {
       ++e;
       Kokkos::printf("failed remainder(KE::half_t)\n");
     }
     if (!compare(remainder(static_cast<KE::bhalf_t>(6.2f),
                            static_cast<KE::bhalf_t>(4.f)),
-                 static_cast<KE::bhalf_t>(2.2f), 1) ||
+                 static_cast<KE::bhalf_t>(-1.8f), 2) ||
         !compare(remainder(static_cast<KE::bhalf_t>(-6.2f),
                            static_cast<KE::bhalf_t>(4.f)),
-                 -static_cast<KE::bhalf_t>(2.2f), 1)) {
+                 static_cast<KE::bhalf_t>(1.8f), 2)) {
       ++e;
       Kokkos::printf("failed remainder(KE::bhalf_t)\n");
     }
-    if (!compare(remainder(6.2, 4.), 2.2, 2) ||
-        !compare(remainder(-6.2, 4.), 2.2, 1)) {
+    if (!compare(remainder(6.2, 4.), -1.8, 2) ||
+        !compare(remainder(-6.2, 4.), 1.8, 2)) {
       ++e;
       Kokkos::printf("failed remainder(double)\n");
     }
 #ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
-    if (!compare(remainder(6.2l, 4.l), 2.2l, 1) ||
-        !compare(remainder(-6.2l, 4.l), -2.2l, 1)) {
+    if (!compare(remainder(6.2l, 4.l), -1.8l, 2) ||
+        !compare(remainder(-6.2l, 4.l), 1.8l, 2)) {
       ++e;
       Kokkos::printf("failed remainder(long double)\n");
     }
@@ -2015,11 +2013,10 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
     // special values
     using Kokkos::isinf;
     using Kokkos::isnan;
-    if (!isinf(remainder(-KE::infinity<float>::value, 1.f)) ||
-        !isnan(remainder(-KE::quiet_NaN<float>::value, 1.f))) {
+    if (!isnan(remainder(-KE::infinity<float>::value, 2.f)) ||
+        !isnan(remainder(-KE::quiet_NaN<float>::value, 2.f))) {
       ++e;
-      Kokkos::printf(
-          "failed remainder(floating_point) special values\n");
+      Kokkos::printf("failed remainder(floating_point) special values\n");
     }
 #endif
 
@@ -2034,8 +2031,7 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
     static_assert(std::is_same_v<decltype(remainder(4.f, 4.f)), float>);
     static_assert(std::is_same_v<decltype(remainder(5., 5.)), double>);
 #ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
-    static_assert(
-        std::is_same_v<decltype(remainder(6.l, 6.l)), long double>);
+    static_assert(std::is_same_v<decltype(remainder(6.l, 6.l)), long double>);
 #endif
   }
 };
@@ -2043,7 +2039,6 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
 TEST(TEST_CATEGORY, mathematical_functions_ieee_remainder_function) {
   TestIEEEFloatingPointRemainderFunction<TEST_EXECSPACE>();
 }
-#endif
 
 // TODO: TestFpClassify, see https://github.com/kokkos/kokkos/issues/6279
 
