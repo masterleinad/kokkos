@@ -2021,13 +2021,13 @@ struct TestIEEEFloatingPointRemainderFunction : FloatingPointComparison {
 #endif
 
     static_assert(
-        std::is_same<decltype(remainder(static_cast<KE::half_t>(4.f),
-                                        static_cast<KE::half_t>(4.f))),
-                     KE::half_t>::value);
+        std::is_same_v<decltype(remainder(static_cast<KE::half_t>(4.f),
+                                          static_cast<KE::half_t>(4.f))),
+                       KE::half_t>);
     static_assert(
-        std::is_same<decltype(remainder(static_cast<KE::bhalf_t>(4.f),
-                                        static_cast<KE::bhalf_t>(4.f))),
-                     KE::bhalf_t>::value);
+        std::is_same_v<decltype(remainder(static_cast<KE::bhalf_t>(4.f),
+                                          static_cast<KE::bhalf_t>(4.f))),
+                       KE::bhalf_t>);
     static_assert(std::is_same_v<decltype(remainder(4.f, 4.f)), float>);
     static_assert(std::is_same_v<decltype(remainder(5., 5.)), double>);
 #ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
