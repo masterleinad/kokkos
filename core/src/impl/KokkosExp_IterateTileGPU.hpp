@@ -193,7 +193,7 @@ struct DeviceIterate {
   const array_type m_lower;
   const array_type m_upper;
   const array_type m_extent;  // tile_size * num_tiles
-  Functor m_functor;
+  const Functor& m_functor;
 
 #ifdef KOKKOS_ENABLE_SYCL
   const EmulateCUDADim3<index_type> gridDim;
