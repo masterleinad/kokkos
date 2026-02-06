@@ -595,6 +595,9 @@ pipeline {
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
+                    environment {
+                        KOKKOS_NUM_THREADS = 8
+                    }
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
@@ -617,7 +620,7 @@ pipeline {
                                 -DKokkos_ENABLE_TESTS=ON \
                                 -DKokkos_ENABLE_CUDA=ON \
                                 -DKokkos_ENABLE_LIBDL=OFF \
-                                -DKokkos_ENABLE_OPENMP=ON \
+                                -DKokkos_ENABLE_THREADS=ON \
                                 -DKokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=ON \
                               .. && \
                               set +x && \

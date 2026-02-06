@@ -486,6 +486,9 @@ export {
   using ::Kokkos::fmodf;
   using ::Kokkos::fmodl;
   using ::Kokkos::fpclassify;
+  using ::Kokkos::frexp;
+  using ::Kokkos::frexpf;
+  using ::Kokkos::frexpl;
   using ::Kokkos::hypot;
   using ::Kokkos::hypotf;
   using ::Kokkos::hypotl;
@@ -502,6 +505,9 @@ export {
   using ::Kokkos::isnan;
   using ::Kokkos::isnormal;
   using ::Kokkos::isunordered;
+  using ::Kokkos::ldexp;
+  using ::Kokkos::ldexpf;
+  using ::Kokkos::ldexpl;
   using ::Kokkos::lgamma;
   using ::Kokkos::lgammaf;
   using ::Kokkos::lgammal;
@@ -548,6 +554,8 @@ export {
   using ::Kokkos::powf;
   using ::Kokkos::powl;
   using ::Kokkos::rcp;
+  using ::Kokkos::rcpf;
+  using ::Kokkos::rcpl;
   using ::Kokkos::remainder;
   using ::Kokkos::remainderf;
   using ::Kokkos::remainderl;
@@ -563,6 +571,12 @@ export {
   using ::Kokkos::rsqrt;
   using ::Kokkos::rsqrtf;
   using ::Kokkos::rsqrtl;
+  using ::Kokkos::scalbln;
+  using ::Kokkos::scalblnf;
+  using ::Kokkos::scalblnl;
+  using ::Kokkos::scalbn;
+  using ::Kokkos::scalbnf;
+  using ::Kokkos::scalbnl;
   using ::Kokkos::signbit;
   using ::Kokkos::sin;
   using ::Kokkos::sinf;

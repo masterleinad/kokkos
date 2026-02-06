@@ -319,6 +319,62 @@ using promote_3_t = typename promote_3<T, U, V>::type;
     return FUNC(static_cast<Promoted>(x), static_cast<Promoted>(y));           \
   }
 
+#define KOKKOS_IMPL_MATH_BINARY_INT_FUNCTION(FUNC1, FUNC2, intT)         \
+  KOKKOS_INLINE_FUNCTION float FUNC1(float x, intT y) {                  \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC2;                   \
+    return FUNC2(x, y);                                                  \
+  }                                                                      \
+  KOKKOS_INLINE_FUNCTION double FUNC1(double x, intT y) {                \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC2;                   \
+    return FUNC2(x, y);                                                  \
+  }                                                                      \
+  KOKKOS_INLINE_FUNCTION float FUNC1##f(float x, intT y) {               \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC2;                   \
+    return FUNC2(x, y);                                                  \
+  }                                                                      \
+  inline long double FUNC1(long double x, intT y) {                      \
+    using std::FUNC2;                                                    \
+    return FUNC2(x, y);                                                  \
+  }                                                                      \
+  inline long double FUNC1##l(long double x, intT y) {                   \
+    using std::FUNC2;                                                    \
+    return FUNC2(x, y);                                                  \
+  }                                                                      \
+  template <class T>                                                     \
+  KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_integral_v<T>, double> \
+  FUNC1(T x, intT y) {                                                   \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC2;                   \
+    return FUNC2(static_cast<double>(x), y);                             \
+  }
+
+#define KOKKOS_IMPL_MATH_BINARY_INT_PTR_FUNCTION(FUNC)                         \
+  KOKKOS_INLINE_FUNCTION float FUNC(float x, int* y) {                         \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC;                          \
+    return FUNC(x, y);                                                         \
+  }                                                                            \
+  KOKKOS_INLINE_FUNCTION double FUNC(double x, int* y) {                       \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC;                          \
+    return FUNC(x, y);                                                         \
+  }                                                                            \
+  KOKKOS_INLINE_FUNCTION float FUNC##f(float x, int* y) {                      \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC;                          \
+    return FUNC(x, y);                                                         \
+  }                                                                            \
+  inline long double FUNC(long double x, int* y) {                             \
+    using std::FUNC;                                                           \
+    return FUNC(x, y);                                                         \
+  }                                                                            \
+  inline long double FUNC##l(long double x, int* y) {                          \
+    using std::FUNC;                                                           \
+    return FUNC(x, y);                                                         \
+  }                                                                            \
+  template <class T>                                                           \
+  KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_integral_v<T>, double> FUNC( \
+      T x, int* y) {                                                           \
+    using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC;                          \
+    return FUNC(static_cast<double>(x), y);                                    \
+  }
+
 #define KOKKOS_IMPL_MATH_TERNARY_INT_PTR_FUNCTION(FUNC)                        \
   KOKKOS_INLINE_FUNCTION float FUNC(float x, float y, int* z) {                \
     using KOKKOS_IMPL_MATH_FUNCTIONS_NAMESPACE::FUNC;                          \
@@ -593,11 +649,17 @@ KOKKOS_IMPL_MATH_UNARY_INT_FUNCTION(lrint)
 KOKKOS_IMPL_MATH_UNARY_INT_FUNCTION(llrint)
 #endif
 // Floating point manipulation functions
-// frexp
-// ldexp
+KOKKOS_IMPL_MATH_BINARY_INT_PTR_FUNCTION(frexp)
+KOKKOS_IMPL_MATH_BINARY_INT_FUNCTION(ldexp, ldexp, int)
 KOKKOS_IMPL_MATH_BINARY_PTR_FUNCTION(modf)
-// scalbn
-// scalbln
+// FIXME_SYCL not available as of current SYCL 2020 specification (revision 11)
+#ifndef KOKKOS_ENABLE_SYCL
+KOKKOS_IMPL_MATH_BINARY_INT_FUNCTION(scalbn, scalbn, int)
+KOKKOS_IMPL_MATH_BINARY_INT_FUNCTION(scalbln, scalbln, long)
+#elif defined(FLT_RADIX) && (FLT_RADIX == 2)
+// If FLT_RADIX==2, we can implement scalbn via ldexp.
+KOKKOS_IMPL_MATH_BINARY_INT_FUNCTION(scalbn, ldexp, int)
+#endif
 KOKKOS_IMPL_MATH_UNARY_INT_FUNCTION(ilogb)
 KOKKOS_IMPL_MATH_UNARY_FUNCTION(logb)
 KOKKOS_IMPL_MATH_BINARY_FUNCTION(nextafter)
@@ -706,6 +768,8 @@ KOKKOS_IMPL_MATH_BINARY_PREDICATE(isunordered,
 #undef KOKKOS_IMPL_MATH_BINARY_PTR_FUNCTION
 #undef KOKKOS_IMPL_MATH_BINARY_PREDICATE
 #undef KOKKOS_IMPL_MATH_BINARY_PREDICATE_DEVICE_FALLBACK
+#undef KOKKOS_IMPL_MATH_BINARY_INT_FUNCTION
+#undef KOKKOS_IMPL_MATH_BINARY_INT_PTR_FUNCTION
 #undef KOKKOS_IMPL_MATH_TERNARY_FUNCTION
 #undef KOKKOS_IMPL_MATH_TERNARY_INT_PTR_FUNCTION
 
@@ -761,6 +825,8 @@ KOKKOS_INLINE_FUNCTION double rcp(double val) {
 #endif
 }
 inline long double rcp(long double val) { return 1.0l / val; }
+KOKKOS_INLINE_FUNCTION float rcpf(float val) { return Kokkos::rcp(val); }
+inline long double rcpl(long double val) { return Kokkos::rcp(val); }
 template <class T>
 KOKKOS_INLINE_FUNCTION std::enable_if_t<std::is_integral_v<T>, double> rcp(
     T x) {

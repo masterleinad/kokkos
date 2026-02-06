@@ -161,14 +161,16 @@ TEST(TEST_CATEGORY, large_team_scratch_size) {
   const int level   = 1;
   const int n_teams = 1;
 
-#if defined(KOKKOS_ENABLE_LARGE_MEM_TESTS) || defined(KOKKOS_ENABLE_CUDA) || \
-    defined(KOKKOS_ENABLE_HIP) || defined(KOKKOS_ENABLE_SYCL)
   //  The GPU backends use unsigned as size_type and we need to check that we
   //  didn't screw the scratch space calculation up, CPU backends anyway use
   //  size_t so less likely to screw up
+#ifdef KOKKOS_ENABLE_LARGE_MEM_TESTS
   const size_t per_team_extent = 502795560;
 #else
-  const size_t per_team_extent = 268435460;
+  const size_t per_team_extent =
+      std::is_same_v<TEST_EXECSPACE::memory_space, Kokkos::HostSpace>
+          ? 268435460
+          : 502795560;
 #endif
 
   const size_t per_team_bytes = std::min<size_t>(
