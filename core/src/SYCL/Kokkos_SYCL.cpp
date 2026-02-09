@@ -210,9 +210,12 @@ void SYCL::impl_initialize(InitializationSettings const& settings) {
   Impl::SYCLInternal::default_instance =
       Impl::HostSharedPtr(new Impl::SYCLInternal(sycl_devices[id]));
   Impl::SYCLInternal::m_syclDev = id;
+#ifdef KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED
+  // Init the array for used for arbitrarily sized atomics
   desul::Impl::init_lock_arrays();
   desul::Impl::init_lock_arrays_sycl(
       *Impl::SYCLInternal::default_instance->m_queue);
+#endif
 }
 
 std::ostream& SYCL::impl_sycl_info(std::ostream& os,
