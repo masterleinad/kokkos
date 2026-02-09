@@ -94,6 +94,7 @@ kokkos_arch_option(AMPERE87 GPU "NVIDIA Ampere generation CC 8.7" "KOKKOS_SHOW_C
 kokkos_arch_option(ADA89 GPU "NVIDIA Ada generation CC 8.9" "KOKKOS_SHOW_CUDA_ARCHS")
 kokkos_arch_option(HOPPER90 GPU "NVIDIA Hopper generation CC 9.0" "KOKKOS_SHOW_CUDA_ARCHS")
 kokkos_arch_option(BLACKWELL100 GPU "NVIDIA Blackwell generation CC 10.0" "KOKKOS_SHOW_CUDA_ARCHS")
+kokkos_arch_option(BLACKWELL103 GPU "NVIDIA Blackwell generation CC 10.3" "KOKKOS_SHOW_CUDA_ARCHS")
 kokkos_arch_option(BLACKWELL120 GPU "NVIDIA Blackwell generation CC 12.0" "KOKKOS_SHOW_CUDA_ARCHS")
 
 if(Kokkos_ENABLE_HIP OR Kokkos_ENABLE_OPENACC OR Kokkos_ENABLE_SYCL)
@@ -101,9 +102,9 @@ if(Kokkos_ENABLE_HIP OR Kokkos_ENABLE_OPENACC OR Kokkos_ENABLE_SYCL)
 endif()
 
 # AMD archs ordered in decreasing priority of autodetection
-list(APPEND SUPPORTED_AMD_GPUS MI300 MI300A MI300)
-list(APPEND SUPPORTED_AMD_ARCHS AMD_GFX942 AMD_GFX942_APU AMD_GFX940)
-list(APPEND CORRESPONDING_AMD_FLAGS gfx942 gfx942 gfx940)
+list(APPEND SUPPORTED_AMD_GPUS MI300 MI300A MI300 MI350)
+list(APPEND SUPPORTED_AMD_ARCHS AMD_GFX942 AMD_GFX942_APU AMD_GFX940 AMD_GFX950)
+list(APPEND CORRESPONDING_AMD_FLAGS gfx942 gfx942 gfx940 gfx950)
 list(APPEND SUPPORTED_AMD_GPUS MI200 MI200 MI100 MI100)
 list(APPEND SUPPORTED_AMD_ARCHS VEGA90A AMD_GFX90A VEGA908 AMD_GFX908)
 list(APPEND CORRESPONDING_AMD_FLAGS gfx90a gfx90a gfx908 gfx908)
@@ -238,9 +239,6 @@ if(KOKKOS_ENABLE_HIP)
   global_append(KOKKOS_AMDGPU_OPTIONS -xhip)
   set(AMDGPU_ARCH_FLAG "--offload-arch")
   if(NOT KOKKOS_CXX_COMPILER_ID STREQUAL HIPCC)
-    if(NOT CMAKE_CXX_STANDARD)
-      message(FATAL_ERROR "Kokkos requires CMAKE_CXX_STANDARD to set to 20 or higher")
-    endif()
     if(DEFINED ENV{ROCM_PATH})
       global_append(KOKKOS_AMDGPU_OPTIONS --rocm-path=$ENV{ROCM_PATH})
     endif()
@@ -278,18 +276,6 @@ function(kokkos_use_neon_if_compiler_allows_it)
   endif()
 
   unset(KOKKOS_COMPILER_HAS_ARM_NEON CACHE)
-  check_source_compiles(
-    ${KOKKOS_COMPILE_LANGUAGE}
-    "
-    #include <arm_neon.h>
-    int main() {
-        float32x2_t a;
-        a = vadd_f32(a, a);
-    }
-    "
-    KOKKOS_COMPILER_HAS_ARM_NEON
-  )
-
   #FIXME_Kokkos_launch_compiler
   get_property(kokkos_global_rule_compile GLOBAL PROPERTY RULE_LAUNCH_COMPILE)
   if("${kokkos_global_rule_compile}" MATCHES "kokkos_launch_compiler")
@@ -297,10 +283,19 @@ function(kokkos_use_neon_if_compiler_allows_it)
                     "You can force the use of NEON by using the Kokkos_ARCH_* flag specific to your target "
                     "processor instead of Kokkos_ARCH_NATIVE."
     )
-    set(KOKKOS_COMPILER_HAS_ARM_NEON OFF)
+  else()
+    check_source_compiles(
+      ${KOKKOS_COMPILE_LANGUAGE}
+      "
+      #include <arm_neon.h>
+      int main() {
+          float32x2_t a;
+          a = vadd_f32(a, a);
+      }
+      "
+      KOKKOS_COMPILER_HAS_ARM_NEON
+    )
   endif()
-
-  set(KOKKOS_ARCH_ARM_NEON ${KOKKOS_COMPILER_HAS_ARM_NEON} PARENT_SCOPE)
 endfunction()
 
 function(kokkos_use_sve_if_compiler_allows_it)
@@ -314,18 +309,6 @@ function(kokkos_use_sve_if_compiler_allows_it)
   endif()
 
   unset(KOKKOS_COMPILER_HAS_ARM_SVE CACHE)
-  check_source_compiles(
-    ${KOKKOS_COMPILE_LANGUAGE}
-    "
-    #include <arm_sve.h>
-    int main() {
-    auto a = svcntb();
-    return 0;
-    }
-    "
-    KOKKOS_COMPILER_HAS_ARM_SVE
-  )
-
   #FIXME_Kokkos_launch_compiler
   get_property(kokkos_global_rule_compile GLOBAL PROPERTY RULE_LAUNCH_COMPILE)
   if("${kokkos_global_rule_compile}" MATCHES "kokkos_launch_compiler")
@@ -333,10 +316,25 @@ function(kokkos_use_sve_if_compiler_allows_it)
                     "You can force the use of SVE by using the Kokkos_ARCH_* flag specific to your target "
                     "processor instead of Kokkos_ARCH_NATIVE."
     )
-    set(KOKKOS_COMPILER_HAS_ARM_SVE OFF)
+  else()
+    check_source_compiles(
+      ${KOKKOS_COMPILE_LANGUAGE}
+      "
+      #include <arm_neon.h>
+      #include <arm_sve.h>
+      int main() {
+        svuint64_t z;
+        uint64x2_t res;
+        svbool_t pg0 = svpfirst(svptrue_b64(), svpfalse());
+        svbool_t pg1 = svpnext_b64(pg0, pg0);
+        res[0] = svlastb(pg0, z);
+        res[1] = svlastb(pg1, z);
+        return 0;
+      }
+      "
+      KOKKOS_COMPILER_HAS_ARM_SVE
+    )
   endif()
-
-  set(KOKKOS_ARCH_ARM_SVE ${KOKKOS_COMPILER_HAS_ARM_SVE} PARENT_SCOPE)
 endfunction()
 
 if(KOKKOS_ARCH_ARMV80)
@@ -1032,6 +1030,7 @@ check_cuda_arch(AMPERE87 sm_87)
 check_cuda_arch(ADA89 sm_89)
 check_cuda_arch(HOPPER90 sm_90)
 check_cuda_arch(BLACKWELL100 sm_100)
+check_cuda_arch(BLACKWELL103 sm_103)
 check_cuda_arch(BLACKWELL120 sm_120)
 
 set(AMDGPU_ARCH_ALREADY_SPECIFIED "")
@@ -1317,7 +1316,7 @@ if(KOKKOS_ARCH_HOPPER90)
   set(KOKKOS_ARCH_HOPPER ON)
 endif()
 
-if(KOKKOS_ARCH_BLACKWELL100 OR KOKKOS_ARCH_BLACKWELL120)
+if(KOKKOS_ARCH_BLACKWELL100 OR KOKKOS_ARCH_BLACKWELL103 OR KOKKOS_ARCH_BLACKWELL120)
   set(KOKKOS_ARCH_BLACKWELL ON)
 endif()
 
