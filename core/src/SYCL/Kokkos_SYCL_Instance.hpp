@@ -181,13 +181,9 @@ class SYCLInternal {
   using IndirectKernelMem = USMObjectMem<sycl::usm::alloc::host>;
   IndirectKernelMem& get_indirect_kernel_mem();
 
-  bool was_finalized = false;
-
   int verify_is_initialized(const char* const label) const;
 
   int is_initialized() const { return m_queue.has_value(); }
-
-  void finalize();
 
  private:
   // fence(...) takes any type with a .wait_and_throw() method

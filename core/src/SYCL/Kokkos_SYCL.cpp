@@ -51,11 +51,7 @@ SYCL::SYCL()
 SYCL::SYCL(const sycl::queue& stream)
     : m_space_instance(
           (Impl::check_execution_space_constructor_precondition(name()),
-           Impl::HostSharedPtr(new Impl::SYCLInternal(stream),
-                               [](Impl::SYCLInternal* ptr) {
-                                 ptr->finalize();
-                                 delete ptr;
-                               }))) {
+           Impl::HostSharedPtr(new Impl::SYCLInternal(stream)))) {
 #ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
   if (!stream.is_in_order())
     Kokkos::abort("User provided sycl::queues must be in-order!");
@@ -81,7 +77,6 @@ void SYCL::impl_finalize() {
   desul::Impl::finalize_lock_arrays_sycl(
       *Impl::SYCLInternal::default_instance->m_queue);
 #endif
-  Impl::SYCLInternal::default_instance->finalize();
   Impl::SYCLInternal::default_instance = nullptr;
 }
 

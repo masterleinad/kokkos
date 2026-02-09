@@ -45,15 +45,6 @@ Kokkos::View<uint32_t*, SYCLDeviceUSMSpace> sycl_global_unique_token_locks(
   return locks;
 }
 
-SYCLInternal::~SYCLInternal() {
-  if (!was_finalized || m_scratchSpace || m_scratchHost || m_scratchFlags) {
-    std::cerr << "Kokkos::SYCL ERROR: Failed to call "
-                 "Kokkos::SYCL::finalize()"
-              << std::endl;
-    std::cerr.flush();
-  }
-}
-
 int SYCLInternal::verify_is_initialized(const char* const label) const {
   if (!is_initialized()) {
     Kokkos::abort((std::string("Kokkos::SYCL::") + label +
@@ -107,9 +98,6 @@ SYCLInternal::SYCLInternal(const sycl::queue& q) {
   KOKKOS_IMPL_CHECK_SYCL_BACKEND_SUPPORT(q.get_backend(),
                                          sycl::backend::ext_oneapi_hip);
 #endif
-
-  if (was_finalized)
-    Kokkos::abort("Calling SYCL::initialize after SYCL::finalize is illegal\n");
 
   m_queue = q;
   // guard pushing to all_queues
@@ -179,11 +167,10 @@ void SYCLInternal::register_team_scratch_event(int scratch_pool_id,
 
 uint32_t SYCLInternal::impl_get_instance_id() const { return m_instance_id; }
 
-void SYCLInternal::finalize() {
+SYCLInternal::~SYCLInternal() {
   SYCLInternal::fence(*m_queue,
                       "Kokkos::SYCLInternal::finalize: fence on finalization",
                       m_instance_id);
-  was_finalized = true;
 
   auto device_mem_space = SYCLDeviceUSMSpace(*m_queue);
   auto host_mem_space   = SYCLHostUSMSpace(*m_queue);
@@ -196,20 +183,10 @@ void SYCLInternal::finalize() {
   if (nullptr != m_scratchFlags)
     device_mem_space.deallocate(m_scratchFlags,
                                 m_scratchFlagsCount * sizeScratchGrain);
-  m_syclDev           = -1;
-  m_scratchSpaceCount = 0;
-  m_scratchSpace      = nullptr;
-  m_scratchHostCount  = 0;
-  m_scratchHost       = nullptr;
-  m_scratchFlagsCount = 0;
-  m_scratchFlags      = nullptr;
-
   for (int i = 0; i < m_n_team_scratch; ++i) {
     if (m_team_scratch_current_size[i] > 0) {
       device_mem_space.deallocate(m_team_scratch_ptr[i],
                                   m_team_scratch_current_size[i]);
-      m_team_scratch_current_size[i] = 0;
-      m_team_scratch_ptr[i]          = nullptr;
     }
   }
 
@@ -219,7 +196,6 @@ void SYCLInternal::finalize() {
     std::scoped_lock lock(mutex);
     all_queues.erase(std::find(all_queues.begin(), all_queues.end(), &m_queue));
   }
-  m_queue.reset();
 }
 
 sycl::global_ptr<void> SYCLInternal::scratch_space(const std::size_t size) {
