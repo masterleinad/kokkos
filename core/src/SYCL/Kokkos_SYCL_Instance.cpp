@@ -63,31 +63,32 @@ int SYCLInternal::verify_is_initialized(const char* const label) const {
   return is_initialized();
 }
 
-void SYCLInternal::initialize(const sycl::device& d) {
-  auto exception_handler = [](sycl::exception_list exceptions) {
-    bool asynchronous_error = false;
-    for (std::exception_ptr const& e : exceptions) {
-      try {
-        std::rethrow_exception(e);
-      } catch (sycl::exception const& e) {
-        std::cerr << e.what() << '\n';
-        asynchronous_error = true;
-      }
-    }
-    if (asynchronous_error)
-      Kokkos::Impl::throw_runtime_exception(
-          "There was an asynchronous SYCL error!\n");
-  };
+SYCLInternal::SYCLInternal(const sycl::device& d)
+    : SYCLInternal(sycl::queue{
+          d,
+          [](sycl::exception_list exceptions) {
+            bool asynchronous_error = false;
+            for (std::exception_ptr const& e : exceptions) {
+              try {
+                std::rethrow_exception(e);
+              } catch (sycl::exception const& e) {
+                std::cerr << e.what() << '\n';
+                asynchronous_error = true;
+              }
+            }
+            if (asynchronous_error)
+              Kokkos::Impl::throw_runtime_exception(
+                  "There was an asynchronous SYCL error!\n");
+          }
 #ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
-  initialize(
-      sycl::queue{d, exception_handler, sycl::property::queue::in_order()});
-#else
-  initialize(sycl::queue{d, exception_handler});
+
+          ,
+          sycl::property::queue::in_order()
 #endif
+      }) {
 }
 
-// FIXME_SYCL
-void SYCLInternal::initialize(const sycl::queue& q) {
+SYCLInternal::SYCLInternal(const sycl::queue& q) {
   KOKKOS_EXPECTS(!is_initialized());
 
 #define KOKKOS_IMPL_CHECK_SYCL_BACKEND_SUPPORT(BACKEND, REQUIRED)            \

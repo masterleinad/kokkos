@@ -51,7 +51,7 @@ SYCL::SYCL()
 SYCL::SYCL(const sycl::queue& stream)
     : m_space_instance(
           (Impl::check_execution_space_constructor_precondition(name()),
-           Impl::HostSharedPtr(new Impl::SYCLInternal,
+           Impl::HostSharedPtr(new Impl::SYCLInternal(stream),
                                [](Impl::SYCLInternal* ptr) {
                                  ptr->finalize();
                                  delete ptr;
@@ -60,7 +60,6 @@ SYCL::SYCL(const sycl::queue& stream)
   if (!stream.is_in_order())
     Kokkos::abort("User provided sycl::queues must be in-order!");
 #endif
-  m_space_instance->initialize(stream);
 }
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
@@ -214,8 +213,7 @@ void SYCL::impl_initialize(InitializationSettings const& settings) {
       ::Kokkos::Impl::get_gpu(settings).value_or(visible_devices[0]);
   std::vector<sycl::device> sycl_devices = Impl::get_sycl_devices();
   Impl::SYCLInternal::default_instance =
-      Impl::HostSharedPtr(new Impl::SYCLInternal);
-  Impl::SYCLInternal::default_instance->initialize(sycl_devices[id]);
+      Impl::HostSharedPtr(new Impl::SYCLInternal(sycl_devices[id]));
   Impl::SYCLInternal::m_syclDev = id;
   desul::Impl::init_lock_arrays();
   desul::Impl::init_lock_arrays_sycl(

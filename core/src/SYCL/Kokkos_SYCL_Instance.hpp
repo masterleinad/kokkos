@@ -20,7 +20,8 @@ class SYCLInternal {
 
   static HostSharedPtr<SYCLInternal> default_instance;
 
-  SYCLInternal() = default;
+  SYCLInternal(const sycl::device& d);
+  SYCLInternal(const sycl::queue& q);
   ~SYCLInternal();
 
   SYCLInternal(const SYCLInternal&)            = delete;
@@ -183,10 +184,6 @@ class SYCLInternal {
   bool was_finalized = false;
 
   int verify_is_initialized(const char* const label) const;
-
-  void initialize(const sycl::device& d);
-
-  void initialize(const sycl::queue& q);
 
   int is_initialized() const { return m_queue.has_value(); }
 
