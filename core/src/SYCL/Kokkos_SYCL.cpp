@@ -46,8 +46,7 @@ SYCL::~SYCL() { Impl::check_execution_space_destructor_precondition(name()); }
 SYCL::SYCL()
     : m_space_instance(
           (Impl::check_execution_space_constructor_precondition(name()),
-           Impl::HostSharedPtr(&Impl::SYCLInternal::singleton(),
-                               [](Impl::SYCLInternal*) {}))) {}
+           Impl::SYCLInternal::default_instance)) {}
 
 SYCL::SYCL(const sycl::queue& stream)
     : m_space_instance(
@@ -66,7 +65,7 @@ SYCL::SYCL(const sycl::queue& stream)
 
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
 int SYCL::concurrency() {
-  return Impl::SYCLInternal::singleton().m_maxConcurrency;
+  return Impl::SYCLInternal::default_instance->m_maxConcurrency;
 }
 #else
 int SYCL::concurrency() const { return m_space_instance->m_maxConcurrency; }
@@ -74,7 +73,18 @@ int SYCL::concurrency() const { return m_space_instance->m_maxConcurrency; }
 
 const char* SYCL::name() { return "SYCL"; }
 
-void SYCL::impl_finalize() { Impl::SYCLInternal::singleton().finalize(); }
+void SYCL::impl_finalize() {
+  // The global_unique_token_locks array is static and should only be
+  // deallocated once by the default instance
+  Impl::sycl_global_unique_token_locks(true);
+#ifdef KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED
+  desul::Impl::finalize_lock_arrays();
+  desul::Impl::finalize_lock_arrays_sycl(
+      *Impl::SYCLInternal::default_instance->m_queue);
+#endif
+  Impl::SYCLInternal::default_instance->finalize();
+  Impl::SYCLInternal::default_instance = nullptr;
+}
 
 void SYCL::print_configuration(std::ostream& os, bool verbose) const {
   os << "\nRuntime Configuration:\n";
@@ -203,8 +213,13 @@ void SYCL::impl_initialize(InitializationSettings const& settings) {
   const auto id =
       ::Kokkos::Impl::get_gpu(settings).value_or(visible_devices[0]);
   std::vector<sycl::device> sycl_devices = Impl::get_sycl_devices();
-  Impl::SYCLInternal::singleton().initialize(sycl_devices[id]);
+  Impl::SYCLInternal::default_instance =
+      Impl::HostSharedPtr(new Impl::SYCLInternal);
+  Impl::SYCLInternal::default_instance->initialize(sycl_devices[id]);
   Impl::SYCLInternal::m_syclDev = id;
+  desul::Impl::init_lock_arrays();
+  desul::Impl::init_lock_arrays_sycl(
+      *Impl::SYCLInternal::default_instance->m_queue);
 }
 
 std::ostream& SYCL::impl_sycl_info(std::ostream& os,

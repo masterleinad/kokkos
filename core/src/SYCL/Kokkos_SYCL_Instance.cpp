@@ -62,10 +62,6 @@ int SYCLInternal::verify_is_initialized(const char* const label) const {
   }
   return is_initialized();
 }
-SYCLInternal& SYCLInternal::singleton() {
-  static SYCLInternal self;
-  return self;
-}
 
 void SYCLInternal::initialize(const sycl::device& d) {
   auto exception_handler = [](sycl::exception_list exceptions) {
@@ -135,14 +131,6 @@ void SYCLInternal::initialize(const sycl::queue& q) {
   for (auto& usm_mem : m_indirectKernelMem) {
     usm_mem.reset(*m_queue, m_instance_id);
   }
-
-#ifdef KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED
-  // Init the array for used for arbitrarily sized atomics
-  if (this == &singleton()) {
-    desul::Impl::init_lock_arrays();
-    desul::Impl::init_lock_arrays_sycl(*m_queue);
-  }
-#endif
 }
 
 int SYCLInternal::acquire_team_scratch_space() {
@@ -195,16 +183,6 @@ void SYCLInternal::finalize() {
                       "Kokkos::SYCLInternal::finalize: fence on finalization",
                       m_instance_id);
   was_finalized = true;
-
-  // The global_unique_token_locks array is static and should only be
-  // deallocated once by the defualt instance
-  if (this == &singleton()) {
-    Impl::sycl_global_unique_token_locks(true);
-#ifdef KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED
-    desul::Impl::finalize_lock_arrays();
-    desul::Impl::finalize_lock_arrays_sycl(*m_queue);
-#endif
-  }
 
   auto device_mem_space = SYCLDeviceUSMSpace(*m_queue);
   auto host_mem_space   = SYCLHostUSMSpace(*m_queue);
@@ -377,6 +355,8 @@ void SYCLInternal::USMObjectMem<Kind>::reset() {
 }
 
 int SYCLInternal::m_syclDev;
+
+HostSharedPtr<SYCLInternal> SYCLInternal::default_instance;
 
 template class SYCLInternal::USMObjectMem<sycl::usm::alloc::shared>;
 template class SYCLInternal::USMObjectMem<sycl::usm::alloc::device>;

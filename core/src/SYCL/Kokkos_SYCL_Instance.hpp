@@ -9,12 +9,16 @@
 
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Profiling.hpp>
+#include <impl/Kokkos_HostSharedPtr.hpp>
+
 namespace Kokkos {
 namespace Impl {
 
 class SYCLInternal {
  public:
   using size_type = unsigned int;
+
+  static HostSharedPtr<SYCLInternal> default_instance;
 
   SYCLInternal() = default;
   ~SYCLInternal();
@@ -177,8 +181,6 @@ class SYCLInternal {
   IndirectKernelMem& get_indirect_kernel_mem();
 
   bool was_finalized = false;
-
-  static SYCLInternal& singleton();
 
   int verify_is_initialized(const char* const label) const;
 
