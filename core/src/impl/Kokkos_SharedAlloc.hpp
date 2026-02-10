@@ -88,7 +88,9 @@ class SharedAllocationRecord<void, void> {
   int m_count;
   std::string m_label;
 
+  SharedAllocationRecord(SharedAllocationRecord&&)                 = delete;
   SharedAllocationRecord(const SharedAllocationRecord&)            = delete;
+  SharedAllocationRecord& operator=(SharedAllocationRecord&&)      = delete;
   SharedAllocationRecord& operator=(const SharedAllocationRecord&) = delete;
   virtual ~SharedAllocationRecord()                                = default;
 
@@ -721,14 +723,21 @@ struct SharedAllocationDisableTrackingGuard {
 
   SharedAllocationDisableTrackingGuard(
       const SharedAllocationDisableTrackingGuard&) = delete;
+  SharedAllocationDisableTrackingGuard(SharedAllocationDisableTrackingGuard&&) =
+      delete;
 
   ~SharedAllocationDisableTrackingGuard() {
     KOKKOS_ASSERT((
         !Kokkos::Impl::SharedAllocationRecord<void, void>::tracking_enabled()));
     Kokkos::Impl::SharedAllocationRecord<void, void>::tracking_enable();
   }
+  // clang-format off
+  // The old version of clang format we use is particularly egregious here
   SharedAllocationDisableTrackingGuard& operator=(
       const SharedAllocationDisableTrackingGuard&) = delete;
+  SharedAllocationDisableTrackingGuard& operator=(
+      SharedAllocationDisableTrackingGuard&&) = delete;
+  // clang-format on
 };
 
 template <class FunctorType, class... Args>

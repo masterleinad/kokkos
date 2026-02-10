@@ -52,8 +52,14 @@ struct GraphNodeBackendSpecificDetails {
   GraphNodeBackendSpecificDetails(GraphNodeBackendSpecificDetails const&) =
       delete;
 
+  GraphNodeBackendSpecificDetails(GraphNodeBackendSpecificDetails&&) noexcept =
+      delete;
+
   GraphNodeBackendSpecificDetails& operator=(
       GraphNodeBackendSpecificDetails const&) = delete;
+
+  GraphNodeBackendSpecificDetails& operator=(
+      GraphNodeBackendSpecificDetails&&) noexcept = delete;
 
   ~GraphNodeBackendSpecificDetails() = default;
 

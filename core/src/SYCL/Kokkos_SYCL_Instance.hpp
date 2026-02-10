@@ -21,6 +21,8 @@ class SYCLInternal {
 
   SYCLInternal(const SYCLInternal&)            = delete;
   SYCLInternal& operator=(const SYCLInternal&) = delete;
+  SYCLInternal& operator=(SYCLInternal&&)      = delete;
+  SYCLInternal(SYCLInternal&&)                 = delete;
 
   sycl::global_ptr<void> scratch_space(const std::size_t size);
   sycl::global_ptr<void> scratch_flags(const std::size_t size);
@@ -83,6 +85,8 @@ class SYCLInternal {
         : m_q(std::move(q)), m_instance_id(instance_id) {}
 
     USMObjectMem(USMObjectMem const&)            = delete;
+    USMObjectMem(USMObjectMem&&)                 = delete;
+    USMObjectMem& operator=(USMObjectMem&&)      = delete;
     USMObjectMem& operator=(USMObjectMem const&) = delete;
 
     ~USMObjectMem() { reset(); }

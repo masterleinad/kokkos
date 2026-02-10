@@ -51,7 +51,9 @@ struct GraphImpl
   // Graph object
   GraphImpl()                            = default;
   GraphImpl(GraphImpl const&)            = delete;
+  GraphImpl(GraphImpl&&)                 = delete;
   GraphImpl& operator=(GraphImpl const&) = delete;
+  GraphImpl& operator=(GraphImpl&&)      = delete;
   ~GraphImpl()                           = default;
 
   explicit GraphImpl(const device_handle_t& device_handle)

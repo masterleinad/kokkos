@@ -68,6 +68,8 @@ class Stacktrace {
   Stacktrace()                             = delete;
   Stacktrace(const Stacktrace&)            = delete;
   Stacktrace& operator=(const Stacktrace&) = delete;
+  Stacktrace(Stacktrace&&)                 = delete;
+  Stacktrace& operator=(Stacktrace&&)      = delete;
   ~Stacktrace()                            = delete;
 
   // These are public only to avoid wasting an extra stacktrace line.
