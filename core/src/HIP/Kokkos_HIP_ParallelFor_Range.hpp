@@ -41,12 +41,7 @@ class ParallelFor<FunctorType, Kokkos::RangePolicy<Traits...>, Kokkos::HIP> {
  public:
   using functor_type = FunctorType;
 
-  ParallelFor()                              = delete;
-  ParallelFor(ParallelFor const&)            = default;
-  ParallelFor(ParallelFor&&)                 = default;
-  ParallelFor& operator=(ParallelFor const&) = delete;
-  ParallelFor& operator=(ParallelFor&&)      = delete;
-  ~ParallelFor()                             = default;
+ParallelFor() = delete;
 
   inline __device__ void operator()() const {
     constexpr auto batch_size = Member(StaticBatchSize::batch_size);

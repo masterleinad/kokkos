@@ -37,12 +37,7 @@ class ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>, HIP> {
   array_type m_extent;  // tile_size * num_tiles
 
  public:
-  ParallelFor()                              = delete;
-  ParallelFor(ParallelFor const&)            = default;
-  ParallelFor(ParallelFor&&)                 = default;
-  ParallelFor& operator=(ParallelFor const&) = delete;
-  ParallelFor& operator=(ParallelFor&&)      = delete;
-  ~ParallelFor()                             = default;
+ParallelFor() = delete;
 
   inline __device__ void operator()() const {
     Kokkos::Impl::DeviceIterate<Policy::rank, array_index_type, index_type,
