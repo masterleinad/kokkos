@@ -287,6 +287,12 @@ class ParallelReduce<CombinedFunctorReducerType,
         reducer.init(m_result_ptr);
       }
     }
+
+    if (m_scratch_pool_id >= 0) {
+      m_policy.space()
+          .impl_internal_space_instance()
+          ->release_team_scratch_space(m_scratch_pool_id);
+    }
   }
 
   template <class ViewType>
@@ -408,19 +414,6 @@ class ParallelReduce<CombinedFunctorReducerType,
                    m_functor_reducer.get_functor(),
                    m_functor_reducer.get_reducer(), ParallelReduceTag());
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
-    }
-  }
-
-  ParallelReduce(ParallelReduce const&)            = default;
-  ParallelReduce(ParallelReduce&&)                 = default;
-  ParallelReduce& operator=(ParallelReduce const&) = delete;
-  ParallelReduce& operator=(ParallelReduce&&)      = delete;
-
-  ~ParallelReduce() {
-    if (m_scratch_pool_id >= 0) {
-      m_policy.space()
-          .impl_internal_space_instance()
-          ->release_team_scratch_space(m_scratch_pool_id);
     }
   }
 };
