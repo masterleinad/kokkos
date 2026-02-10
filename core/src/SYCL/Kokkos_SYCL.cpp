@@ -75,8 +75,7 @@ void SYCL::impl_finalize() {
 #ifdef KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED
   desul::Impl::finalize_lock_arrays();
   desul::Impl::finalize_lock_arrays_sycl(
-      // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-      *Impl::SYCLInternal::default_instance->m_queue);
+      Impl::SYCLInternal::default_instance->m_queue);
 #endif
   Impl::SYCLInternal::default_instance = nullptr;
 }
@@ -193,7 +192,7 @@ void SYCL::impl_static_fence(const std::string& name) {
         std::scoped_lock lock(Impl::SYCLInternal::mutex);
         for (auto& queue : Impl::SYCLInternal::all_queues) {
           try {
-            (*queue)->wait_and_throw();
+            queue->wait_and_throw();
           } catch (sycl::exception const& e) {
             Kokkos::Impl::throw_runtime_exception(
                 std::string("There was a synchronous SYCL error:\n") +=
@@ -215,8 +214,7 @@ void SYCL::impl_initialize(InitializationSettings const& settings) {
   // Init the array for used for arbitrarily sized atomics
   desul::Impl::init_lock_arrays();
   desul::Impl::init_lock_arrays_sycl(
-      // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-      *Impl::SYCLInternal::default_instance->m_queue);
+      Impl::SYCLInternal::default_instance->m_queue);
 #endif
 }
 

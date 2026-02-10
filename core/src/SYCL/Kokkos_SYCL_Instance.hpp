@@ -4,7 +4,6 @@
 #ifndef KOKKOS_SYCL_INSTANCE_HPP_
 #define KOKKOS_SYCL_INSTANCE_HPP_
 
-#include <optional>
 #include <sycl/sycl.hpp>
 
 #include <impl/Kokkos_Error.hpp>
@@ -65,11 +64,9 @@ class SYCLInternal {
   uint32_t m_instance_id =
       Kokkos::Tools::Experimental::Impl::idForInstance<Kokkos::SYCL>(
           reinterpret_cast<uintptr_t>(this));
-  std::optional<sycl::queue> m_queue;
+  sycl::queue m_queue;
 
-  // Using std::vector<std::optional<sycl::queue>> reveals a compiler bug when
-  // compiling for the CUDA backend. Storing pointers instead works around this.
-  static std::vector<std::optional<sycl::queue>*> all_queues;
+  static std::vector<sycl::queue*> all_queues;
   // We need a mutex for thread safety when modifying all_queues.
   static std::mutex mutex;
 
