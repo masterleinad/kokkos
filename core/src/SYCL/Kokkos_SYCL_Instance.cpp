@@ -46,12 +46,12 @@ Kokkos::View<uint32_t*, SYCLDeviceUSMSpace> sycl_global_unique_token_locks(
 }
 
 int SYCLInternal::verify_is_initialized(const char* const label) const {
-  if (!is_initialized()) {
+  if (!default_instance) {
     Kokkos::abort((std::string("Kokkos::SYCL::") + label +
                    " : ERROR device not initialized\n")
                       .c_str());
   }
-  return is_initialized();
+  return static_cast<bool>(default_instance);
 }
 
 SYCLInternal::SYCLInternal(const sycl::device& d)
@@ -80,8 +80,6 @@ SYCLInternal::SYCLInternal(const sycl::device& d)
 }
 
 SYCLInternal::SYCLInternal(const sycl::queue& q) {
-  KOKKOS_EXPECTS(!is_initialized());
-
 #define KOKKOS_IMPL_CHECK_SYCL_BACKEND_SUPPORT(BACKEND, REQUIRED)            \
   if (BACKEND != REQUIRED)                                                   \
   Kokkos::abort(                                                             \

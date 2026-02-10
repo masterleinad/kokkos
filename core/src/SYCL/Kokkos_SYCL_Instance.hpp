@@ -183,8 +183,6 @@ class SYCLInternal {
 
   int verify_is_initialized(const char* const label) const;
 
-  int is_initialized() const { return m_queue.has_value(); }
-
  private:
   // fence(...) takes any type with a .wait_and_throw() method
   // (sycl::event and sycl::queue)
