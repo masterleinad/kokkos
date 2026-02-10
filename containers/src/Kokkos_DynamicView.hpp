@@ -507,15 +507,14 @@ class DynamicView : public Kokkos::ViewTraits<DataType, P...> {
               const unsigned min_chunk_size,
               const unsigned max_extent)
       :  // The chunk size is guaranteed to be a power of two
-        m_chunk_shift(min_chunk_size ? Kokkos::bit_width(min_chunk_size - 1)
-                                     : 0)  // div ceil(log2(min_chunk_size))
-        ,
-        m_chunk_mask((1 << m_chunk_shift) - 1)  // mod
-        ,
+        m_chunk_shift(min_chunk_size ? Kokkos::bit_width(
+                                           min_chunk_size -
+                                           1)  // div ceil(log2(min_chunk_size))
+                                     : 0),
+        m_chunk_mask((1 << m_chunk_shift) - 1),  // mod
         m_chunk_max((max_extent + m_chunk_mask) >>
-                    m_chunk_shift)  // max num pointers-to-chunks in array
-        ,
-        m_chunk_size(2 << (m_chunk_shift - 1)) {
+                    m_chunk_shift),  // max num pointers-to-chunks in array
+        m_chunk_size(1 << m_chunk_shift) {
     m_chunks = device_accessor(m_chunk_max, m_chunk_size);
 
     const std::string& label =
