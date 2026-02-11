@@ -299,6 +299,7 @@ size_t SYCLInternal::USMObjectMem<Kind>::reserve(size_t n) {
   KOKKOS_ASSERT(m_q);
 
   if (m_capacity < n) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     AllocationSpace alloc_space(*m_q);
     if (m_data) alloc_space.deallocate(m_data, m_capacity);
 
@@ -315,8 +316,10 @@ size_t SYCLInternal::USMObjectMem<Kind>::reserve(size_t n) {
 template <sycl::usm::alloc Kind>
 void SYCLInternal::USMObjectMem<Kind>::reset() {
   if (m_data) {
+    KOKKOS_ASSERT(m_q);
     // This implies a fence since this class is not copyable
     // and deallocating implies a fence across all registered queues.
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     AllocationSpace alloc_space(*m_q);
     alloc_space.deallocate(m_data, m_capacity);
 
