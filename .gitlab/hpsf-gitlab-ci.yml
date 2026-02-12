@@ -54,6 +54,7 @@ NVIDIA-GH200:
   image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04
   script:
     - apt-get update && apt-get install -y cmake git python3
+    - export KOKKOS_NUM_THREADS=8
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
     - export ENV_CMAKE_OPTIONS=""
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_BUILD_TYPE=${BUILD_TYPE}"
