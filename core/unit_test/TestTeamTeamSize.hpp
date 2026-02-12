@@ -63,7 +63,7 @@ using policy_type_128_8 =
 // policy
 #if defined(KOKKOS_ARCH_TURING75) || defined(KOKKOS_ARCH_AMPERE86) || \
     defined(KOKKOS_ARCH_AMPERE87) || defined(KOKKOS_ARCH_ADA89) ||    \
-    defined(KOKKOS_ARCH_BLACKWELL120)
+    defined(KOKKOS_ARCH_BLACKWELL120) || defined(KOKKOS_ARCH_BLACKWELL121)
 using policy_type_1024_2 =
     Kokkos::TeamPolicy<TEST_EXECSPACE, Kokkos::LaunchBounds<1024, 1>>;
 #else
