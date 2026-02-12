@@ -4,6 +4,7 @@
 #ifndef KOKKOS_SYCL_INSTANCE_HPP_
 #define KOKKOS_SYCL_INSTANCE_HPP_
 
+#include <optional>
 #include <sycl/sycl.hpp>
 
 #include <impl/Kokkos_Error.hpp>
