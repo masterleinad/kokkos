@@ -533,6 +533,12 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
         *this, grid, block, shmem_size_total,
         m_policy.space()
             .impl_internal_space_instance());  // copy to device and execute
+
+    if (m_scratch_pool_id >= 0) {
+      m_policy.space()
+          .impl_internal_space_instance()
+          ->release_team_scratch_space(m_scratch_pool_id);
+    }
   }
 
   ParallelFor(const FunctorType& arg_functor, const Policy& arg_policy)
@@ -604,14 +610,6 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>,
             << m_team_size << ", Maximum: "
             << arg_policy.team_size_max(arg_functor, ParallelForTag());
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
-    }
-  }
-
-  ~ParallelFor() {
-    if (m_scratch_pool_id >= 0) {
-      m_policy.space()
-          .impl_internal_space_instance()
-          ->release_team_scratch_space(m_scratch_pool_id);
     }
   }
 };
@@ -894,6 +892,12 @@ class ParallelReduce<CombinedFunctorReducerType,
         m_functor_reducer.get_reducer().init(m_result_ptr);
       }
     }
+
+    if (m_scratch_pool_id >= 0) {
+      m_policy.space()
+          .impl_internal_space_instance()
+          ->release_team_scratch_space(m_scratch_pool_id);
+    }
   }
 
   template <class ViewType>
@@ -1015,14 +1019,6 @@ class ParallelReduce<CombinedFunctorReducerType,
                    m_functor_reducer.get_functor(),
                    m_functor_reducer.get_reducer(), ParallelReduceTag());
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
-    }
-  }
-
-  ~ParallelReduce() {
-    if (m_scratch_pool_id >= 0) {
-      m_policy.space()
-          .impl_internal_space_instance()
-          ->release_team_scratch_space(m_scratch_pool_id);
     }
   }
 };

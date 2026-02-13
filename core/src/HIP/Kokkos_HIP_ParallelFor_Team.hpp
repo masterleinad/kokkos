@@ -99,6 +99,12 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>, HIP> {
         *this, grid, block, shmem_size_total,
         m_policy.space().impl_internal_space_instance(),
         true);  // copy to device and execute
+
+    if (m_scratch_pool_id >= 0) {
+      m_policy.space()
+          .impl_internal_space_instance()
+          ->release_team_scratch_space(m_scratch_pool_id);
+    }
   }
 
   ParallelFor(FunctorType const& arg_functor, Policy const& arg_policy)
@@ -171,14 +177,6 @@ class ParallelFor<FunctorType, Kokkos::TeamPolicy<Properties...>, HIP> {
                "Requested: "
             << m_team_size << ", Maximum: " << max_size;
       Kokkos::Impl::throw_runtime_exception(error.str().c_str());
-    }
-  }
-
-  ~ParallelFor() {
-    if (m_scratch_pool_id >= 0) {
-      m_policy.space()
-          .impl_internal_space_instance()
-          ->release_team_scratch_space(m_scratch_pool_id);
     }
   }
 };
