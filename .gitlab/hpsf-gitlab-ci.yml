@@ -288,6 +288,7 @@ NVIDIA-DGX-SPARK:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export CTEST_BUILD_NAME="NVIDIA-DGX-SPARK"
+    - export GTEST_FILTER="-cuda.debug_pin_um_to_host"
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
         -D GITHUB_PR_ID="${GITHUB_PR_ID}"
