@@ -220,8 +220,8 @@ class SharedAllocationRecordCommon : public SharedAllocationRecord<void, void> {
   static void deallocate(record_base_t* arg_rec);
 
  public:
-  SharedAllocationRecordCommon(const SharedAllocationRecordCommon&) = default;
-  SharedAllocationRecordCommon(SharedAllocationRecordCommon&&)      = default;
+  SharedAllocationRecordCommon(const SharedAllocationRecordCommon&) = delete;
+  SharedAllocationRecordCommon(SharedAllocationRecordCommon&&)      = delete;
   SharedAllocationRecordCommon& operator=(const SharedAllocationRecordCommon&) =
       default;
   SharedAllocationRecordCommon& operator=(SharedAllocationRecordCommon&&) =
@@ -313,13 +313,13 @@ class HostInaccessibleSharedAllocationRecordCommon
 
  public:
   HostInaccessibleSharedAllocationRecordCommon(
-      const HostInaccessibleSharedAllocationRecordCommon&) = default;
+      const HostInaccessibleSharedAllocationRecordCommon&) = delete;
   HostInaccessibleSharedAllocationRecordCommon(
-      HostInaccessibleSharedAllocationRecordCommon&&) = default;
+      HostInaccessibleSharedAllocationRecordCommon&&) = delete;
   HostInaccessibleSharedAllocationRecordCommon& operator=(
-      const HostInaccessibleSharedAllocationRecordCommon&) = default;
+      const HostInaccessibleSharedAllocationRecordCommon&) = delete;
   HostInaccessibleSharedAllocationRecordCommon& operator=(
-      HostInaccessibleSharedAllocationRecordCommon&&) = default;
+      HostInaccessibleSharedAllocationRecordCommon&&) = delete;
 
   ~HostInaccessibleSharedAllocationRecordCommon();
 
