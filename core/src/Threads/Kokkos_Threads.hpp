@@ -112,9 +112,8 @@ class Threads {
   uint32_t impl_instance_id() const noexcept { return 1; }
 
   KOKKOS_DEFAULTED_FUNCTION Threads(const Threads&) = default;
-  KOKKOS_FUNCTION Threads(Threads&& other) {
-    *this = static_cast<const Threads&>(other);
-  }
+  KOKKOS_FUNCTION Threads(Threads&& other)
+      : Threads(static_cast<const Threads&>(other)) {}
   KOKKOS_DEFAULTED_FUNCTION Threads& operator=(const Threads&) = default;
   KOKKOS_FUNCTION Threads& operator=(Threads&& other) {
     return *this = static_cast<const Threads&>(other);

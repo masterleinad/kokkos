@@ -99,9 +99,8 @@ class Serial {
   //@}
 
   KOKKOS_DEFAULTED_FUNCTION Serial(const Serial&) = default;
-  KOKKOS_FUNCTION Serial(Serial&& other) {
-    *this = static_cast<const Serial&>(other);
-  }
+  KOKKOS_FUNCTION Serial(Serial&& other)
+      : Serial(static_cast<const Serial&>(other)) {}
   KOKKOS_DEFAULTED_FUNCTION Serial& operator=(const Serial&) = default;
   KOKKOS_FUNCTION Serial& operator=(Serial&& other) {
     return *this = static_cast<const Serial&>(other);

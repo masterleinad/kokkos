@@ -222,7 +222,7 @@ class HPX {
 #endif
 
   KOKKOS_DEFAULTED_FUNCTION HPX(const HPX &) = default;
-  KOKKOS_FUNCTION HPX(HPX &&other) { *this = static_cast<const HPX &>(other); }
+  KOKKOS_FUNCTION HPX(HPX &&other) : HPX(static_cast<const HPX &>(other)) {}
   KOKKOS_DEFAULTED_FUNCTION HPX &operator=(const HPX &) = default;
   KOKKOS_FUNCTION HPX &operator=(HPX &&other) {
     return *this = static_cast<const HPX &>(other);

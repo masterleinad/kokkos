@@ -144,9 +144,7 @@ class Cuda {
   //! \name  Cuda space instances
 
   KOKKOS_DEFAULTED_FUNCTION Cuda(const Cuda&) = default;
-  KOKKOS_FUNCTION Cuda(Cuda&& other) {
-    *this = static_cast<const Cuda&>(other);
-  }
+  KOKKOS_FUNCTION Cuda(Cuda&& other) : Cuda(static_cast<const Cuda&>(other)) {}
   KOKKOS_DEFAULTED_FUNCTION Cuda& operator=(const Cuda&) = default;
   KOKKOS_FUNCTION Cuda& operator=(Cuda&& other) {
     return *this = static_cast<const Cuda&>(other);

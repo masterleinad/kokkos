@@ -44,7 +44,7 @@ class SYCL {
   using scratch_memory_space = ScratchMemorySpace<SYCL>;
 
   SYCL(const SYCL&) = default;
-  SYCL(SYCL&& other) { *this = static_cast<const SYCL&>(other); }
+  SYCL(SYCL&& other) : SYCL(static_cast<const SYCL&>(other)) {}
   SYCL& operator=(const SYCL&) = default;
   SYCL& operator=(SYCL&& other) {
     return *this = static_cast<const SYCL&>(other);
