@@ -62,12 +62,10 @@ class OpenACC {
 
   using scratch_memory_space = ScratchMemorySpace<OpenACC>;
 
-  KOKKOS_DEFAULTED_FUNCTION OpenACC(const OpenACC&) = default;
-  KOKKOS_FUNCTION OpenACC(OpenACC&& other) {
-    *this = static_cast<const OpenACC&>(other);
-  }
-  KOKKOS_DEFAULTED_FUNCTION OpenACC& operator=(const OpenACC&) = default;
-  KOKKOS_FUNCTION OpenACC& operator=(OpenACC&& other) {
+  OpenACC(const OpenACC&) = default;
+  OpenACC(OpenACC&& other) { *this = static_cast<const OpenACC&>(other); }
+  OpenACC& operator=(const OpenACC&) = default;
+  OpenACC& operator=(OpenACC&& other) {
     return *this = static_cast<const OpenACC&>(other);
   }
   ~OpenACC();
