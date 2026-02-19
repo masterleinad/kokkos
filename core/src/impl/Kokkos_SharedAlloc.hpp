@@ -223,9 +223,9 @@ class SharedAllocationRecordCommon : public SharedAllocationRecord<void, void> {
   SharedAllocationRecordCommon(const SharedAllocationRecordCommon&) = delete;
   SharedAllocationRecordCommon(SharedAllocationRecordCommon&&)      = delete;
   SharedAllocationRecordCommon& operator=(const SharedAllocationRecordCommon&) =
-      default;
+      delete;
   SharedAllocationRecordCommon& operator=(SharedAllocationRecordCommon&&) =
-      default;
+      delete;
 
   ~SharedAllocationRecordCommon();
 
