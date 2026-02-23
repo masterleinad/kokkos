@@ -1343,9 +1343,9 @@ class TestViewAPI {
     }
 
     test_refcount_poison_copy_functor &operator=(
-        const test_refcount_poison_copy_functor &) = default;
+        const test_refcount_poison_copy_functor &) = delete;
     test_refcount_poison_copy_functor &operator=(
-        test_refcount_poison_copy_functor &&) = default;
+        test_refcount_poison_copy_functor &&) = delete;
     ~test_refcount_poison_copy_functor()      = default;
 
     KOKKOS_INLINE_FUNCTION void operator()(int) const {}
