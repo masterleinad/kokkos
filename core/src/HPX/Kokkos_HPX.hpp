@@ -122,7 +122,6 @@ class HPX {
 
   struct instance_data {
     instance_data() = default;
-    // NOLINTNEXTLINE(bugprone-exception-escape)
     ~instance_data() {
       fence("Kokkos::Experimental::HPX: fence on destruction");
     }
@@ -323,7 +322,6 @@ class HPX {
                        hpx::threads::thread_stacksize stacksize =
                            hpx::threads::thread_stacksize::default_) const {
     impl_bulk_plain_erased(force_synchronous, is_light_weight_policy,
-                           // NOLINTNEXTLINE(bugprone-exception-escape)
                            {[functor](Index i) { functor.execute_range(i); }},
                            n, stacksize);
   }

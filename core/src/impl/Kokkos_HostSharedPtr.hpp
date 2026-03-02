@@ -103,7 +103,6 @@ class HostSharedPtr {
   }
 
  private:
-  // NOLINTNEXTLINE(bugprone-exception-escape)
   KOKKOS_FUNCTION void cleanup() noexcept {
     KOKKOS_IF_ON_HOST((
         // If m_counter is set, then this instance is responsible for managing

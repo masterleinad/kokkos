@@ -11,7 +11,7 @@ import kokkos.core;
 #include "gather.hpp"
 #include <cstdlib>
 
-int main(int argc, char* argv[]) {  // NOLINT(bugprone-exception-escape)
+int main(int argc, char* argv[]) {
   Kokkos::initialize(argc, argv);
 
   if (argc < 8) {

@@ -80,7 +80,6 @@ struct ViewTracker {
     return *this;
   }
 
-  // NOLINTNEXTLINE(bugprone-exception-escape)
   KOKKOS_INLINE_FUNCTION ViewTracker& operator=(ViewTracker&& rhs) {
     return *this = static_cast<const ViewTracker&>(rhs);
   }

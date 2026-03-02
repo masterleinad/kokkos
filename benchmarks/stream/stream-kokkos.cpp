@@ -220,7 +220,7 @@ int run_benchmark() {
   return rc;
 }
 
-int main(int argc, char* argv[]) {  // NOLINT(bugprone-exception-escape)
+int main(int argc, char* argv[]) {
   printf(HLINE);
   printf("Kokkos STREAM Benchmark\n");
   printf(HLINE);

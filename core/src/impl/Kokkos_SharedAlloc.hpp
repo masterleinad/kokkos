@@ -623,7 +623,6 @@ union SharedAllocationTracker {
 
   // Copy:
   KOKKOS_FORCEINLINE_FUNCTION
-  // NOLINTNEXTLINE(bugprone-exception-escape)
   ~SharedAllocationTracker(){KOKKOS_IMPL_SHARED_ALLOCATION_TRACKER_DECREMENT}
 
   KOKKOS_FORCEINLINE_FUNCTION

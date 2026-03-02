@@ -98,7 +98,6 @@ struct CheckUsage<UsageRequires::insideExecEnv> {
   }
 };
 
-// NOLINTBEGIN(bugprone-exception-escape)
 inline void check_execution_space_constructor_precondition(
     char const* name) noexcept {
   if (Kokkos::is_finalized()) {
@@ -127,7 +126,6 @@ inline void check_execution_space_destructor_precondition(
     Kokkos::abort(err.c_str());
   }
 }
-// NOLINTEND(bugprone-exception-escape)
 
 }  // namespace Impl
 }  // namespace Kokkos

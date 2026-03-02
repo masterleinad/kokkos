@@ -16,7 +16,7 @@ import kokkos.core;
 #include <iostream>
 #include <sstream>
 
-int main(int argc, char** argv) {  // NOLINT(bugprone-exception-escape)
+int main(int argc, char** argv) {
   Kokkos::initialize(argc, argv);
   {
     // This test only uses host kernel launch mechanisms. This is to allow for
