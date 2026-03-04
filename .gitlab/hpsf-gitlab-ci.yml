@@ -277,7 +277,6 @@ NVIDIA-GRACE-GRACE:
   tags: [grace, hpsf-neoverse_v2, hpsf-aarch64]
   image: ubuntu:latest
   script:
-    - set +e
     - apt-get update && apt-get install -y cmake git g++
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
     - export ENV_CMAKE_OPTIONS=""
@@ -300,10 +299,8 @@ NVIDIA-GRACE-GRACE:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=$?
+  after_script:
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
-    - echo ${CTEST_RETURN_VALUE}
-    - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
     paths:
