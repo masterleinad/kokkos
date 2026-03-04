@@ -22,6 +22,7 @@ NVIDIA-RTX5080:
   tags: [nvidia-rtx5080, hpsf-gpu]
   image: nvcr.io/nvidia/cuda:12.8.0-devel-ubuntu24.04
   script:
+    - set +e
     - apt-get update && apt-get install -y cmake git python3
     - export CMAKE_BUILD_PARALLEL_LEVEL=32
     - export ENV_CMAKE_OPTIONS=""
@@ -42,9 +43,9 @@ NVIDIA-RTX5080:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -58,6 +59,7 @@ NVIDIA-GH200:
   tags: [nvidia-gh200]
   image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04
   script:
+    - set +e
     - apt-get update && apt-get install -y cmake git python3
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
     - export ENV_CMAKE_OPTIONS=""
@@ -86,9 +88,9 @@ NVIDIA-GH200:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -102,6 +104,7 @@ NVIDIA-P100:
   tags: [nvidia-p100]
   image: nvcr.io/nvidia/cuda:12.3.2-devel-ubuntu22.04
   script:
+    - set +e
     - apt-get update && apt-get install -y cmake git python3
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
     - export ENV_CMAKE_OPTIONS=""
@@ -122,9 +125,9 @@ NVIDIA-P100:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -138,6 +141,7 @@ INTEL-DATA-CENTER-MAX-1100:
   tags: [intel-data-center-max-1100]
   image: intel/oneapi-basekit:2024.2.1-0-devel-ubuntu22.04
   script:
+    - set +e
     - apt-get update && apt-get install -y git
     - sycl-ls
     - export ONEAPI_DEVICE_SELECTOR=level_zero:gpu
@@ -166,9 +170,9 @@ INTEL-DATA-CENTER-MAX-1100:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -182,6 +186,7 @@ INTEL-DATA-CENTER-MAX-1100-OUT-OF-ORDER:
   tags: [intel-data-center-max-1100]
   image: intel/oneapi-basekit:2024.2.1-0-devel-ubuntu22.04
   script:
+    - set +e
     - apt-get update && apt-get install -y git
     - sycl-ls
     - export ONEAPI_DEVICE_SELECTOR=level_zero:gpu
@@ -208,9 +213,9 @@ INTEL-DATA-CENTER-MAX-1100-OUT-OF-ORDER:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -224,6 +229,7 @@ AMD-MI300A:
   tags: [uo-gpu, odyssey, amd-mi300]
   image: rocm/dev-ubuntu-24.04:6.2.4-complete
   script:
+    - set +e
     - apt-get update && apt-get install -y cmake git
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
     - export ENV_CMAKE_OPTIONS=""
@@ -249,9 +255,9 @@ AMD-MI300A:
       -S scripts/CTestRun.cmake
       -D CTEST_SITE="gitlab.spack.io"
       -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -265,6 +271,7 @@ NVIDIA-GRACE-GRACE:
   tags: [grace, hpsf-neoverse_v2, hpsf-aarch64]
   image: ubuntu:latest
   script:
+    - set +e
     - apt-get update && apt-get install -y cmake git g++
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
     - export ENV_CMAKE_OPTIONS=""
@@ -286,9 +293,9 @@ NVIDIA-GRACE-GRACE:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -302,6 +309,7 @@ NVIDIA-DGX-SPARK:
   tags: [nvidia-gb10, hpsf-gpu]
   image: nvcr.io/nvidia/cuda:13.1.1-devel-ubuntu24.04
   script:
+    - set +e
     - apt-get update && apt-get install -y cmake git python3
     - export CMAKE_BUILD_PARALLEL_LEVEL=32
     - export ENV_CMAKE_OPTIONS=""
@@ -323,9 +331,9 @@ NVIDIA-DGX-SPARK:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt || true
+      | tee test_results.txt
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
-    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
+    - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
