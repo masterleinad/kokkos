@@ -55,7 +55,7 @@ struct TestReduction {
   void check_correctness() {
     const int sum_local = (m_num_elements * (m_num_elements + 1)) / 2;
 
-    ASSERT_EQ(sum, sum_local * value + 1)
+    ASSERT_EQ(sum, sum_local * value)
         << "The reduced value does not match the expected answer";
   }
 
