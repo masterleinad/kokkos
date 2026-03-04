@@ -44,8 +44,9 @@ NVIDIA-RTX5080:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -89,8 +90,9 @@ NVIDIA-GH200:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -126,8 +128,9 @@ NVIDIA-P100:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -171,8 +174,9 @@ INTEL-DATA-CENTER-MAX-1100:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -214,8 +218,9 @@ INTEL-DATA-CENTER-MAX-1100-OUT-OF-ORDER:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -256,8 +261,9 @@ AMD-MI300A:
       -D CTEST_SITE="gitlab.spack.io"
       -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -294,8 +300,9 @@ NVIDIA-GRACE-GRACE:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
@@ -332,8 +339,9 @@ NVIDIA-DGX-SPARK:
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
       | tee test_results.txt
-    - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
+    - export CTEST_RETURN_VALUE=$?
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
+    - echo ${CTEST_RETURN_VALUE}
     - exit ${CTEST_RETURN_VALUE}
   artifacts:
     when: always
