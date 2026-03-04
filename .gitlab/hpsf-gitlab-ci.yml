@@ -42,7 +42,7 @@ NVIDIA-RTX5080:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
@@ -86,7 +86,7 @@ NVIDIA-GH200:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
@@ -122,7 +122,7 @@ NVIDIA-P100:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
@@ -166,7 +166,7 @@ INTEL-DATA-CENTER-MAX-1100:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
@@ -208,7 +208,7 @@ INTEL-DATA-CENTER-MAX-1100-OUT-OF-ORDER:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
@@ -249,7 +249,7 @@ AMD-MI300A:
       -S scripts/CTestRun.cmake
       -D CTEST_SITE="gitlab.spack.io"
       -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
@@ -286,7 +286,7 @@ NVIDIA-GRACE-GRACE:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
@@ -323,7 +323,7 @@ NVIDIA-DGX-SPARK:
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
-      | tee test_results.txt
+      | tee test_results.txt || true
     - export CTEST_RETURN_VALUE=${PIPESTATUS[0]}
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head || true
     - exit ${CTEST_RETURN_VALUE}
