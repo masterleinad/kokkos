@@ -20,7 +20,6 @@ import kokkos.unordered_map;
 #endif
 
 #include <TestDynRankView.hpp>
-#include <TestScatterView.hpp>
 #include <TestGlobal2LocalIds.hpp>
 #include <TestUnorderedMapPerformance.hpp>
 
@@ -50,18 +49,6 @@ void unordered_map_performance_far() {
   Perf::run_performance_tests<Kokkos::HIP, false>("hip-far");
 }
 
-void scatter_view() {
-  std::cout << "HIP: ScatterView data-duplicated test:\n";
-  Perf::test_scatter_view<Kokkos::HIP, Kokkos::LayoutLeft,
-                          Kokkos::Experimental::ScatterDuplicated,
-                          Kokkos::Experimental::ScatterNonAtomic>(10,
-                                                                  1000 * 1000);
-  // std::cout << "ScatterView atomics test:\n";
-  // Perf::test_scatter_view<Kokkos::HIP, Kokkos::LayoutLeft,
-  //  Kokkos::Experimental::ScatterNonDuplicated,
-  //  Kokkos::Experimental::ScatterAtomic>(10, 1000 * 1000);
-}
-
 }  // namespace Performance
 
 int main() {
@@ -70,5 +57,4 @@ int main() {
   Performance::global_2_local();
   Performance::unordered_map_performance_near();
   Performance::unordered_map_performance_far();
-  Performance::scatter_view();
 }
