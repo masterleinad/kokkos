@@ -18,6 +18,12 @@
  *  KOKKOS_ENABLE_CUDA_UVM            Use CUDA UVM for Cuda memory space.
  */
 
+#ifndef KOKKOS_DONT_INCLUDE_CORE_CONFIG_H
+#include <KokkosCore_config.h>
+#include <impl/Kokkos_DesulAtomicsConfig.hpp>
+#include <impl/Kokkos_NvidiaGpuArchitectures.hpp>
+#endif
+
 #define KOKKOS_VERSION_LESS(MAJOR, MINOR, PATCH) \
   (KOKKOS_VERSION < ((MAJOR)*10000 + (MINOR)*100 + (PATCH)))
 
@@ -36,12 +42,6 @@
 #if !KOKKOS_VERSION_EQUAL(KOKKOS_VERSION_MAJOR, KOKKOS_VERSION_MINOR, \
                           KOKKOS_VERSION_PATCH)
 #error implementation bug
-#endif
-
-#ifndef KOKKOS_DONT_INCLUDE_CORE_CONFIG_H
-#include <KokkosCore_config.h>
-#include <impl/Kokkos_DesulAtomicsConfig.hpp>
-#include <impl/Kokkos_NvidiaGpuArchitectures.hpp>
 #endif
 
 #if __has_include(<version>)
