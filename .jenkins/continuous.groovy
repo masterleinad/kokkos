@@ -18,6 +18,14 @@ pipeline {
     }
 
     stages {
+        stage('Configure heartbeat') {
+            steps {
+                 script {
+                     System.setProperty("org.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL", "86400")
+                 }
+            }
+        }
+
         stage('Pre-Commit') {
             agent {
                 docker {
