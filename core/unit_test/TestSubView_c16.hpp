@@ -10,7 +10,9 @@ import kokkos.core;
 #endif
 
 namespace {
-TEST(TEST_CATEGORY, view_subview_managed_unmanaged) {
+// Test that the subview constructor works for constructing subviews from
+// Views where one of them has the Kokkos::Unmanaged memory trait
+TEST(TEST_CATEGORY, view_create_unmanaged_subview_from_managed) {
   int N    = 10;
   using LR = Kokkos::LayoutRight;
   using LL = Kokkos::LayoutLeft;
