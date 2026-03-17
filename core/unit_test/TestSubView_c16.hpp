@@ -31,6 +31,8 @@ TEST(TEST_CATEGORY, view_create_unmanaged_subview_from_managed) {
 
     (void)Kokkos::View<int*, LL>(a1_unmanaged, Kokkos::ALL, 1);
     (void)Kokkos::View<int*, LS>(a1_unmanaged, Kokkos::ALL, 1);
+    // FIXME: This doesn't compile for BasicView, but should
+    // (void)Kokkos::View<int*, LR>(a1_unmanaged, Kokkos::ALL, 1);
   }
 
   Kokkos::View<int**, LL> a2("A2", 1, N);
