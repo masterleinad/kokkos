@@ -973,7 +973,6 @@ function(kokkos_check_flags)
     message(FATAL_ERROR "'kokkos_check_flags' requires LANGUAGE keyword")
   endif()
 
-  include(CheckCompilerFlag)
   #delete cache so we always do the check
   unset(KOKKOS_COMPILE_OPTIONS_CHECK CACHE)
   try_compile(
