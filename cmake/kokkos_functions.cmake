@@ -975,6 +975,7 @@ function(kokkos_check_flags)
 
   #delete cache so we always do the check
   unset(KOKKOS_COMPILE_OPTIONS_CHECK CACHE)
+  message(STATUS "Performing Test KOKKOS_COMPILE_OPTIONS_CHECK")
   try_compile(
     KOKKOS_COMPILE_OPTIONS_CHECK ${CMAKE_BINARY_DIR}/check_compilation
     ${CMAKE_SOURCE_DIR}/cmake/compile_tests/check_compilation CheckCompilation
