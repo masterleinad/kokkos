@@ -989,7 +989,7 @@ function(kokkos_check_flags)
     message(STATUS "Performing Test KOKKOS_COMPILE_OPTIONS_CHECK - Success")
   else()
     message(
-      FATAL_ERROR
+      WARNING
         "The compiler for ${KOKKOS_COMPILE_LANGUAGE} can not consume flag(s) ${QUOTED_FLAGS} in combination with the CMAKE_${KOKKOS_COMPILE_LANGUAGE}_FLAGS=${CMAKE_${KOKKOS_COMPILE_LANGUAGE}_FLAGS}. Please check the given configuration. The compiler error message is:\n${ERROR_OUTPUT}"
     )
   endif()

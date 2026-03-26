@@ -4,7 +4,6 @@ Checks: >
   -bugprone-argument-comment,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
-  -bugprone-invalid-enum-default-initialization,
   -bugprone-macro-parentheses,
   -bugprone-narrowing-conversions,
   -bugprone-random-generator-seed,

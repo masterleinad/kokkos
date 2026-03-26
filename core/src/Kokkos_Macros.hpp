@@ -15,8 +15,13 @@
  *  KOKKOS_ENABLE_SYCL                Kokkos::SYCL execution space
  *  KOKKOS_ENABLE_HWLOC               HWLOC library is available.
  *  KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK  Insert array bounds checks, is expensive!
- *  KOKKOS_ENABLE_CUDA_UVM            Use CUDA UVM for Cuda memory space.
  */
+
+#ifndef KOKKOS_DONT_INCLUDE_CORE_CONFIG_H
+#include <KokkosCore_config.h>
+#include <impl/Kokkos_DesulAtomicsConfig.hpp>
+#include <impl/Kokkos_NvidiaGpuArchitectures.hpp>
+#endif
 
 #define KOKKOS_VERSION_LESS(MAJOR, MINOR, PATCH) \
   (KOKKOS_VERSION < ((MAJOR)*10000 + (MINOR)*100 + (PATCH)))
@@ -36,12 +41,6 @@
 #if !KOKKOS_VERSION_EQUAL(KOKKOS_VERSION_MAJOR, KOKKOS_VERSION_MINOR, \
                           KOKKOS_VERSION_PATCH)
 #error implementation bug
-#endif
-
-#ifndef KOKKOS_DONT_INCLUDE_CORE_CONFIG_H
-#include <KokkosCore_config.h>
-#include <impl/Kokkos_DesulAtomicsConfig.hpp>
-#include <impl/Kokkos_NvidiaGpuArchitectures.hpp>
 #endif
 
 #if __has_include(<version>)
@@ -126,7 +125,8 @@
 // CRAY compiler for host code
 #define KOKKOS_COMPILER_CRAYC _CRAYC
 
-#elif defined(__APPLE_CC__) && defined(__clang__)
+#elif defined(__APPLE_CC__) && defined(__clang__) && \
+    defined(__apple_build_version__)
 #define KOKKOS_COMPILER_APPLECC __APPLE_CC__
 
 #elif defined(__NVCOMPILER)
@@ -522,10 +522,6 @@ static_assert(
 #endif
 
 //----------------------------------------------------------------------------
-
-#if defined(KOKKOS_ENABLE_CUDA) && defined(KOKKOS_ENABLE_DEPRECATED_CODE_4)
-#define KOKKOS_ENABLE_CUDA_LDG_INTRINSIC
-#endif
 
 #define KOKKOS_INVALID_INDEX (~std::size_t(0))
 

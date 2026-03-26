@@ -168,6 +168,7 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenACC;HIP;SYCL)
         OccupancyControlTrait
         Other
         ParallelScanRangePolicy
+        CustomScalarParallelScan
         Printf
         QuadPrecisionMath
         RangePolicy
@@ -298,7 +299,16 @@ foreach(Tag Threads;Serial;OpenMP;Cuda;HPX;OpenACC;HIP;SYCL)
     endforeach()
 
     set(${Tag}_SOURCES2D)
-    foreach(Name SubView_c10 SubView_c11 SubView_c12 SubView_c13 SubView_c14 SubView_c15)
+    foreach(
+      Name
+      SubView_c10
+      SubView_c11
+      SubView_c12
+      SubView_c13
+      SubView_c14
+      SubView_c15
+      SubView_c16
+    )
       set(file ${dir}/Test${Tag}_${Name}.cpp)
       # Write to a temporary intermediate file and call configure_file to avoid
       # updating timestamps triggering unnecessary rebuilds on subsequent cmake runs.
@@ -496,6 +506,7 @@ if(KOKKOS_ENABLE_OPENACC AND KOKKOS_CXX_COMPILER_ID STREQUAL Clang)
       ${CMAKE_CURRENT_BINARY_DIR}/openacc/TestOpenACC_BitManipulationBuiltins.cpp
       ${CMAKE_CURRENT_BINARY_DIR}/openacc/TestOpenACC_MathematicalFunctions3.cpp
       ${CMAKE_CURRENT_BINARY_DIR}/openacc/TestOpenACC_ParallelScanRangePolicy.cpp
+      ${CMAKE_CURRENT_BINARY_DIR}/openacc/TestOpenACC_CustomScalarParallelScan.cpp
       ${CMAKE_CURRENT_BINARY_DIR}/openacc/TestOpenACC_SubView_c04.cpp
       ${CMAKE_CURRENT_BINARY_DIR}/openacc/TestOpenACC_SubView_c05.cpp
       ${CMAKE_CURRENT_BINARY_DIR}/openacc/TestOpenACC_SubView_c06.cpp
@@ -540,9 +551,6 @@ if(Kokkos_ENABLE_HPX)
     hpx/TestHPX_IndependentInstancesRefCounting.cpp
     hpx/TestHPX_IndependentInstancesSynchronization.cpp
   )
-  if(Kokkos_ENABLE_DEPRECATED_CODE_4)
-    kokkos_add_executable_and_test(CoreUnitTest_HPX_InParallel SOURCES UnitTestMainInit.cpp hpx/TestHPX_InParallel.cpp)
-  endif()
 endif()
 
 if(Kokkos_ENABLE_OPENACC)

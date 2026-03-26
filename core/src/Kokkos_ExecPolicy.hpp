@@ -34,11 +34,6 @@ struct ParallelReduceTag {};
 struct ChunkSize {
   int value;
   explicit ChunkSize(int value_) : value(value_) {}
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  template <typename T = void>
-  KOKKOS_DEPRECATED_WITH_COMMENT("ChunkSize should be constructed explicitly.")
-  ChunkSize(int value_) : value(value_) {}
-#endif
 };
 
 namespace Impl {
@@ -179,15 +174,6 @@ class RangePolicy : public Impl::PolicyTraits<Properties...> {
       : RangePolicy(other) {
     this->m_space = std::move(space);
   }
-
- public:
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  KOKKOS_DEPRECATED_WITH_COMMENT("Use set_chunk_size instead")
-  inline void set(ChunkSize chunksize) {
-    m_granularity      = chunksize.value;
-    m_granularity_mask = m_granularity - 1;
-  }
-#endif
 
  public:
   /** \brief return chunk_size */

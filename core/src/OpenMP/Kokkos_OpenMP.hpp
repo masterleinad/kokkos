@@ -63,21 +63,8 @@ class OpenMP {
 
   explicit OpenMP(int pool_size);
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  template <typename T = void>
-  KOKKOS_DEPRECATED_WITH_COMMENT(
-      "OpenMP execution space should be constructed explicitly.")
-  OpenMP(int pool_size)
-      : OpenMP(pool_size) {}
-#endif
-
   /// \brief Print configuration information to the given output stream.
   void print_configuration(std::ostream& os, bool verbose = false) const;
-
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  /// \brief is the instance running a parallel algorithm
-  KOKKOS_DEPRECATED static bool in_parallel(OpenMP const& = OpenMP()) noexcept;
-#endif
 
   /// \brief Wait until all dispatched functors complete on the given instance
   ///
@@ -98,11 +85,7 @@ class OpenMP {
   }
 #endif
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  static int concurrency(OpenMP const& = OpenMP());
-#else
   int concurrency() const;
-#endif
 
   static void impl_initialize(InitializationSettings const&);
 

@@ -207,20 +207,6 @@ class HPX {
              Kokkos::Impl::HostSharedPtr<instance_data>(new instance_data(
                  m_next_instance_id++, std::move(sender))))) {}
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  template <typename T = void>
-  KOKKOS_DEPRECATED_WITH_COMMENT(
-      "HPX execution space should be constructed explicitly.")
-  HPX(instance_mode mode)
-      : HPX(mode) {}
-
-  template <typename T = void>
-  KOKKOS_DEPRECATED_WITH_COMMENT(
-      "HPX execution space should be constructed explicitly.")
-  HPX(hpx::execution::experimental::unique_any_sender<> &&sender)
-      : HPX(std::move(sender)) {}
-#endif
-
   KOKKOS_DEFAULTED_FUNCTION HPX(const HPX &) = default;
   KOKKOS_FUNCTION HPX(HPX &&other) : HPX(static_cast<const HPX &>(other)) {}
   KOKKOS_DEFAULTED_FUNCTION HPX &operator=(const HPX &) = default;
@@ -236,34 +222,6 @@ class HPX {
   uint32_t impl_instance_id() const noexcept {
     return impl_get_instance_data().m_instance_id;
   }
-
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  static bool &impl_get_in_parallel() noexcept;
-
-  struct impl_in_parallel_scope {
-    impl_in_parallel_scope() noexcept;
-    ~impl_in_parallel_scope() noexcept;
-    impl_in_parallel_scope(impl_in_parallel_scope &&)                 = delete;
-    impl_in_parallel_scope(impl_in_parallel_scope const &)            = delete;
-    impl_in_parallel_scope &operator=(impl_in_parallel_scope &&)      = delete;
-    impl_in_parallel_scope &operator=(impl_in_parallel_scope const &) = delete;
-  };
-
-  struct impl_not_in_parallel_scope {
-    impl_not_in_parallel_scope() noexcept;
-    ~impl_not_in_parallel_scope() noexcept;
-    impl_not_in_parallel_scope(impl_not_in_parallel_scope &&)      = delete;
-    impl_not_in_parallel_scope(impl_not_in_parallel_scope const &) = delete;
-    impl_not_in_parallel_scope &operator=(impl_not_in_parallel_scope &&) =
-        delete;
-    impl_not_in_parallel_scope &operator=(impl_not_in_parallel_scope const &) =
-        delete;
-  };
-
-  KOKKOS_DEPRECATED static bool in_parallel(HPX const & = HPX()) noexcept {
-    return impl_get_in_parallel();
-  }
-#endif
 
   static void impl_decrement_active_parallel_region_count();
   static void impl_increment_active_parallel_region_count();
@@ -288,11 +246,7 @@ class HPX {
   }
 #endif
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-  static int concurrency();
-#else
   int concurrency() const;
-#endif
   static void impl_initialize(InitializationSettings const &);
   static void impl_finalize();
   static int impl_thread_pool_size() noexcept;
@@ -382,12 +336,7 @@ class HPX {
                            hpx::threads::thread_stacksize::default_) const {
     impl_bulk_plain_erased(force_synchronous, is_light_weight_policy,
                            // NOLINTNEXTLINE(bugprone-exception-escape)
-                           {[functor](Index i) {
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-                             impl_in_parallel_scope p;
-#endif
-                             functor.execute_range(i);
-                           }},
+                           {[functor](Index i) { functor.execute_range(i); }},
                            n, stacksize);
   }
 
@@ -445,26 +394,11 @@ class HPX {
       Functor const &functor, Index const n,
       hpx::threads::thread_stacksize stacksize =
           hpx::threads::thread_stacksize::default_) const {
-    impl_bulk_setup_finalize_erased(force_synchronous, is_light_weight_policy,
-                                    {[functor](Index i) {
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-                                      impl_in_parallel_scope p;
-#endif
-                                      functor.execute_range(i);
-                                    }},
-                                    {[functor]() {
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-                                      impl_in_parallel_scope p;
-#endif
-                                      functor.setup();
-                                    }},
-                                    {[functor]() {
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-                                      impl_in_parallel_scope p;
-#endif
-                                      functor.finalize();
-                                    }},
-                                    n, stacksize);
+    impl_bulk_setup_finalize_erased(
+        force_synchronous, is_light_weight_policy,
+        {[functor](Index i) { functor.execute_range(i); }},
+        {[functor]() { functor.setup(); }},
+        {[functor]() { functor.finalize(); }}, n, stacksize);
   }
 
   static constexpr const char *name() noexcept { return "HPX"; }
@@ -1366,17 +1300,7 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
     const WorkRange range(m_policy, t, num_worker_threads);
     execute_chunk(range.begin(), range.end(), update_sum, false);
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-    {
-      // Since arrive_and_wait may yield and resume on another worker thread we
-      // set in_parallel = false on the current thread before suspending and set
-      // it again to true when we resume.
-      Kokkos::Experimental::HPX::impl_not_in_parallel_scope p;
-      barrier.arrive_and_wait();
-    }
-#else
     barrier.arrive_and_wait();
-#endif
 
     if (t == 0) {
       final_reducer.init(reinterpret_cast<pointer_type>(
@@ -1398,17 +1322,7 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>,
       }
     }
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-    {
-      // Since arrive_and_wait may yield and resume on another worker thread we
-      // set in_parallel = false on the current thread before suspending and set
-      // it again to true when we resume.
-      Kokkos::Experimental::HPX::impl_not_in_parallel_scope p;
-      barrier.arrive_and_wait();
-    }
-#else
     barrier.arrive_and_wait();
-#endif
 
     reference_type update_base =
         Analysis::Reducer::reference(reinterpret_cast<pointer_type>(
@@ -1489,17 +1403,7 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
     const WorkRange range(m_policy, t, num_worker_threads);
     execute_chunk(range.begin(), range.end(), update_sum, false);
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-    {
-      // Since arrive_and_wait may yield and resume on another worker thread we
-      // set in_parallel = false on the current thread before suspending and set
-      // it again to true when we resume.
-      Kokkos::Experimental::HPX::impl_not_in_parallel_scope p;
-      barrier.arrive_and_wait();
-    }
-#else
     barrier.arrive_and_wait();
-#endif
 
     if (t == 0) {
       final_reducer.init(reinterpret_cast<pointer_type>(
@@ -1521,17 +1425,7 @@ class ParallelScanWithTotal<FunctorType, Kokkos::RangePolicy<Traits...>,
       }
     }
 
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_4
-    {
-      // Since arrive_and_wait may yield and resume on another worker thread we
-      // set in_parallel = false on the current thread before suspending and set
-      // it again to true when we resume.
-      Kokkos::Experimental::HPX::impl_not_in_parallel_scope p;
-      barrier.arrive_and_wait();
-    }
-#else
     barrier.arrive_and_wait();
-#endif
 
     reference_type update_base =
         Analysis::Reducer::reference(reinterpret_cast<pointer_type>(
