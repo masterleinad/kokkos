@@ -89,7 +89,8 @@ static_assert(test_execspace_nothrow_copy_and_move());
 // backend mights not need a fence to ensure that all enqueued work has finished
 // before an execution space instance is destroyed. Therefore we might want to
 // revisit this test.
-TEST(TEST_CATEGORY, execution_space_fence_on_destruction) {
+
+void run_execution_space_fence_on_destruction() {
   auto [dummy_instance] =
       Kokkos::Experimental::partition_space(TEST_EXECSPACE(), 1);
   bool created_new_instance = TEST_EXECSPACE() != dummy_instance;
@@ -126,6 +127,10 @@ TEST(TEST_CATEGORY, execution_space_fence_on_destruction) {
 #endif
   Kokkos::Test::Tools::listen_tool_events(
       Kokkos::Test::Tools::Config::DisableAll());
+}
+
+TEST(TEST_CATEGORY, execution_space_fence_on_destruction) {
+  run_execution_space_fence_on_destruction();
 }
 
 }  // namespace
