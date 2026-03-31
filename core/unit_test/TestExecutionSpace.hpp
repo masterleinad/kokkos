@@ -96,7 +96,9 @@ TEST(TEST_CATEGORY, execution_space_fence_on_destruction) {
   if (!created_new_instance)
     GTEST_SKIP() << "partition_space doesn't create a new instance";
 
-  Kokkos::View<int, TEST_EXECSPACE> flag("flag");
+#ifdef KOKKOS_HAS_SHARED_SPACE
+  Kokkos::View<int, Kokkos::SharedSpace> flag("flag");
+#endif
 
   Kokkos::Test::Tools::listen_tool_events(
       Kokkos::Test::Tools::Config::DisableAll(),
@@ -107,8 +109,11 @@ TEST(TEST_CATEGORY, execution_space_fence_on_destruction) {
         auto [new_instance] =
             Kokkos::Experimental::partition_space(TEST_EXECSPACE(), 1);
         Kokkos::parallel_for(
-            Kokkos::RangePolicy(new_instance, 0, 1),
-            KOKKOS_LAMBDA(int) { flag() = 1; });
+            Kokkos::RangePolicy(new_instance, 0, 1), KOKKOS_LAMBDA(int) {
+#ifdef KOKKOS_HAS_SHARED_SPACE
+              flag() = 1;
+#endif
+            });
       },
       [&](Kokkos::Test::Tools::BeginFenceEvent event) {
         return Kokkos::Test::Tools::MatchDiagnostic{
@@ -116,7 +121,9 @@ TEST(TEST_CATEGORY, execution_space_fence_on_destruction) {
             std::string::npos};
       });
   ASSERT_TRUE(success);
+#ifdef KOKKOS_HAS_SHARED_SPACE
   ASSERT_EQ(flag(), 1);
+#endif
   Kokkos::Test::Tools::listen_tool_events(
       Kokkos::Test::Tools::Config::DisableAll());
 }
