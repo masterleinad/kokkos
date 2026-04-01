@@ -320,11 +320,6 @@ struct MemorySpaceAccess {
    *         DstExecSpace can access SrcMemorySpace.
    */
   enum { accessible = assignable };
-
-  /**\brief  Does a DeepCopy capability exist
-   *         to DstMemorySpace from SrcMemorySpace
-   */
-  enum { deepcopy = assignable };
 };
 
 }  // namespace Impl
@@ -390,9 +385,6 @@ struct SpaceAccessibility {
   enum {
     assignable = is_memory_space<AccessSpace>::value && mem_access::assignable
   };
-
-  /**\brief  Can deep copy to AccessSpace::memory_Space from MemorySpace ?  */
-  enum { deepcopy = mem_access::deepcopy };
 
   // What intercessory space for AccessSpace::execution_space
   // to be able to access MemorySpace?
