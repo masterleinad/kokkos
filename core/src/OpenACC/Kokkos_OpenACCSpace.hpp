@@ -79,6 +79,9 @@ struct Kokkos::Impl::MemorySpaceAccess<Kokkos::HostSpace,
   enum : bool { assignable = false };
   enum : bool { accessible = false };
 #endif
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
+  enum : bool{deepcopy = true};
+#endif
 };
 
 template <>
@@ -91,6 +94,9 @@ struct Kokkos::Impl::MemorySpaceAccess<Kokkos::Experimental::OpenACCSpace,
   enum : bool { assignable = false };
   enum : bool { accessible = false };
 #endif
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
+  enum : bool{deepcopy = true};
+#endif
 };
 
 template <>
@@ -98,6 +104,9 @@ struct Kokkos::Impl::MemorySpaceAccess<Kokkos::Experimental::OpenACCSpace,
                                        Kokkos::Experimental::OpenACCSpace> {
   enum : bool { assignable = true };
   enum : bool { accessible = true };
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
+  enum : bool{deepcopy = true};
+#endif
 };
 /*--------------------------------------------------------------------------*/
 

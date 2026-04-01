@@ -320,6 +320,13 @@ struct MemorySpaceAccess {
    *         DstExecSpace can access SrcMemorySpace.
    */
   enum { accessible = assignable };
+
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
+  /**\brief  Does a DeepCopy capability exist
+   *         to DstMemorySpace from SrcMemorySpace
+   */
+  enum { deepcopy = assignable };
+#endif
 };
 
 }  // namespace Impl
@@ -385,6 +392,11 @@ struct SpaceAccessibility {
   enum {
     assignable = is_memory_space<AccessSpace>::value && mem_access::assignable
   };
+
+  /**\brief  Can deep copy to AccessSpace::memory_Space from MemorySpace ?  */
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
+  enum KOKKOS_DEPRECATED { deepcopy = mem_access::deepcopy };
+#endif
 
   // What intercessory space for AccessSpace::execution_space
   // to be able to access MemorySpace?
