@@ -6,7 +6,7 @@
 * Fix compiling with Cuda 13.1 [\#9020](https://github.com/kokkos/kokkos/pull/9020)
 
 ### HIP
-* Disable MallocAsync for ROCm by default [\#9022](https://github.com/kokkos/kokkos/pull/9022)
+* Disable MallocAsync for ROCm by default and thus supporting ROCM 7 [\#9022](https://github.com/kokkos/kokkos/pull/9022)
 * Adding support for AMD MI355 and MI350 [\#9025]((https://github.com/kokkos/kokkos/pull/9025)
 
 ### Bug Fixes
