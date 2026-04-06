@@ -97,7 +97,9 @@ struct MemorySpaceAccess<Kokkos::Experimental::NextSiliconSharedSpace,
   };  // This is a lie, because NextSilicon can access HostSpace. Set this way
       // so the HostMirror of NextSiliconSharedSpace uses the host execution
       // space.
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
   enum : bool { deepcopy = true };
+#endif
 };
 
 template <>
@@ -108,7 +110,9 @@ struct MemorySpaceAccess<Kokkos::HostSpace,
     accessible = true
   };  // Unlike <NextSiliconSharedSpace, HostSpace>, this is true so that
       // HostMirror uses NextSiliconSharedSpace as the memory space
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
   enum : bool { deepcopy = true };
+#endif
 };
 
 }  // namespace Impl
