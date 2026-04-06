@@ -78,9 +78,6 @@ struct MemorySpaceAccess<Experimental::NextSiliconSharedSpace,
                          Experimental::NextSilicon::scratch_memory_space> {
   enum : bool { assignable = false };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 }  // namespace Impl
 }  // namespace Kokkos

@@ -322,9 +322,6 @@ struct MemorySpaceAccess<Kokkos::HostSpace, Kokkos::CudaSpace> {
 #else
   enum : bool { accessible = true };
 #endif
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -332,9 +329,6 @@ struct MemorySpaceAccess<Kokkos::HostSpace, Kokkos::CudaUVMSpace> {
   // HostSpace::execution_space != CudaUVMSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -342,9 +336,6 @@ struct MemorySpaceAccess<Kokkos::HostSpace, Kokkos::CudaHostPinnedSpace> {
   // HostSpace::execution_space == CudaHostPinnedSpace::execution_space
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 //----------------------------------------
@@ -353,9 +344,6 @@ template <>
 struct MemorySpaceAccess<Kokkos::CudaSpace, Kokkos::HostSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = false };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -363,9 +351,6 @@ struct MemorySpaceAccess<Kokkos::CudaSpace, Kokkos::CudaUVMSpace> {
   // CudaSpace::execution_space == CudaUVMSpace::execution_space
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -373,9 +358,6 @@ struct MemorySpaceAccess<Kokkos::CudaSpace, Kokkos::CudaHostPinnedSpace> {
   // CudaSpace::execution_space != CudaHostPinnedSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };  // CudaSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 //----------------------------------------
@@ -386,9 +368,6 @@ template <>
 struct MemorySpaceAccess<Kokkos::CudaUVMSpace, Kokkos::HostSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = false };  // Cuda cannot access HostSpace
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -399,9 +378,6 @@ struct MemorySpaceAccess<Kokkos::CudaUVMSpace, Kokkos::CudaSpace> {
 
   // CudaUVMSpace::execution_space can access CudaSpace
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -409,9 +385,6 @@ struct MemorySpaceAccess<Kokkos::CudaUVMSpace, Kokkos::CudaHostPinnedSpace> {
   // CudaUVMSpace::execution_space != CudaHostPinnedSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };  // CudaUVMSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 //----------------------------------------
@@ -422,27 +395,18 @@ template <>
 struct MemorySpaceAccess<Kokkos::CudaHostPinnedSpace, Kokkos::HostSpace> {
   enum : bool { assignable = false };  // Cannot access from Cuda
   enum : bool { accessible = true };   // CudaHostPinnedSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<Kokkos::CudaHostPinnedSpace, Kokkos::CudaSpace> {
   enum : bool { assignable = false };  // Cannot access from Host
   enum : bool { accessible = false };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<Kokkos::CudaHostPinnedSpace, Kokkos::CudaUVMSpace> {
   enum : bool { assignable = false };  // different execution_space
   enum : bool { accessible = true };   // same accessibility
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 //----------------------------------------

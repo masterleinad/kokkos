@@ -46,27 +46,18 @@ template <typename OtherSpace>
 struct MemorySpaceAccess<Kokkos::AnonymousSpace, OtherSpace> {
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <typename OtherSpace>
 struct MemorySpaceAccess<OtherSpace, Kokkos::AnonymousSpace> {
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<Kokkos::AnonymousSpace, Kokkos::AnonymousSpace> {
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 }  // namespace Impl

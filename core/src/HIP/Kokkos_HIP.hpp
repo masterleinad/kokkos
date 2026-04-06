@@ -106,9 +106,6 @@ template <>
 struct MemorySpaceAccess<HIPSpace, HIP::scratch_memory_space> {
   enum : bool { assignable = false };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = false };
-#endif
 };
 }  // namespace Impl
 

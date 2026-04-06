@@ -283,9 +283,6 @@ struct MemorySpaceAccess<HostSpace, HIPSpace> {
 #else
   enum : bool { accessible = true };
 #endif
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -293,9 +290,6 @@ struct MemorySpaceAccess<HostSpace, HIPHostPinnedSpace> {
   // HostSpace::execution_space == HIPHostPinnedSpace::execution_space
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -303,9 +297,6 @@ struct MemorySpaceAccess<HostSpace, HIPManagedSpace> {
   // HostSpace::execution_space != HIPManagedSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 //----------------------------------------
@@ -314,9 +305,6 @@ template <>
 struct MemorySpaceAccess<HIPSpace, HostSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = false };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -324,9 +312,6 @@ struct MemorySpaceAccess<HIPSpace, HIPHostPinnedSpace> {
   // HIPSpace::execution_space != HIPHostPinnedSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };  // HIPSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
@@ -334,9 +319,6 @@ struct MemorySpaceAccess<HIPSpace, HIPManagedSpace> {
   // HIPSpace::execution_space == HIPManagedSpace::execution_space
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 //----------------------------------------
@@ -347,27 +329,18 @@ template <>
 struct MemorySpaceAccess<HIPHostPinnedSpace, HostSpace> {
   enum : bool { assignable = false };  // Cannot access from HIP
   enum : bool { accessible = true };   // HIPHostPinnedSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<HIPHostPinnedSpace, HIPSpace> {
   enum : bool { assignable = false };  // Cannot access from Host
   enum : bool { accessible = false };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<HIPHostPinnedSpace, HIPManagedSpace> {
   enum : bool { assignable = false };  // different exec_space
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 //----------------------------------------
@@ -378,27 +351,18 @@ template <>
 struct MemorySpaceAccess<HIPManagedSpace, HostSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = false };  // HIPHostPinnedSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<HIPManagedSpace, HIPSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<HIPManagedSpace, HIPHostPinnedSpace> {
   enum : bool { assignable = false };  // different exec_space
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool{deepcopy = true};
-#endif
 };
 
 }  // namespace Impl

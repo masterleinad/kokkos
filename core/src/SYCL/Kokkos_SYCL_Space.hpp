@@ -168,9 +168,6 @@ template <>
 struct MemorySpaceAccess<Kokkos::HostSpace, Kokkos::SYCLDeviceUSMSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = false };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
@@ -178,9 +175,6 @@ struct MemorySpaceAccess<Kokkos::HostSpace, Kokkos::SYCLSharedUSMSpace> {
   // HostSpace::execution_space != SYCLSharedUSMSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
@@ -189,18 +183,12 @@ struct MemorySpaceAccess<Kokkos::HostSpace, Kokkos::SYCLHostUSMSpace> {
   // SYCLHostUSMSpace::execution_space
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<Kokkos::SYCLDeviceUSMSpace, Kokkos::HostSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = false };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
@@ -209,9 +197,6 @@ struct MemorySpaceAccess<Kokkos::SYCLDeviceUSMSpace,
   // SYCLDeviceUSMSpace::execution_space == SYCLSharedUSMSpace::execution_space
   enum : bool { assignable = true };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
@@ -220,9 +205,6 @@ struct MemorySpaceAccess<Kokkos::SYCLDeviceUSMSpace, Kokkos::SYCLHostUSMSpace> {
   // SYCLHostUSMSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };  // SYCLDeviceUSMSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 //----------------------------------------
@@ -233,9 +215,6 @@ template <>
 struct MemorySpaceAccess<Kokkos::SYCLSharedUSMSpace, Kokkos::HostSpace> {
   enum : bool { assignable = false };
   enum : bool { accessible = false };  // SYCL cannot access HostSpace
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
@@ -248,9 +227,6 @@ struct MemorySpaceAccess<Kokkos::SYCLSharedUSMSpace,
 
   // SYCLSharedUSMSpace::execution_space can access SYCLDeviceUSMSpace
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
@@ -259,36 +235,24 @@ struct MemorySpaceAccess<Kokkos::SYCLSharedUSMSpace, Kokkos::SYCLHostUSMSpace> {
   // SYCLHostUSMSpace::execution_space
   enum : bool { assignable = false };
   enum : bool { accessible = true };  // SYCLSharedUSMSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<Kokkos::SYCLHostUSMSpace, Kokkos::HostSpace> {
   enum : bool { assignable = false };  // Cannot access from SYCL
   enum : bool { accessible = true };   // SYCLHostUSMSpace::execution_space
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<Kokkos::SYCLHostUSMSpace, Kokkos::SYCLDeviceUSMSpace> {
   enum : bool { assignable = false };  // Cannot access from Host
   enum : bool { accessible = false };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
 struct MemorySpaceAccess<Kokkos::SYCLHostUSMSpace, Kokkos::SYCLSharedUSMSpace> {
   enum : bool { assignable = false };  // different execution_space
   enum : bool { accessible = true };   // same accessibility
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = true };
-#endif
 };
 
 template <>
@@ -296,9 +260,6 @@ struct MemorySpaceAccess<Kokkos::SYCLDeviceUSMSpace,
                          Kokkos::ScratchMemorySpace<Kokkos::SYCL>> {
   enum : bool { assignable = false };
   enum : bool { accessible = true };
-#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
-  enum : bool { deepcopy = false };
-#endif
 };
 
 }  // namespace Impl
