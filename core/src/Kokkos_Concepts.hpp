@@ -390,8 +390,11 @@ struct SpaceAccessibility {
 #ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
   enum KOKKOS_DEPRECATED {
     deepcopy = !std::is_same_v<
-        typename AccessSpace::execution_space::scratch_memory_space,
-        MemorySpace>
+                   typename MemorySpace::execution_space::scratch_memory_space,
+                   MemorySpace> &&
+               !std::is_same_v<
+                   typename AccessSpace::execution_space::scratch_memory_space,
+                   typename AccessSpace::memory_space>
   };
 #endif
 
