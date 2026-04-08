@@ -20,7 +20,6 @@ inline void sycl_abort(char const* msg) {
   const char* empty = " ";
   __assert_fail(msg, empty, 0, empty);
 #endif
-#endif
 }
 
 }  // namespace Impl
