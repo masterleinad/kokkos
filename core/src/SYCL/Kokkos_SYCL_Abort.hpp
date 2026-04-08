@@ -12,12 +12,9 @@ namespace Kokkos {
 namespace Impl {
 
 inline void sycl_abort(char const* msg) {
-#ifdef NDEBUG
-  Kokkos::printf("Aborting with message %s.\n", msg);
-#else
 // FIXME_WINDOWS __assert_fail isn't defined
-#ifdef _MSC_VER
-  (void)msg;
+#if defined(NDEBUG) || defined(_MSC_VER)
+  Kokkos::printf("Aborting with message %s.\n", msg);
 #else
   // Choosing "" here causes problems but a single whitespace character works.
   const char* empty = " ";
