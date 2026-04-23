@@ -14,7 +14,7 @@ import kokkos.core;
 namespace Test {
 
 // Test whether the default instance fences on finalize.
-TEST(TEST_CATEGORY, default_instance_fences_on_finalize) {
+void test_default_instance_fences_on_finalize() {
   Kokkos::Test::Tools::listen_tool_events(
       Kokkos::Test::Tools::Config::DisableAll(),
       Kokkos::Test::Tools::Config::EnableFences());
@@ -40,6 +40,10 @@ TEST(TEST_CATEGORY, default_instance_fences_on_finalize) {
 
   Kokkos::Test::Tools::listen_tool_events(
       Kokkos::Test::Tools::Config::DisableAll());
+}
+
+TEST(TEST_CATEGORY, default_instance_fences_on_finalize) {
+  test_default_instance_fences_on_finalize();
 }
 
 }  // namespace Test
