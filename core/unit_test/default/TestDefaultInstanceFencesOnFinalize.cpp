@@ -26,7 +26,7 @@ void test_default_instance_fences_on_finalize() {
           const TEST_EXECSPACE exec{};
 
           Kokkos::parallel_for(Kokkos::RangePolicy(exec, 0, 100),
-                               KOKKOS_LAMBDA(const auto){});
+                               KOKKOS_LAMBDA(const int){});
         }
         Kokkos::finalize();
       },
