@@ -429,6 +429,11 @@ foreach(PairDeviceSpace HIP-HostPinned;HIP-Managed;Cuda-HostPinned;Cuda-UVM;SYCL
   endif()
 endforeach()
 
+kokkos_add_executable_and_test(
+  CoreUnitTest_DefaultInstanceFencesOnFinalize SOURCES UnitTestMain.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/default/TestDefaultInstanceFencesOnFinalize.cpp
+)
+
 if(Kokkos_ENABLE_OPENACC)
   list(
     REMOVE_ITEM
