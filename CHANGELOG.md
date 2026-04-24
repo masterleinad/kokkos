@@ -1,4 +1,26 @@
 # CHANGELOG
+
+## 5.1.1
+
+[Full Changelog](https://github.com/kokkos/kokkos/compare/5.1.0...5.1.1)
+
+### Bug Fixes
+* Correct type reference in IndexTypeTrait error reporting [\#9085](https://github.com/kokkos/kokkos/pull/9085)
+* Provide ROCM_PATH to rocthrust [\#9101](https://github.com/kokkos/kokkos/pull/9101)
+* Resolve std::iterator deprecation warning with cuda/12.4+gcc/12.3.0 [\#9063](https://github.com/kokkos/kokkos/pull/9063)
+* simd: Fix compile failures when ranges are not available [\#9065](https://github.com/kokkos/kokkos/pull/9065)
+* Resolve mismatch in View::extent and View::extent_int when querying extents larger than or equal to the rank of a view [\#9072](https://github.com/kokkos/kokkos/pull/9072)
+* Fix compilation on MAXWELL50 using CUDAToolkit 12.4.131 [\#9091](https://github.com/kokkos/kokkos/pull/9091)
+* OpenACC: fix parallel_scan chunk boundary race [\#9078](https://github.com/kokkos/kokkos/pull/9078)
+* Fix a call to masked reduce with default parameters being ambiguous [\#9079](https://github.com/kokkos/kokkos/pull/9079)
+* simd: fix operations on basic_simd<T, abi::scalar> going through host only functions [\#9004](https://github.com/kokkos/kokkos/pull/9004)
+* Fix misalignment issue for CUDA and HIP combined reducers [\#8989](https://github.com/kokkos/kokkos/pull/8989)
+* SYCL: Fix Windows build issues [\#9043](https://github.com/kokkos/kokkos/pull/9043)
+* Fix graph API to support lvalue execution policies [\#9027](https://github.com/kokkos/kokkos/pull/9027)
+* Only use \_\_atomic_max_fetch with floating point types from LLVM 22.1 on [\#8991](https://github.com/kokkos/kokkos/pull/8991)
+* fix desul warning [\#9086](https://github.com/kokkos/kokkos/pull/9086)
+* avoid batched RangePolicy path when StaticBatchSize is 1 [\#9123](https://github.com/kokkos/kokkos/pull/9123), [\#9124](https://github.com/kokkos/kokkos/pull/9124)
+
 ## 5.1.0
 
 [Full Changelog](https://github.com/kokkos/kokkos/compare/5.0.2...5.1.0)
