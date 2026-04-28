@@ -17,8 +17,7 @@
 * simd: fix operations on basic_simd<T, abi::scalar> going through host only functions [\#9004](https://github.com/kokkos/kokkos/pull/9004)
 * SYCL: Fix `Kokkos::abort` and `Kokkos::Experimental::nan` in Windows builds [\#9043](https://github.com/kokkos/kokkos/pull/9043)
 * Fix graph API to support lvalue execution policies [\#9027](https://github.com/kokkos/kokkos/pull/9027)
-* Only use \_\_atomic_max_fetch with floating point types from LLVM 22.1 on [\#8991](https://github.com/kokkos/kokkos/pull/8991)
-* Leverage HIP atomic load/store compiler built-ins [\#9040](https://github.com/kokkos/kokkos/pull/9040)
+* Only use `__atomic_max_fetch` with floating point types from LLVM 22.1 on [\#8991](https://github.com/kokkos/kokkos/pull/8991)
 
 ## 5.1.0
 
