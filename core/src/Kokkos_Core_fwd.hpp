@@ -13,6 +13,7 @@
 // and compiler environment then sets a collection of #define macros.
 
 #include <Kokkos_Macros.hpp>
+#include <Kokkos_Abort.hpp>
 #include <Kokkos_Printf.hpp>
 #include <impl/Kokkos_Error.hpp>
 #include <impl/Kokkos_Utilities.hpp>
