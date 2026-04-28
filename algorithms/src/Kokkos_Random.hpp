@@ -15,7 +15,6 @@ import kokkos.core_impl;
 #else
 #include <Kokkos_Core.hpp>
 #endif
-#include <Kokkos_Complex.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
