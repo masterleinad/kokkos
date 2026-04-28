@@ -6,6 +6,7 @@
 
 #include <type_traits>
 
+#include <Kokkos_Abort.hpp>
 #include <impl/Kokkos_Error.hpp>
 
 namespace Kokkos {
