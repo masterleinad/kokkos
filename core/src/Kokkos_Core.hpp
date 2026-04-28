@@ -33,8 +33,6 @@
 
 #include <Kokkos_Half.hpp>
 #include <Kokkos_AnonymousSpace.hpp>
-#include <Kokkos_Abort.hpp>
-#include <Kokkos_Assert.hpp>
 #include <Kokkos_Pair.hpp>
 #include <Kokkos_Clamp.hpp>
 #include <Kokkos_MinMax.hpp>
