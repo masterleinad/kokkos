@@ -6,8 +6,6 @@
 
 #include <string>
 #include <Kokkos_Macros.hpp>
-#include <Kokkos_Abort.hpp>
-#include <Kokkos_Assert.hpp>
 
 namespace Kokkos::Impl {
 
