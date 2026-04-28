@@ -5,9 +5,7 @@
 #define KOKKOS_ASSERT_HPP
 
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
-import kokkos.core;
-#else
+#ifndef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 #include <Kokkos_Abort.hpp>
 #endif
 
