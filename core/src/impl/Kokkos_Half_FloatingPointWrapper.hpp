@@ -23,6 +23,8 @@ template <class T>
 struct is_bfloat16 : std::false_type {};
 }  // namespace Kokkos::Experimental::Impl
 
+#if !KOKKOS_HALF_T_IS_FLOAT
+
 /************************* BEGIN forward declarations *************************/
 namespace Kokkos {
 namespace Experimental {
