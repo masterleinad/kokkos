@@ -10,20 +10,22 @@ set(KOKKOS_CONTAINER_HEADERS)
 append_glob(KOKKOS_CONTAINERS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/impl/*.hpp)
 append_glob(KOKKOS_CONTAINERS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 
-set(KOKKOS_CONTAINERS_MODULES
-    Kokkos_Bitset.cppm
-    Kokkos_DualView.cppm
-    Kokkos_DynamicView.cppm
-    Kokkos_DynRankView.cppm
-    Kokkos_DynRankView_Impl.cppm
-    Kokkos_ErrorReporter.cppm
-    Kokkos_Functional.cppm
-    Kokkos_OffsetView.cppm
-    Kokkos_ScatterView.cppm
-    Kokkos_ScatterView_Impl.cppm
-    Kokkos_UnorderedMap.cppm
-    Kokkos_UnorderedMap_Impl.cppm
-)
+if(NOT KOKKOS_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(KOKKOS_CONTAINERS_MODULES
+      Kokkos_Bitset.cppm
+      Kokkos_DualView.cppm
+      Kokkos_DynamicView.cppm
+      Kokkos_DynRankView.cppm
+      Kokkos_DynRankView_Impl.cppm
+      Kokkos_ErrorReporter.cppm
+      Kokkos_Functional.cppm
+      Kokkos_OffsetView.cppm
+      Kokkos_ScatterView.cppm
+      Kokkos_ScatterView_Impl.cppm
+      Kokkos_UnorderedMap.cppm
+      Kokkos_UnorderedMap_Impl.cppm
+  )
+endif()
 
 install(
   DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"

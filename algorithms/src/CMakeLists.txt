@@ -9,7 +9,9 @@ file(GLOB ALGO_SOURCES *.cpp)
 append_glob(ALGO_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/std_algorithms/*.hpp)
 append_glob(ALGO_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/std_algorithms/impl/*.hpp)
 
-set(ALGO_MODULES Kokkos_Random.cppm Kokkos_Sort.cppm Kokkos_StdAlgorithms.cppm)
+if(NOT KOKKOS_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(ALGO_MODULES Kokkos_Random.cppm Kokkos_Sort.cppm Kokkos_StdAlgorithms.cppm)
+endif()
 
 install(
   DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
