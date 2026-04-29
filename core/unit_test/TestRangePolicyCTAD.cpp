@@ -7,7 +7,6 @@ import kokkos.core;
 #else
 #include <Kokkos_Core.hpp>
 #endif
-#include "Kokkos_Core_fwd.hpp"
 
 namespace {
 

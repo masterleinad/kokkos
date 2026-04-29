@@ -2,12 +2,16 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 #include <iostream>
 #include <gtest/gtest.h>
-#include "Kokkos_Core.hpp"
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
+#include <Kokkos_Core.hpp>
+#endif
 
 #include <impl/Kokkos_Stacktrace.hpp>
 #include <vector>
 #include <algorithm>
-#include "Kokkos_Core_fwd.hpp"
 #include "include/ToolTestingUtilities.hpp"
 namespace Kokkos {
 class Serial;
