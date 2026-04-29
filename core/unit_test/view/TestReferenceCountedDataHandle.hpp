@@ -9,6 +9,8 @@ import kokkos.core_impl;
 #include <Kokkos_Core.hpp>
 #endif
 
+#include <optional>
+
 #include <gtest/gtest.h>
 
 namespace {
