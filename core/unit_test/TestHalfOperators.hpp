@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
-#include <impl/Kokkos_Half_FloatingPointWrapper.hpp>
+// #include <impl/Kokkos_Half_FloatingPointWrapper.hpp>
 
 #ifndef TESTHALFOPERATOR_HPP_
 #define TESTHALFOPERATOR_HPP_
