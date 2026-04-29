@@ -5,7 +5,8 @@
 #define KOKKOS_TEST_SCATTER_VIEW_HPP
 
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+#if defined(KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES) && \
+    !defined(KOKKOS_COMPILER_MSVC)
 import kokkos.scatter_view;
 #else
 #include <Kokkos_ScatterView.hpp>

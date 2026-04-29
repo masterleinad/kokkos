@@ -5,7 +5,8 @@
 #define KOKKOS_STD_ALGORITHMS_ADJACENT_FIND_IMPL_HPP
 
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+#if defined(KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES) && \
+    !defined(KOKKOS_COMPILER_MSVC)
 import kokkos.core;
 #else
 #include <Kokkos_Core.hpp>

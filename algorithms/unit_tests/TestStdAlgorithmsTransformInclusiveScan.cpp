@@ -2,7 +2,8 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <TestStdAlgorithmsCommon.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+#if defined(KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES) && \
+    !defined(KOKKOS_COMPILER_MSVC)
 #include <std_algorithms/impl/Kokkos_ValueWrapperForNoNeutralElement.hpp>
 #include <std_algorithms/impl/Kokkos_IdentityReferenceUnaryFunctor.hpp>
 #include <std_algorithms/impl/Kokkos_TransformInclusiveScan.hpp>

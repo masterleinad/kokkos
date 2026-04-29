@@ -6,7 +6,8 @@
 #endif
 
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+#if defined(KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES) && \
+    !defined(KOKKOS_COMPILER_MSVC)
 import kokkos.unordered_map;
 #else
 #include <Kokkos_UnorderedMap.hpp>
