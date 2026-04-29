@@ -22,6 +22,11 @@ namespace Kokkos {
 
 namespace Impl {
 
+template <class MappingType, class AccessorType>
+KOKKOS_INLINE_FUNCTION constexpr size_t
+allocation_size_from_mapping_and_accessor(const MappingType& map,
+                                          const AccessorType&);
+
 template <class Layout>
 struct ViewFillLayoutSelector {};
 
