@@ -7,7 +7,6 @@ import kokkos.core;
 #else
 #include <Kokkos_Core.hpp>
 #endif
-#include <Kokkos_Pair.hpp>
 #include <Kokkos_TypeInfo.hpp>
 
 #include <desul/atomics.hpp>
