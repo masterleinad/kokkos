@@ -718,6 +718,7 @@ export {
   namespace Tools {
   namespace Experimental {
 
+  using ::Kokkos::Tools::Experimental::DeviceTypeTraits;
   using ::Kokkos::Tools::Experimental::begin_context;
   using ::Kokkos::Tools::Experimental::CandidateValueType;
   using ::Kokkos::Tools::Experimental::declare_input_type;
@@ -731,7 +732,6 @@ export {
   using ::Kokkos::Tools::Experimental::SetOrRange;
   using ::Kokkos::Tools::Experimental::StatisticalCategory;
   using ::Kokkos::Tools::Experimental::ValueType;
-
   using ::Kokkos::Tools::Experimental::CategoricalTuner;
   using ::Kokkos::Tools::Experimental::contextBeginFunction;
   using ::Kokkos::Tools::Experimental::contextEndFunction;
