@@ -8,6 +8,8 @@ import kokkos.core;
 #include <Kokkos_Core.hpp>
 #endif
 
+#include <cstdint>
+
 namespace {
 
 struct TestRangePolicyCTAD {
