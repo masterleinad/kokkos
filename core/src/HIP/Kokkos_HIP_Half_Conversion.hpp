@@ -4,7 +4,7 @@
 #ifndef KOKKOS_HIP_HALF_HPP_
 #define KOKKOS_HIP_HALF_HPP_
 
-#ifdef KOKKOS_IMPL_HALF_TYPE_DEFINED
+#if !KOKKOS_HALF_T_IS_FLOAT
 
 #include <Kokkos_Half.hpp>
 
