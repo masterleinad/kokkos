@@ -33,7 +33,7 @@ class floating_point_wrapper;
 
 // Declare half_t (binary16)
 using half_t = Kokkos::Experimental::Impl::floating_point_wrapper<
-    Kokkos::Impl::half_impl_t ::type>;
+    Kokkos::Impl::half_impl_t::type>;
 namespace Impl {
 template <>
 struct is_float16<half_t> : std::true_type {};
