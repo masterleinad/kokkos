@@ -1247,10 +1247,12 @@ inline void deep_copy(
   dst_ptr_type dst_start = dst.data();
   src_ptr_type src_start = src.data();
 #ifndef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
-  dst_ptr_type dst_end = dst.data() + allocation_size_from_mapping_and_accessor(
-                                          dst.mapping(), dst.accessor());
-  src_ptr_type src_end = src.data() + allocation_size_from_mapping_and_accessor(
-                                          src.mapping(), src.accessor());
+  dst_ptr_type dst_end =
+      dst.data() + ::Kokkos::Impl::allocation_size_from_mapping_and_accessor(
+                       dst.mapping(), dst.accessor());
+  src_ptr_type src_end =
+      src.data() + ::Kokkos::Impl::allocation_size_from_mapping_and_accessor(
+                       src.mapping(), src.accessor());
 #else
   dst_ptr_type dst_end = dst.data() + dst.span();
   src_ptr_type src_end = src.data() + src.span();
@@ -1331,9 +1333,10 @@ inline void deep_copy(
       ((dst_type::rank < 7) || (dst.stride(6) == src.stride(6))) &&
       ((dst_type::rank < 8) || (dst.stride(7) == src.stride(7)))) {
 #ifndef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
-    const size_t nbytes = allocation_size_from_mapping_and_accessor(
-                              src.mapping(), src.accessor()) *
-                          sizeof(std::remove_pointer_t<dst_ptr_type>);
+    const size_t nbytes =
+        ::Kokkos::Impl::allocation_size_from_mapping_and_accessor(
+            src.mapping(), src.accessor()) *
+        sizeof(std::remove_pointer_t<dst_ptr_type>);
 #else
     const size_t nbytes = sizeof(typename dst_type::value_type) * dst.span();
 #endif
