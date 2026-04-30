@@ -348,7 +348,7 @@ class BasicView {
       ss << "Kokkos ERROR: View ";
       constexpr bool has_label = Impl::ViewCtorProp<P...>::has_label;
       if constexpr (has_label) {
-        auto const &lbl = Impl::get_property<Impl::LabelTag>(arg_prop);
+        const std::string &lbl = Impl::get_property<Impl::LabelTag>(arg_prop);
         ss << "(label=\"" << lbl << "\") ";
       }
       ss << "is being constructed ";
