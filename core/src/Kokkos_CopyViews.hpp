@@ -1135,10 +1135,11 @@ inline void deep_copy(
                     typename ViewTraits<ST, SP...>::non_const_value_type>) {
     if (dst.data() != src.data()) {
 #ifndef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
-      using dst_ptr_type  = decltype(dst.data());
-      const size_t nbytes = allocation_size_from_mapping_and_accessor(
-                                src.mapping(), src.accessor()) *
-                            sizeof(std::remove_pointer_t<dst_ptr_type>);
+      using dst_ptr_type = decltype(dst.data());
+      const size_t nbytes =
+          ::Kokkos::Impl::allocation_size_from_mapping_and_accessor(
+              src.mapping(), src.accessor()) *
+          sizeof(std::remove_pointer_t<dst_ptr_type>);
 #else
       const size_t nbytes = sizeof(typename dst_type::value_type);
 #endif

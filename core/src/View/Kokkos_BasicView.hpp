@@ -21,6 +21,7 @@ static_assert(false,
 #include <View/MDSpan/Kokkos_MDSpan_Layout.hpp>
 
 #include <optional>
+#include <sstream>
 #include <type_traits>
 
 #if defined(KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK)
