@@ -5,9 +5,6 @@ on:
     branches:
       - develop
   pull_request:
-    paths-ignore:
-    - '**/*.md'
-    types: [ opened, reopened, synchronize ]
 
 concurrency:
   group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}
@@ -20,12 +17,29 @@ jobs:
   pre-commit-check:
     uses: ./.github/workflows/pre-commit.yml
 
-  initial-check:
+  files-changed:
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.changes.outputs.src }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: changes
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        with:
+          predicate-quantifier: 'every'
+          filters: |
+            src:
+              - '**'
+              - '!**/*.md'
+
+  smoketest:
+    needs: files-changed
+    if: needs.files-changed.outputs.src == 'true'
     uses: ./.github/workflows/continuous-integration-smoketest.yml
 
   # primary testing
   codeql:
-    needs: [initial-check, pre-commit-check]
+    needs: [smoketest, pre-commit-check]
     # need to set manual permissions since it requires security-events write
     # but then we have to set everything else manually to read since the
     # default is overwritten
@@ -36,17 +50,17 @@ jobs:
     uses: ./.github/workflows/codeql.yml
 
   windows:
-    needs: [initial-check, pre-commit-check]
+    needs: [smoketest, pre-commit-check]
     uses: ./.github/workflows/continuous-integration-windows.yml
 
   linux:
-    needs: [initial-check, pre-commit-check]
+    needs: [smoketest, pre-commit-check]
     uses: ./.github/workflows/continuous-integration-linux.yml
 
   osx-x64:
-    needs: [initial-check, pre-commit-check]
+    needs: [smoketest, pre-commit-check]
     uses: ./.github/workflows/continuous-integration-osx.yml
 
   performance-test:
-    needs: [initial-check, pre-commit-check]
+    needs: [smoketest, pre-commit-check]
     uses: ./.github/workflows/performance-benchmark.yml
