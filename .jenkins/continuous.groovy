@@ -35,6 +35,54 @@ pipeline {
         }
         stage('Build-1') {
             parallel {
+                stage('C++20-Modules-GCC-16') {
+                    agent {
+                         dockerfile {
+                             filename 'Dockerfile.gcc-16'
+                             dir 'scripts/docker'
+                             label 'nvidia-docker || docker'
+                             args '--env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
+                         }
+                     }
+                    environment {
+                        OMP_NUM_THREADS = 8
+                        OMP_NESTED = 'true'
+                        OMP_MAX_ACTIVE_LEVELS = 3
+                        OMP_PROC_BIND = 'true'
+                    }
+                    steps {
+                        sh '''#!/bin/bash
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              echo "Hostname: ${NODE_NAME}" && \
+                              rm -rf build && \
+                              set -x && \
+                              cmake \
+                                -B build \
+                                -GNinja \
+                                -DCMAKE_CXX_COMPILER=g++-16 \
+                                -DCMAKE_CXX_FLAGS=-Werror \
+                                -DKokkos_ARCH_NATIVE=ON \
+                                -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
+                                -DKokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES=ON \
+                                -DKokkos_ENABLE_OPENMP=ON \
+                                -DKokkos_ENABLE_SERIAL=ON && \
+                              set +x && \
+                              cmake --build build --target kokkoscore &&
+                              cd example/build_cmake_installed_modules && \
+                              rm -rf build && \
+                              set -x && \
+                              cmake \
+                                -B build \
+                                -GNinja \
+                                -DCMAKE_CXX_COMPILER=g++-16 \
+                                -DCMAKE_CXX_FLAGS="-Werror" \
+                                -DKokkos_ROOT=../../build && \
+                              set +x && \
+                              cmake --build build && \
+                              ctest --test-dir build --verbose'''
+                    }
+                }
+
                 stage('C++20-Modules-Clang-19') {
                     agent {
                         dockerfile {
