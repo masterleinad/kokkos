@@ -29,6 +29,7 @@ jobs:
       shell: bash
       run: |
         cmake --build build --parallel 4 --config Debug
+
   windows-serial:
     # Serial build on Windows
     name: Serial VS-2022
@@ -49,6 +50,31 @@ jobs:
       run: |
         export PATH="$(pwd)/build/core/src/Release:$(pwd)/build/containers/src/Release:$PATH"
         ctest --test-dir build -C Release -j 4 --output-on-failure
+
+  windows-modules:
+    # Modules build on Windows
+    name: Modules VS-2022
+    runs-on: windows-2025
+
+    steps:
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - name: configure
+      shell: bash
+      run: |
+        cmake -G Ninja -B build -DKokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES=ON
+    - name: build library
+      shell: bash
+      run: |
+        cmake --build build --parallel 4 --target kokkoscore
+    - name: build and execute example
+      shell: bash
+      run: |
+        cd example/build_cmake_installed_modules
+        cmake -G Ninja -B build -DKokkos_ROOT=../../build .
+        cmake --build build --parallel 4
+        ctest --test-dir build --verbose
 
   windows-clang:
    # Threads build on Windows using ClangCL
