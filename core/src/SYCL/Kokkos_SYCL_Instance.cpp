@@ -6,8 +6,8 @@
 #endif
 
 #include <Kokkos_Macros.hpp>
-#include <Kokkos_Core.hpp>  // kokkos_malloc
-
+#include <impl/Kokkos_CStyleMemoryManagement.hpp>
+#include <Kokkos_CopyViews.hpp>  // ZeroMemset
 #include <impl/Kokkos_CheckedIntegerOps.hpp>
 #include <impl/Kokkos_Error.hpp>
 
