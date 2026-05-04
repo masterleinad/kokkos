@@ -368,7 +368,7 @@
 
 // ---------------------------------------------------------------------------
 // Define macro for unreachable code:
-#if defined(__cpp_lib_unreachable)  // since C++23
+#if defined(__cpp_lib_unreachable) && !defined(KOKKOS_ENABLE_HIP)
 #include <utility>
 #define KOKKOS_IMPL_UNREACHABLE() std::unreachable()
 #elif defined(__has_builtin)
