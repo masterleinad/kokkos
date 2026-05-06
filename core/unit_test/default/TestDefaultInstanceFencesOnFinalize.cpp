@@ -43,10 +43,6 @@ void test_default_instance_fences_on_finalize() {
 }
 
 TEST(TEST_CATEGORY, default_instance_fences_on_finalize) {
-// FIXME_HPX
-#ifdef KOKKOS_ENABLE_HPX
-  GTEST_SKIP() << "Test known to fail for HPX";
-#endif
   test_default_instance_fences_on_finalize();
 }
 
