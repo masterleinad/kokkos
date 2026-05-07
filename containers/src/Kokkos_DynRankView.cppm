@@ -28,6 +28,11 @@ export {
   using ::Kokkos::create_mirror_view;
   using ::Kokkos::create_mirror_view_and_copy;
 
+  namespace Experimental {
+  using ::Kokkos::Experimental::python_view_type;
+  using ::Kokkos::Experimental::python_view_type_t;
+  }  // namespace Experimental
+
   using ::Kokkos::operator!=;
   using ::Kokkos::operator==;
   }  // namespace Kokkos

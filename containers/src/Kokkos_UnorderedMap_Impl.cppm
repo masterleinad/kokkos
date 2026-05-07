@@ -3,12 +3,18 @@
 
 module;
 
-#include <Kokkos_UnorderedMap.hpp>
+#include <impl/Kokkos_UnorderedMap_impl.hpp>
 
 export module kokkos.unordered_map_impl;
 
 export {
   namespace Kokkos::Impl {
+  using ::Kokkos::Impl::append_to_label;
+  using ::Kokkos::Impl::find_hash_size;
+  using ::Kokkos::Impl::UnorderedMapCanAssign;
+  using ::Kokkos::Impl::UnorderedMapErase;
+  using ::Kokkos::Impl::UnorderedMapHistogram;
   using ::Kokkos::Impl::UnorderedMapPrint;
+  using ::Kokkos::Impl::UnorderedMapRehash;
   }  // namespace Kokkos::Impl
 }

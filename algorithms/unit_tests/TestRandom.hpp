@@ -10,7 +10,9 @@
 #include <cstdio>
 #include <Kokkos_Timer.hpp>
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+// FIXME_MODULES The Impl::ApplyToViewOfStaticRank specialization for
+// DynRankView isn't visible
+#if 0  // KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.core;
 import kokkos.dyn_rank_view;
 import kokkos.random;

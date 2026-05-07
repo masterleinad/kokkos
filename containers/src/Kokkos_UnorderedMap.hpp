@@ -17,16 +17,18 @@
 #include <Kokkos_Macros.hpp>
 #ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.core;
+import kokkos.core_impl;
 import kokkos.bitset;
 import kokkos.functional;
+import kokkos.unordered_map_impl;
 #else
 #include <Kokkos_Core.hpp>
 #include <Kokkos_Bitset.hpp>
 #include <Kokkos_Functional.hpp>
+#include <impl/Kokkos_UnorderedMap_impl.hpp>
 #endif
 #include <Kokkos_Assert.hpp>
 #include <impl/Kokkos_Traits.hpp>
-#include <impl/Kokkos_UnorderedMap_impl.hpp>
 #include <View/Kokkos_ViewCtor.hpp>
 
 #include <cstdint>

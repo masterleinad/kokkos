@@ -6,7 +6,9 @@
 
 #include <gtest/gtest.h>
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+// FIXME_MODULES The CommonSubview specialization for DynamicView doesn't get
+// properly exported
+#if 0  // KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.core;
 import kokkos.dynamic_view;
 import kokkos.random;

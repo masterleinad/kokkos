@@ -9,7 +9,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+// FIXME_MODULES The CommonSubview for DynamicView isn't properly exported
+#if 0  // KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.core;
 import kokkos.dynamic_view;
 #else

@@ -213,7 +213,8 @@ export {
   using ::Kokkos::Timer;
   namespace Experimental {
   using ::Kokkos::Experimental::python_view_type;
-  }
+  using ::Kokkos::Experimental::python_view_type_t;
+  }  // namespace Experimental
 
   // initialization/finalization
   using ::Kokkos::finalize;

@@ -846,8 +846,13 @@ operator/(const RealType1& x,
 
 template <class RealType>
 std::ostream& operator<<(std::ostream& os, const complex<RealType>& x) {
+// FIXME_MODULES For some reason the operator<< for std::complex can't be found
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+  os << '(' << x.real() << ',' << x.imag() << ')';
+#else
   const std::complex<RealType> x_std(Kokkos::real(x), Kokkos::imag(x));
   os << x_std;
+#endif
   return os;
 }
 
