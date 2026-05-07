@@ -474,9 +474,7 @@ class GraphNodeRef {
     // We can't static_assert this because of the way that Reducers store
     // whether or not they point to a View as a runtime boolean rather than part
     // of the type.
-    if (Kokkos::Impl::parallel_reduce_needs_fence(
-            Kokkos::Impl::get_property<device_handle_t>(full_props).m_exec,
-            return_value)) {
+    if (Kokkos::Impl::parallel_reduce_needs_fence(return_value)) {
       Kokkos::Impl::throw_runtime_exception(
           "Parallel reductions in graphs can't operate on Reducers that "
           "reference a scalar because they can't complete synchronously. Use a "
