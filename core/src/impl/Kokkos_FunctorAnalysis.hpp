@@ -393,49 +393,6 @@ struct FunctorAnalysis {
   };
 
   template <class F, bool is_array = candidate_is_array>
-  struct has_volatile_join_no_tag_function;
-
-  template <class F>
-  struct KOKKOS_DEPRECATED_WITH_COMMENT(
-      "Reduce/scan join() taking `volatile`-qualified parameters is "
-      "deprecated. Remove the `volatile` qualifier.")
-      has_volatile_join_no_tag_function<F, /*is_array*/ false> {
-    using vref_type  = volatile ValueType&;
-    using cvref_type = const volatile ValueType&;
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (F::*)(vref_type,
-                                                             cvref_type) const);
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (*)(vref_type,
-                                                          cvref_type));
-
-    KOKKOS_INLINE_FUNCTION static void join(F const* const f, ValueType* dst,
-                                            ValueType const* src) {
-      f->join(*dst, *src);
-    }
-  };
-
-  template <class F>
-  struct KOKKOS_DEPRECATED_WITH_COMMENT(
-      "Reduce/scan join() taking `volatile`-qualified parameters is "
-      "deprecated. Remove the `volatile` qualifier.")
-      has_volatile_join_no_tag_function<F, /*is_array*/ true> {
-    using vref_type  = volatile ValueType*;
-    using cvref_type = const volatile ValueType*;
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (F::*)(vref_type,
-                                                             cvref_type) const);
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (*)(vref_type,
-                                                          cvref_type));
-
-    KOKKOS_INLINE_FUNCTION static void join(F const* const f, ValueType* dst,
-                                            ValueType const* src) {
-      f->join(dst, src);
-    }
-  };
-
-  template <class F, bool is_array = candidate_is_array>
   struct has_join_tag_function;
 
   template <class F>
@@ -486,65 +443,6 @@ struct FunctorAnalysis {
     }
   };
 
-  template <class F, bool is_array = candidate_is_array>
-  struct has_volatile_join_tag_function;
-
-  template <class F>
-  struct KOKKOS_DEPRECATED_WITH_COMMENT(
-      "Reduce/scan join() taking `volatile`-qualified parameters is "
-      "deprecated. Remove the `volatile` qualifier.")
-      has_volatile_join_tag_function<F, /*is_array*/ false> {
-    using vref_type  = volatile ValueType&;
-    using cvref_type = const volatile ValueType&;
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (F::*)(WTag, vref_type,
-                                                             cvref_type) const);
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (*)(WTag, vref_type,
-                                                          cvref_type));
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (F::*)(WTag const&,
-                                                             vref_type,
-                                                             cvref_type) const);
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (*)(WTag const&,
-                                                          vref_type,
-                                                          cvref_type));
-
-    KOKKOS_INLINE_FUNCTION static void join(F const* const f, ValueType* dst,
-                                            ValueType const* src) {
-      f->join(WTag(), *dst, *src);
-    }
-  };
-
-  template <class F>
-  struct KOKKOS_DEPRECATED_WITH_COMMENT(
-      "Reduce/scan join() taking `volatile`-qualified parameters is "
-      "deprecated. Remove the `volatile` qualifier.")
-      has_volatile_join_tag_function<F, /*is_array*/ true> {
-    using vref_type  = volatile ValueType*;
-    using cvref_type = const volatile ValueType*;
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (F::*)(WTag, vref_type,
-                                                             cvref_type) const);
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (*)(WTag, vref_type,
-                                                          cvref_type));
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (F::*)(WTag const&,
-                                                             vref_type,
-                                                             cvref_type) const);
-
-    KOKKOS_INLINE_FUNCTION static void enable_if(void (*)(WTag const&,
-                                                          vref_type,
-                                                          cvref_type));
-
-    KOKKOS_INLINE_FUNCTION static void join(F const* const f, ValueType* dst,
-                                            ValueType const* src) {
-      f->join(WTag(), dst, src);
-    }
-  };
-
   template <class F, class = void>
   struct detected_join_no_tag {
     enum : bool { value = false };
@@ -557,17 +455,6 @@ struct FunctorAnalysis {
   };
 
   template <class F, class = void>
-  struct detected_volatile_join_no_tag {
-    enum : bool { value = false };
-  };
-
-  template <class F>
-  struct detected_volatile_join_no_tag<
-      F, decltype(has_volatile_join_no_tag_function<F>::enable_if(&F::join))> {
-    enum : bool { value = true };
-  };
-
-  template <class F, class = void>
   struct detected_join_tag {
     enum : bool { value = false };
   };
@@ -575,17 +462,6 @@ struct FunctorAnalysis {
   template <class F>
   struct detected_join_tag<F, decltype(has_join_tag_function<F>::enable_if(
                                   &F::join))> {
-    enum : bool { value = true };
-  };
-
-  template <class F, class = void>
-  struct detected_volatile_join_tag {
-    enum : bool { value = false };
-  };
-
-  template <class F>
-  struct detected_volatile_join_tag<
-      F, decltype(has_volatile_join_tag_function<F>::enable_if(&F::join))> {
     enum : bool { value = true };
   };
 
@@ -609,19 +485,6 @@ struct FunctorAnalysis {
     enum : bool { value = true };
   };
 
-  template <class F>
-  struct DeduceJoinNoTag<
-      F, std::enable_if_t<(is_reducer<F>::value ||
-                           (!is_reducer<F>::value && std::is_void_v<Tag>)) &&
-                          (!detected_join_no_tag<F>::value &&
-                           detected_volatile_join_no_tag<F>::value)>>
-      : public has_volatile_join_no_tag_function<F> {
-    enum : bool { value = true };
-    static_assert(Impl::dependent_false_v<F>,
-                  "Reducer with a join() operator taking "
-                  "volatile-qualified parameters is no longer supported");
-  };
-
   template <class F = Functor, typename = void>
   struct DeduceJoin : public DeduceJoinNoTag<F> {};
 
@@ -630,17 +493,6 @@ struct FunctorAnalysis {
       F, std::enable_if_t<!is_reducer<F>::value && detected_join_tag<F>::value>>
       : public has_join_tag_function<F> {
     enum : bool { value = true };
-  };
-
-  template <class F>
-  struct DeduceJoin<F, std::enable_if_t<!is_reducer<F>::value &&
-                                        (!detected_join_tag<F>::value &&
-                                         detected_volatile_join_tag<F>::value)>>
-      : public has_volatile_join_tag_function<F> {
-    enum : bool { value = true };
-    static_assert(Impl::dependent_false_v<F>,
-                  "Reducer with a join() operator taking "
-                  "volatile-qualified parameters is no longer supported");
   };
 
   //----------------------------------------
