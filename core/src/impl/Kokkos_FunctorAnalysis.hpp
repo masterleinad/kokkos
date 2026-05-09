@@ -112,7 +112,7 @@ struct FunctorAnalysis {
   };
 
   template <typename P>
-    requires requires(P) { typename P::work_tag; }
+    requires requires { typename P::work_tag; }
   struct has_work_tag<P> {
     using type = typename P::work_tag;
     using wtag = typename P::work_tag;
@@ -131,7 +131,7 @@ struct FunctorAnalysis {
   };
 
   template <typename T>
-    requires requires(T) { typename T::execution_space; }
+    requires requires { typename T::execution_space; }
   struct has_execution_space<T> {
     using type = typename T::execution_space;
     enum : bool { value = true };
@@ -155,7 +155,7 @@ struct FunctorAnalysis {
   };
 
   template <typename F>
-    requires requires(F) { typename F::value_type; }
+    requires requires { typename F::value_type; }
   struct has_value_type<F> {
     using type = typename F::value_type;
 
