@@ -32,7 +32,7 @@ jobs:
   windows-serial:
     # Serial build on Windows
     name: Serial VS-2022
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -53,7 +53,7 @@ jobs:
   windows-clang:
    # Threads build on Windows using ClangCL
     name: Threads Clang VS-2022
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
