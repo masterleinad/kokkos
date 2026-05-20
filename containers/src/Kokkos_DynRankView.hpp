@@ -1762,6 +1762,13 @@ auto create_mirror_view_and_copy(const Space&,
       Kokkos::view_alloc(typename Space::memory_space{}, name), src);
 }
 
+template <class T, class... P>
+auto create_mirror_view_and_copy(const Kokkos::DynRankView<T, P...>& src) {
+  return create_mirror_view_and_copy(
+      typename Kokkos::DynRankView<T, P...>::host_mirror_type::memory_space{},
+      src);
+}
+
 }  // namespace Kokkos
 
 //----------------------------------------------------------------------------

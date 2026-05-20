@@ -1462,6 +1462,16 @@ create_mirror_view_and_copy(
     std::string const& name = "") {
   return {create_mirror_view_and_copy(space, src.view(), name), src.begins()};
 }
+
+template <class T, class... P>
+auto create_mirror_view_and_copy(
+    const Kokkos::Experimental::OffsetView<T, P...>& src) {
+  return create_mirror_view_and_copy(
+      typename Kokkos::Experimental::OffsetView<
+          T, P...>::host_mirror_type::memory_space{},
+      src);
+}
+
 } /* namespace Kokkos */
 
 //----------------------------------------------------------------------------
