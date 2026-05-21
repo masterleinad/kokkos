@@ -159,9 +159,9 @@ auto compute_device_launch_params(
   // SYCL uses nd_range with global = grid * local sizes
   sycl::range<3> local_sizes(block.x, block.y, block.z);
   sycl::range<3> global_sizes(
-      std::min<array_index_type>(grid_0, max_grid_size[0]) * local_sizes[0],
-      std::min<array_index_type>(grid_1, max_grid_size[1]) * local_sizes[1],
-      std::min<array_index_type>(grid_2, max_grid_size[2]) * local_sizes[2]);
+      std::min<std::size_t>(grid_0, max_grid_size[0]) * local_sizes[0],
+      std::min<std::size_t>(grid_1, max_grid_size[1]) * local_sizes[1],
+      std::min<std::size_t>(grid_2, max_grid_size[2]) * local_sizes[2]);
   return sycl::nd_range<3>(global_sizes, local_sizes);
 #else
   dim3 grid(std::min<array_index_type>(grid_0, max_grid_size[0]),
