@@ -681,4 +681,16 @@
 #define KOKKOS_IMPL_EXPORT
 #endif
 
+#ifdef KOKKOS_IMPL_HALF_TYPE_DEFINED
+#define KOKKOS_HALF_T_IS_FLOAT false
+#else
+#define KOKKOS_HALF_T_IS_FLOAT true
+#endif
+
+#ifdef KOKKOS_IMPL_BHALF_TYPE_DEFINED
+#define KOKKOS_BHALF_T_IS_FLOAT false
+#else
+#define KOKKOS_BHALF_T_IS_FLOAT true
+#endif
+
 #endif  // #ifndef KOKKOS_MACROS_HPP
