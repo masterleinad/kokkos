@@ -87,7 +87,7 @@ pipeline {
                 stage('GCC-10.5.0') {
                     agent {
                          dockerfile {
-                             filename 'Dockerfile.gcc'
+                             filename 'Dockerfile.gcc-10'
                              dir 'scripts/docker'
                              label 'nvidia-docker || docker'
                              args '--env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
