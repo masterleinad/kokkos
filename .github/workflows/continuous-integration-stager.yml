@@ -15,10 +15,12 @@ permissions: read-all
 jobs:
   # pre-stage
   pre-commit-check:
+    if: ${{ github.repository == 'kokkos/kokkos' }}
     uses: ./.github/workflows/pre-commit.yml
 
   files-changed:
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'kokkos/kokkos' }}
     outputs:
       src: ${{ steps.changes.outputs.src }}
     steps:

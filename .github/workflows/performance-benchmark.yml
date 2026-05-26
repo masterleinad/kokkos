@@ -1,8 +1,5 @@
 name: github-benchmarks
 on:
-  push:
-    branches:
-      - develop
   workflow_call:
 
 permissions: read-all
