@@ -10,6 +10,17 @@
 #include <type_traits>
 #include <iosfwd>  // istream & ostream for extraction and insertion ops
 #include <string>
+#include <cstdint>
+
+#ifdef KOKKOS_ENABLE_CUDA
+#include <Cuda/Kokkos_Cuda_Half_Impl_Type.hpp>
+#endif
+#ifdef KOKKOS_ENABLE_HIP
+#include <HIP/Kokkos_HIP_Half_Impl_Type.hpp>
+#endif
+#ifdef KOKKOS_ENABLE_SYCL
+#include <SYCL/Kokkos_SYCL_Half_Impl_Type.hpp>
+#endif
 
 namespace Kokkos::Experimental::Impl {
 /// @brief templated struct for determining if half_t is an alias to float.
