@@ -13,7 +13,7 @@ permissions: read-all
 jobs:
   analysis:
     name: Scorecard analysis
-    if: ${{ github.repository == 'kokkos/kokkos' }}
+    if: ${{ github.repository == 'kokkos/kokkos' }} || ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
       # Needed for Code scanning upload

@@ -15,12 +15,12 @@ permissions: read-all
 jobs:
   # pre-stage
   pre-commit-check:
-    if: ${{ github.repository == 'kokkos/kokkos' }}
+    if: ${{ github.repository == 'kokkos/kokkos' }} || ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/pre-commit.yml
 
   files-changed:
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'kokkos/kokkos' }}
+    if: ${{ github.repository == 'kokkos/kokkos' }} || ${{ github.event_name == 'pull_request' }}
     outputs:
       src: ${{ steps.changes.outputs.src }}
     steps:
