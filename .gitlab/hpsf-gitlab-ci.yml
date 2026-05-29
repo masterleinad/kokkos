@@ -16,6 +16,20 @@
         export BUILD_TYPE="RelWithDebInfo";
         export GITHUB_PR_ID=$(echo ${CI_COMMIT_BRANCH} | cut -d \_ -f 1 | cut -c 3-);
       fi
+    - export CTEST_USE_INSTRUMENTATION=1
+    - cmake_version="$(cmake --version | head -n1 | awk '{print $3}' | cut -d. -f1,2)"
+      cmake --version
+      case "$cmake_version" in
+        4.0)
+          export CTEST_EXPERIMENTAL_INSTRUMENTATION="a37d1069-1972-4901-b9c9-f194aaf2b6e0"
+        ;;
+        4.1)
+          export CTEST_EXPERIMENTAL_INSTRUMENTATION="d16a3082-c4e1-489b-b90c-55750a334f27"
+        ;;
+        4.2)
+          export CTEST_EXPERIMENTAL_INSTRUMENTATION="f4f3d5ea-0915-470f-9628-4615e72f738a"
+        ;;
+      esac
 
 NVIDIA-RTX5080:
   extends: .common-setup
@@ -34,7 +48,6 @@ NVIDIA-RTX5080:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON;"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export CTEST_BUILD_NAME="NVIDIA-RTX5080"
-    - export CTEST_USE_INSTRUMENTATION=1
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
         -D GITHUB_PR_ID="${GITHUB_PR_ID}"
@@ -75,7 +88,6 @@ NVIDIA-GH200:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_IMPL_CUDA_MALLOC_ASYNC=ON"
     - export CTEST_BUILD_NAME="NVIDIA-GH200"
-    - export CTEST_USE_INSTRUMENTATION=1
     - export GTEST_FILTER="-cuda.debug_pin_um_to_host"
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
@@ -109,7 +121,6 @@ NVIDIA-P100:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export CTEST_BUILD_NAME="NVIDIA-P100"
-    - export CTEST_USE_INSTRUMENTATION=1
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
         -D GITHUB_PR_ID="${GITHUB_PR_ID}"
@@ -150,7 +161,6 @@ INTEL-DATA-CENTER-MAX-1100:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export CTEST_BUILD_NAME="INTEL-DATA-CENTER-MAX-1100"
-    - export CTEST_USE_INSTRUMENTATION=1
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
         -D GITHUB_PR_ID="${GITHUB_PR_ID}"
@@ -189,7 +199,6 @@ INTEL-DATA-CENTER-MAX-1100-OUT-OF-ORDER:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export CTEST_BUILD_NAME="INTEL-DATA-CENTER-MAX-1100-OUT-ORDER"
-    - export CTEST_USE_INSTRUMENTATION=1
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
         -D GITHUB_PR_ID="${GITHUB_PR_ID}"
@@ -225,7 +234,6 @@ AMD-MI300A:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export CTEST_BUILD_NAME="AMD-MI300A"
-    - export CTEST_USE_INSTRUMENTATION=1
     - export HSA_XNACK=1
     - export KOKKOS_DEVICE_ID=3
     # FIXME Reenable hip.graph_capture for rocm 7 testing
@@ -263,7 +271,6 @@ NVIDIA-GRACE-GRACE:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_DEPRECATED_CODE_5=OFF"
     - export CTEST_BUILD_NAME="NVIDIA-GRACE-GRACE"
-    - export CTEST_USE_INSTRUMENTATION=1
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
         -D GITHUB_PR_ID="${GITHUB_PR_ID}"
@@ -296,7 +303,6 @@ NVIDIA-DGX-SPARK:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
     - export CTEST_BUILD_NAME="NVIDIA-DGX-SPARK"
-    - export CTEST_USE_INSTRUMENTATION=1
     - export GTEST_FILTER="-cuda.debug_pin_um_to_host"
     - ctest -VV
         -D CDASH_MODEL=${CDASH_MODEL}
