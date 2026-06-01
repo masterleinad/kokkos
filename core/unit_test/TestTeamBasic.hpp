@@ -60,6 +60,15 @@ struct TestTeamReduceLarge {
   }
 };
 
+TEST(TEST_CATEGORY, team_reduce_large) {
+  std::vector<int> ranges{(2LU << 23) - 1, 2LU << 23, (2LU << 24),
+                          (2LU << 24) + 1, 1LU << 29};
+  for (const auto range : ranges) {
+    TestTeamReduceLarge<TEST_EXECSPACE> test(range);
+    test.run();
+  }
+}
+
 template <typename ExecutionSpace>
 struct TestTeamReduceTemplatedOperator {
   using team_policy_t = Kokkos::TeamPolicy<ExecutionSpace>;
@@ -82,18 +91,8 @@ struct TestTeamReduceTemplatedOperator {
   }
 };
 
-TEST(TEST_CATEGORY, team_reduce_large) {
-  std::vector<int> ranges{(2LU << 23) - 1, 2LU << 23, (2LU << 24),
-                          (2LU << 24) + 1, 1LU << 29};
-  for (const auto range : ranges) {
-    TestTeamReduceLarge<TEST_EXECSPACE> test(range);
-    test.run();
-  }
-}
-
 TEST(TEST_CATEGORY, team_reduce_templated_operator) {
-  std::vector<int> ranges{(2LU << 23) - 1, 2LU << 23, (2LU << 24),
-                          (2LU << 24) + 1, 1LU << 29};
+  std::vector<int> ranges{1, 10, 100};
   for (const auto range : ranges) {
     TestTeamReduceTemplatedOperator<TEST_EXECSPACE> test(range);
     test.run();
