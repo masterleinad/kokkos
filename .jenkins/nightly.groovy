@@ -17,6 +17,7 @@ pipeline {
                         docker {
                           image 'ubuntu:22.04'
                           label 'docker'
+                          registryCredentialsId 'dockerhub'
                         }
                     }
                     steps {
@@ -48,6 +49,7 @@ pipeline {
                         docker {
                           image 'nvidia/cuda:12.9.0-devel-ubuntu24.04'
                           label 'nvidia-docker && ampere'
+                          registryCredentialsId 'dockerhub'
                         }
                     }
                     steps {
@@ -83,6 +85,7 @@ pipeline {
                         docker {
                             image 'gcc:15.1'
                             label 'docker'
+                            registryCredentialsId 'dockerhub'
                         }
                     }
                     steps {
@@ -119,6 +122,7 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=rocm/dev-ubuntu-24.04:7.0-complete'
                             label 'rocm-docker && AMD_Radeon_Instinct_MI100'
+                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES'
                         }
                     }
@@ -157,6 +161,7 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=rocm/dev-ubuntu-24.04:7.2.3-complete --build-arg CMAKE_VERSION=3.31.3'
                             label 'rocm-docker && AMD_Radeon_Instinct_MI210'
+                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video --env HIP_VISIBLE_DEVICES=$HIP_VISIBLE_DEVICES'
                         }
                     }
