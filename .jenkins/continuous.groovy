@@ -195,7 +195,6 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:12.2.2-devel-ubuntu22.04@sha256:5f603101462baa721ff6ddc44af82f6e9ba7cbd92a424c9f9f348e6e9d6d64c3 --build-arg ADDITIONAL_PACKAGES="gfortran clang" --build-arg CMAKE_VERSION=3.25.3'
                             label 'nvidia-docker && (volta || ampere)'
-                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
@@ -344,7 +343,6 @@ pipeline {
                             filename 'Dockerfile.nvhpc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && volta && large_images'
-                            registryCredentialsId 'dockerhub'
                             args '--env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
@@ -383,7 +381,6 @@ pipeline {
                             filename 'Dockerfile.nvhpc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && large_images && volta'
-                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
@@ -431,7 +428,6 @@ pipeline {
                             filename 'Dockerfile.sycl'
                             dir 'scripts/docker'
                             label 'nvidia-docker && ampere'
-                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
@@ -573,7 +569,6 @@ pipeline {
                             filename 'Dockerfile.nvcc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && volta'
-                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04 --build-arg ADDITIONAL_PACKAGES="clang-15 clang-tidy-15"'
                         }
@@ -617,7 +612,6 @@ pipeline {
                             filename 'Dockerfile.nvcc'
                             dir 'scripts/docker'
                             label 'nvidia-docker && volta'
-                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:12.5.1-devel-ubuntu24.04 --build-arg ADDITIONAL_PACKAGES="clang-17 clang-tidy-17"'
                         }
@@ -663,7 +657,6 @@ pipeline {
                             dir 'scripts/docker'
                             additionalBuildArgs '--build-arg BASE=nvcr.io/nvidia/cuda:13.0.0-devel-ubuntu24.04@sha256:435220c0fef35cbf712e11999f8670a83835ef3cdd18564e5e8122f83078c88c --build-arg CMAKE_VERSION=3.22.6'
                             label 'nvidia-docker && ampere && cuda-13-driver'
-                            registryCredentialsId 'dockerhub'
                             args '-v /tmp/ccache.kokkos:/tmp/ccache --env NVIDIA_VISIBLE_DEVICES=$NVIDIA_VISIBLE_DEVICES --env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                         }
                     }
