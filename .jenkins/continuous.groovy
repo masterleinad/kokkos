@@ -92,7 +92,6 @@ pipeline {
                              dir 'scripts/docker'
                              label 'nvidia-docker || docker'
                              registryCredentialsId 'dockerhub'
-                             registryCredentialsId 'dockerhub'
                              args '--env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
                          }
                      }
