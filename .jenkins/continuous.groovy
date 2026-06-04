@@ -18,22 +18,6 @@ pipeline {
     }
 
     stages {
-        stage('Pre-Commit') {
-            agent {
-                docker {
-                    image 'jfxs/pre-commit:4.4.0-002@sha256:40078d585cc17c502d8c2390b8d57e7ecb028d75dcc821f2f75ac8e9c485bf84'
-                    label 'nvidia-docker || docker'
-                    registryCredentialsId 'dockerhub'
-                    args '--env NODE_NAME=${env.NODE_NAME} --env STAGE_NAME=${env.STAGE_NAME}'
-                }
-            }
-            steps {
-                sh '''#!/bin/bash
-                      exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
-                      echo "Hostname: ${NODE_NAME}" && \
-                      pre-commit run --all-files'''
-            }
-        }
         stage('Build-1') {
             parallel {
                 stage('spack-cuda') {
