@@ -51,13 +51,13 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
 
     desul::ensure_sycl_lock_arrays_on_device(q);
 
-    const sycl::range<3> global_range = range.get_global_range();
-    const sycl::range<3> local_range  = range.get_local_range();
-    const sycl::nd_range sycl_swapped_range{
-        sycl::range<3>{global_range[2], global_range[1], global_range[0]},
-        sycl::range<3>{local_range[2], local_range[1], local_range[0]}};
+    auto cgh_lambda = [&, range](sycl::handler& cgh) {
+      const sycl::range<3> global_range = range.get_global_range();
+      const sycl::range<3> local_range  = range.get_local_range();
+      const sycl::nd_range sycl_swapped_range{
+          sycl::range<3>{global_range[2], global_range[1], global_range[0]},
+          sycl::range<3>{local_range[2], local_range[1], local_range[0]}};
 
-    auto cgh_lambda = [&, sycl_swapped_range](sycl::handler& cgh) {
 #ifndef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
       cgh.depends_on(memcpy_event);
 #else
@@ -93,7 +93,6 @@ class Kokkos::Impl::ParallelFor<FunctorType, Kokkos::MDRangePolicy<Traits...>,
 
 #ifdef KOKKOS_IMPL_SYCL_GRAPH_SUPPORT
     if constexpr (Policy::is_graph_kernel::value) {
-      // graph capture attaches the kernel lambda; no event to return
       sycl_attach_kernel_to_node(*this, cgh_lambda);
       return {};
     } else
