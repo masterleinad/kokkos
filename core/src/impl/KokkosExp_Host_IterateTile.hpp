@@ -1520,36 +1520,17 @@ struct Tile_Loop_Type<8, IsLeft, IType, Tagged,
 };
 // end Structs for calling loops
 
-template <typename RP, typename Functor, typename Tag = void,
-          typename ValueType = void, typename Enable = void>
-struct HostIterateTile;
-
-// For ParallelFor
-template <typename RP, typename Functor, typename Tag, typename ValueType>
-struct HostIterateTile<RP, Functor, Tag, ValueType,
-                       std::enable_if_t<std::is_void_v<ValueType>>> {
+template <typename RP, typename Functor, typename Tag, typename ReferenceType>
+struct HostIterateTile {
   using index_type = typename RP::index_type;
   using point_type = typename RP::point_type;
+  using reference_type =
+      std::conditional_t<std::is_void_v<ReferenceType>, int, ReferenceType>;
 
   inline HostIterateTile(RP const& rp, Functor const& func)
       : m_rp(rp), m_func(func) {}
 
-  inline bool check_iteration_bounds(point_type& partial_tile,
-                                     const point_type& offset) const {
-    bool is_full_tile = true;
-
-    for (int i = 0; i < RP::rank; ++i) {
-      if ((offset[i] + m_rp.m_tile[i]) <= m_rp.m_upper[i]) {
-        partial_tile[i] = m_rp.m_tile[i];
-      } else {
-        is_full_tile = false;
-        partial_tile[i] =
-            m_rp.m_upper[i] - offset[i];  // remaining elements in dimension i
-      }
-    }
-
-    return is_full_tile;
-  }  // end check bounds
+  // ParallelFor
 
   // functor encapsulating the inner-most loop
   template <typename TileOffset, typename TileDims, typename... Idxs>
@@ -1665,20 +1646,6 @@ struct HostIterateTile<RP, Functor, Tag, ValueType,
       m_func(Tag{}, args...);
   }
 
-  RP const m_rp;
-  Functor const m_func;
-};
-
-// For ParallelReduce
-template <typename RP, typename Functor, typename Tag, typename ReferenceType>
-struct HostIterateTile<RP, Functor, Tag, ReferenceType,
-                       std::enable_if_t<!std::is_void_v<ReferenceType>>> {
-  using index_type = typename RP::index_type;
-  using point_type = typename RP::point_type;
-
-  inline HostIterateTile(RP const& rp, Functor const& func)
-      : m_rp(rp), m_func(func) {}
-
   inline bool check_iteration_bounds(point_type& partial_tile,
                                      const point_type& offset) const {
     bool is_full_tile = true;
@@ -1696,8 +1663,10 @@ struct HostIterateTile<RP, Functor, Tag, ReferenceType,
     return is_full_tile;
   }  // end check bounds
 
+  // ParallelReduce
   template <typename IType>
-  inline void operator()(IType tile_idx, ReferenceType val) const {
+    requires(!std::is_void_v<ReferenceType>)
+  inline void operator()(IType tile_idx, reference_type val) const {
     point_type m_offset;
     point_type m_tiledims;
 
