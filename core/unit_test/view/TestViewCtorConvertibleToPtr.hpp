@@ -198,7 +198,7 @@ void from_nullptr_and_0() {
 TEST(TEST_CATEGORY, view_ctor_ptr_convertible) {
   // FIXME_OPENACC
 #ifdef KOKKOS_ENABLE_OPENACC
-  GTEST_SKIP() << "Known to fail with OpenACC" << std::endl;
+  GTEST_SKIP() << "Known to fail with OpenACC";
   KOKKOS_IMPL_UNREACHABLE();
 #endif
   from_array_like();
