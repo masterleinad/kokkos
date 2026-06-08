@@ -1531,8 +1531,6 @@ struct HostIterateTile<RP, Functor, Tag, ValueType,
   using index_type = typename RP::index_type;
   using point_type = typename RP::point_type;
 
-  using value_type = ValueType;
-
   inline HostIterateTile(RP const& rp, Functor const& func)
       : m_rp(rp), m_func(func) {}
 
@@ -1553,11 +1551,82 @@ struct HostIterateTile<RP, Functor, Tag, ValueType,
     return is_full_tile;
   }  // end check bounds
 
-  template <int Rank>
-  struct RankTag {
-    using type = RankTag<Rank>;
-    enum { value = (int)Rank };
-  };
+  // functor encapsulating the inner-most loop
+  template <typename TileOffset, typename TileDims, typename... Idxs>
+  void func_innermost_loop(TileOffset const& offset, TileDims const& tiledims,
+                           Idxs&&... idxs) const {
+    if constexpr (RP::inner_direction == Iterate::Left) {
+      KOKKOS_ENABLE_IVDEP_MDRANGE
+      for (index_type i = offset[0]; i < offset[0] + tiledims[0]; ++i) {
+        if constexpr (std::is_void_v<Tag>) {
+          m_func(i, (Idxs&&)idxs...);
+        } else {
+          m_func(Tag{}, i, (Idxs&&)idxs...);
+        }
+      }
+    } else {
+      KOKKOS_ENABLE_IVDEP_MDRANGE
+      for (index_type i = offset[RP::rank - 1];
+           i < offset[RP::rank - 1] + tiledims[RP::rank - 1]; ++i) {
+        if constexpr (std::is_void_v<Tag>) {
+          m_func((Idxs&&)idxs..., i);
+        } else {
+          m_func(Tag{}, (Idxs&&)idxs..., i);
+        }
+      }
+    }
+  }
+
+  // ----------------------------------------------------------------------- //
+  // \brief Nested loops with recursive template instantiation
+  //
+  // Nested for loop order depends on the iteration order:
+  //  Iterate::Left:
+  //    Outermost loop corresponds to right-most index.
+  //  Iterate::Right:
+  //    Outermost loop corresponds to left-most index.
+  // The fastest changing index is always in innermost loop.
+  //
+  // Indices accumulated in parameter pack Idxs...
+  //
+  // Loop indices passed according to iteration order:
+  //  Iterate::Left:
+  //    functor(i_{inner_most}, ..., i_{outer_most})
+  //  Iterate::Right:
+  //    functor(i_{outer_most}, ..., i_{inner_most})
+  //
+  //  \tparam IterLevel iteration level of the nested loops
+  //  \tparam Idxs... index pack
+  template <unsigned IterLevel, typename TileOffset, typename TileDims,
+            typename... Idxs>
+  inline void iterate(std::integral_constant<unsigned, IterLevel>,
+                      TileOffset const& offset, TileDims const& tiledims,
+                      Idxs... idxs) const {
+    const index_type start = (RP::inner_direction == Iterate::Left)
+                                 ? offset[RP::rank - 1 - IterLevel]
+                                 : offset[IterLevel];
+    const index_type end   = (RP::inner_direction == Iterate::Left)
+                                 ? offset[RP::rank - 1 - IterLevel] +
+                                     tiledims[RP::rank - 1 - IterLevel]
+                                 : offset[IterLevel] + tiledims[IterLevel];
+
+    for (index_type idx = start; idx < end; ++idx) {
+      if constexpr (RP::inner_direction == Iterate::Left) {
+        iterate(std::integral_constant<unsigned, IterLevel + 1>(), offset,
+                tiledims, idx, idxs...);
+      } else {
+        iterate(std::integral_constant<unsigned, IterLevel + 1>(), offset,
+                tiledims, idxs..., idx);
+      }
+    }
+  }
+
+  template <typename TileOffset, typename TileDims, typename... Idxs>
+  inline void iterate(std::integral_constant<unsigned, RP::rank - 1>,
+                      TileOffset const& offset, TileDims const& tiledims,
+                      Idxs... idxs) const {
+    func_innermost_loop(offset, tiledims, idxs...);
+  }
 
   template <typename IType>
   inline void operator()(IType tile_idx) const {
@@ -1588,43 +1657,27 @@ struct HostIterateTile<RP, Functor, Tag, ValueType,
   }
 
   template <typename... Args>
-  std::enable_if_t<(sizeof...(Args) == RP::rank && std::is_void_v<Tag>), void>
-  apply(Args&&... args) const {
-    m_func(args...);
-  }
-
-  template <typename... Args>
-  std::enable_if_t<(sizeof...(Args) == RP::rank && !std::is_void_v<Tag>), void>
-  apply(Args&&... args) const {
-    m_func(m_tag, args...);
+  void apply(Args&&... args) const {
+    static_assert(sizeof...(Args) == RP::rank);
+    if constexpr (std::is_void_v<Tag>)
+      m_func(args...);
+    else
+      m_func(Tag{}, args...);
   }
 
   RP const m_rp;
   Functor const m_func;
-  std::conditional_t<std::is_void_v<Tag>, int, Tag> m_tag{};
 };
 
 // For ParallelReduce
-// ValueType - scalar: For reductions
-template <typename RP, typename Functor, typename Tag, typename ValueType>
-struct HostIterateTile<RP, Functor, Tag, ValueType,
-                       std::enable_if_t<!std::is_void_v<ValueType> &&
-                                        !std::is_array_v<ValueType>>> {
+template <typename RP, typename Functor, typename Tag, typename ReferenceType>
+struct HostIterateTile<RP, Functor, Tag, ReferenceType,
+                       std::enable_if_t<!std::is_void_v<ReferenceType>>> {
   using index_type = typename RP::index_type;
   using point_type = typename RP::point_type;
 
-  using value_type = ValueType;
-
   inline HostIterateTile(RP const& rp, Functor const& func)
-      : m_rp(rp)  // Cuda 7.0 does not like braces...
-        ,
-        m_func(func) {
-    // Errors due to braces rather than parenthesis for init (with cuda 7.0)
-    //      /home/ndellin/kokkos/core/src/impl/KokkosExp_Host_IterateTile.hpp:1216:98:
-    //      error: too many braces around initializer for ‘int’ [-fpermissive]
-    //      /home/ndellin/kokkos/core/src/impl/KokkosExp_Host_IterateTile.hpp:1216:98:
-    //      error: aggregate value used where an integer was expected
-  }
+      : m_rp(rp), m_func(func) {}
 
   inline bool check_iteration_bounds(point_type& partial_tile,
                                      const point_type& offset) const {
@@ -1643,14 +1696,8 @@ struct HostIterateTile<RP, Functor, Tag, ValueType,
     return is_full_tile;
   }  // end check bounds
 
-  template <int Rank>
-  struct RankTag {
-    using type = RankTag<Rank>;
-    enum { value = (int)Rank };
-  };
-
   template <typename IType>
-  inline void operator()(IType tile_idx, value_type& val) const {
+  inline void operator()(IType tile_idx, ReferenceType val) const {
     point_type m_offset;
     point_type m_tiledims;
 
@@ -1679,83 +1726,6 @@ struct HostIterateTile<RP, Functor, Tag, ValueType,
 
   RP const m_rp;
   Functor const m_func;
-  std::conditional_t<std::is_void_v<Tag>, int, Tag> m_tag{};
-};
-
-// For ParallelReduce
-// Extra specialization for array reductions
-// ValueType[]: For array reductions
-template <typename RP, typename Functor, typename Tag, typename ValueType>
-struct HostIterateTile<RP, Functor, Tag, ValueType,
-                       std::enable_if_t<!std::is_void_v<ValueType> &&
-                                        std::is_array_v<ValueType>>> {
-  using index_type = typename RP::index_type;
-  using point_type = typename RP::point_type;
-
-  using value_type =
-      std::remove_extent_t<ValueType>;  // strip away the
-                                        // 'array-ness' [], only
-                                        // underlying type remains
-
-  inline HostIterateTile(RP const& rp, Functor const& func)
-      : m_rp(rp)  // Cuda 7.0 does not like braces...
-        ,
-        m_func(func) {}
-
-  inline bool check_iteration_bounds(point_type& partial_tile,
-                                     const point_type& offset) const {
-    bool is_full_tile = true;
-
-    for (int i = 0; i < RP::rank; ++i) {
-      if ((offset[i] + m_rp.m_tile[i]) <= m_rp.m_upper[i]) {
-        partial_tile[i] = m_rp.m_tile[i];
-      } else {
-        is_full_tile = false;
-        partial_tile[i] =
-            m_rp.m_upper[i] - offset[i];  // remaining elements in dimension i
-      }
-    }
-
-    return is_full_tile;
-  }  // end check bounds
-
-  template <int Rank>
-  struct RankTag {
-    using type = RankTag<Rank>;
-    enum { value = (int)Rank };
-  };
-
-  template <typename IType>
-  inline void operator()(IType tile_idx, value_type* val) const {
-    point_type m_offset;
-    point_type m_tiledims;
-
-    if constexpr (RP::outer_direction == Iterate::Left) {
-      for (int i = 0; i < RP::rank; ++i) {
-        m_offset[i] =
-            (tile_idx % m_rp.m_tile_end[i]) * m_rp.m_tile[i] + m_rp.m_lower[i];
-        tile_idx /= m_rp.m_tile_end[i];
-      }
-    } else {
-      for (int i = RP::rank - 1; i >= 0; --i) {
-        m_offset[i] =
-            (tile_idx % m_rp.m_tile_end[i]) * m_rp.m_tile[i] + m_rp.m_lower[i];
-        tile_idx /= m_rp.m_tile_end[i];
-      }
-    }
-
-    // Check if offset+tiledim in bounds - if not, replace tile dims with the
-    // partial tile dims
-    const bool full_tile = check_iteration_bounds(m_tiledims, m_offset);
-
-    Tile_Loop_Type<RP::rank, (RP::inner_direction == Iterate::Left), index_type,
-                   Tag>::apply(val, m_func, full_tile, m_offset, m_rp.m_tile,
-                               m_tiledims);
-  }
-
-  RP const m_rp;
-  Functor const m_func;
-  std::conditional_t<std::is_void_v<Tag>, int, Tag> m_tag{};
 };
 
 // ------------------------------------------------------------------ //
