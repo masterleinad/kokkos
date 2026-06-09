@@ -65,7 +65,7 @@ void test_view_of_views_realloc_sequential_host_init_rank_impl(
     std::index_sequence<Is...>) {
   using VoV = ViewOfViews<V, Rank>;
 
-  // Same-size realloc to reinitialize via deep_copy(v, value_type{})
+  // Same-size realloc reinitializes each inner View via value_type{}.
   {
     VoV vov(Kokkos::view_alloc("vov", Kokkos::SequentialHostInit),
             (static_cast<void>(Is), 2u)...);
