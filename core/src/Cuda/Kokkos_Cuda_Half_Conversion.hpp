@@ -4,7 +4,6 @@
 #ifndef KOKKOS_CUDA_HALF_HPP_
 #define KOKKOS_CUDA_HALF_HPP_
 
-#include <Kokkos_Half.hpp>
 #include <impl/Kokkos_NvidiaGpuArchitectures.hpp>
 
 #include <cuda_bf16.h>

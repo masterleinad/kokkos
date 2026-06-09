@@ -6,8 +6,6 @@
 
 #if !KOKKOS_HALF_T_IS_FLOAT
 
-#include <Kokkos_Half.hpp>
-
 namespace Kokkos::Experimental {
 
 /************************** half conversions **********************************/
