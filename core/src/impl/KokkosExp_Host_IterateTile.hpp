@@ -1524,8 +1524,6 @@ template <typename RP, typename Functor, typename Tag, typename ReferenceType>
 struct HostIterateTile {
   using index_type = typename RP::index_type;
   using point_type = typename RP::point_type;
-  using reference_type =
-      std::conditional_t<std::is_void_v<ReferenceType>, int, ReferenceType>;
 
   inline HostIterateTile(RP const& rp, Functor const& func)
       : m_rp(rp), m_func(func) {}
@@ -1664,9 +1662,17 @@ struct HostIterateTile {
   }  // end check bounds
 
   // ParallelReduce
+
+  // The type used in the call operator below mustn't be void which is the case
+  // when using this class with parallel_for. When implementing behavior for
+  // parallel_reduce, ReferenceType isn't void. Hence, we can just resort to a
+  // dummy type in the former case.
+  using valid_reference_type =
+      std::conditional_t<std::is_void_v<ReferenceType>, int&, ReferenceType>;
+
   template <typename IType>
     requires(!std::is_void_v<ReferenceType>)
-  inline void operator()(IType tile_idx, reference_type val) const {
+  inline void operator()(IType tile_idx, valid_reference_type val) const {
     point_type m_offset;
     point_type m_tiledims;
 
