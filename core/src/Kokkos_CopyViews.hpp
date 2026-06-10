@@ -966,21 +966,17 @@ struct ViewSequentialHostFill {
 
   template <class... Indices>
   void apply(Indices... idx) const {
-    if constexpr (Dim == int(ViewType::rank)) {
-      if constexpr (ViewType::rank == 0) {
-        dst() = value;
-      } else {
-        dst(idx...) = value;
-      }
-    } else {
-      for (size_t i = 0; i < dst.extent(Dim); ++i) {
-        ViewSequentialHostFill<ViewType, ValueType, Dim + 1>{dst, value}.apply(
-            idx..., i);
-      }
+    if constexpr (ViewType::rank == 0)
+      dst() = value;
+    else if constexpr (Dim == int(ViewType::rank))
+      dst(idx...) = value;
+    else {
+      ViewSequentialHostFill<ViewType, ValueType, Dim + 1>
+          view_sequential_host_fill{dst, value};
+      for (size_t i = 0; i < dst.extent(Dim); ++i)
+        view_sequential_host_fill.apply(idx..., i);
     }
   }
-
-  void operator()() const { apply(); }
 };
 
 template <class ViewType>
@@ -995,11 +991,6 @@ void sequential_host_fill(const ViewType& dst,
                 "deep_copy requires non-const destination type");
 
   if (dst.data() == nullptr || dst.span() == 0) {
-    return;
-  }
-
-  if constexpr (ViewType::rank == 0) {
-    dst() = value;
     return;
   }
 
@@ -1019,9 +1010,7 @@ void sequential_host_fill(const ViewType& dst,
     return;
   }
 
-  ViewSequentialHostFill<ViewType, typename ViewType::const_value_type> fill{
-      dst, value};
-  fill();
+  ViewSequentialHostFill{dst, value}.apply();
 }
 }  // namespace Impl
 
@@ -1264,15 +1253,11 @@ inline void deep_copy(
 template <class DT, class... DP, class ST, class... SP>
 inline void deep_copy(
     const View<DT, DP...>& dst, const View<ST, SP...>& src,
-    std::enable_if_t<(
-        std::is_void_v<typename ViewTraits<DT, DP...>::specialize> &&
-        std::is_void_v<typename ViewTraits<ST, SP...>::specialize> &&
-        (is_view_v<typename View<DT, DP...>::value_type> ==
-         is_view_v<typename View<
-             ST, SP...>::value_type>)&&(unsigned(ViewTraits<DT, DP...>::rank) !=
-                                            0 ||
-                                        unsigned(ViewTraits<ST, SP...>::rank) !=
-                                            0))>* = nullptr) {
+    std::enable_if_t<
+        (std::is_void_v<typename ViewTraits<DT, DP...>::specialize> &&
+         std::is_void_v<typename ViewTraits<ST, SP...>::specialize> &&
+         (unsigned(ViewTraits<DT, DP...>::rank) != 0 ||
+          unsigned(ViewTraits<ST, SP...>::rank) != 0))>* = nullptr) {
   Impl::check_deep_copy_view_arguments_are_distinct(std::addressof(dst),
                                                     std::addressof(src));
 
@@ -2475,16 +2460,12 @@ template <class ExecSpace, class DT, class... DP, class ST, class... SP>
 inline void deep_copy(
     const ExecSpace& exec_space, const View<DT, DP...>& dst,
     const View<ST, SP...>& src,
-    std::enable_if_t<(
-        Kokkos::is_execution_space<ExecSpace>::value &&
-        std::is_void_v<typename ViewTraits<DT, DP...>::specialize> &&
-        std::is_void_v<typename ViewTraits<ST, SP...>::specialize> &&
-        (is_view_v<typename View<DT, DP...>::value_type> ==
-         is_view_v<typename View<
-             ST, SP...>::value_type>)&&(unsigned(ViewTraits<DT, DP...>::rank) !=
-                                            0 ||
-                                        unsigned(ViewTraits<ST, SP...>::rank) !=
-                                            0))>* = nullptr) {
+    std::enable_if_t<
+        (Kokkos::is_execution_space<ExecSpace>::value &&
+         std::is_void_v<typename ViewTraits<DT, DP...>::specialize> &&
+         std::is_void_v<typename ViewTraits<ST, SP...>::specialize> &&
+         (unsigned(ViewTraits<DT, DP...>::rank) != 0 ||
+          unsigned(ViewTraits<ST, SP...>::rank) != 0))>* = nullptr) {
   Impl::check_deep_copy_view_arguments_are_distinct(std::addressof(dst),
                                                     std::addressof(src));
 
