@@ -968,14 +968,14 @@ struct ViewSequentialHostFill {
   void apply(Indices... idx) const {
     if constexpr (ViewType::rank == 0)
       dst() = value;
-    else if constexpr (Dim == int(ViewType::rank))
-      dst(idx...) = value;
-    else {
-      ViewSequentialHostFill<ViewType, ValueType, Dim + 1>
-          view_sequential_host_fill{dst, value};
-      for (size_t i = 0; i < dst.extent(Dim); ++i)
-        view_sequential_host_fill.apply(idx..., i);
-    }
+    else
+      for (size_t i = 0; i < dst.extent(Dim); ++i) {
+        if constexpr (Dim + 1 == int(ViewType::rank))
+          dst(idx..., i) = value;
+        else
+          ViewSequentialHostFill<ViewType, ValueType, Dim + 1>{dst, value}
+              .apply(idx..., i);
+      }
   }
 };
 
@@ -1010,7 +1010,9 @@ void sequential_host_fill(const ViewType& dst,
     return;
   }
 
-  ViewSequentialHostFill{dst, value}.apply();
+  ViewSequentialHostFill<ViewType, typename ViewType::const_value_type>{dst,
+                                                                        value}
+      .apply();
 }
 }  // namespace Impl
 
