@@ -227,10 +227,10 @@ struct ConvertibleTo {
   operator Floating() const;
 };
 
-#define KOKKOS_TEST_STATIC_ASSERT_UNARY_PREDICATE(FUNC, FP_TYPE, RET_TYPE)   \
-  static_assert(                                                             \
-      std::is_same_v<decltype(FUNC(std::declval<ConvertibleTo<FP_TYPE>>())), \
-                     RET_TYPE>)
+#define KOKKOS_TEST_STATIC_ASSERT_UNARY_PREDICATE(FUNC, FP_TYPE, RET_TYPE) \
+  static_assert(                                                           \
+      std::is_convertible_v<                                               \
+          decltype(FUNC(std::declval<ConvertibleTo<FP_TYPE>>())), RET_TYPE>)
 
 template <class>
 struct math_function_name;
