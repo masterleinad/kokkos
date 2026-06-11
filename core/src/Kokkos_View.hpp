@@ -889,7 +889,10 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
                 arg_layout)) {
     Impl::runtime_check_unmanaged_view_memory_space<
-        P..., typename traits::memory_space>(arg_prop, span());
+        typename traits::memory_space>(
+        static_cast<const void*>(
+            Impl::get_property<Impl::PointerTag>(arg_prop)),
+        span());
   }
 
   // Constructors from legacy layouts when using Views of the new layouts
@@ -1055,7 +1058,10 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
                   "Layout is not constructible from extent arguments. Use "
                   "overload taking a layout object instead.");
     Impl::runtime_check_unmanaged_view_memory_space<
-        P..., typename traits::memory_space>(arg_prop, span());
+        typename traits::memory_space>(
+        static_cast<const void*>(
+            Impl::get_property<Impl::PointerTag>(arg_prop)),
+        span());
   }
 
   // Allocate with label and layout

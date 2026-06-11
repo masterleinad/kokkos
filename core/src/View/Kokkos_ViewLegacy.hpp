@@ -1137,7 +1137,10 @@ class View : public ViewTraits<DataType, Properties...> {
         "type");
 
     Impl::runtime_check_unmanaged_view_memory_space<
-        P..., typename traits::memory_space>(arg_prop, span());
+        typename traits::memory_space>(
+        static_cast<const void*>(
+            Impl::get_property<Impl::PointerTag>(arg_prop)),
+        span());
 
 #ifdef KOKKOS_ENABLE_DEBUG_BOUNDS_CHECK
     if constexpr (std::is_same_v<typename traits::array_layout,
