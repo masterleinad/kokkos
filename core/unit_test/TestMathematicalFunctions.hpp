@@ -33,12 +33,12 @@ namespace KE = Kokkos::Experimental;
 template <class>
 struct math_unary_function_return_type;
 // Floating-point types
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_HALF_T_IS_FLOAT
 template <> struct math_unary_function_return_type<KE::half_t> { using type = KE::half_t; };
-#endif // defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
-#if defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#endif // !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_BHALF_T_IS_FLOAT
 template <> struct math_unary_function_return_type<KE::bhalf_t> { using type = KE::bhalf_t; };
-#endif // defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#endif // !KOKKOS_BHALF_T_IS_FLOAT
 template <> struct math_unary_function_return_type<      float> { using type =       float; };
 template <> struct math_unary_function_return_type<     double> { using type =      double; };
 #ifdef MATHEMATICAL_FUNCTIONS_HAVE_LONG_DOUBLE_OVERLOADS
@@ -58,7 +58,7 @@ template <class T>
 using math_unary_function_return_type_t = typename math_unary_function_return_type<T>::type;
 template <class, class>
 struct math_binary_function_return_type;
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_HALF_T_IS_FLOAT
 template <> struct math_binary_function_return_type<KE::half_t, KE::half_t> { using type = KE::half_t; };
 template <> struct math_binary_function_return_type<short, KE::half_t> { using type = double; };
 template <> struct math_binary_function_return_type<unsigned short, KE::half_t> { using type = double; };
@@ -68,8 +68,8 @@ template <> struct math_binary_function_return_type<long, KE::half_t> { using ty
 template <> struct math_binary_function_return_type<unsigned long, KE::half_t> { using type = double; };
 template <> struct math_binary_function_return_type<long long, KE::half_t> { using type = double; };
 template <> struct math_binary_function_return_type<unsigned long long, KE::half_t> { using type = double; };
-#endif // defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
-#if defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#endif // !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_BHALF_T_IS_FLOAT
 template <> struct math_binary_function_return_type<KE::bhalf_t, KE::bhalf_t> { using type = KE::bhalf_t; };
 template <> struct math_binary_function_return_type<KE::half_t, KE::bhalf_t> { using type = KE::half_t; };
 template <> struct math_binary_function_return_type<short, KE::bhalf_t> { using type = double; };
@@ -80,7 +80,7 @@ template <> struct math_binary_function_return_type<long, KE::bhalf_t> { using t
 template <> struct math_binary_function_return_type<unsigned long, KE::bhalf_t> { using type = double; };
 template <> struct math_binary_function_return_type<long long, KE::bhalf_t> { using type = double; };
 template <> struct math_binary_function_return_type<unsigned long long, KE::bhalf_t> { using type = double; };
-#endif // defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#endif // !KOKKOS_BHALF_T_IS_FLOAT
 template <> struct math_binary_function_return_type<             float,              float> { using type =       float; };
 template <> struct math_binary_function_return_type<             float,             double> { using type =      double; };
 template <> struct math_binary_function_return_type<             float,               bool> { using type =      double; };
@@ -671,10 +671,10 @@ DEFINE_TYPE_NAME(long long)
 DEFINE_TYPE_NAME(unsigned int)
 DEFINE_TYPE_NAME(unsigned long)
 DEFINE_TYPE_NAME(unsigned long long)
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_HALF_T_IS_FLOAT
 DEFINE_TYPE_NAME(KE::half_t)
 #endif
-#if defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#if !KOKKOS_BHALF_T_IS_FLOAT
 DEFINE_TYPE_NAME(KE::bhalf_t)
 #endif
 DEFINE_TYPE_NAME(float)
@@ -1829,13 +1829,13 @@ TEST(TEST_CATEGORY,
   TEST_MATH_FUNCTION(logb)({123.45l, 6789.0l});
 #endif
 
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && KOKKOS_HALF_T_IS_FLOAT
+#if KOKKOS_HALF_T_IS_FLOAT
   do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(
       0, static_cast<KE::half_t>(1.f));
   do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(
       1, static_cast<KE::half_t>(2.f));
 #endif
-#if defined(KOKKOS_BHALF_T_IS_FLOAT) && KOKKOS_BHALF_T_IS_FLOAT
+#if KOKKOS_BHALF_T_IS_FLOAT
   do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(
       0, static_cast<KE::bhalf_t>(1.f));
   do_test_math_binary_function<TEST_EXECSPACE, kk_nextafter>(
@@ -2816,7 +2816,7 @@ KE::half_t ref_test_fallback_half(KE::half_t) {
   // When SYCL is enabled, half_t is available on both the GPU and the CPU.
   return KE::half_t(0.f);
 #elif defined(KOKKOS_ENABLE_CUDA)
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && KOKKOS_HALF_T_IS_FLOAT
+#if KOKKOS_HALF_T_IS_FLOAT
   return KE::half_t(1.f);
 #else
   if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::Cuda>) {
@@ -2996,11 +2996,11 @@ TEST(TEST_CATEGORY, mathematical_functions_nextafter_fp16) {
                   "not implemented yet";
 #else
   bool skipped = true;
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_HALF_T_IS_FLOAT
   skipped      = false;
   TestNextAfterHalf<TEST_EXECSPACE, Kokkos::Experimental::half_t>();
 #endif
-#if defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#if !KOKKOS_BHALF_T_IS_FLOAT
   skipped = false;
   TestNextAfterHalf<TEST_EXECSPACE, Kokkos::Experimental::bhalf_t>();
 #endif

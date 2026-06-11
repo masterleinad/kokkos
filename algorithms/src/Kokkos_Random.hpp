@@ -429,7 +429,7 @@ struct rand<Generator, unsigned long long> {
   }
 };
 
-#if defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
+#if !KOKKOS_HALF_T_IS_FLOAT
 template <class Generator>
 struct rand<Generator, Kokkos::Experimental::half_t> {
   using half = Kokkos::Experimental::half_t;
@@ -446,9 +446,9 @@ struct rand<Generator, Kokkos::Experimental::half_t> {
     return half(gen.frand(float(start), float(end)));
   }
 };
-#endif  // defined(KOKKOS_HALF_T_IS_FLOAT) && !KOKKOS_HALF_T_IS_FLOAT
+#endif  // !KOKKOS_HALF_T_IS_FLOAT
 
-#if defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#if !KOKKOS_BHALF_T_IS_FLOAT
 template <class Generator>
 struct rand<Generator, Kokkos::Experimental::bhalf_t> {
   using bhalf = Kokkos::Experimental::bhalf_t;
@@ -465,7 +465,7 @@ struct rand<Generator, Kokkos::Experimental::bhalf_t> {
     return bhalf(gen.frand(float(start), float(end)));
   }
 };
-#endif  // defined(KOKKOS_BHALF_T_IS_FLOAT) && !KOKKOS_BHALF_T_IS_FLOAT
+#endif  // !KOKKOS_BHALF_T_IS_FLOAT
 
 template <class Generator>
 struct rand<Generator, float> {
