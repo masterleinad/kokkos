@@ -1663,12 +1663,12 @@ struct HostIterateTile {
 
   // ParallelReduce
 
-  // The type used in the call operator below mustn't be void which is the case
-  // when using this class with parallel_for. When implementing behavior for
-  // parallel_reduce, ReferenceType isn't void. Hence, we can just resort to a
-  // dummy type in the former case.
+  // Even when using a requires class for prohibiting the ReferenceType to be
+  // void in the call operator below, we still get a compiler error saying:
+  //   error: argument may not have 'void' type
+  // Hence, just use a different type in that case to make the compiler happy.
   using valid_reference_type =
-      std::conditional_t<std::is_void_v<ReferenceType>, int&, ReferenceType>;
+      std::conditional_t<std::is_void_v<ReferenceType>, int, ReferenceType>;
 
   template <typename IType>
     requires(!std::is_void_v<ReferenceType>)
