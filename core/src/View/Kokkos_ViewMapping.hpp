@@ -376,6 +376,33 @@ struct SubviewExtents {
 
  public:
   template <size_t... DimArgs, class... Args>
+  SubviewExtents(const ViewDimension<DimArgs...>& dim, Args... args) {
+    static_assert(DomainRank == sizeof...(DimArgs));
+    static_assert(DomainRank == sizeof...(Args));
+
+    // Verifies that all arguments, up to 8, are integral types,
+    // integral extents, or don't exist.
+    static_assert(RangeRank ==
+                  unsigned(is_integral_extent<0, Args...>::value) +
+                      unsigned(is_integral_extent<1, Args...>::value) +
+                      unsigned(is_integral_extent<2, Args...>::value) +
+                      unsigned(is_integral_extent<3, Args...>::value) +
+                      unsigned(is_integral_extent<4, Args...>::value) +
+                      unsigned(is_integral_extent<5, Args...>::value) +
+                      unsigned(is_integral_extent<6, Args...>::value) +
+                      unsigned(is_integral_extent<7, Args...>::value));
+
+    if (RangeRank == 0) {
+      m_length[0] = 0;
+      m_index[0]  = ~0u;
+    }
+
+    if (!set(0, 0, dim, Impl::convert_from_std_pair(args)...))
+      error(dim, Impl::convert_from_std_pair(args)...);
+  }
+
+  template <size_t... DimArgs, class... Args>
+    requires(!Impl::ContainsPair<Args...>)
   KOKKOS_INLINE_FUNCTION SubviewExtents(const ViewDimension<DimArgs...>& dim,
                                         Args... args) {
     static_assert(DomainRank == sizeof...(DimArgs));

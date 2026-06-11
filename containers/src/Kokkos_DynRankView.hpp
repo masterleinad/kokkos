@@ -1158,6 +1158,39 @@ using Subdynrankview =
 template <class... DRVArgs, class SubArg0 = int, class SubArg1 = int,
           class SubArg2 = int, class SubArg3 = int, class SubArg4 = int,
           class SubArg5 = int, class SubArg6 = int>
+auto subdynrankview(const DynRankView<DRVArgs...>& drv,
+                    SubArg0 arg0 = SubArg0{}, SubArg1 arg1 = SubArg1{},
+                    SubArg2 arg2 = SubArg2{}, SubArg3 arg3 = SubArg3{},
+                    SubArg4 arg4 = SubArg4{}, SubArg5 arg5 = SubArg5{},
+                    SubArg6 arg6 = SubArg6{}) {
+  auto sub = subview(
+      drv.DownCast(), Impl::convert_from_std_pair(arg0),
+      Impl::convert_from_std_pair(arg1), Impl::convert_from_std_pair(arg2),
+      Impl::convert_from_std_pair(arg3), Impl::convert_from_std_pair(arg4),
+      Impl::convert_from_std_pair(arg5), Impl::convert_from_std_pair(arg6));
+  using sub_t     = decltype(sub);
+  size_t new_rank = (drv.rank() > 0 && !std::is_integral_v<SubArg0> ? 1 : 0) +
+                    (drv.rank() > 1 && !std::is_integral_v<SubArg1> ? 1 : 0) +
+                    (drv.rank() > 2 && !std::is_integral_v<SubArg2> ? 1 : 0) +
+                    (drv.rank() > 3 && !std::is_integral_v<SubArg3> ? 1 : 0) +
+                    (drv.rank() > 4 && !std::is_integral_v<SubArg4> ? 1 : 0) +
+                    (drv.rank() > 5 && !std::is_integral_v<SubArg5> ? 1 : 0) +
+                    (drv.rank() > 6 && !std::is_integral_v<SubArg6> ? 1 : 0);
+
+  using return_type =
+      DynRankView<typename sub_t::value_type, Kokkos::LayoutStride,
+                  typename sub_t::device_type, typename sub_t::memory_traits>;
+  return static_cast<return_type>(
+      DynRankView<typename sub_t::value_type, typename sub_t::array_layout,
+                  typename sub_t::device_type, typename sub_t::memory_traits>(
+          sub, new_rank));
+}
+
+template <class... DRVArgs, class SubArg0 = int, class SubArg1 = int,
+          class SubArg2 = int, class SubArg3 = int, class SubArg4 = int,
+          class SubArg5 = int, class SubArg6 = int>
+  requires(!Impl::ContainsPair<SubArg0, SubArg1, SubArg2, SubArg3, SubArg4,
+                               SubArg5, SubArg6>)
 KOKKOS_INLINE_FUNCTION auto subdynrankview(
     const DynRankView<DRVArgs...>& drv, SubArg0 arg0 = SubArg0{},
     SubArg1 arg1 = SubArg1{}, SubArg2 arg2 = SubArg2{},

@@ -19,6 +19,7 @@ static_assert(false,
 #else
 
 #include <View/Kokkos_ViewTraits.hpp>
+#include <Kokkos_Pair.hpp>
 #include <Kokkos_MemoryTraits.hpp>
 
 // FIXME: This will eventually be removed
@@ -893,8 +894,14 @@ class View
   //----------------------------------------
   // Compatible subview constructor
   // may assign unmanaged from managed.
+  template <class RT, class... RP, class Arg0, class... Args>
+  View(const View<RT, RP...>& src_view, const Arg0 arg0, Args... args)
+      : base_t(Impl::subview_ctor_tag, src_view,
+               Impl::convert_from_std_pair(arg0),
+               Impl::convert_from_std_pair(args)...) {}
 
   template <class RT, class... RP, class Arg0, class... Args>
+    requires(!Impl::ContainsPair<Arg0, Args...>)
   KOKKOS_INLINE_FUNCTION View(const View<RT, RP...>& src_view, const Arg0 arg0,
                               Args... args)
       : base_t(Impl::subview_ctor_tag, src_view, arg0, args...) {}
@@ -1550,24 +1557,6 @@ struct ApplyToViewOfStaticRank {
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 
-template <typename T>
-struct is_std_pair : std::false_type {};
-
-template <typename T1, typename T2>
-struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
-
-template <typename T>
-auto convert_from_std_pair(T t) {
-  if constexpr(is_std_pair<T>::value)
-	  return Kokkos::pair<typename T::first_type, typename T::second_type>{t};
-  else
-	  return t;
-}
-
-// Concept that checks if ANY type in a pack is a std::pair
-template <typename... Args>
-concept ContainsPair = (is_std_pair<Args>::value || ...);
-
 template <class D, class... P, class... Args>
 auto subview(const View<D, P...>& src, Args... args) {
   static_assert(View<D, P...>::rank == sizeof...(Args),
@@ -1577,11 +1566,11 @@ auto subview(const View<D, P...>& src, Args... args) {
       void /* deduce subview type from source view traits */
       ,
       typename Impl::RemoveAlignedMemoryTrait<D, P...>::type,
-      Args...>::type(src, convert_from_std_pair(args)...);
+      Args...>::type(src, Impl::convert_from_std_pair(args)...);
 }
 
 template <class D, class... P, class... Args>
-requires (!ContainsPair<Args...>)
+  requires(!Impl::ContainsPair<Args...>)
 KOKKOS_INLINE_FUNCTION auto subview(const View<D, P...>& src, Args... args) {
   static_assert(View<D, P...>::rank == sizeof...(Args),
                 "subview requires one argument for each source View rank");
