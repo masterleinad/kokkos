@@ -29,6 +29,8 @@ half_t cast_to_half(unsigned short val) { return __ushort2half_rn(val); }
 KOKKOS_INLINE_FUNCTION
 half_t cast_to_half(int val) { return __int2half_rn(val); }
 KOKKOS_INLINE_FUNCTION
+half_t cast_to_half(bool val) { return cast_to_half(static_cast<int>(val)); }
+KOKKOS_INLINE_FUNCTION
 half_t cast_to_half(unsigned int val) { return __uint2half_rn(val); }
 KOKKOS_INLINE_FUNCTION
 half_t cast_to_half(long long val) { return __ll2half_rn(val); }
