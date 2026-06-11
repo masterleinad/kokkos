@@ -1550,7 +1550,38 @@ struct ApplyToViewOfStaticRank {
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 
+template <typename T>
+struct is_std_pair : std::false_type {};
+
+template <typename T1, typename T2>
+struct is_std_pair<std::pair<T1, T2>> : std::true_type {};
+
+template <typename T>
+auto convert_from_std_pair(T t) {
+  if constexpr(is_std_pair<T>::value)
+	  return Kokkos::pair<typename T::first_type, typename T::second_type>{t};
+  else
+	  return t;
+}
+
+// Concept that checks if ANY type in a pack is a std::pair
+template <typename... Args>
+concept ContainsPair = (is_std_pair<Args>::value || ...);
+
 template <class D, class... P, class... Args>
+auto subview(const View<D, P...>& src, Args... args) {
+  static_assert(View<D, P...>::rank == sizeof...(Args),
+                "subview requires one argument for each source View rank");
+
+  return typename Kokkos::Impl::ViewMapping<
+      void /* deduce subview type from source view traits */
+      ,
+      typename Impl::RemoveAlignedMemoryTrait<D, P...>::type,
+      Args...>::type(src, convert_from_std_pair(args)...);
+}
+
+template <class D, class... P, class... Args>
+requires (!ContainsPair<Args...>)
 KOKKOS_INLINE_FUNCTION auto subview(const View<D, P...>& src, Args... args) {
   static_assert(View<D, P...>::rank == sizeof...(Args),
                 "subview requires one argument for each source View rank");
