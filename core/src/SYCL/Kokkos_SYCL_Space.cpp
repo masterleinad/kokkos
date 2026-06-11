@@ -46,6 +46,14 @@ void DeepCopyAsyncSYCL(void* dst, const void* src, size_t n) {
 /*--------------------------------------------------------------------------*/
 namespace {
 
+template <typename DetectedMemorySpace, typename RequestedMemorySpace>
+void abort_incompatible_memory_spaces() {
+  Kokkos::abort(("Detected " + std::string(DetectedMemorySpace::name()) +
+                 " but " + "requested incompatible " +
+                 std::string(RequestedMemorySpace::name()))
+                    .c_str());
+}
+
 std::string_view get_memory_space_name(sycl::usm::alloc allocation_kind) {
   switch (allocation_kind) {
     case sycl::usm::alloc::host: return Kokkos::SYCLHostUSMSpace::name();
@@ -64,32 +72,26 @@ void check_memory_space(sycl::usm::alloc deduced_allocation_kind) {
     case sycl::usm::alloc::host:
       if (!Kokkos::SpaceAccessibility<RequestedMemorySpace,
                                       Kokkos::SYCLHostUSMSpace>::assignable)
-        Kokkos::abort(("Detected SYCLHostUSMSpace but requested incompatible " +
-                       std::string(RequestedMemorySpace::name()))
-                          .c_str());
+        abort_incompatible_memory_spaces<Kokkos::SYCLHostUSMSpace,
+                                         RequestedMemorySpace>();
       return;
     case sycl::usm::alloc::device:
       if (!Kokkos::SpaceAccessibility<RequestedMemorySpace,
                                       Kokkos::SYCLDeviceUSMSpace>::assignable)
-        Kokkos::abort(
-            ("Detected SYCLDeviceUSMSpace but requeste incompatible " +
-             std::string(RequestedMemorySpace::name()))
-                .c_str());
+        abort_incompatible_memory_spaces<Kokkos::SYCLDeviceUSMSpace,
+                                         RequestedMemorySpace>();
       return;
     case sycl::usm::alloc::shared:
       if (!Kokkos::SpaceAccessibility<RequestedMemorySpace,
                                       Kokkos::SYCLSharedUSMSpace>::assignable)
-        Kokkos::abort(
-            ("Detected SYCLSharedUSMSpace but requested incompatible " +
-             std::string(RequestedMemorySpace::name()))
-                .c_str());
+        abort_incompatible_memory_spaces<Kokkos::SYCLSharedUSMSpace,
+                                         RequestedMemorySpace>();
       return;
     case sycl::usm::alloc::unknown:
       if (!Kokkos::SpaceAccessibility<RequestedMemorySpace,
                                       Kokkos::HostSpace>::assignable)
-        Kokkos::abort(("Detected HostSpace but requested incompatible " +
-                       std::string(RequestedMemorySpace::name()))
-                          .c_str());
+        abort_incompatible_memory_spaces<Kokkos::HostSpace,
+                                         RequestedMemorySpace>();
       return;
     default: Kokkos::abort("bug: unknown sycl allocation type");
   }
