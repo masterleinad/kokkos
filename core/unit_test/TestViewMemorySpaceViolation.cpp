@@ -81,27 +81,27 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
     Kokkos::View<int*, Kokkos::HostSpace> host_space_view("host_space_view", 1);
 
     create_host_view(host_space_view);
-    ASSERT_DEATH(create_default_view(host_space_view), "");
+    ASSERT_DEATH(create_default_view(host_space_view), "incompatible");
 #ifdef KOKKOS_TEST_HAS_SHARED_SPACE
     if (has_real_shared_space)
-      ASSERT_DEATH(create_shared_view(host_space_view), "");
+      ASSERT_DEATH(create_shared_view(host_space_view), "incompatible");
 #endif
 #ifdef KOKKOS_HAS_SHARED_HOST_PINNED_SPACE
-    ASSERT_DEATH(create_hostpinned_view(host_space_view), "");
+    ASSERT_DEATH(create_hostpinned_view(host_space_view), "incompatible");
 #endif
   }
 
   {
     Kokkos::View<int*> default_space_view("default_space_view", 1);
 
-    ASSERT_DEATH(create_host_view(default_space_view), "");
+    ASSERT_DEATH(create_host_view(default_space_view), "incompatible");
     create_default_view(default_space_view);
 #ifdef KOKKOS_TEST_HAS_SHARED_SPACE
     if (has_real_shared_space)
-      ASSERT_DEATH(create_shared_view(default_space_view), "");
+      ASSERT_DEATH(create_shared_view(default_space_view), "incompatible");
 #endif
 #ifdef KOKKOS_HAS_SHARED_HOST_PINNED_SPACE
-    ASSERT_DEATH(create_hostpinned_view(default_space_view), "");
+    ASSERT_DEATH(create_hostpinned_view(default_space_view), "incompatible");
 #endif
   }
 
@@ -110,11 +110,11 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
     Kokkos::View<int*, Kokkos::SharedSpace> shared_space_view(
         "shared_space_view", 1);
 
-    ASSERT_DEATH(create_host_view(shared_space_view), "");
+    ASSERT_DEATH(create_host_view(shared_space_view), "incompatible");
     create_default_view(shared_space_view);
     create_shared_view(shared_space_view);
 #ifdef KOKKOS_HAS_SHARED_HOST_PINNED_SPACE
-    ASSERT_DEATH(create_hostpinned_view(shared_space_view), "");
+    ASSERT_DEATH(create_hostpinned_view(shared_space_view), "incompatible");
 #endif
   }
 #endif
@@ -125,10 +125,10 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
         "host_pinned_space_view", 1);
 
     create_host_view(hostpinned_space_view);
-    ASSERT_DEATH(create_default_view(hostpinned_space_view), "");
+    ASSERT_DEATH(create_default_view(hostpinned_space_view), "incompatible");
 #ifdef KOKKOS_TEST_HAS_SHARED_SPACE
     if (has_real_shared_space)
-      ASSERT_DEATH(create_shared_view(hostpinned_space_view), "");
+      ASSERT_DEATH(create_shared_view(hostpinned_space_view), "incompatible");
 #endif
     create_hostpinned_view(hostpinned_space_view);
   }
