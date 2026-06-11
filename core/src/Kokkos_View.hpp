@@ -887,7 +887,10 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
       : base_t(
             arg_prop,
             Impl::mapping_from_array_layout<typename mdspan_type::mapping_type>(
-                arg_layout)) {}
+                arg_layout)) {
+    Impl::runtime_check_unmanaged_view_memory_space<
+        P..., typename traits::memory_space>(arg_prop, span());
+  }
 
   // Constructors from legacy layouts when using Views of the new layouts
   // LayoutLeft -> layout_left, layout_left_padded
@@ -1051,17 +1054,8 @@ class View : public Impl::BasicViewFromTraits<DataType, Properties...>::type {
     static_assert(traits::array_layout::is_extent_constructible,
                   "Layout is not constructible from extent arguments. Use "
                   "overload taking a layout object instead.");
-#if defined(KOKKOS_ENABLE_DEBUG) &&                      \
-    !(defined(KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY) || \
-      defined(KOKKOS_IMPL_HIP_UNIFIED_MEMORY))
-    KOKKOS_IF_ON_HOST((if (span() > 0) {
-      auto prop_copy = Impl::with_properties_if_unset(
-          arg_prop, typename traits::memory_space{});
-      Impl::runtime_check_memory_space_assignability(
-          Impl::get_property<Impl::PointerTag>(prop_copy),
-          Impl::get_property<Impl::MemorySpaceTag>(prop_copy));
-    }))
-#endif
+    Impl::runtime_check_unmanaged_view_memory_space<
+        P..., typename traits::memory_space>(arg_prop, span());
   }
 
   // Allocate with label and layout

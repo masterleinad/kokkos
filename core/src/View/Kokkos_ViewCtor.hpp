@@ -414,6 +414,21 @@ KOKKOS_FUNCTION auto &get_property(ViewCtorProp<P...> &view_ctor_prop) {
   return const_cast<std::decay_t<decltype(tmp)> &>(tmp);
 }
 
+template <class... P, class MemorySpace>
+KOKKOS_INLINE_FUNCTION void runtime_check_unmanaged_view_memory_space(
+    const ViewCtorProp<P...> &arg_prop, std::size_t view_span) {
+#if defined(KOKKOS_ENABLE_DEBUG) &&                      \
+    !(defined(KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY) || \
+      defined(KOKKOS_IMPL_HIP_UNIFIED_MEMORY))
+  KOKKOS_IF_ON_HOST((if (view_span > 0) {
+    auto prop_copy = with_properties_if_unset(arg_prop, MemorySpace{});
+    runtime_check_memory_space_assignability(
+        get_property<PointerTag>(prop_copy),
+        get_property<MemorySpaceTag>(prop_copy));
+  }))
+#endif
+}
+
 } /* namespace Impl */
 } /* namespace Kokkos */
 
