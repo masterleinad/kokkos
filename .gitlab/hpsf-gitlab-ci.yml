@@ -299,14 +299,14 @@ NVIDIA-GRACE-GRACE:
 NVIDIA-DGX-SPARK:
   extends: .common-setup
   tags: [nvidia-gb10, hpsf-gpu]
-  image: nvcr.io/nvidia/cuda:13.1.1-devel-ubuntu24.04
+  image: nvcr.io/nvidia/cuda:13.3.0-devel-ubuntu26.04
   script:
     - apt-get update && apt-get install -y cmake git python3
     - export CMAKE_BUILD_PARALLEL_LEVEL=32
     - export ENV_CMAKE_OPTIONS=""
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_BUILD_TYPE=${BUILD_TYPE}"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CUDA_FLAGS='-Werror=all-warnings'"
-    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_STANDARD=20"
+    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_STANDARD=23"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ARCH_NATIVE=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILE_AS_CMAKE_LANGUAGE=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_CUDA=ON"
