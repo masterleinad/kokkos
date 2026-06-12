@@ -56,6 +56,7 @@ void test_half_conversion() {
   test_half_conversion_type<float>();
   test_half_conversion_type<double>();
   test_half_conversion_type<short>();
+  test_half_conversion_type<bool>();
   test_half_conversion_type<int>();
   test_half_conversion_type<long>();
   test_half_conversion_type<long long>();
@@ -69,6 +70,7 @@ void test_bhalf_conversion() {
   test_bhalf_conversion_type<float>();
   test_bhalf_conversion_type<double>();
   test_bhalf_conversion_type<short>();
+  test_bhalf_conversion_type<bool>();
   test_bhalf_conversion_type<int>();
   test_bhalf_conversion_type<long>();
   test_bhalf_conversion_type<long long>();
