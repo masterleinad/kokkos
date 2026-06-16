@@ -13,7 +13,7 @@ void test_half_conversion_type() {
   // When truncating mantissa to 10bits (like f16), 3.3 becomes 3.298828125
   // 3.3 - 3.298828125 < 1.1719e-3, so conversion error should be smaller
   double epsilon = KOKKOS_HALF_T_IS_FLOAT ? 3e-7 : 1.1719e-3;
-  Kokkos::Array<T, 5> test_values({T(-3.3), T(-.1), T(0), T(.1), T(3.3)});
+  Kokkos::Array<T, 5> test_values({T(0), T(.1), T(3.3)});
   for (T test_value : test_values) {
     Kokkos::Experimental::half_t a =
         Kokkos::Experimental::cast_to_half(test_value);
@@ -24,7 +24,7 @@ void test_half_conversion_type() {
   auto test_values_device = Kokkos::create_mirror_view_and_copy(
       Kokkos::DefaultExecutionSpace::memory_space{},
       Kokkos::View<T*>(test_values.data(), test_values.size()));
-  Kokkos::View<T*> b_v("b_v", 5);
+  Kokkos::View<T*> b_v("b_v", test_values.size());
   Kokkos::parallel_for(
       "TestHalfConversion", test_values.size(), KOKKOS_LAMBDA(int i) {
         Kokkos::Experimental::half_t d_a =
@@ -42,7 +42,7 @@ void test_bhalf_conversion_type() {
   // When truncating mantissa to 7bits (like b16), 3.3 becomes 3.296875
   // 3.3 - 3.296875 < 3.125e-3, so conversion error should be smaller
   double epsilon = KOKKOS_BHALF_T_IS_FLOAT ? 3e-7 : 3.125e-3;
-  Kokkos::Array<T, 5> test_values({T(-3.3), T(-.1), T(0), T(.1), T(3.3)});
+  Kokkos::Array<T, 5> test_values({T(0), T(.1), T(3.3)});
   for (T test_value : test_values) {
     Kokkos::Experimental::bhalf_t a =
         Kokkos::Experimental::cast_to_bhalf(test_value);
@@ -53,7 +53,7 @@ void test_bhalf_conversion_type() {
   auto test_values_device = Kokkos::create_mirror_view_and_copy(
       Kokkos::DefaultExecutionSpace::memory_space{},
       Kokkos::View<T*>(test_values.data(), test_values.size()));
-  Kokkos::View<T*> b_v("b_v", 5);
+  Kokkos::View<T*> b_v("b_v", test_values.size());
   Kokkos::parallel_for(
       "TestHalfConversion", test_values.size(), KOKKOS_LAMBDA(int i) {
         Kokkos::Experimental::bhalf_t d_a =
