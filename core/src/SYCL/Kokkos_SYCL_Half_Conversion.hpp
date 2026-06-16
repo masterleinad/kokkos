@@ -91,9 +91,7 @@ inline bhalf_t cast_to_bhalf(bhalf_t val) { return val; }
 
 inline bhalf_t cast_to_bhalf(float val) { return bhalf_t::impl_type(val); }
 inline bhalf_t cast_to_bhalf(double val) { return bhalf_t::impl_type(val); }
-inline bhalf_t cast_to_bhalf(bool val) {
-  return cast_to_bhalf(static_cast<float>(val));
-}
+inline bhalf_t cast_to_bhalf(bool val) { return bhalf_t::impl_type(val); }
 inline bhalf_t cast_to_bhalf(short val) { return bhalf_t::impl_type(val); }
 inline bhalf_t cast_to_bhalf(unsigned short val) {
   return bhalf_t::impl_type(val);
