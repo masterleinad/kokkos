@@ -339,10 +339,10 @@ struct ViewFill<ViewType, Layout, ExecSpace, 8, iType> {
   }
 };
 
-template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
-          class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 1,
-                iType> {
+template <class ViewTypeA, class ViewTypeB, class Layout, class ExecSpace,
+          typename iType, bool SequentialHostInit>
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 1, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
 
@@ -382,8 +382,8 @@ struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 1,
 
 template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
           class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 2,
-                iType> {
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 2, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
   static const Kokkos::Iterate outer_iteration_pattern =
@@ -427,8 +427,8 @@ struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 2,
 
 template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
           class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 3,
-                iType> {
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 3, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
 
@@ -475,8 +475,8 @@ struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 3,
 
 template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
           class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 4,
-                iType> {
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 4, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
 
@@ -518,8 +518,8 @@ struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 4,
 
 template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
           class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 5,
-                iType> {
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 5, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
 
@@ -561,8 +561,8 @@ struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 5,
 
 template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
           class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 6,
-                iType> {
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 6, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
 
@@ -605,8 +605,8 @@ struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 6,
 
 template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
           class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 7,
-                iType> {
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 7, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
 
@@ -653,8 +653,8 @@ struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 7,
 
 template <bool SequentialHostInit, class ViewTypeA, class ViewTypeB,
           class Layout, class ExecSpace, typename iType>
-struct ViewCopy<SequentialHostInit, ViewTypeA, ViewTypeB, Layout, ExecSpace, 8,
-                iType> {
+struct ViewCopy<ViewTypeA, ViewTypeB, Layout, ExecSpace, 8, iType,
+                SequentialHostInit> {
   ViewTypeA a;
   ViewTypeB b;
 
@@ -756,33 +756,29 @@ void view_copy(const ExecutionSpace& space, const DstType& dst,
         (src.span() >= size_t(std::numeric_limits<int>::max()))) {
       if (iterate == Kokkos::Iterate::Right)
         Kokkos::Impl::ViewCopy<
-            SequentialHostInit,
             typename DstType::uniform_runtime_nomemspace_type,
             typename SrcType::uniform_runtime_const_nomemspace_type,
-            Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int64_t>(
-            dst, src, space);
+            Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int64_t,
+            SequentialHostInit>(dst, src, space);
       else
         Kokkos::Impl::ViewCopy<
-            SequentialHostInit,
             typename DstType::uniform_runtime_nomemspace_type,
             typename SrcType::uniform_runtime_const_nomemspace_type,
-            Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int64_t>(
-            dst, src, space);
+            Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int64_t,
+            SequentialHostInit>(dst, src, space);
     } else {
       if (iterate == Kokkos::Iterate::Right)
         Kokkos::Impl::ViewCopy<
-            SequentialHostInit,
             typename DstType::uniform_runtime_nomemspace_type,
             typename SrcType::uniform_runtime_const_nomemspace_type,
-            Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int>(dst, src,
-                                                                     space);
+            Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int,
+            SequentialHostInit>(dst, src, space);
       else
         Kokkos::Impl::ViewCopy<
-            SequentialHostInit,
             typename DstType::uniform_runtime_nomemspace_type,
             typename SrcType::uniform_runtime_const_nomemspace_type,
-            Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int>(dst, src,
-                                                                    space);
+            Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int,
+            SequentialHostInit>(dst, src, space);
     }
   }
 }
@@ -827,26 +823,29 @@ void view_copy(const DstType& dst, const SrcType& src) {
       (src.span() >= size_t(std::numeric_limits<int>::max()))) {
     if (iterate == Kokkos::Iterate::Right)
       Kokkos::Impl::ViewCopy<
-          SequentialHostInit, typename DstType::uniform_runtime_nomemspace_type,
+          typename DstType::uniform_runtime_nomemspace_type,
           typename SrcType::uniform_runtime_const_nomemspace_type,
-          Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int64_t>(dst,
-                                                                       src);
+          Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int64_t,
+          SequentialHostInit>(dst, src);
     else
       Kokkos::Impl::ViewCopy<
-          SequentialHostInit, typename DstType::uniform_runtime_nomemspace_type,
+          typename DstType::uniform_runtime_nomemspace_type,
           typename SrcType::uniform_runtime_const_nomemspace_type,
-          Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int64_t>(dst, src);
+          Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int64_t,
+          SequentialHostInit>(dst, src);
   } else {
     if (iterate == Kokkos::Iterate::Right)
       Kokkos::Impl::ViewCopy<
-          SequentialHostInit, typename DstType::uniform_runtime_nomemspace_type,
+          typename DstType::uniform_runtime_nomemspace_type,
           typename SrcType::uniform_runtime_const_nomemspace_type,
-          Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int>(dst, src);
+          Kokkos::LayoutRight, ExecutionSpace, DstType::rank, int,
+          SequentialHostInit>(dst, src);
     else
       Kokkos::Impl::ViewCopy<
-          SequentialHostInit, typename DstType::uniform_runtime_nomemspace_type,
+          typename DstType::uniform_runtime_nomemspace_type,
           typename SrcType::uniform_runtime_const_nomemspace_type,
-          Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int>(dst, src);
+          Kokkos::LayoutLeft, ExecutionSpace, DstType::rank, int,
+          SequentialHostInit>(dst, src);
   }
 }
 
@@ -860,12 +859,12 @@ struct CommonSubview {
       : dst_sub(dst, args...), src_sub(src, args...) {}
 };
 
-template <bool SequentialHostInit, class DstType, class SrcType,
+template <class DstType, class SrcType, bool SequentialHostInit = false,
           int Rank = DstType::rank>
 struct ViewRemap;
 
 template <bool SequentialHostInit, class DstType, class SrcType>
-struct ViewRemap<SequentialHostInit, DstType, SrcType, 1> {
+struct ViewRemap<DstType, SrcType, 1, SequentialHostInit> {
   using p_type = Kokkos::pair<int64_t, int64_t>;
 
   template <typename... OptExecSpace>
@@ -927,7 +926,7 @@ auto create_common_subview_no_match(const DstType& dst, const SrcType& src,
   return common_subview;
 }
 
-template <bool SequentialHostInit, class DstType, class SrcType, int Rank>
+template <class DstType, class SrcType, bool SequentialHostInit, int Rank>
 struct ViewRemap {
   using p_type = Kokkos::pair<int64_t, int64_t>;
 
@@ -2789,12 +2788,13 @@ impl_resize(const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop,
 #endif
 
     if constexpr (alloc_prop_input::has_execution_space)
-      Kokkos::Impl::ViewRemap<alloc_prop_input::sequential_host_init, view_type,
-                              view_type>(
+      Kokkos::Impl::ViewRemap<view_type, view_type,
+                              alloc_prop_input::sequential_host_init>(
           v_resized, v, Impl::get_property<Impl::ExecutionSpaceTag>(prop_copy));
     else {
-      Kokkos::Impl::ViewRemap<alloc_prop_input::sequential_host_init, view_type,
-                              view_type>(v_resized, v);
+      Kokkos::Impl::ViewRemap<view_type, view_type,
+                              alloc_prop_input::sequential_host_init>(v_resized,
+                                                                      v);
       Kokkos::fence("Kokkos::resize(View)");
     }
 
@@ -2888,12 +2888,13 @@ impl_resize(const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop,
     view_type v_resized(prop_copy, layout);
 
     if constexpr (alloc_prop_input::has_execution_space)
-      Kokkos::Impl::ViewRemap<alloc_prop_input::sequential_host_init, view_type,
-                              view_type>(
+      Kokkos::Impl::ViewRemap<view_type, view_type,
+                              alloc_prop_input::sequential_host_init>(
           v_resized, v, Impl::get_property<Impl::ExecutionSpaceTag>(arg_prop));
     else {
-      Kokkos::Impl::ViewRemap<alloc_prop_input::sequential_host_init, view_type,
-                              view_type>(v_resized, v);
+      Kokkos::Impl::ViewRemap<view_type, view_type,
+                              alloc_prop_input::sequential_host_init>(v_resized,
+                                                                      v);
       Kokkos::fence("Kokkos::resize(View)");
     }
 
@@ -2935,12 +2936,13 @@ impl_resize(const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop,
   view_type v_resized(prop_copy, layout);
 
   if constexpr (alloc_prop_input::has_execution_space)
-    Kokkos::Impl::ViewRemap<alloc_prop_input::sequential_host_init, view_type,
-                            view_type>(
+    Kokkos::Impl::ViewRemap<view_type, view_type,
+                            alloc_prop_input::sequential_host_init>(
         v_resized, v, Impl::get_property<Impl::ExecutionSpaceTag>(arg_prop));
   else {
-    Kokkos::Impl::ViewRemap<alloc_prop_input::sequential_host_init, view_type,
-                            view_type>(v_resized, v);
+    Kokkos::Impl::ViewRemap<view_type, view_type,
+                            alloc_prop_input::sequential_host_init>(v_resized,
+                                                                    v);
     Kokkos::fence("Kokkos::resize(View)");
   }
 
