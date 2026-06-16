@@ -23,7 +23,8 @@ void test_half_conversion_type() {
 
   auto test_values_device = Kokkos::create_mirror_view_and_copy(
       Kokkos::DefaultExecutionSpace::memory_space{},
-      Kokkos::View<T*>(test_values.data(), test_values.size()));
+      Kokkos::View<T*, Kokkos::HostSpace>(test_values.data(),
+                                          test_values.size()));
   Kokkos::View<T*> b_v("b_v", test_values.size());
   Kokkos::parallel_for(
       "TestHalfConversion", test_values.size(), KOKKOS_LAMBDA(int i) {
@@ -52,7 +53,8 @@ void test_bhalf_conversion_type() {
 
   auto test_values_device = Kokkos::create_mirror_view_and_copy(
       Kokkos::DefaultExecutionSpace::memory_space{},
-      Kokkos::View<T*>(test_values.data(), test_values.size()));
+      Kokkos::View<T*, Kokkos::HostSpace>(test_values.data(),
+                                          test_values.size()));
   Kokkos::View<T*> b_v("b_v", test_values.size());
   Kokkos::parallel_for(
       "TestHalfConversion", test_values.size(), KOKKOS_LAMBDA(int i) {
