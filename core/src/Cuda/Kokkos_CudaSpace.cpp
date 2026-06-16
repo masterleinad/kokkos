@@ -482,6 +482,9 @@ void check_memory_space(cudaMemoryType deduced_memory_type) {
                                          RequestedMemorySpace>();
       return;
     case cudaMemoryTypeUnregistered:
+#ifdef KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY
+      return;
+#endif
       if (!Kokkos::SpaceAccessibility<RequestedMemorySpace,
                                       Kokkos::HostSpace>::assignable)
         abort_incompatible_memory_spaces<Kokkos::HostSpace,

@@ -340,6 +340,9 @@ void check_memory_space(hipMemoryType deduced_memory_type) {
       return;
 #if HIP_VERSION_MAJOR >= 6
     case hipMemoryTypeUnregistered:
+#ifdef KOKKOS_IMPL_HIP_UNIFIED_MEMORY
+      return;
+#endif
       if (!Kokkos::SpaceAccessibility<RequestedMemorySpace,
                                       Kokkos::HostSpace>::assignable)
         abort_incompatible_memory_spaces<Kokkos::HostSpace,

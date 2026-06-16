@@ -38,12 +38,6 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
       defined(KOKKOS_ENABLE_DEBUG))
   GTEST_SKIP() << "memory space violation only detected for Cuda, HIP, or SYCL "
                   "with Kokkos_ENABLE_DEBUG";
-#else
-
-#if defined(KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY) || \
-    defined(KOKKOS_IMPL_HIP_UNIFIED_MEMORY)
-  GTEST_SKIP()
-      << "We don't want to check pointer memory spaces for APU-like setups";
 #endif
 
   auto create_host_view = [](auto view) {
@@ -71,7 +65,7 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
 
   int has_real_shared_space = 1;
 #ifdef KOKKOS_ENABLE_HIP
-  has_real_shared_space     = 0;  // false by default
+  has_real_shared_space = 0;  // false by default
   KOKKOS_IMPL_HIP_SAFE_CALL(hipDeviceGetAttribute(
       &has_real_shared_space, hipDeviceAttributePageableMemoryAccess,
       Kokkos::HIP{}.hip_device()));
@@ -81,6 +75,16 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
     Kokkos::View<int*, Kokkos::HostSpace> host_space_view("host_space_view", 1);
 
     create_host_view(host_space_view);
+#if defined(KOKKOS_IMPL_HIP_UNIFIED_MEMORY) || \
+    defined(KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY)
+    create_default_view(host_space_view);
+#ifdef KOKKOS_TEST_HAS_SHARED_SPACE
+    if (has_real_shared_space) create_shared_view(host_space_view);
+#endif
+#ifdef KOKKOS_HAS_SHARED_HOST_PINNED_SPACE
+    create_hostpinned_view(host_space_view);
+#endif
+#else
     ASSERT_DEATH(create_default_view(host_space_view), "incompatible");
 #ifdef KOKKOS_TEST_HAS_SHARED_SPACE
     if (has_real_shared_space)
@@ -88,6 +92,7 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
 #endif
 #ifdef KOKKOS_HAS_SHARED_HOST_PINNED_SPACE
     ASSERT_DEATH(create_hostpinned_view(host_space_view), "incompatible");
+#endif
 #endif
   }
 
@@ -132,6 +137,5 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
 #endif
     create_hostpinned_view(hostpinned_space_view);
   }
-#endif
 #endif
 }
