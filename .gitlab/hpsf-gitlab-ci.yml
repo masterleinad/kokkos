@@ -22,7 +22,7 @@
 NVIDIA-RTX5080:
   extends: .common-setup
   tags: [nvidia-rtx5080, hpsf-gpu]
-  image: nvcr.io/nvidia/cuda:12.8.0-devel-ubuntu24.04
+  image: nvcr.io/nvidia/cuda:13.3.0-devel-ubuntu26.04
   script:
     - apt-get update && apt-get install -y cmake git python3
     - export CMAKE_BUILD_PARALLEL_LEVEL=32
@@ -30,7 +30,7 @@ NVIDIA-RTX5080:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_BUILD_TYPE=${BUILD_TYPE}"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_COMPILER=`pwd`/bin/nvcc_wrapper"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_FLAGS='-Werror=all-warnings -Werror'"
-    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_STANDARD=20"
+    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_STANDARD=23"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ARCH_BLACKWELL120=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_CUDA=ON;"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON;"
@@ -56,7 +56,7 @@ NVIDIA-RTX5080:
 NVIDIA-GH200:
   extends: .common-setup
   tags: [nvidia-gh200]
-  image: nvcr.io/nvidia/cuda:13.3.0-devel-ubuntu26.04
+  image: nvcr.io/nvidia/cuda:13.1.0-devel-ubuntu24.04
   script:
     - apt-get update && apt-get install -y cmake git python3
     - export CMAKE_BUILD_PARALLEL_LEVEL=48
@@ -64,7 +64,7 @@ NVIDIA-GH200:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_BUILD_TYPE=${BUILD_TYPE}"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_COMPILER=`pwd`/bin/nvcc_wrapper"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_FLAGS='-Werror=all-warnings -Werror'"
-    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_STANDARD=23"
+    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_STANDARD=20"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_DEBUG=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_DEBUG_BOUNDS_CHECK=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ARCH_NATIVE=ON"
