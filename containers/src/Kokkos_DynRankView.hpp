@@ -1190,8 +1190,8 @@ auto subdynrankview(const DynRankView<DRVArgs...>& drv,
 template <class... DRVArgs, class SubArg0 = int, class SubArg1 = int,
           class SubArg2 = int, class SubArg3 = int, class SubArg4 = int,
           class SubArg5 = int, class SubArg6 = int>
-  requires(!Impl::ContainsPair<SubArg0, SubArg1, SubArg2, SubArg3, SubArg4,
-                               SubArg5, SubArg6>)
+  requires(!Impl::ContainsStdPair<SubArg0, SubArg1, SubArg2, SubArg3, SubArg4,
+                                  SubArg5, SubArg6>)
 KOKKOS_INLINE_FUNCTION auto subdynrankview(
     const DynRankView<DRVArgs...>& drv, SubArg0 arg0 = SubArg0{},
     SubArg1 arg1 = SubArg1{}, SubArg2 arg2 = SubArg2{},

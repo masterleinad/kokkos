@@ -391,7 +391,7 @@ auto convert_from_std_pair(T t) {
 
 // Concept that checks if ANY type in a pack is a std::pair
 template <typename... Args>
-concept ContainsPair = (is_std_pair<Args>::value || ...);
+concept ContainsStdPair = (is_std_pair<Args>::value || ...);
 
 }  // end namespace Impl
 

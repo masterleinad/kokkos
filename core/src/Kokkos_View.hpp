@@ -902,7 +902,7 @@ class View
 
   // std::pair isn't device-compatible so this overload is host-only
   template <class RT, class... RP, class Arg0, class... Args>
-    requires(!Impl::ContainsPair<Arg0, Args...>)
+    requires(!Impl::ContainsStdPair<Arg0, Args...>)
   KOKKOS_INLINE_FUNCTION View(const View<RT, RP...>& src_view, const Arg0 arg0,
                               Args... args)
       : base_t(Impl::subview_ctor_tag, src_view, arg0, args...) {}
@@ -1572,7 +1572,7 @@ auto subview(const View<D, P...>& src, Args... args) {
 
 // std::pair isn't device-compatible so this overload is host-only
 template <class D, class... P, class... Args>
-  requires(!Impl::ContainsPair<Args...>)
+  requires(!Impl::ContainsStdPair<Args...>)
 KOKKOS_INLINE_FUNCTION auto subview(const View<D, P...>& src, Args... args) {
   static_assert(View<D, P...>::rank == sizeof...(Args),
                 "subview requires one argument for each source View rank");
