@@ -863,8 +863,8 @@ template <class DstType, class SrcType, bool SequentialHostInit = false,
           int Rank = DstType::rank>
 struct ViewRemap;
 
-template <bool SequentialHostInit, class DstType, class SrcType>
-struct ViewRemap<DstType, SrcType, 1, SequentialHostInit> {
+template <class DstType, class SrcType, bool SequentialHostInit>
+struct ViewRemap<DstType, SrcType, SequentialHostInit, 1> {
   using p_type = Kokkos::pair<int64_t, int64_t>;
 
   template <typename... OptExecSpace>
