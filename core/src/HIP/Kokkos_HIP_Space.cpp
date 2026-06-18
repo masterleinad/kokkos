@@ -338,7 +338,6 @@ void check_memory_space(hipMemoryType deduced_memory_type) {
         abort_incompatible_memory_spaces<Kokkos::HIPManagedSpace,
                                          RequestedMemorySpace>();
       return;
-#if HIP_VERSION_MAJOR >= 6
     case hipMemoryTypeUnregistered:
 #ifdef KOKKOS_IMPL_HIP_UNIFIED_MEMORY
       return;
@@ -348,7 +347,6 @@ void check_memory_space(hipMemoryType deduced_memory_type) {
         abort_incompatible_memory_spaces<Kokkos::HostSpace,
                                          RequestedMemorySpace>();
       return;
-#endif
     default: Kokkos::abort("bug: unknown HIP memory type");
   }
 }
@@ -361,27 +359,10 @@ void Kokkos::Impl::runtime_check_memory_space_assignability<
                                 const Kokkos::HIPHostPinnedSpace&) {
   hipPointerAttribute_t attributes;
   hipError_t error = hipPointerGetAttributes(&attributes, ptr);
-#if HIP_VERSION_MAJOR >= 6
   KOKKOS_IMPL_HIP_SAFE_CALL(error);
   check_memory_space<Kokkos::HIPHostPinnedSpace>(attributes.type);
-#else
-  if (error == hipErrorInvalidValue) {
-    if (!Kokkos::SpaceAccessibility<Kokkos::HIPHostPinnedSpace,
-                                    Kokkos::HostSpace>::assignable)
-      abort_incompatible_memory_spaces<Kokkos::HostSpace,
-                                       Kokkos::HIPHostPinnedSpace>();
-  } else {
-#if HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR < 5
-    auto type = attributes.memoryType;
-#else
-    auto type = attributes.type;
-#endif
-    check_memory_space<Kokkos::HIPHostPinnedSpace>(type);
-  }
-#endif
 }
 
-#if !(HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR < 3)
 template <>
 void Kokkos::Impl::runtime_check_memory_space_assignability<
     Kokkos::HIPManagedSpace>(const void* ptr, const Kokkos::HIPManagedSpace&) {
@@ -393,49 +374,17 @@ void Kokkos::Impl::runtime_check_memory_space_assignability<
 
   hipPointerAttribute_t attributes;
   hipError_t error = hipPointerGetAttributes(&attributes, ptr);
-#if HIP_VERSION_MAJOR >= 6
   KOKKOS_IMPL_HIP_SAFE_CALL(error);
   check_memory_space<Kokkos::HIPManagedSpace>(attributes.type);
-#else
-  if (error == hipErrorInvalidValue) {
-    if (!Kokkos::SpaceAccessibility<Kokkos::HIPManagedSpace,
-                                    Kokkos::HostSpace>::assignable)
-      abort_incompatible_memory_spaces<Kokkos::HostSpace,
-                                       Kokkos::HIPManagedSpace>();
-  } else {
-#if HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR < 5
-    auto type = attributes.memoryType;
-#else
-    auto type = attributes.type;
-#endif
-    check_memory_space<Kokkos::HIPManagedSpace>(type);
-  }
-#endif
 }
-#endif
 
 template <>
 void Kokkos::Impl::runtime_check_memory_space_assignability<Kokkos::HIPSpace>(
     const void* ptr, const Kokkos::HIPSpace&) {
   hipPointerAttribute_t attributes;
   hipError_t error = hipPointerGetAttributes(&attributes, ptr);
-#if HIP_VERSION_MAJOR >= 6
   KOKKOS_IMPL_HIP_SAFE_CALL(error);
   check_memory_space<Kokkos::HIPSpace>(attributes.type);
-#else
-  if (error == hipErrorInvalidValue) {
-    if (!Kokkos::SpaceAccessibility<Kokkos::HIPSpace,
-                                    Kokkos::HostSpace>::assignable)
-      abort_incompatible_memory_spaces<Kokkos::HostSpace, Kokkos::HIPSpace>();
-  } else {
-#if HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR < 5
-    auto type = attributes.memoryType;
-#else
-    auto type = attributes.type;
-#endif
-    check_memory_space<Kokkos::HIPSpace>(type);
-  }
-#endif
 }
 
 template <>
@@ -443,17 +392,6 @@ void Kokkos::Impl::runtime_check_memory_space_assignability<Kokkos::HostSpace>(
     const void* ptr, const Kokkos::HostSpace&) {
   hipPointerAttribute_t attributes;
   hipError_t error = hipPointerGetAttributes(&attributes, ptr);
-#if HIP_VERSION_MAJOR >= 6
   KOKKOS_IMPL_HIP_SAFE_CALL(error);
   check_memory_space<Kokkos::HostSpace>(attributes.type);
-#else
-  if (error != hipErrorInvalidValue) {
-#if HIP_VERSION_MAJOR == 5 && HIP_VERSION_MINOR < 5
-    auto type = attributes.memoryType;
-#else
-    auto type = attributes.type;
-#endif
-    check_memory_space<Kokkos::HostSpace>(type);
-  }
-#endif
 }
