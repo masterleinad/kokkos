@@ -401,6 +401,7 @@ struct SubviewExtents {
       error(dim, Impl::convert_from_std_pair(args)...);
   }
 
+  // std::pair isn't device-compatible so this overload is host-only
   template <size_t... DimArgs, class... Args>
     requires(!Impl::ContainsPair<Args...>)
   KOKKOS_INLINE_FUNCTION SubviewExtents(const ViewDimension<DimArgs...>& dim,

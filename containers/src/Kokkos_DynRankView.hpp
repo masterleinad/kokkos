@@ -1186,6 +1186,7 @@ auto subdynrankview(const DynRankView<DRVArgs...>& drv,
           sub, new_rank));
 }
 
+// std::pair isn't device-compatible so this overload is host-only
 template <class... DRVArgs, class SubArg0 = int, class SubArg1 = int,
           class SubArg2 = int, class SubArg3 = int, class SubArg4 = int,
           class SubArg5 = int, class SubArg6 = int>
