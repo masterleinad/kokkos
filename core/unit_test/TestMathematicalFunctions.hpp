@@ -233,8 +233,12 @@ struct ConvertibleTo {
 #define KOKKOS_TEST_STATIC_ASSERT_UNARY_PREDICATE(FUNC, FP_TYPE, RET_TYPE) \
   using test_return_type =                                                 \
       decltype(FUNC(std::declval<ConvertibleTo<FP_TYPE>>()));              \
-  static_assert(std::is_convertible_v<test_return_type, RET_TYPE> &&       \
-                sizeof(test_return_type) == sizeof(RET_TYPE))
+  static_assert(std::is_floating_point_v<RET_TYPE> &&                      \
+                    (std::is_floating_point_v<test_return_type> &&         \
+                     std::is_convertible_v<test_return_type, RET_TYPE> &&  \
+                     sizeof(test_return_type) == sizeof(RET_TYPE)) ||      \
+                !std::is_floating_point_v<RET_TYPE> &&                     \
+                    std::is_same_v<test_return_type, RET_TYPE>);
 #else
 #define KOKKOS_TEST_STATIC_ASSERT_UNARY_PREDICATE(FUNC, FP_TYPE, RET_TYPE)   \
   static_assert(                                                             \
