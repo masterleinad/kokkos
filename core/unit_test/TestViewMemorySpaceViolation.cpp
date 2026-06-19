@@ -25,6 +25,7 @@ TEST(defaultdevicetype_DeathTest, view_memory_space_violation) {
       defined(KOKKOS_ENABLE_DEBUG))
   GTEST_SKIP() << "memory space violation only detected for Cuda, HIP, or SYCL "
                   "with Kokkos_ENABLE_DEBUG";
+  KOKKOS_IMPL_UNREACHABLE();
 #endif
 
   auto create_host_view = [](auto view) {
