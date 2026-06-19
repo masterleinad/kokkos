@@ -375,13 +375,13 @@ struct SubviewExtents {
 #endif
 
  public:
-  template <size_t... DimArgs, class... Args>
-  SubviewExtents(const ViewDimension<DimArgs...>& dim, Args... args)
-      : SubViewExtents(dim, Impl::convert_from_std_pair(args)...) {}
-
   // std::pair isn't device-compatible so this overload is host-only
   template <size_t... DimArgs, class... Args>
-    requires(!Impl::ContainsStdPair<Args...>)
+    requires(Impl::ContainsStdPair<Args...>)
+  SubviewExtents(const ViewDimension<DimArgs...>& dim, Args... args)
+      : SubviewExtents(dim, Impl::convert_from_std_pair(args)...) {}
+
+  template <size_t... DimArgs, class... Args>
   KOKKOS_INLINE_FUNCTION SubviewExtents(const ViewDimension<DimArgs...>& dim,
                                         Args... args) {
     static_assert(DomainRank == sizeof...(DimArgs));
