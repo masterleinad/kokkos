@@ -1560,14 +1560,7 @@ struct ApplyToViewOfStaticRank {
 
 template <class D, class... P, class... Args>
 auto subview(const View<D, P...>& src, Args... args) {
-  static_assert(View<D, P...>::rank == sizeof...(Args),
-                "subview requires one argument for each source View rank");
-
-  return typename Kokkos::Impl::ViewMapping<
-      void /* deduce subview type from source view traits */
-      ,
-      typename Impl::RemoveAlignedMemoryTrait<D, P...>::type,
-      Args...>::type(src, Impl::convert_from_std_pair(args)...);
+  return subview(src, Impl::convert_from_std_pair(args)...);
 }
 
 // std::pair isn't device-compatible so this overload is host-only
