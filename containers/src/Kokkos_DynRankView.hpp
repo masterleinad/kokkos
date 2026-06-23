@@ -1211,11 +1211,15 @@ KOKKOS_INLINE_FUNCTION bool operator==(const DynRankView<LT, LP...>& lhs,
          std::is_same_v<typename lhs_traits::memory_space,
                         typename rhs_traits::memory_space> &&
          lhs.rank() == rhs.rank() && lhs.data() == rhs.data() &&
-         lhs.span() == rhs.span() && lhs.extent(0) == rhs.extent(0) &&
-         lhs.extent(1) == rhs.extent(1) && lhs.extent(2) == rhs.extent(2) &&
-         lhs.extent(3) == rhs.extent(3) && lhs.extent(4) == rhs.extent(4) &&
-         lhs.extent(5) == rhs.extent(5) && lhs.extent(6) == rhs.extent(6) &&
-         lhs.extent(7) == rhs.extent(7);
+         lhs.span() == rhs.span() &&
+         (lhs.rank() < 1 || (lhs.extent(0) == rhs.extent(0))) &&
+         (lhs.rank() < 2 || (lhs.extent(1) == rhs.extent(1))) &&
+         (lhs.rank() < 3 || (lhs.extent(2) == rhs.extent(2))) &&
+         (lhs.rank() < 4 || (lhs.extent(3) == rhs.extent(3))) &&
+         (lhs.rank() < 5 || (lhs.extent(4) == rhs.extent(4))) &&
+         (lhs.rank() < 6 || (lhs.extent(5) == rhs.extent(5))) &&
+         (lhs.rank() < 7 || (lhs.extent(6) == rhs.extent(6))) &&
+         (lhs.rank() < 8 || (lhs.extent(7) == rhs.extent(7)));
 }
 
 template <class LT, class... LP, class RT, class... RP>
@@ -1249,14 +1253,22 @@ struct DynRankViewRemap {
                    const InputView& arg_in)
       : output(arg_out),
         input(arg_in),
-        n0(std::min((size_t)arg_out.extent(0), (size_t)arg_in.extent(0))),
-        n1(std::min((size_t)arg_out.extent(1), (size_t)arg_in.extent(1))),
-        n2(std::min((size_t)arg_out.extent(2), (size_t)arg_in.extent(2))),
-        n3(std::min((size_t)arg_out.extent(3), (size_t)arg_in.extent(3))),
-        n4(std::min((size_t)arg_out.extent(4), (size_t)arg_in.extent(4))),
-        n5(std::min((size_t)arg_out.extent(5), (size_t)arg_in.extent(5))),
-        n6(std::min((size_t)arg_out.extent(6), (size_t)arg_in.extent(6))),
-        n7(std::min((size_t)arg_out.extent(7), (size_t)arg_in.extent(7))) {
+        n0(std::min(arg_out.rank() >= 1 ? (size_t)arg_out.extent(0) : 1,
+                    arg_in.rank() >= 1 ? (size_t)arg_in.extent(0) : 1)),
+        n1(std::min(arg_out.rank() >= 2 ? (size_t)arg_out.extent(1) : 1,
+                    arg_in.rank() >= 2 ? (size_t)arg_in.extent(1) : 1)),
+        n2(std::min(arg_out.rank() >= 3 ? (size_t)arg_out.extent(2) : 1,
+                    arg_in.rank() >= 3 ? (size_t)arg_in.extent(2) : 1)),
+        n3(std::min(arg_out.rank() >= 4 ? (size_t)arg_out.extent(3) : 1,
+                    arg_in.rank() >= 4 ? (size_t)arg_in.extent(3) : 1)),
+        n4(std::min(arg_out.rank() >= 5 ? (size_t)arg_out.extent(4) : 1,
+                    arg_in.rank() >= 5 ? (size_t)arg_in.extent(4) : 1)),
+        n5(std::min(arg_out.rank() >= 6 ? (size_t)arg_out.extent(5) : 1,
+                    arg_in.rank() >= 6 ? (size_t)arg_in.extent(5) : 1)),
+        n6(std::min(arg_out.rank() >= 7 ? (size_t)arg_out.extent(6) : 1,
+                    arg_in.rank() >= 7 ? (size_t)arg_in.extent(6) : 1)),
+        n7(std::min(arg_out.rank() >= 8 ? (size_t)arg_out.extent(7) : 1,
+                    arg_in.rank() >= 8 ? (size_t)arg_in.extent(7) : 1)) {
     using Policy = Kokkos::RangePolicy<ExecSpace>;
 
     Kokkos::parallel_for("Kokkos::DynRankViewRemap", Policy(exec_space, 0, n0),
@@ -1264,20 +1276,7 @@ struct DynRankViewRemap {
   }
 
   DynRankViewRemap(const OutputView& arg_out, const InputView& arg_in)
-      : output(arg_out),
-        input(arg_in),
-        n0(std::min((size_t)arg_out.extent(0), (size_t)arg_in.extent(0))),
-        n1(std::min((size_t)arg_out.extent(1), (size_t)arg_in.extent(1))),
-        n2(std::min((size_t)arg_out.extent(2), (size_t)arg_in.extent(2))),
-        n3(std::min((size_t)arg_out.extent(3), (size_t)arg_in.extent(3))),
-        n4(std::min((size_t)arg_out.extent(4), (size_t)arg_in.extent(4))),
-        n5(std::min((size_t)arg_out.extent(5), (size_t)arg_in.extent(5))),
-        n6(std::min((size_t)arg_out.extent(6), (size_t)arg_in.extent(6))),
-        n7(std::min((size_t)arg_out.extent(7), (size_t)arg_in.extent(7))) {
-    using Policy = Kokkos::RangePolicy<ExecSpace>;
-
-    Kokkos::parallel_for("Kokkos::DynRankViewRemap", Policy(0, n0), *this);
-  }
+      : DynRankViewRemap(ExecSpace{}, arg_out, arg_in) {}
 
   KOKKOS_INLINE_FUNCTION
   void operator()(const size_t i0) const {

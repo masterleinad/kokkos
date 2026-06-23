@@ -62,8 +62,9 @@ void run_single_scenario(const InfoType& scenario_info, int apiId) {
   }
 
   // check
-  auto v2_h = create_host_space_copy(v2);
-  for (std::size_t j = 0; j < v2_h.extent(1); ++j) {
+  auto v2_h            = create_host_space_copy(v2);
+  std::size_t extent_1 = v2_h.rank() >= 2 ? v2_h.extent(1) : 1;
+  for (std::size_t j = 0; j < extent_1; ++j) {
     if (j < 5) {
       EXPECT_TRUE(v2_h(j) == static_cast<ValueType>(0));
     } else {
