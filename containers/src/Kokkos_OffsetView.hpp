@@ -1137,14 +1137,14 @@ KOKKOS_INLINE_FUNCTION bool operator==(const OffsetView<LT, LP...>& lhs,
                         typename rhs_traits::memory_space> &&
          unsigned(lhs_traits::rank) == unsigned(rhs_traits::rank) &&
          lhs.data() == rhs.data() && lhs.span() == rhs.span() &&
-         (lhs.rank() < 1 || (lhs.extent(0) == rhs.extent(0))) &&
-         (lhs.rank() < 2 || (lhs.extent(1) == rhs.extent(1))) &&
-         (lhs.rank() < 3 || (lhs.extent(2) == rhs.extent(2))) &&
-         (lhs.rank() < 4 || (lhs.extent(3) == rhs.extent(3))) &&
-         (lhs.rank() < 5 || (lhs.extent(4) == rhs.extent(4))) &&
-         (lhs.rank() < 6 || (lhs.extent(5) == rhs.extent(5))) &&
-         (lhs.rank() < 7 || (lhs.extent(6) == rhs.extent(6))) &&
-         (lhs.rank() < 8 || (lhs.extent(7) == rhs.extent(7))) &&
+         (lhs_traits::rank < 1 || (lhs.extent(0) == rhs.extent(0))) &&
+         (lhs_traits::rank < 2 || (lhs.extent(1) == rhs.extent(1))) &&
+         (lhs_traits::rank < 3 || (lhs.extent(2) == rhs.extent(2))) &&
+         (lhs_traits::rank < 4 || (lhs.extent(3) == rhs.extent(3))) &&
+         (lhs_traits::rank < 5 || (lhs.extent(4) == rhs.extent(4))) &&
+         (lhs_traits::rank < 6 || (lhs.extent(5) == rhs.extent(5))) &&
+         (lhs_traits::rank < 7 || (lhs.extent(6) == rhs.extent(6))) &&
+         (lhs_traits::rank < 8 || (lhs.extent(7) == rhs.extent(7))) &&
          lhs.begin(0) == rhs.begin(0) && lhs.begin(1) == rhs.begin(1) &&
          lhs.begin(2) == rhs.begin(2) && lhs.begin(3) == rhs.begin(3) &&
          lhs.begin(4) == rhs.begin(4) && lhs.begin(5) == rhs.begin(5) &&
@@ -1172,14 +1172,14 @@ KOKKOS_INLINE_FUNCTION bool operator==(const View<LT, LP...>& lhs,
                         typename rhs_traits::memory_space> &&
          unsigned(lhs_traits::rank) == unsigned(rhs_traits::rank) &&
          lhs.data() == rhs.data() && lhs.span() == rhs.span() &&
-         (lhs.rank() < 1 || (lhs.extent(0) == rhs.extent(0))) &&
-         (lhs.rank() < 2 || (lhs.extent(1) == rhs.extent(1))) &&
-         (lhs.rank() < 3 || (lhs.extent(2) == rhs.extent(2))) &&
-         (lhs.rank() < 4 || (lhs.extent(3) == rhs.extent(3))) &&
-         (lhs.rank() < 5 || (lhs.extent(4) == rhs.extent(4))) &&
-         (lhs.rank() < 6 || (lhs.extent(5) == rhs.extent(5))) &&
-         (lhs.rank() < 7 || (lhs.extent(6) == rhs.extent(6))) &&
-         (lhs.rank() < 8 || (lhs.extent(7) == rhs.extent(7)));
+         (lhs_traits::rank < 1 || (lhs.extent(0) == rhs.extent(0))) &&
+         (lhs_traits::rank < 2 || (lhs.extent(1) == rhs.extent(1))) &&
+         (lhs_traits::rank < 3 || (lhs.extent(2) == rhs.extent(2))) &&
+         (lhs_traits::rank < 4 || (lhs.extent(3) == rhs.extent(3))) &&
+         (lhs_traits::rank < 5 || (lhs.extent(4) == rhs.extent(4))) &&
+         (lhs_traits::rank < 6 || (lhs.extent(5) == rhs.extent(5))) &&
+         (lhs_traits::rank < 7 || (lhs.extent(6) == rhs.extent(6))) &&
+         (lhs_traits::rank < 8 || (lhs.extent(7) == rhs.extent(7)));
 }
 
 template <class LT, class... LP, class RT, class... RP>
