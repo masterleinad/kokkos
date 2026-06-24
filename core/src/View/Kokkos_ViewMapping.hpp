@@ -379,7 +379,8 @@ struct SubviewExtents {
   template <size_t... DimArgs, class... Args>
     requires(Impl::ContainsStdPair<Args...>)
   SubviewExtents(const ViewDimension<DimArgs...>& dim, Args... args)
-      : SubviewExtents(dim, Impl::convert_from_std_pair(args)...) {}
+      : SubviewExtents(dim, Impl::convert_to_kokkos_pair_if_std_pair(args)...) {
+  }
 
   template <size_t... DimArgs, class... Args>
   KOKKOS_INLINE_FUNCTION SubviewExtents(const ViewDimension<DimArgs...>& dim,

@@ -900,8 +900,8 @@ class View
     requires(Impl::ContainsStdPair<Arg0, Args...>)
   View(const View<RT, RP...>& src_view, const Arg0 arg0, Args... args)
       : base_t(Impl::subview_ctor_tag, src_view,
-               Impl::convert_from_std_pair(arg0),
-               Impl::convert_from_std_pair(args)...) {}
+               Impl::convert_to_kokkos_pair_if_std_pair(arg0),
+               Impl::convert_to_kokkos_pair_if_std_pair(args)...) {}
 
   template <class RT, class... RP, class Arg0, class... Args>
   KOKKOS_INLINE_FUNCTION View(const View<RT, RP...>& src_view, const Arg0 arg0,
@@ -1563,7 +1563,7 @@ struct ApplyToViewOfStaticRank {
 template <class D, class... P, class... Args>
   requires(Impl::ContainsStdPair<Args...>)
 auto subview(const View<D, P...>& src, Args... args) {
-  return subview(src, Impl::convert_from_std_pair(args)...);
+  return subview(src, Impl::convert_to_kokkos_pair_if_std_pair(args)...);
 }
 
 template <class D, class... P, class... Args>

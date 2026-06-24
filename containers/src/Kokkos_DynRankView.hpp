@@ -1166,11 +1166,13 @@ auto subdynrankview(const DynRankView<DRVArgs...>& drv,
                     SubArg2 arg2 = SubArg2{}, SubArg3 arg3 = SubArg3{},
                     SubArg4 arg4 = SubArg4{}, SubArg5 arg5 = SubArg5{},
                     SubArg6 arg6 = SubArg6{}) {
-  return subdynrankview(
-      drv, Impl::convert_from_std_pair(arg0), Impl::convert_from_std_pair(arg1),
-      Impl::convert_from_std_pair(arg2), Impl::convert_from_std_pair(arg3),
-      Impl::convert_from_std_pair(arg4), Impl::convert_from_std_pair(arg5),
-      Impl::convert_from_std_pair(arg6));
+  return subdynrankview(drv, Impl::convert_to_kokkos_pair_if_std_pair(arg0),
+                        Impl::convert_to_kokkos_pair_if_std_pair(arg1),
+                        Impl::convert_to_kokkos_pair_if_std_pair(arg2),
+                        Impl::convert_to_kokkos_pair_if_std_pair(arg3),
+                        Impl::convert_to_kokkos_pair_if_std_pair(arg4),
+                        Impl::convert_to_kokkos_pair_if_std_pair(arg5),
+                        Impl::convert_to_kokkos_pair_if_std_pair(arg6));
 }
 
 template <class... DRVArgs, class SubArg0 = int, class SubArg1 = int,
