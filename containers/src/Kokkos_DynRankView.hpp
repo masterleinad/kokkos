@@ -596,7 +596,10 @@ class DynRankView : private View<DataType*******, Properties...> {
   using view_type::data;
   using view_type::extent;
   using view_type::extent_int;  // FIXME: not tested
-  using view_type::impl_map;    // FIXME: not tested
+#ifndef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
+  using view_type::extents;
+#endif
+  using view_type::impl_map;  // FIXME: not tested
   using view_type::is_allocated;
   using view_type::label;
   using view_type::size;
@@ -1211,10 +1214,16 @@ KOKKOS_INLINE_FUNCTION bool operator==(const DynRankView<LT, LP...>& lhs,
          std::is_same_v<typename lhs_traits::memory_space,
                         typename rhs_traits::memory_space> &&
          lhs.rank() == rhs.rank() && lhs.data() == rhs.data() &&
+         lhs.span() == rhs.span() &&
+#ifndef KOKKOS_ENABLE_IMPL_VIEW_LEGACY
+         lhs.extents() == rhs.extents()
+#else
          lhs.span() == rhs.span() && lhs.extent(0) == rhs.extent(0) &&
          lhs.extent(1) == rhs.extent(1) && lhs.extent(2) == rhs.extent(2) &&
          lhs.extent(3) == rhs.extent(3) && lhs.extent(4) == rhs.extent(4) &&
-         lhs.extent(5) == rhs.extent(5) && lhs.extent(6) == rhs.extent(6);
+         lhs.extent(5) == rhs.extent(5) && lhs.extent(6) == rhs.extent(6)
+#endif
+      ;
 }
 
 template <class LT, class... LP, class RT, class... RP>
