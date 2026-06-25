@@ -25,7 +25,7 @@ struct CheckResult {
   KOKKOS_FUNCTION
   void operator()(const int i, int& lsum) const {
     if constexpr (ViewType::rank == 2) {
-      for (int j = 0; j < v.extent(1); j++)
+      for (int j = 0; j < v.extent_int(1); j++)
         if (v(i, j) != value) lsum++;
     } else {
       if (v(i) != value) lsum++;
