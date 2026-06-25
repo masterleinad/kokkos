@@ -24,9 +24,11 @@ struct CheckResult {
   CheckResult(ViewType v_, value_type value_) : v(v_), value(value_) {}
   KOKKOS_FUNCTION
   void operator()(const int i, int& lsum) const {
-    const int extent_1 = ViewType::rank() == 2 ? v.extent(1) : 1;
-    for (int j = 0; j < extent_1; j++) {
-      if (v.access(i, j) != value) lsum++;
+    if constexpr (ViewType::rank == 2) {
+      for (int j = 0; j < v.extent(1); j++)
+        if (v(i, j) != value) lsum++;
+    } else {
+      if (v(i) != value) lsum++;
     }
   }
 };
@@ -36,8 +38,7 @@ bool run_check(ViewType v, typename ViewType::value_type value) {
   using exec_space = typename ViewType::memory_space::execution_space;
   int errors       = 0;
   Kokkos::fence();
-  const int extent_0 = ViewType::rank() >= 1 ? v.extent(0) : 1;
-  Kokkos::parallel_reduce(Kokkos::RangePolicy<exec_space>(0, extent_0),
+  Kokkos::parallel_reduce(Kokkos::RangePolicy<exec_space>(0, v.extent(0)),
                           CheckResult<ViewType>(v, value), errors);
   return errors == 0;
 }
