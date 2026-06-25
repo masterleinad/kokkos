@@ -8,21 +8,12 @@ else()
   set(BENCHMARK_ENABLE_INSTALL OFF)
 
   list(APPEND CMAKE_MESSAGE_INDENT "[benchmark] ")
-  if(CMAKE_VERSION VERSION_LESS "3.28")
-    FetchContent_Declare(
-      googlebenchmark
-      DOWNLOAD_EXTRACT_TIMESTAMP FALSE
-      URL https://github.com/google/benchmark/archive/refs/tags/v1.8.3.tar.gz
-      URL_HASH MD5=7b93dd03670665684f1b2e9b70ad17fe
-    )
-  else()
-    FetchContent_Declare(
-      googlebenchmark
-      DOWNLOAD_EXTRACT_TIMESTAMP FALSE EXCLUDE_FROM_ALL TRUE
-      URL https://github.com/google/benchmark/archive/refs/tags/v1.8.3.tar.gz
-      URL_HASH MD5=7b93dd03670665684f1b2e9b70ad17fe
-    )
-  endif()
+  FetchContent_Declare(
+    googlebenchmark
+    DOWNLOAD_EXTRACT_TIMESTAMP FALSE
+    URL https://github.com/google/benchmark/archive/refs/tags/v1.8.3.tar.gz
+    URL_HASH MD5=7b93dd03670665684f1b2e9b70ad17fe
+  )
   FetchContent_MakeAvailable(googlebenchmark)
   list(POP_BACK CMAKE_MESSAGE_INDENT)
 
