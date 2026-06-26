@@ -895,15 +895,15 @@ class View
   // Compatible subview constructor
   // may assign unmanaged from managed.
 
-  // std::pair isn't device-compatible so this overload is host-only
   template <class RT, class... RP, class Arg0, class... Args>
-    requires(Impl::ContainsStdPair<Arg0, Args...>)
   View(const View<RT, RP...>& src_view, const Arg0 arg0, Args... args)
       : base_t(Impl::subview_ctor_tag, src_view,
                Impl::convert_to_kokkos_pair_if_std_pair(arg0),
                Impl::convert_to_kokkos_pair_if_std_pair(args)...) {}
 
+  // std::pair isn't device-compatible
   template <class RT, class... RP, class Arg0, class... Args>
+    requires(!Impl::ContainsStdPair<Arg0, Args...>)
   KOKKOS_INLINE_FUNCTION View(const View<RT, RP...>& src_view, const Arg0 arg0,
                               Args... args)
       : base_t(Impl::subview_ctor_tag, src_view, arg0, args...) {}
@@ -1559,14 +1559,14 @@ struct ApplyToViewOfStaticRank {
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 
-// std::pair isn't device-compatible so this overload is host-only
 template <class D, class... P, class... Args>
-  requires(Impl::ContainsStdPair<Args...>)
 auto subview(const View<D, P...>& src, Args... args) {
   return subview(src, Impl::convert_to_kokkos_pair_if_std_pair(args)...);
 }
 
+// std::pair isn't device-compatible
 template <class D, class... P, class... Args>
+  requires(!Impl::ContainsStdPair<Args...>)
 KOKKOS_INLINE_FUNCTION auto subview(const View<D, P...>& src, Args... args) {
   static_assert(View<D, P...>::rank == sizeof...(Args),
                 "subview requires one argument for each source View rank");
