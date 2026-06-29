@@ -3080,6 +3080,7 @@ struct MirrorViewType {
       std::conditional_t<is_same_memspace, src_view_type, dest_view_type>;
 };
 
+#ifdef KOKKOS_ENABLE_IMPL_MDSPAN
 // Specialization for Views with mdspan style template arguments
 template <class Space, class T, class IndexType, size_t... Extents, class... P>
 struct MirrorViewType<Space, T, Kokkos::extents<IndexType, Extents...>, P...> {
@@ -3107,6 +3108,7 @@ struct MirrorViewType<Space, T, Kokkos::extents<IndexType, Extents...>, P...> {
   using view_type =
       std::conditional_t<is_same_memspace, src_view_type, dest_view_type>;
 };
+#endif
 
 // collection of static asserts for create_mirror and create_mirror_view
 template <class... ViewCtorArgs>
