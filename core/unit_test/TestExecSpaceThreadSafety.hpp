@@ -346,8 +346,8 @@ void run_exec_space_thread_safety_range_scan_different_sizes() {
   bool failed = false;
 #pragma omp parallel for num_threads(n_threads)
   for (int size = 10000; size > 0; size -= 100) {
-    Kokkos::View<int *, Kokkos::CudaSpace> src("src", size);
-    Kokkos::View<int *, Kokkos::CudaSpace> dst("dst", size);
+    Kokkos::View<int *, TEST_EXECSPACE::memory_space> src("src", size);
+    Kokkos::View<int *, TEST_EXECSPACE::memory_space> dst("dst", size);
 
     TEST_EXECSPACE exec;
     Kokkos::deep_copy(exec, src, 1);
