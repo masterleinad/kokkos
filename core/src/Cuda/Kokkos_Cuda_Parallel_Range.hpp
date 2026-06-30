@@ -317,6 +317,11 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
           std::min(index_type(cc), index_type((nwork + block.y - 1) / block.y)),
           1, 1);
 
+      // Only let one instance at a time resize the instance's scratch memory
+      // allocations.
+      std::scoped_lock<std::mutex> scratch_buffers_lock(
+          m_policy.space().impl_internal_space_instance()->m_mutexScratchSpace);
+
       // TODO: down casting these uses more space than required?
       m_scratch_space = (word_size_type*)cuda_internal_scratch_space(
           m_policy.space(),
@@ -654,6 +659,11 @@ class ParallelScan<FunctorType, Kokkos::RangePolicy<Traits...>, Kokkos::Cuda> {
 
       // How many block are really needed for this much work:
       const int grid_x = (nwork + work_per_block - 1) / work_per_block;
+
+      // Only let one instance at a time resize the instance's scratch memory
+      // allocations.
+      std::scoped_lock<std::mutex> scratch_buffers_lock(
+          m_policy.space().impl_internal_space_instance()->m_mutexScratchSpace);
 
       m_scratch_space =
           reinterpret_cast<word_size_type*>(cuda_internal_scratch_space(

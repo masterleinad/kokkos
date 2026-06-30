@@ -249,6 +249,12 @@ class ParallelScanHIPBase {
 
       const typename Analysis::Reducer& final_reducer =
           m_functor_reducer.get_reducer();
+
+      // Only let one instance at a time resize the instance's scratch memory
+      // allocations.
+      std::scoped_lock<std::mutex> scratch_buffers_lock(
+          m_policy.space().impl_internal_space_instance()->m_mutexScratchSpace);
+
       m_scratch_space =
           reinterpret_cast<word_size_type*>(Impl::hip_internal_scratch_space(
               m_policy.space(), final_reducer.value_size() * m_grid_x));
