@@ -53,9 +53,9 @@
 #include <Kokkos_Tuners.hpp>
 #include <Kokkos_Complex.hpp>
 #include <Kokkos_CopyViews.hpp>
+#include <Kokkos_InitializeFinalize.hpp>
+#include <Kokkos_ScopeGuard.hpp>
 #include <impl/Kokkos_TeamMDPolicy.hpp>
-#include <impl/Kokkos_InitializeFinalize.hpp>
-#include <impl/Kokkos_ScopeGuard.hpp>
 #include <impl/Kokkos_PartitionSpace.hpp>
 #include <impl/Kokkos_CStyleMemoryManagement.hpp>
 
