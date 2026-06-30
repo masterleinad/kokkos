@@ -339,6 +339,51 @@ TEST(TEST_CATEGORY, exec_space_thread_safety_range_scan) {
   run_exec_space_thread_safety_range_scan();
 }
 
+void run_exec_space_thread_safety_range_scan_different_sizes() {
+#ifdef KOKKOS_ENABLE_OPENMP
+  const int n_threads = std::min(8, Kokkos::num_threads());
+
+  bool failed = false;
+#pragma omp parallel for num_threads(n_threads)
+  for (int size = 10000; size > 0; size -= 100) {
+    Kokkos::View<int *, Kokkos::CudaSpace> src("src", size);
+    Kokkos::View<int *, Kokkos::CudaSpace> dst("dst", size);
+
+    TEST_EXECSPACE exec;
+    Kokkos::deep_copy(exec, src, 1);
+
+    int result;
+    Kokkos::parallel_scan(
+        Kokkos::RangePolicy(exec, 0, size),
+        KOKKOS_LAMBDA(size_t i, int &update, bool final_pass) {
+          update += src[i];
+          if (final_pass) {
+            dst[i] = update;
+          }
+        },
+        result);
+    exec.fence();
+    if (result != size) {
+      Kokkos::printf("thr %2d size %5d, wrong result %d\n",
+                     omp_get_thread_num(), size, result);
+      Kokkos::atomic_store(&failed, true);
+    }
+  }
+  ASSERT_FALSE(failed);
+#endif
+}
+
+TEST(TEST_CATEGORY, exec_space_thread_safety_range_scan_different_sizes) {
+  KOKKOS_TEST_SKIP_IF_NEEDED();
+#ifndef KOKKOS_ENABLE_OPENMP
+  GTEST_SKIP() << "Test needs OpenMP" << std::endl;
+#else
+  if (std::is_same_v<TEST_EXECSPACE, Kokkos::OpenMP>)
+    GTEST_SKIP() << "Test can't use the OpenMP backend" << std::endl;
+#endif
+  run_exec_space_thread_safety_range_scan_different_sizes();
+}
+
 #undef KOKKOS_TEST_SKIP_IF_NEEDED
 #undef KOKKOS_TEST_SKIP_IF_ATOMICS_BYPASS
 #undef KOKKOS_TEST_SKIP_IF_SYCL_OUT_OF_ORDER_QUEUES
