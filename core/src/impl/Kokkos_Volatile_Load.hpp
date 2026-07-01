@@ -29,7 +29,7 @@ namespace Kokkos {
     KOKKOS_COMPILER_INTEL_LLVM < 20260000
 template <typename T>
 KOKKOS_FORCEINLINE_FUNCTION T volatile_load(T const volatile* const src_ptr) {
-  T old = *src_ptr;
+  T old = const_cast<const T&>(*src_ptr);
   T assumed;
   do {
     assumed = old;
