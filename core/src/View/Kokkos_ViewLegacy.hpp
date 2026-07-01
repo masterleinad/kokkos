@@ -21,7 +21,7 @@ static_assert(false,
 #include <Kokkos_ExecPolicy.hpp>
 #include <View/Hooks/Kokkos_ViewHooks.hpp>
 
-#include <impl/Kokkos_InitializeFinalize.hpp>
+#include <Kokkos_InitializeFinalize.hpp>
 #include <impl/Kokkos_Tools.hpp>
 #include <impl/Kokkos_Utilities.hpp>
 
