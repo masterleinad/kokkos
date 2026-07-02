@@ -8,6 +8,7 @@ import kokkos.core;
 #include <Kokkos_Core.hpp>
 #endif
 #include <thread>
+#include <utility>  // std::min
 
 #ifdef KOKKOS_ENABLE_OPENMP
 #include <omp.h>
