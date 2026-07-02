@@ -54,7 +54,7 @@ class NextSiliconInternal {
 
   uint32_t instance_id() const noexcept;
 
-  [[nodiscard]] std::lock_guard<std::mutex> lock_device();
+  [[nodiscard]] std::lock_guard<std::recursive_mutex> lock_device();
 };
 
 }  // namespace Kokkos::Experimental::Impl
