@@ -302,6 +302,11 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
 
       KOKKOS_ASSERT(block_size > 0);
 
+      // Only let one instance at a time resize the instance's scratch memory
+      // allocations.
+      std::scoped_lock<std::mutex> scratch_buffers_lock(
+          m_policy.space().impl_internal_space_instance()->m_mutexScratchSpace);
+
       // Intentionally do not downcast to word_size_type since we use Cuda
       // atomics in Kokkos_Cuda_ReduceScan.hpp
       m_scratch_flags = cuda_internal_scratch_flags(m_policy.space(),
@@ -316,11 +321,6 @@ class ParallelReduce<CombinedFunctorReducerType, Kokkos::RangePolicy<Traits...>,
       dim3 grid(
           std::min(index_type(cc), index_type((nwork + block.y - 1) / block.y)),
           1, 1);
-
-      // Only let one instance at a time resize the instance's scratch memory
-      // allocations.
-      std::scoped_lock<std::mutex> scratch_buffers_lock(
-          m_policy.space().impl_internal_space_instance()->m_mutexScratchSpace);
 
       // TODO: down casting these uses more space than required?
       m_scratch_space = (word_size_type*)cuda_internal_scratch_space(
