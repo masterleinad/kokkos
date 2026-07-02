@@ -381,6 +381,8 @@ TEST(TEST_CATEGORY, exec_space_thread_safety_range_scan_different_sizes) {
 #else
   if (std::is_same_v<TEST_EXECSPACE, Kokkos::OpenMP>)
     GTEST_SKIP() << "Test can't use the OpenMP backend" << std::endl;
+  if (omp_get_max_threads() < 2)
+    GTEST_SKIP() << "insufficient number of supported concurrent threads";
 #endif
   run_exec_space_thread_safety_range_scan_different_sizes();
 }
