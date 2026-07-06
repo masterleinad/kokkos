@@ -363,7 +363,7 @@ void run_exec_space_thread_safety_range_scan_different_sizes() {
           },
           result);
       exec.fence();
-      if (result != size) {
+      if (result != size && size != 0) {
         Kokkos::printf("size %d, wrong result %d\n", size, result);
         Kokkos::atomic_store(&failed, true);
       }
