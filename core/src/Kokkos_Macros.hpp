@@ -332,7 +332,7 @@
 #endif
 
 // since C++23
-#if !defined(KOKKOS_ENABLE_CXX20) && !defined(KOKKOS_COMPILER_CLANG) && \
+#if !defined(KOKKOS_ENABLE_CXX20) && !defined(__clang__) && \
     !defined(KOKKOS_COMPILER_NVCC)
 
 // FIXME_CLANG FIXME_NVCC Clang and nvcc don't accept GNU __attribute__((...))
