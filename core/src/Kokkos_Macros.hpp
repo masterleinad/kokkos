@@ -331,11 +331,12 @@
 #define KOKKOS_CLASS_LAMBDA [ =, *this ]
 #endif
 
-#if !defined(KOKKOS_ENABLE_CXX20) && \
-    !defined(KOKKOS_COMPILER_CLANG)  // since C++23
+// since C++23
+#if !defined(KOKKOS_ENABLE_CXX20) && !defined(KOKKOS_COMPILER_CLANG) && \
+    !defined(KOKKOS_COMPILER_NVCC)
 
-// FIXME_CLANG Clang does not accept GNU __attribute__((...)) in
-// the lambda front-attr position
+// FIXME_CLANG FIXME_NVCC Clang and nvcc don't accept GNU __attribute__((...))
+// in the lambda front-attr position
 
 #if !defined(KOKKOS_FORCEINLINE_LAMBDA)
 #define KOKKOS_FORCEINLINE_LAMBDA \
