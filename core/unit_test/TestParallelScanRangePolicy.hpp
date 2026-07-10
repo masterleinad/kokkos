@@ -325,6 +325,11 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
+    f.test_scan<Kokkos::LaunchBounds<16>>(work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Static>, Kokkos::LaunchBounds<16>>(
+        work_sizes);
+    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>, Kokkos::LaunchBounds<16>>(
+        work_sizes);
   }
   {
     TestParallelScanRangePolicy<long int> f;
