@@ -6,6 +6,7 @@
 
 #include <SYCL/Kokkos_SYCL_Team.hpp>
 #include <Kokkos_BitManipulation.hpp>
+#include <SYCL/Kokkos_SYCL_Instance.hpp>
 
 #include <vector>
 
@@ -284,7 +285,7 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
 
  protected:
   template <class FunctorType>
-  int internal_team_size_max_for(const FunctorType& /*f*/) const {
+  int internal_team_size_max_for(const FunctorType& f) const {
     // nested_reducer_memsize = (sizeof(double) * (m_team_size + 2)
     // custom: m_team_scratch_size[0] + m_thread_scratch_size[0] * m_team_size
     // total:
@@ -294,14 +295,61 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
         (space().impl_internal_space_instance()->m_maxShmemPerBlock -
          2 * sizeof(double) - m_team_scratch_size[0]) /
         (sizeof(double) + m_thread_scratch_size[0]);
-    return std::min({
-             int(m_space.impl_internal_space_instance()->m_maxWorkgroupSize),
-      // FIXME_SYCL Avoid requesting too many registers on NVIDIA GPUs.
-#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
-                 256,
-#endif
-                 max_threads_for_memory
-           }) /
+
+    auto& instance          = *m_space.impl_internal_space_instance();
+    auto& indirectKernelMem = instance.get_indirect_kernel_mem();
+    auto functor_wrapper =
+        Impl::make_sycl_function_wrapper(f, indirectKernelMem);
+    sycl::queue& q = m_space.sycl_queue();
+
+    // The get_kernel_id machinery relies on having a local_accessor in
+    // scope (constructed with the handler). Perform the inspection inside a
+    // submit handler but use the centralized helper to query the kernel info.
+    int max_threads_kernel = 0;
+    q.submit([&](sycl::handler& cgh) {
+      // minimal local accessor to create the same lambda type used at
+      // launch-time
+      sycl::local_accessor<char, 1> team_scratch_memory_L0(sycl::range<1>(1),
+                                                           cgh);
+
+      const auto shmem_begin       = 0u;
+      const size_t scratch_size[2] = {0, 0};
+
+      // Construct a lambda that mirrors the form used at launch so that
+      // get_kernel_id<decltype(lambda)>() refers to the functor-specific
+      // kernel.
+      auto lambda = [=](sycl::nd_item<2> item) {
+        const member_type team_member(
+            team_scratch_memory_L0
+                .get_multi_ptr<sycl::access::decorated::yes>(),
+            shmem_begin, scratch_size[0],
+            static_cast<sycl::global_ptr<char>>(nullptr), scratch_size[1], item,
+            item.get_group_linear_id(), item.get_group_range(1));
+        // Call the functor to ensure kernel embodies the functor code path.
+        // Use the wrapper which may place the functor in USM if needed.
+        if constexpr (std::is_same_v<typename traits::work_tag, void>)
+          functor_wrapper.get_functor()(team_member);
+        else
+          functor_wrapper.get_functor()(typename traits::work_tag{},
+                                        team_member);
+      };
+
+      sycl::kernel_id functor_kernel_id =
+          sycl::get_kernel_id<decltype(lambda)>();
+      auto kernel_bundle =
+          sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+              q.get_context(), std::vector{functor_kernel_id});
+      auto kernel = kernel_bundle.get_kernel(functor_kernel_id);
+      max_threads_kernel =
+          kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
+              q.get_device());
+
+      cgh.parallel_for(
+          sycl::nd_range<2>(sycl::range<2>(0, 0), sycl::range<2>(1, 1)),
+          lambda);
+    });
+
+    return std::min({max_threads_kernel, max_threads_for_memory}) /
            impl_vector_length();
   }
 
@@ -325,14 +373,57 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
          2 * sizeof(double) - m_team_scratch_size[0]) /
         (sizeof(double) + sizeof(value_type) * value_count +
          m_thread_scratch_size[0]);
-    return std::min<int>({
-             int(m_space.impl_internal_space_instance()->m_maxWorkgroupSize),
-      // FIXME_SYCL Avoid requesting too many registers on NVIDIA GPUs.
-#if defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
-                 256,
-#endif
-                 max_threads_for_memory
-           }) /
+
+    auto& instance          = *m_space.impl_internal_space_instance();
+    auto& indirectKernelMem = instance.get_indirect_kernel_mem();
+    auto functor_wrapper =
+        Impl::make_sycl_function_wrapper(f, indirectKernelMem);
+    sycl::queue& q = m_space.sycl_queue();
+
+    int max_threads_kernel = 0;
+    q.submit([&](sycl::handler& cgh) {
+      // minimal local accessor to form the expected lambda type
+      sycl::local_accessor<char, 1> team_scratch_memory_L0(sycl::range<1>(1),
+                                                           cgh);
+
+      const auto shmem_begin       = 0u;
+      const size_t scratch_size[2] = {0, 0};
+
+      // Construct a lambda resembling the team reduction lambda so its type
+      // reflects the functor+reducer code path used at launch.
+      auto lambda = [=](sycl::nd_item<2> item) {
+        const member_type team_member(
+            team_scratch_memory_L0
+                .get_multi_ptr<sycl::access::decorated::yes>(),
+            shmem_begin, scratch_size[0],
+            static_cast<sycl::global_ptr<char>>(nullptr), scratch_size[1], item,
+            item.get_group_linear_id(), item.get_group_range(1));
+        // Call the functor-reducer functor variant to ensure kernel
+        // contains the functor code path.
+        std::remove_reference_t<typename Analysis::reference_type> tmp{};
+        if constexpr (std::is_same_v<typename traits::work_tag, void>)
+          functor_wrapper.get_functor()(team_member, tmp);
+        else
+          functor_wrapper.get_functor()(typename traits::work_tag{},
+                                        team_member, tmp);
+      };
+
+      sycl::kernel_id functor_kernel_id =
+          sycl::get_kernel_id<decltype(lambda)>();
+      auto kernel_bundle =
+          sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+              q.get_context(), std::vector{functor_kernel_id});
+      auto kernel = kernel_bundle.get_kernel(functor_kernel_id);
+      max_threads_kernel =
+          kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
+              q.get_device());
+
+      cgh.parallel_for(
+          sycl::nd_range<2>(sycl::range<2>(0, 0), sycl::range<2>(1, 1)),
+          lambda);
+    });
+
+    return std::min({max_threads_kernel, max_threads_for_memory}) /
            impl_vector_length();
   }
 
