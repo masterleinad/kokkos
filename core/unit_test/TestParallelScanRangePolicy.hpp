@@ -325,11 +325,6 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
-    f.test_scan<Kokkos::LaunchBounds<16>>(work_sizes);
-    f.test_scan<Kokkos::Schedule<Kokkos::Static>, Kokkos::LaunchBounds<16>>(
-        work_sizes);
-    f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>, Kokkos::LaunchBounds<16>>(
-        work_sizes);
   }
   {
     TestParallelScanRangePolicy<long int> f;
@@ -354,6 +349,17 @@ TEST(TEST_CATEGORY, parallel_scan_range_policy) {
     f.test_scan<>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Static>>(work_sizes);
     f.test_scan<Kokkos::Schedule<Kokkos::Dynamic>>(work_sizes);
+  }
+  {
+    TestParallelScanRangePolicy<int> f;
+
+    std::vector<size_t> work_sizes{0, 1, 2, 1000, 1001};
+    f.test_scan<Kokkos::LaunchBounds<1>>(work_sizes);
+    f.test_scan<Kokkos::LaunchBounds<2>>(work_sizes);
+    f.test_scan<Kokkos::LaunchBounds<4>>(work_sizes);
+    f.test_scan<Kokkos::LaunchBounds<8>>(work_sizes);
+    f.test_scan<Kokkos::LaunchBounds<16>>(work_sizes);
+    f.test_scan<Kokkos::LaunchBounds<32>>(work_sizes);
   }
 }
 }  // namespace
