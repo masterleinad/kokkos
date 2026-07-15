@@ -434,7 +434,6 @@ class Kokkos::Impl::ParallelScanWithTotal<
             ->m_mutexScratchSpace);
 
     Base::impl_execute([&]() {
-      const long long nwork = Base::m_policy.end() - Base::m_policy.begin();
       if (!Base::m_result_ptr_device_accessible) {
         // Using DeepCopy instead of fence+memcpy turned out to be up to 2x
         // slower.
