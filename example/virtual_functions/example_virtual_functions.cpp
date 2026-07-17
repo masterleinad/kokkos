@@ -13,10 +13,7 @@ class Foo {
 
   KOKKOS_FUNCTION KOKKOS_EXPERIMENTAL_VIRTUAL int value() { return 0; };
 
-// FIXME_SYCL Virtual destructors aren't supported yet.
-#ifndef KOKKOS_ENABLE_SYCL
   KOKKOS_FUNCTION KOKKOS_EXPERIMENTAL_VIRTUAL ~Foo() {}
-#endif
 };
 
 class Foo_1 : public Foo {
