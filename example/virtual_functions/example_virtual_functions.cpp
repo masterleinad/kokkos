@@ -13,7 +13,7 @@ class Foo {
 
   KOKKOS_FUNCTION KOKKOS_EXPERIMENTAL_VIRTUAL int value() { return 0; }
 
-  KOKKOS_FUNCTION KOKKOS_EXPERIMENTAL_VIRTUAL ~Foo() {}
+  KOKKOS_FUNCTION KOKKOS_EXPERIMENTAL_VIRTUAL ~Foo() = default;
 };
 
 class Foo_1 : public Foo {
