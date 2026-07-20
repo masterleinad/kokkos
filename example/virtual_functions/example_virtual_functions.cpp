@@ -23,7 +23,7 @@ class Foo_1 : public Foo {
 
   KOKKOS_FUNCTION KOKKOS_EXPERIMENTAL_VIRTUAL int value() override {
     return val + 10;
-  };
+  }
 };
 
 class Foo_2 : public Foo {
@@ -33,7 +33,7 @@ class Foo_2 : public Foo {
 
   KOKKOS_FUNCTION KOKKOS_EXPERIMENTAL_VIRTUAL int value() override {
     return val + 20;
-  };
+  }
 };
 
 int main(int argc, char* argv[]) {
