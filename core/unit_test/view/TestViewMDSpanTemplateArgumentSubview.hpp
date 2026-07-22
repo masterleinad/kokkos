@@ -224,6 +224,9 @@ void test_subview_expand(const E& exts, const A& acc) {
 }
 }  // namespace
 
+// FIXME_NVHPC This particular case causes internal compiler errors with
+// NVHPC 23.7
+#ifndef KOKKOS_COMPILER_NVHPC
 TEST(TEST_CATEGORY, view_mdspan_args_subview) {
   using mem_t = typename TEST_EXECSPACE::memory_space;
   // rank 1
@@ -301,3 +304,4 @@ TEST(TEST_CATEGORY, view_mdspan_args_subview) {
       Kokkos::Experimental::Accessor<float, mem_t,
                                      Kokkos::MemoryTraits<Kokkos::Atomic>>());
 }
+#endif
