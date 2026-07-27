@@ -306,7 +306,7 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
     // scope (constructed with the handler). Perform the inspection inside a
     // submit handler but use the centralized helper to query the kernel info.
     int max_threads_kernel = 0;
-    q.submit([&](sycl::handler& cgh) {
+    auto event = q.submit([&](sycl::handler& cgh) {
       // minimal local accessor to create the same lambda type used at
       // launch-time
       sycl::local_accessor<char, 1> team_scratch_memory_L0(sycl::range<1>(1),
@@ -348,6 +348,7 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
           sycl::nd_range<2>(sycl::range<2>(0, 0), sycl::range<2>(1, 1)),
           lambda);
     });
+    functor_wrapper.register_event(event);
 
     return std::min({max_threads_kernel, max_threads_for_memory}) /
            impl_vector_length();
@@ -381,7 +382,7 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
     sycl::queue& q = m_space.sycl_queue();
 
     int max_threads_kernel = 0;
-    q.submit([&](sycl::handler& cgh) {
+    auto event = q.submit([&](sycl::handler& cgh) {
       // minimal local accessor to form the expected lambda type
       sycl::local_accessor<char, 1> team_scratch_memory_L0(sycl::range<1>(1),
                                                            cgh);
@@ -422,6 +423,7 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
           sycl::nd_range<2>(sycl::range<2>(0, 0), sycl::range<2>(1, 1)),
           lambda);
     });
+    functor_wrapper.register_event(event);
 
     return std::min({max_threads_kernel, max_threads_for_memory}) /
            impl_vector_length();
