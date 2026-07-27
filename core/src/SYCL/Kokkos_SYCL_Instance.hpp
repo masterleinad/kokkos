@@ -215,12 +215,14 @@ class SYCLInternal {
 #endif
 #if defined(SYCL_DEVICE_COPYABLE)
 template <typename Functor, typename Storage,
-          bool ManualCopy = (sizeof(Functor) >= KOKKOS_IMPL_SYCL_KERNEL_SIZE_LIMIT)>
+          bool ManualCopy =
+              (sizeof(Functor) >= KOKKOS_IMPL_SYCL_KERNEL_SIZE_LIMIT)>
 class SYCLFunctionWrapper;
 #else
 template <typename Functor, typename Storage,
-          bool ManualCopy = (sizeof(Functor) >= KOKKOS_IMPL_SYCL_KERNEL_SIZE_LIMIT ||
-                             !std::is_trivially_copyable_v<Functor>)>
+          bool ManualCopy =
+              (sizeof(Functor) >= KOKKOS_IMPL_SYCL_KERNEL_SIZE_LIMIT ||
+               !std::is_trivially_copyable_v<Functor>)>
 class SYCLFunctionWrapper;
 #endif
 #undef KOKKOS_IMPL_SYCL_KERNEL_SIZE_LIMIT
