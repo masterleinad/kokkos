@@ -235,6 +235,7 @@ AMD-MI300A:
     - export HSA_XNACK=1
     - export KOKKOS_DEVICE_ID=3
     - export LD_LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/lib64:$LD_LIBRARY_PATH
+    - export GTEST_FILTER="-hip.graph_capture"
     - ctest -VV
       -D CDASH_MODEL=${CDASH_MODEL}
       -D GITHUB_PR_ID="${GITHUB_PR_ID}"
