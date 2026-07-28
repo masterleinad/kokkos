@@ -206,6 +206,9 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
               ? static_cast<sycl::global_ptr<value_type>>(m_result_ptr)
               : static_cast<sycl::global_ptr<value_type>>(host_result_ptr);
 
+    if (device_accessible_result_ptr == nullptr)
+	    Kokkos::abort("device_accessible_result_ptr must be valid!");
+
     sycl::event last_reduction_event;
 
     desul::ensure_sycl_lock_arrays_on_device(q);
