@@ -49,15 +49,10 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
 
   static auto create_team_reduction_lambda(
             const sycl::local_accessor<value_type, 1> local_mem,
-                const sycl::global_ptr<value_type> results_ptr, const bool result_ptr_device_accessible, const pointer_type result_ptr, const pointer_type host_result_ptr,
+                const sycl::global_ptr<value_type> results_ptr, const sycl::global_ptr<value_type> device_accessible_result_ptr,
 		const auto& functor_reducer_wrapper, const int value_count, const int league_size,  const sycl::local_accessor<char, 1> &team_scratch_memory_L0, const size_t scratch_size[2], const int shmem_begin,
 		const sycl::global_ptr<char> global_scratch_ptr, const sycl::local_accessor<unsigned int> num_teams_done, const sycl::global_ptr<unsigned int> scratch_flags
 		) {
-              auto device_accessible_result_ptr =
-                  result_ptr_device_accessible
-                      ? static_cast<sycl::global_ptr<value_type>>(result_ptr)
-                      : static_cast<sycl::global_ptr<value_type>>(
-                            host_result_ptr);
               auto lambda = [=](sycl::nd_item<2> item) {
                 auto n_wgroups = item.get_group_range()[1];
                 int wgroup_size =
@@ -203,6 +198,10 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
             ? static_cast<sycl::global_ptr<value_type>>(
                   instance.scratch_host(sizeof(value_type) * value_count))
             : nullptr;
+  auto device_accessible_result_ptr =
+          m_result_ptr_device_accessible
+              ? static_cast<sycl::global_ptr<value_type>>(m_result_ptr)
+              : static_cast<sycl::global_ptr<value_type>>(host_result_ptr);
 
     sycl::event last_reduction_event;
 
@@ -215,10 +214,6 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
       results_ptr =
           static_cast<sycl::global_ptr<value_type>>(instance.scratch_space(
               sizeof(value_type) * std::max(value_count, 1u)));
-      auto device_accessible_result_ptr =
-          m_result_ptr_device_accessible
-              ? static_cast<sycl::global_ptr<value_type>>(m_result_ptr)
-              : static_cast<sycl::global_ptr<value_type>>(host_result_ptr);
 
       auto cgh_lambda = [&](sycl::handler& cgh) {
         // FIXME_SYCL accessors seem to need a size greater than zero at least
@@ -299,9 +294,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
         auto dummy_reduction_lambda = create_team_reduction_lambda(
 			/* local_mem */ {1, cgh},
 			/* results_ptr */ nullptr,
-                /* result_ptr_device_accessible */ false,
-		/* result_ptr */ nullptr,
-		/* host_result_ptr */ nullptr,
+                /* device_accessible_result_ptr */ nullptr,
                 functor_reducer_wrapper, 
 		value_count,
 		league_size,
@@ -359,9 +352,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
  create_team_reduction_lambda(
                         local_mem,
                         results_ptr,
-                m_result_ptr_device_accessible,
-                m_result_ptr,
-                host_result_ptr,
+			device_accessible_result_ptr,
                 functor_reducer_wrapper,
                 value_count,
                 league_size,
