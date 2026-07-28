@@ -47,6 +47,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
   int m_team_size;
   const size_type m_vector_size;
 
+ public:
   static auto create_team_reduction_lambda(
             const sycl::local_accessor<value_type, 1> local_mem,
                 const sycl::global_ptr<value_type> results_ptr, const sycl::global_ptr<value_type> device_accessible_result_ptr,
@@ -177,6 +178,8 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
               };
               return lambda;
   }  
+
+ private:
 
   template <typename CombinedFunctorReducerWrapper>
   sycl::event sycl_direct_launch(
@@ -455,7 +458,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
         m_team_size(arg_policy.team_size()),
         m_vector_size(arg_policy.impl_vector_length()) {
     if (m_team_size < 0) {
-      m_team_size = m_policy.team_size_recommended(
+      m_team_size = m_policy.team_size_recommended_internal(
           m_functor_reducer.get_functor(), m_functor_reducer.get_reducer(),
           ParallelReduceTag{});
       if (m_team_size <= 0)
@@ -500,7 +503,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
       Kokkos::Impl::throw_runtime_exception(out.str());
     }
 
-    const auto max_team_size = m_policy.team_size_max(
+    const auto max_team_size = m_policy.team_size_max_internal(
         m_functor_reducer.get_functor(), m_functor_reducer.get_reducer(),
         ParallelReduceTag{});
     if (m_team_size > max_team_size) {

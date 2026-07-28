@@ -58,13 +58,36 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
   template <class FunctorType>
   inline int team_size_max(const FunctorType& f,
                            const ParallelReduceTag&) const {
-    return internal_team_size_max_reduce<void>(f);
+	  using functor_analysis_type =
+        Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
+                              TeamPolicyInternal, FunctorType, void>;
+	  typename functor_analysis_type::Reducer reducer(f);
+ return internal_team_size_max_reduce<
+        typename functor_analysis_type::value_type>(
+        CombinedFunctorReducer<FunctorType,
+                               typename functor_analysis_type::Reducer>(f, reducer));
   }
 
   template <class FunctorType, class ReducerType>
-  inline int team_size_max(const FunctorType& f, const ReducerType& /*r*/,
+  inline int team_size_max(const FunctorType& f, const ReducerType& r,
                            const ParallelReduceTag&) const {
-    return internal_team_size_max_reduce<typename ReducerType::value_type>(f);
+	     using functor_analysis_type =
+        Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
+                              TeamPolicyInternal, ReducerType, void>;
+          typename functor_analysis_type::Reducer reducer(r);
+ return internal_team_size_max_reduce<
+        typename functor_analysis_type::value_type>(
+        CombinedFunctorReducer<FunctorType,
+                               typename functor_analysis_type::Reducer>(f, reducer));
+  }
+
+  template <class FunctorType, class ReducerType>
+  int team_size_max_internal(FunctorType const& f, ReducerType const& r,
+                            ParallelReduceTag const&) const {
+ return internal_team_size_max_reduce<
+        typename ReducerType::value_type>(
+        CombinedFunctorReducer<FunctorType,
+                               ReducerType>(f, r));
   }
 
   template <typename FunctorType>
@@ -75,15 +98,38 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
   template <typename FunctorType>
   inline int team_size_recommended(FunctorType const& f,
                                    ParallelReduceTag const&) const {
-    return internal_team_size_recommended_reduce<void>(f);
+        using functor_analysis_type =
+        Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
+                              TeamPolicyInternal, FunctorType, void>;
+          typename functor_analysis_type::Reducer reducer(f);
+ return internal_team_size_recommended_reduce<
+        typename functor_analysis_type::value_type>(
+        CombinedFunctorReducer<FunctorType,
+                               typename functor_analysis_type::Reducer>(f, reducer));
   }
 
   template <class FunctorType, class ReducerType>
-  int team_size_recommended(FunctorType const& f, ReducerType const&,
+  int team_size_recommended(FunctorType const& f, ReducerType const& r,
                             ParallelReduceTag const&) const {
-    return internal_team_size_recommended_reduce<
-        typename ReducerType::value_type>(f);
+	            using functor_analysis_type =
+        Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
+                              TeamPolicyInternal, ReducerType, void>;
+          typename functor_analysis_type::Reducer reducer(r);
+ return internal_team_size_recommended_reduce<
+        typename functor_analysis_type::value_type>(
+        CombinedFunctorReducer<FunctorType,
+                               typename functor_analysis_type::Reducer>(f, reducer));
   }
+
+   template <class FunctorType, class ReducerType>
+  int team_size_recommended_internal(FunctorType const& f, ReducerType const& r,
+                            ParallelReduceTag const&) const {
+ return internal_team_size_recommended_reduce<
+        typename ReducerType::value_type>(
+        CombinedFunctorReducer<FunctorType,
+                               ReducerType>(f, r));
+  }
+
   inline bool impl_auto_vector_length() const { return m_tune_vector_length; }
   inline bool impl_auto_team_size() const { return m_tune_team_size; }
   // FIXME_SYCL This is correct in most cases, but not necessarily in case a
@@ -354,11 +400,11 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
            impl_vector_length();
   }
 
-  template <class ValueType, class FunctorType>
-  int internal_team_size_max_reduce(const FunctorType& f) const {
+  template <class ValueType, class CombinedFunctorReducerType>
+  int internal_team_size_max_reduce(const CombinedFunctorReducerType& f) const {
     using Analysis =
         FunctorAnalysis<FunctorPatternInterface::REDUCE, TeamPolicyInternal,
-                        FunctorType, ValueType>;
+                        CombinedFunctorReducerType, ValueType>;
     using value_type      = typename Analysis::value_type;
     const int value_count = Analysis::value_count(f);
 
@@ -392,22 +438,21 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
 
       // Construct a lambda resembling the team reduction lambda so its type
       // reflects the functor+reducer code path used at launch.
-      auto lambda = [=](sycl::nd_item<2> item) {
-        const member_type team_member(
-            team_scratch_memory_L0
-                .get_multi_ptr<sycl::access::decorated::yes>(),
-            shmem_begin, scratch_size[0],
-            static_cast<sycl::global_ptr<char>>(nullptr), scratch_size[1], item,
-            item.get_group_linear_id(), item.get_group_range(1));
-        // Call the functor-reducer functor variant to ensure kernel
-        // contains the functor code path.
-        std::remove_reference_t<typename Analysis::reference_type> tmp{};
-        if constexpr (std::is_same_v<typename traits::work_tag, void>)
-          functor_wrapper.get_functor()(team_member, tmp);
-        else
-          functor_wrapper.get_functor()(typename traits::work_tag{},
-                                        team_member, tmp);
-      };
+ auto lambda = Impl::ParallelReduce<CombinedFunctorReducerType,
+                             TeamPolicy<Properties...>, Kokkos::SYCL>::create_team_reduction_lambda(
+                        /* local_mem */ {1, cgh},
+                        /* results_ptr */ nullptr,
+                /* device_accessible_result_ptr */ nullptr,
+                functor_wrapper,
+                value_count,
+                /*league_size*/ 0,
+                team_scratch_memory_L0,
+                scratch_size,
+                shmem_begin,
+                /*global_scratch_ptr*/ nullptr,
+                /*num_teams_done*/ {1, cgh},
+                /*scratch_flags*/ nullptr
+                );
 
       sycl::kernel_id functor_kernel_id =
           sycl::get_kernel_id<decltype(lambda)>();
