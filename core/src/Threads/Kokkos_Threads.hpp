@@ -21,7 +21,7 @@ static_assert(false,
 #include <Kokkos_Layout.hpp>
 #include <Kokkos_MemoryTraits.hpp>
 #include <impl/Kokkos_CheckUsage.hpp>
-#include <impl/Kokkos_InitializationSettings.hpp>
+#include <Kokkos_InitializeFinalize.hpp>
 #include <impl/Kokkos_Profiling_Interface.hpp>
 
 /*--------------------------------------------------------------------------*/

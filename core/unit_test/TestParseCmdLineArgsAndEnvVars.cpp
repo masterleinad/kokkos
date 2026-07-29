@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <impl/Kokkos_ParseCommandLineArgumentsAndEnvironmentVariables.hpp>
-#include <impl/Kokkos_InitializationSettings.hpp>
+#include <Kokkos_InitializeFinalize.hpp>
 #include <impl/Kokkos_DeviceManagement.hpp>
 #include <impl/Kokkos_Command_Line_Parsing.hpp>
 

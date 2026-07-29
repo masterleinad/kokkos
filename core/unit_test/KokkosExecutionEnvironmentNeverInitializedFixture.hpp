@@ -3,12 +3,7 @@
 
 #include <gtest/gtest.h>
 
-#include <Kokkos_Macros.hpp>
-#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
-import kokkos.core;
-#else
-#include <Kokkos_Core.hpp>
-#endif
+#include <Kokkos_InitializeFinalize.hpp>
 
 /**
  * Fixture that checks Kokkos is neither initialized nor finalized before and

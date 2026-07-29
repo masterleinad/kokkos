@@ -7,7 +7,8 @@
 #ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.core;
 #else
-#include <Kokkos_Core.hpp>
+#include <Kokkos_Abort.hpp>
+#include <Kokkos_InitializeFinalize.hpp>
 #endif
 
 #include "KokkosExecutionEnvironmentNeverInitializedFixture.hpp"

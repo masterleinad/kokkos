@@ -20,7 +20,7 @@ static_assert(false,
 #include <Kokkos_Layout.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>
 #include <impl/Kokkos_Profiling_Interface.hpp>
-#include <impl/Kokkos_InitializationSettings.hpp>
+#include <Kokkos_InitializeFinalize.hpp>
 
 #include <omp.h>
 

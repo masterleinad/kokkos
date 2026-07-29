@@ -3,7 +3,7 @@
 
 #include <gtest/gtest.h>
 
-#include <impl/Kokkos_InitializationSettings.hpp>
+#include <Kokkos_InitializeFinalize.hpp>
 
 namespace {
 
