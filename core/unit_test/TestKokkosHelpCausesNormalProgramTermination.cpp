@@ -7,7 +7,6 @@
 #ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.core;
 #else
-#include <Kokkos_Abort.hpp>
 #include <Kokkos_InitializeFinalize.hpp>
 #endif
 
@@ -34,7 +33,7 @@ TEST_F(KokkosHelpCausesNormalProgramTermination_DeathTest,
   EXPECT_EXIT(
       {
         Kokkos::initialize(argc, const_cast<char **>(argv));
-        Kokkos::abort("better exit before getting there");
+        std::abort();
       },
       ::testing::ExitedWithCode(EXIT_SUCCESS), "");
 
