@@ -11,9 +11,6 @@ namespace Kokkos {
 /** \brief Print "Bill of Materials" */
 void print_configuration(std::ostream& os, bool verbose = false);
 
-[[nodiscard]] bool is_initialized() noexcept;
-[[nodiscard]] bool is_finalized() noexcept;
-
 [[nodiscard]] int device_id() noexcept;
 [[nodiscard]] int num_devices() noexcept;
 [[nodiscard]] int num_threads() noexcept;
