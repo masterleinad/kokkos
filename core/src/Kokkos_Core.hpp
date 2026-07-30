@@ -58,7 +58,7 @@
 #include <impl/Kokkos_TeamMDPolicy.hpp>
 #include <impl/Kokkos_PartitionSpace.hpp>
 #include <impl/Kokkos_CStyleMemoryManagement.hpp>
-#include <impl/Kokkos_Info.hpp>
+#include <impl/Kokkos_RuntimeInfo.hpp>
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
