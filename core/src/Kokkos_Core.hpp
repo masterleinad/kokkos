@@ -59,6 +59,7 @@
 #include <impl/Kokkos_PartitionSpace.hpp>
 #include <impl/Kokkos_CStyleMemoryManagement.hpp>
 #include <impl/Kokkos_RuntimeInfo.hpp>
+#include <impl/Kokkos_Fence.hpp>
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------

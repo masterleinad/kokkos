@@ -147,8 +147,4 @@ int initialize_space_factory(std::string name) {
 
 }  // namespace Kokkos::Impl
 
-namespace Kokkos {
-void fence(const std::string& name /*= "Kokkos::fence: Unnamed Global Fence"*/);
-}
-
 #endif
