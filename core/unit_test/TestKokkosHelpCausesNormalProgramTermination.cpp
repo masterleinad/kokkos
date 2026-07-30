@@ -12,6 +12,8 @@ import kokkos.core;
 
 #include "KokkosExecutionEnvironmentNeverInitializedFixture.hpp"
 
+#include <cstdlib>
+
 namespace {
 
 using KokkosHelpCausesNormalProgramTermination_DeathTest =
