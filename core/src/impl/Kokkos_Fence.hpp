@@ -4,6 +4,8 @@
 #ifndef KOKKOS_FENCE_HPP
 #define KOKKOS_FENCE_HPP
 
+#include <string>
+
 namespace Kokkos {
 void fence(const std::string& name /*= "Kokkos::fence: Unnamed Global Fence"*/);
 }

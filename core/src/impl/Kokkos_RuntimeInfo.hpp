@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 // SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
-#ifndef KOKKOS_INFO_HPP
-#define KOKKOS_INFO_HPP
+#ifndef KOKKOS_RUNTIME_INFO_HPP
+#define KOKKOS_RUNTIME_INFO_HPP
 
 #include <iostream>
 #include <string>

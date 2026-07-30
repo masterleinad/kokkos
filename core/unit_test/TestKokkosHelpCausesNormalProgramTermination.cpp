@@ -35,7 +35,7 @@ TEST_F(KokkosHelpCausesNormalProgramTermination_DeathTest,
   EXPECT_EXIT(
       {
         Kokkos::initialize(argc, const_cast<char **>(argv));
-        std::abort();
+        std::abort();  // should have exited and not reach that line
       },
       ::testing::ExitedWithCode(EXIT_SUCCESS), "");
 
