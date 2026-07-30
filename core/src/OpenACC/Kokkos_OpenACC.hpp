@@ -14,7 +14,7 @@ static_assert(false,
 #include <Kokkos_Concepts.hpp>
 #include <Kokkos_Layout.hpp>
 #include <Kokkos_ScratchSpace.hpp>
-#include <Kokkos_InitializeFinalize.hpp>
+#include <impl/Kokkos_InitializationSettings.hpp>
 #include <impl/Kokkos_Profiling_Interface.hpp>
 #include <OpenACC/Kokkos_OpenACC_Traits.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>

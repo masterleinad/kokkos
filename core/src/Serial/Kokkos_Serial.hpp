@@ -29,7 +29,7 @@ static_assert(false,
 #include <impl/Kokkos_FunctorAnalysis.hpp>
 #include <impl/Kokkos_Tools.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>
-#include <Kokkos_InitializeFinalize.hpp>
+#include <impl/Kokkos_InitializationSettings.hpp>
 
 namespace Kokkos {
 

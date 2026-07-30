@@ -4,7 +4,7 @@
 #ifndef KOKKOS_OPENACC_INSTANCE_HPP
 #define KOKKOS_OPENACC_INSTANCE_HPP
 
-#include <Kokkos_InitializeFinalize.hpp>
+#include <impl/Kokkos_InitializationSettings.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>
 
 #include <openacc.h>

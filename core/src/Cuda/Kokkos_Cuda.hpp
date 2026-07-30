@@ -26,7 +26,7 @@ static_assert(false,
 #include <Kokkos_ScratchSpace.hpp>
 #include <Kokkos_MemoryTraits.hpp>
 #include <impl/Kokkos_HostSharedPtr.hpp>
-#include <Kokkos_InitializeFinalize.hpp>
+#include <impl/Kokkos_InitializationSettings.hpp>
 
 /*--------------------------------------------------------------------------*/
 

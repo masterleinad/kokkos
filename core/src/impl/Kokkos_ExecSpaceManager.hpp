@@ -4,7 +4,7 @@
 #ifndef KOKKOS_EXEC_SPACE_MANAGER_HPP
 #define KOKKOS_EXEC_SPACE_MANAGER_HPP
 
-#include <Kokkos_InitializeFinalize.hpp>
+#include <impl/Kokkos_InitializationSettings.hpp>
 #include <Kokkos_DetectionIdiom.hpp>
 #include <Kokkos_Concepts.hpp>
 
