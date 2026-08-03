@@ -665,7 +665,9 @@
 #if __has_include(<execinfo.h>)
 #define KOKKOS_IMPL_ENABLE_STACKTRACE
 #endif
+#if __has_include(<cxxabi.h>)
 #define KOKKOS_IMPL_ENABLE_CXXABI
+#endif
 #endif
 
 #if (defined(KOKKOS_IMPL_WINDOWS_CUDA) || defined(KOKKOS_COMPILER_MSVC)) && \
