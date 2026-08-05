@@ -57,30 +57,22 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
 
   template <class FunctorType>
   inline int team_size_max(const FunctorType& f,
-                           const ParallelReduceTag&) const {
+                           const ParallelReduceTag& tag) const {
     using functor_analysis_type =
         Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
                               TeamPolicyInternal, FunctorType, void>;
     typename functor_analysis_type::Reducer reducer(f);
-    return internal_team_size_max_reduce<
-        typename functor_analysis_type::value_type>(
-        CombinedFunctorReducer<FunctorType,
-                               typename functor_analysis_type::Reducer>(
-            f, reducer));
+    return team_size_max_internal(f, reducer, tag);
   }
 
   template <class FunctorType, class ReducerType>
   inline int team_size_max(const FunctorType& f, const ReducerType& r,
-                           const ParallelReduceTag&) const {
+                           const ParallelReduceTag& tag) const {
     using functor_analysis_type =
         Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
                               TeamPolicyInternal, ReducerType, void>;
     typename functor_analysis_type::Reducer reducer(r);
-    return internal_team_size_max_reduce<
-        typename functor_analysis_type::value_type>(
-        CombinedFunctorReducer<FunctorType,
-                               typename functor_analysis_type::Reducer>(
-            f, reducer));
+    return team_size_max_internal(f, reducer, tag);
   }
 
   template <class FunctorType, class ReducerType>
@@ -97,30 +89,22 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
 
   template <typename FunctorType>
   inline int team_size_recommended(FunctorType const& f,
-                                   ParallelReduceTag const&) const {
+                                   ParallelReduceTag const& tag) const {
     using functor_analysis_type =
         Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
                               TeamPolicyInternal, FunctorType, void>;
     typename functor_analysis_type::Reducer reducer(f);
-    return internal_team_size_recommended_reduce<
-        typename functor_analysis_type::value_type>(
-        CombinedFunctorReducer<FunctorType,
-                               typename functor_analysis_type::Reducer>(
-            f, reducer));
+    return team_size_recommended_internal(f, reducer, tag);
   }
 
   template <class FunctorType, class ReducerType>
   int team_size_recommended(FunctorType const& f, ReducerType const& r,
-                            ParallelReduceTag const&) const {
+                            ParallelReduceTag const& tag) const {
     using functor_analysis_type =
         Impl::FunctorAnalysis<Impl::FunctorPatternInterface::REDUCE,
                               TeamPolicyInternal, ReducerType, void>;
     typename functor_analysis_type::Reducer reducer(r);
-    return internal_team_size_recommended_reduce<
-        typename functor_analysis_type::value_type>(
-        CombinedFunctorReducer<FunctorType,
-                               typename functor_analysis_type::Reducer>(
-            f, reducer));
+    return team_size_recommended_internal(f, reducer, tag);
   }
 
   template <class FunctorType, class ReducerType>
