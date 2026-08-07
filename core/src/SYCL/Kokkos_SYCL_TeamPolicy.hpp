@@ -347,19 +347,12 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
       // implementation for introspection. The kernel call has an empty range
       // and hence the kernel isn't actually executed but the kernel still needs
       // to be submitted for it to be introspected.
-      auto lambda = [=](sycl::nd_item<2> item) {
-        const member_type team_member(
-            team_scratch_memory_L0
-                .get_multi_ptr<sycl::access::decorated::yes>(),
-            shmem_begin, scratch_size[0],
-            static_cast<sycl::global_ptr<char>>(nullptr), scratch_size[1], item,
-            item.get_group_linear_id(), item.get_group_range(1));
-        if constexpr (std::is_same_v<typename traits::work_tag, void>)
-          functor_wrapper.get_functor()(team_member);
-        else
-          functor_wrapper.get_functor()(typename traits::work_tag{},
-                                        team_member);
-      };
+      auto lambda = Impl::ParallelFor<
+          FunctorType, TeamPolicy<Properties...>,
+          Kokkos::SYCL>::create_team_for_lambda(functor_wrapper,
+                                                            team_scratch_memory_L0,
+                                                            scratch_size, shmem_begin,
+                                                            /*global_scratch_ptr*/ nullptr);
 
       sycl::kernel_id functor_kernel_id =
           sycl::get_kernel_id<decltype(lambda)>();
