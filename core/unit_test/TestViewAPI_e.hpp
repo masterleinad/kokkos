@@ -184,7 +184,6 @@ void test_view_stride_precondition_violation(V v) {
 }
 
 TEST(TEST_CATEGORY_DEATH, view_stride_precondition_violation) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   {
     bool checked_assertions = false;
     // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
@@ -230,7 +229,6 @@ void test_view_extent_precondition_violation(V v) {
 }
 
 TEST(TEST_CATEGORY_DEATH, view_extent_precondition_violation) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   {
     bool checked_assertions = false;
     // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)

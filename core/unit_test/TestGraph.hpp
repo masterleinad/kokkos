@@ -168,7 +168,6 @@ struct TEST_CATEGORY_FIXTURE_DEATH(graph)
 //      checks that submission instantiates if need be).
 //   2. Instantiating twice in a row is invalid.
 TEST_F(TEST_CATEGORY_FIXTURE_DEATH(graph), can_instantiate_only_once) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   {
     bool checked_assertions = false;
     // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
@@ -1351,7 +1350,6 @@ TEST(TEST_CATEGORY, execution_policy_with_default_execution_space_instance) {
   if (exec == TEST_EXECSPACE{}) {
     GTEST_SKIP();
   } else {
-    ::testing::FLAGS_gtest_death_test_style = "threadsafe";
     ASSERT_DEATH(graph.root_node().then_parallel_for(
                      Kokkos::RangePolicy(exec, 0, 1), NoOp{}),
                  "The execution space instance of the execution policy of a "
