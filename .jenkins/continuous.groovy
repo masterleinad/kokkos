@@ -29,7 +29,7 @@ pipeline {
             }
             steps {
                 sh '''#!/bin/bash
-                      exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                      exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                       echo "Hostname: ${NODE_NAME}" && \
                       pre-commit run --all-files'''
             }
@@ -54,7 +54,7 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
                               set -x && \
@@ -103,7 +103,7 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -143,7 +143,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -208,7 +208,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf install && mkdir -p install && \
                               rm -rf build && mkdir -p build && cd build && \
@@ -294,7 +294,7 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && \
                               set -x && \
@@ -346,7 +346,7 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -390,7 +390,7 @@ pipeline {
                     }
                     steps {
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -428,7 +428,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -480,7 +480,7 @@ pipeline {
                         sh 'ccache --zero-stats'
                         sh 'echo "/opt/rocm/llvm/lib" > /etc/ld.so.conf.d/llvm.conf && ldconfig'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -525,7 +525,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -566,7 +566,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -608,7 +608,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
@@ -654,7 +654,7 @@ pipeline {
                     steps {
                         sh 'ccache --zero-stats'
                         sh '''#!/bin/bash
-                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0 }') 2>&1 && \
+                              exec > >(awk '{ print "[" ENVIRON["STAGE_NAME"] "]", $0; fflush() }') 2>&1 && \
                               echo "Hostname: ${NODE_NAME}" && \
                               rm -rf build && mkdir -p build && cd build && \
                               set -x && \
