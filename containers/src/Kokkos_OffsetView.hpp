@@ -999,7 +999,7 @@ inline auto create_mirror_view(
           typename Kokkos::Experimental::OffsetView<T, P...>::host_mirror_type(
               src);
     } else {
-      return Kokkos::Impl::choose_create_mirror(src, arg_prop);
+      return Kokkos::Impl::create_mirror(src, arg_prop);
     }
   } else {
     if constexpr (Impl::MirrorOffsetViewType<typename Impl::ViewCtorProp<
@@ -1009,7 +1009,7 @@ inline auto create_mirror_view(
           typename Impl::ViewCtorProp<ViewCtorArgs...>::memory_space, T,
           P...>::view_type(src);
     } else {
-      return Kokkos::Impl::choose_create_mirror(src, arg_prop);
+      return Kokkos::Impl::create_mirror(src, arg_prop);
     }
   }
 }

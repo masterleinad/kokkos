@@ -39,57 +39,36 @@ template <class... Views>
 struct DeduceCommonViewAllocProp;
 
 // Base case must provide types for:
-// 1. specialize  2. value_type  3. is_view  4. prop_type
+// 1. value_type  2. is_view  3. prop_type
 template <class FirstView>
 struct DeduceCommonViewAllocProp<FirstView> {
-  using specialize = typename FirstView::traits::specialize;
-
   using value_type = typename FirstView::traits::value_type;
 
   enum : bool { is_view = is_view<FirstView>::value };
 
-  using prop_type = CommonViewAllocProp<specialize, value_type>;
+  using prop_type = CommonViewAllocProp<void, value_type>;
 };
 
 template <class FirstView, class... NextViews>
 struct DeduceCommonViewAllocProp<FirstView, NextViews...> {
   using NextTraits = DeduceCommonViewAllocProp<NextViews...>;
 
-  using first_specialize = typename FirstView::traits::specialize;
   using first_value_type = typename FirstView::traits::value_type;
 
   enum : bool { first_is_view = is_view<FirstView>::value };
 
-  using next_specialize = typename NextTraits::specialize;
   using next_value_type = typename NextTraits::value_type;
 
   enum : bool { next_is_view = NextTraits::is_view };
 
   // common types
 
-  // determine specialize type
-  // if first and next specialize differ, but are not the same specialize, error
-  // out
-  static_assert(!(!std::is_same_v<first_specialize, next_specialize> &&
-                  !std::is_void_v<first_specialize> &&
-                  !std::is_void_v<next_specialize>),
-                "Kokkos DeduceCommonViewAllocProp ERROR: Only one non-void "
-                "specialize trait allowed");
-
-  // otherwise choose non-void specialize if either/both are non-void
-  using specialize =
-      std::conditional_t<std::is_same_v<first_specialize, next_specialize>,
-                         first_specialize,
-                         std::conditional_t<(std::is_void_v<first_specialize> &&
-                                             !std::is_void_v<next_specialize>),
-                                            next_specialize, first_specialize>>;
-
-  using value_type = typename CommonViewValueType<specialize, first_value_type,
+  using value_type = typename CommonViewValueType<void, first_value_type,
                                                   next_value_type>::value_type;
 
   enum : bool { is_view = (first_is_view && next_is_view) };
 
-  using prop_type = CommonViewAllocProp<specialize, value_type>;
+  using prop_type = CommonViewAllocProp<void, value_type>;
 };
 
 }  // end namespace Impl
