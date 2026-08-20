@@ -5,19 +5,7 @@
 
 #include <impl/Kokkos_DeviceManagement.hpp>  // get_ctest_gpu
 
-#ifdef _WIN32
-int setenv(const char *name, const char *value, int overwrite) {
-  int errcode = 0;
-  if (!overwrite) {
-    size_t envsize = 0;
-    errcode        = getenv_s(&envsize, NULL, 0, name);
-    if (errcode || envsize) return errcode;
-  }
-  return _putenv_s(name, value);
-}
-
-int unsetenv(const char *name) { return _putenv_s(name, ""); }
-#endif
+#include <impl/Kokkos_SetEnv.hpp>
 
 class ctest_environment : public ::testing::Test {
  protected:
@@ -25,43 +13,43 @@ class ctest_environment : public ::testing::Test {
 };
 
 void ctest_environment::SetUp() {
-  setenv("CTEST_KOKKOS_DEVICE_TYPE", "gpus", 1);
-  setenv("CTEST_RESOURCE_GROUP_COUNT", "10", 1);
-  unsetenv("CTEST_RESOURCE_GROUP_0");
-  setenv("CTEST_RESOURCE_GROUP_1", "threads", 1);
-  setenv("CTEST_RESOURCE_GROUP_2", "threads,cores", 1);
+  Kokkos::Impl::setenv("CTEST_KOKKOS_DEVICE_TYPE", "gpus", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_COUNT", "10", 1);
+  Kokkos::Impl::unsetenv("CTEST_RESOURCE_GROUP_0");
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_1", "threads", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_2", "threads,cores", 1);
 
-  setenv("CTEST_RESOURCE_GROUP_3", "gpus", 1);
-  unsetenv("CTEST_RESOURCE_GROUP_3_GPUS");
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_3", "gpus", 1);
+  Kokkos::Impl::unsetenv("CTEST_RESOURCE_GROUP_3_GPUS");
 
-  setenv("CTEST_RESOURCE_GROUP_4", "gpus", 1);
-  setenv("CTEST_RESOURCE_GROUP_4_GPUS", "id:2", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_4", "gpus", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_4_GPUS", "id:2", 1);
 
-  setenv("CTEST_RESOURCE_GROUP_5", "gpus", 1);
-  setenv("CTEST_RESOURCE_GROUP_5_GPUS", "slots:1,id:2", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_5", "gpus", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_5_GPUS", "slots:1,id:2", 1);
 
-  setenv("CTEST_RESOURCE_GROUP_6", "gpus", 1);
-  setenv("CTEST_RESOURCE_GROUP_6_GPUS", "id:2,slots:1", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_6", "gpus", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_6_GPUS", "id:2,slots:1", 1);
 
-  setenv("CTEST_RESOURCE_GROUP_7", "threads,gpus", 1);
-  setenv("CTEST_RESOURCE_GROUP_7_GPUS", "id:3,slots:1", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_7", "threads,gpus", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_7_GPUS", "id:3,slots:1", 1);
 
-  setenv("CTEST_RESOURCE_GROUP_8", "gpus,threads", 1);
-  setenv("CTEST_RESOURCE_GROUP_8_GPUS", "id:1,slots:1", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_8", "gpus,threads", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_8_GPUS", "id:1,slots:1", 1);
 
-  setenv("CTEST_RESOURCE_GROUP_9", "cores,gpus,threads", 1);
-  setenv("CTEST_RESOURCE_GROUP_9_GPUS", "id:4,slots:1", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_9", "cores,gpus,threads", 1);
+  Kokkos::Impl::setenv("CTEST_RESOURCE_GROUP_9_GPUS", "id:4,slots:1", 1);
 }
 
 struct ctest_environment_DeathTest : public ctest_environment {};
 
 TEST_F(ctest_environment, no_device_type) {
-  unsetenv("CTEST_KOKKOS_DEVICE_TYPE");
+  Kokkos::Impl::unsetenv("CTEST_KOKKOS_DEVICE_TYPE");
   EXPECT_EQ(Kokkos::Impl::get_ctest_gpu(0), 0);
 }
 
 TEST_F(ctest_environment, no_process_count) {
-  unsetenv("CTEST_RESOURCE_GROUP_COUNT");
+  Kokkos::Impl::unsetenv("CTEST_RESOURCE_GROUP_COUNT");
   EXPECT_EQ(Kokkos::Impl::get_ctest_gpu(0), 0);
 }
 

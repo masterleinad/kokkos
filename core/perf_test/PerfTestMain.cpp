@@ -15,7 +15,8 @@ import kokkos.core;
 int main(int argc, char* argv[]) {
   // We want to use "threadsafe" by default while the default in GTest on Linux
   // is "fast"
-  setenv("GTEST_DEATH_TEST_STYLE", "threadsafe", /*overwrite=*/0);
+  Kokkos::Impl::setenv("GTEST_DEATH_TEST_STYLE", "threadsafe",
+                       /*overwrite=*/0);
   ::testing::InitGoogleTest(&argc, argv);
   Kokkos::initialize(argc, argv);
 
