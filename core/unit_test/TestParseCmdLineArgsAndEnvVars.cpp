@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <gtest/gtest.h>
 
@@ -20,10 +7,11 @@
 #include <impl/Kokkos_InitializationSettings.hpp>
 #include <impl/Kokkos_DeviceManagement.hpp>
 #include <impl/Kokkos_Command_Line_Parsing.hpp>
+#include <impl/Kokkos_SetEnv.hpp>
 
 #include <cstdlib>
-#include <memory>
 #include <mutex>
+#include <optional>
 #include <regex>
 #include <string>
 #include <unordered_map>
@@ -34,10 +22,9 @@ class EnvVarsHelper {
   // do not let GTest run unit tests that set the environment concurrently
   static std::mutex mutex_;
   std::vector<std::string> vars_;
-  // FIXME_CXX17 prefer optional
   // store name of env var that was already set (if any)
   // in which case unit test is skipped
-  std::unique_ptr<std::string> skip_;
+  std::optional<std::string> skip_;
 
   void setup(std::unordered_map<std::string, std::string> const& vars) {
     for (auto const& x : vars) {
@@ -45,15 +32,11 @@ class EnvVarsHelper {
       auto const& value = x.second;
       // skip unit test if env var is already set
       if (getenv(name.c_str())) {
-        skip_ = std::make_unique<std::string>(name);
+        skip_ = std::make_optional<std::string>(name);
         break;
       }
-#ifdef _WIN32
-      int const error_code = _putenv((name + "=" + value).c_str());
-#else
       int const error_code =
-          setenv(name.c_str(), value.c_str(), /*overwrite=*/0);
-#endif
+          Kokkos::Impl::setenv(name.c_str(), value.c_str(), /*overwrite=*/0);
       if (error_code != 0) {
         std::cerr << "failed to set environment variable '" << name << "="
                   << value << "'\n";
@@ -64,11 +47,7 @@ class EnvVarsHelper {
   }
   void teardown() {
     for (auto const& name : vars_) {
-#ifdef _WIN32
-      int const error_code = _putenv((name + "=").c_str());
-#else
-      int const error_code = unsetenv(name.c_str());
-#endif
+      int const error_code = Kokkos::Impl::unsetenv(name.c_str());
       if (error_code != 0) {
         std::cerr << "failed to unset environment variable '" << name << "'\n";
         std::abort();
@@ -77,7 +56,7 @@ class EnvVarsHelper {
   }
 
  public:
-  auto& skip() { return skip_; }
+  auto const& skip() const { return skip_; }
   EnvVarsHelper(std::unordered_map<std::string, std::string> const& vars) {
     mutex_.lock();
     setup(vars);
@@ -102,11 +81,12 @@ class EnvVarsHelper {
   }
 };
 std::mutex EnvVarsHelper::mutex_;
-#define SKIP_IF_ENVIRONMENT_VARIABLE_ALREADY_SET(ev)       \
-  if (ev.skip()) {                                         \
-    GTEST_SKIP() << "environment variable '" << *ev.skip() \
-                 << "' is already set";                    \
-  }                                                        \
+#define SKIP_IF_ENVIRONMENT_VARIABLE_ALREADY_SET(ev)         \
+  if (ev.skip()) {                                           \
+    /* NOLINTNEXTLINE(bugprone-unchecked-optional-access) */ \
+    GTEST_SKIP() << "environment variable '" << *ev.skip()   \
+                 << "' is already set";                      \
+  }                                                          \
   static_assert(true, "no-op to require trailing semicolon")
 
 class CmdLineArgsHelper {

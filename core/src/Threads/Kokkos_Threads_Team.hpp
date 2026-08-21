@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_THREADSTEAM_HPP
 #define KOKKOS_THREADSTEAM_HPP
@@ -20,6 +7,7 @@
 #include <Kokkos_Macros.hpp>
 
 #include <cstdio>
+#include <new>
 
 #include <utility>
 #include <impl/Kokkos_HostThreadTeam.hpp>
@@ -78,36 +66,43 @@ class ThreadsExecTeamMember {
   }
 
  public:
+  // clang-format off
+
   // Fan-in and wait until the matching fan-out is called.
   // The root thread which does not wait will return true.
   // All other threads will return false during the fan-out.
   KOKKOS_INLINE_FUNCTION bool team_fan_in() const {
-    int n, j;
+    KOKKOS_IF_ON_HOST((
+      int n, j;
 
-    // Wait for fan-in threads
-    for (n = 1;
-         (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
-         n <<= 1) {
-      spinwait_while_equal(m_team_base[j]->state(), ThreadState::Active);
-    }
+      // Wait for fan-in threads
+      for (n = 1;
+           (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
+           n <<= 1) {
+        spinwait_while_equal(m_team_base[j]->state(), ThreadState::Active);
+      }
 
-    // If not root then wait for release
-    if (m_team_rank_rev) {
-      m_instance->state() = ThreadState::Rendezvous;
-      spinwait_while_equal(m_instance->state(), ThreadState::Rendezvous);
-    }
+      // If not root then wait for release
+      if (m_team_rank_rev) {
+        m_instance->state() = ThreadState::Rendezvous;
+        spinwait_while_equal(m_instance->state(), ThreadState::Rendezvous);
+      }
+    ))
 
     return !m_team_rank_rev;
   }
 
   KOKKOS_INLINE_FUNCTION void team_fan_out() const {
-    int n, j;
-    for (n = 1;
-         (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
-         n <<= 1) {
-      m_team_base[j]->state() = ThreadState::Active;
-    }
+    KOKKOS_IF_ON_HOST((
+      int n, j;
+      for (n = 1;
+           (!(m_team_rank_rev & n)) && ((j = m_team_rank_rev + n) < m_team_size);
+           n <<= 1) {
+        m_team_base[j]->state() = ThreadState::Active;
+      }
+    ))
   }
+  // clang-format on
 
  public:
   KOKKOS_INLINE_FUNCTION static int team_reduce_size() {
@@ -221,6 +216,8 @@ class ThreadsExecTeamMember {
         team_fan_out();
 
         return accum;))
+
+    KOKKOS_IMPL_UNREACHABLE();
   }
 
   template <typename ReducerType>
@@ -347,6 +344,7 @@ class ThreadsExecTeamMember {
         team_fan_out();
 
         return *work_value;))
+    KOKKOS_IMPL_UNREACHABLE();
   }
 
   /** \brief  Intra-team exclusive prefix sum with team_rank() ordering.
@@ -554,6 +552,8 @@ class TeamPolicyInternal<Kokkos::Threads, Properties...>
   bool m_tune_team_size;
   bool m_tune_vector_length;
 
+  Threads m_space;
+
   inline void init(const int league_size_request, const int team_size_request) {
     const int pool_size = traits::execution_space::impl_thread_pool_size(0);
     const int max_host_team_size = Impl::HostThreadTeamData::max_team_members;
@@ -563,8 +563,13 @@ class TeamPolicyInternal<Kokkos::Threads, Properties...>
 
     m_league_size = league_size_request;
 
-    if (team_size_request > team_max)
-      Kokkos::abort("Kokkos::abort: Requested Team Size is too large!");
+    if (team_size_request > team_max) {
+      std::stringstream error;
+      error << "Kokkos::TeamPolicy<Threads>: Requested too large team size. "
+               "Requested: "
+            << team_size_request << ", Maximum: " << team_max;
+      Kokkos::Impl::throw_runtime_exception(error.str().c_str());
+    }
 
     m_team_size = team_size_request < team_max ? team_size_request : team_max;
 
@@ -586,15 +591,11 @@ class TeamPolicyInternal<Kokkos::Threads, Properties...>
 
  public:
   //! Tag this class as a kokkos execution policy
-  //! Tag this class as a kokkos execution policy
   using execution_policy = TeamPolicyInternal;
 
   using traits = PolicyTraits<Properties...>;
 
-  const typename traits::execution_space& space() const {
-    static typename traits::execution_space m_space;
-    return m_space;
-  }
+  const typename traits::execution_space& space() const { return m_space; }
 
   template <class ExecSpace, class... OtherProperties>
   friend class TeamPolicyInternal;
@@ -613,6 +614,7 @@ class TeamPolicyInternal<Kokkos::Threads, Properties...>
     m_chunk_size             = p.m_chunk_size;
     m_tune_team_size         = p.m_tune_team_size;
     m_tune_vector_length     = p.m_tune_vector_length;
+    m_space                  = p.m_space;
   }
 
   //----------------------------------------
@@ -655,7 +657,7 @@ class TeamPolicyInternal<Kokkos::Threads, Properties...>
 
   inline static int scratch_size_max(int level) {
     return (level == 0 ? 1024 * 32 :  // Roughly L1 size
-                20 * 1024 * 1024);    // Limit to keep compatibility with CUDA
+                80 * 1024 * 1024);    // Limit to keep compatibility with CUDA
   }
 
   //----------------------------------------
@@ -673,6 +675,12 @@ class TeamPolicyInternal<Kokkos::Threads, Properties...>
     if (team_size_ < 0) team_size_ = m_team_size;
     return m_team_scratch_size[level] +
            team_size_ * m_thread_scratch_size[level];
+  }
+  inline size_t team_scratch_size(int level) const {
+    return m_team_scratch_size[level];
+  }
+  inline size_t thread_scratch_size(int level) const {
+    return m_thread_scratch_size[level];
   }
 
   inline int team_iter() const { return m_team_iter; }
@@ -742,6 +750,11 @@ class TeamPolicyInternal<Kokkos::Threads, Properties...>
                      const Kokkos::AUTO_t& /* vector_length_request */)
       : TeamPolicyInternal(typename traits::execution_space(),
                            league_size_request, team_size_request, -1) {}
+
+  // FIXME_THREADS https://github.com/kokkos/kokkos/issues/8510
+  TeamPolicyInternal(const PolicyUpdate, const TeamPolicyInternal& other,
+                     const typename traits::execution_space&)
+      : TeamPolicyInternal(other) {}
 
   inline int chunk_size() const { return m_chunk_size; }
 
@@ -932,7 +945,7 @@ parallel_reduce(const Impl::TeamThreadRangeBoundariesStruct<
     lambda(i, value);
   }
 
-  loop_boundaries.thread.impl_team_reduce(wrapped_reducer, value);
+  loop_boundaries.member.impl_team_reduce(wrapped_reducer, value);
   wrapped_reducer.final(&value);
   result = value;
 }
@@ -958,7 +971,7 @@ parallel_reduce(const Impl::TeamThreadRangeBoundariesStruct<
     lambda(i, value);
   }
 
-  loop_boundaries.thread.impl_team_reduce(wrapped_reducer, value);
+  loop_boundaries.member.impl_team_reduce(wrapped_reducer, value);
   wrapped_reducer.final(&value);
   reducer.reference() = value;
 }
@@ -1067,7 +1080,7 @@ KOKKOS_INLINE_FUNCTION void parallel_scan(
     lambda(i, scan_val, false);
   }
 
-  auto& team_member = loop_bounds.thread;
+  auto& team_member = loop_bounds.member;
 
   // 'scan_val' output is the exclusive prefix sum
   scan_val = team_member.team_scan(scan_val);

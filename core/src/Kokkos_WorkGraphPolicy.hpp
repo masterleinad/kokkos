@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 #include <Kokkos_Macros.hpp>
@@ -23,6 +10,7 @@ static_assert(false,
 #define KOKKOS_WORKGRAPHPOLICY_HPP
 
 #include <impl/Kokkos_AnalyzePolicy.hpp>
+#include <Kokkos_Atomic.hpp>
 #include <Kokkos_Crs.hpp>
 
 namespace Kokkos {
@@ -65,6 +53,7 @@ class WorkGraphPolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
   graph_type const m_graph;
   ints_type m_queue;
 
+  // NOLINTBEGIN(bugprone-exception-escape)
   KOKKOS_INLINE_FUNCTION
   void push_work(const std::int32_t w) const noexcept {
     const std::int32_t N = m_graph.numRows();
@@ -178,6 +167,7 @@ class WorkGraphPolicy : public Kokkos::Impl::PolicyTraits<Properties...> {
 
     if (0 == count_queue[w]) push_work(w);
   }
+  // NOLINTEND(bugprone-exception-escape)
 
   execution_space space() const { return execution_space(); }
 

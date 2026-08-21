@@ -1,20 +1,12 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
-#include <Kokkos_Core.hpp>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+#else
+#include <Kokkos_InitializeFinalize.hpp>
+#endif
 
 #include <gtest/gtest.h>
 
@@ -27,8 +19,6 @@ namespace {
 using InitializeFinalize_DeathTest = KokkosExecutionEnvironmentNeverInitialized;
 
 TEST_F(InitializeFinalize_DeathTest, initialize) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
   EXPECT_EXIT(
       {
         Kokkos::initialize();
@@ -56,8 +46,6 @@ TEST_F(InitializeFinalize_DeathTest, initialize) {
 }
 
 TEST_F(InitializeFinalize_DeathTest, finalize) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
   EXPECT_DEATH(
       { Kokkos::finalize(); },
       "Error: Kokkos::finalize\\(\\) may only be called after Kokkos has "
@@ -81,8 +69,6 @@ TEST_F(InitializeFinalize_DeathTest, finalize) {
 }
 
 TEST_F(InitializeFinalize_DeathTest, is_initialized) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
   EXPECT_EXIT(
       {
         bool success = true;
@@ -97,8 +83,6 @@ TEST_F(InitializeFinalize_DeathTest, is_initialized) {
 }
 
 TEST_F(InitializeFinalize_DeathTest, is_finalized) {
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-
   EXPECT_EXIT(
       {
         bool success = true;

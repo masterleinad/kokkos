@@ -34,7 +34,7 @@ namespace detail {
 // can't be a private member function for some reason.
 template <size_t... Extents, size_t... OtherExtents>
 MDSPAN_INLINE_FUNCTION
-static constexpr std::integral_constant<bool, false> __check_compatible_extents(
+constexpr std::integral_constant<bool, false> impl_check_compatible_extents(
     std::integral_constant<bool, false>,
     std::integer_sequence<size_t, Extents...>,
     std::integer_sequence<size_t, OtherExtents...>) noexcept {
@@ -43,7 +43,7 @@ static constexpr std::integral_constant<bool, false> __check_compatible_extents(
 
 // This helper prevents ICE's on MSVC.
 template <size_t Lhs, size_t Rhs>
-struct __compare_extent_compatible : std::integral_constant<bool,
+struct impl_compare_extent_compatible : std::integral_constant<bool,
      Lhs == dynamic_extent ||
      Rhs == dynamic_extent ||
      Lhs == Rhs>
@@ -51,9 +51,9 @@ struct __compare_extent_compatible : std::integral_constant<bool,
 
 template <size_t... Extents, size_t... OtherExtents>
 MDSPAN_INLINE_FUNCTION
-static constexpr std::integral_constant<
-    bool, MDSPAN_IMPL_FOLD_AND(__compare_extent_compatible<Extents, OtherExtents>::value)>
-__check_compatible_extents(
+constexpr std::integral_constant<
+    bool, MDSPAN_IMPL_FOLD_AND(impl_compare_extent_compatible<Extents, OtherExtents>::value)>
+impl_check_compatible_extents(
     std::integral_constant<bool, true>,
     std::integer_sequence<size_t, Extents...>,
     std::integer_sequence<size_t, OtherExtents...>) noexcept {
@@ -62,7 +62,7 @@ __check_compatible_extents(
 
 template<class IndexType, class ... Arguments>
 MDSPAN_INLINE_FUNCTION
-static constexpr bool are_valid_indices() {
+constexpr bool are_valid_indices() {
     return
       MDSPAN_IMPL_FOLD_AND(std::is_convertible<Arguments, IndexType>::value) &&
       MDSPAN_IMPL_FOLD_AND(std::is_nothrow_constructible<IndexType, Arguments>::value);
@@ -87,16 +87,6 @@ struct static_array_impl<R, T, FirstExt, Extents...> {
     else
       return static_array_impl<R + 1, T, Extents...>::get(r);
   }
-  template <size_t r> MDSPAN_INLINE_FUNCTION constexpr static T get() {
-#if MDSPAN_HAS_CXX_17
-    if constexpr (r == R)
-      return FirstExt;
-    else
-      return static_array_impl<R + 1, T, Extents...>::template get<r>();
-#else
-    get(r);
-#endif
-  }
 };
 
 // End the recursion
@@ -104,18 +94,12 @@ template <size_t R, class T, T FirstExt>
 struct static_array_impl<R, T, FirstExt> {
   MDSPAN_INLINE_FUNCTION
   constexpr static T get(size_t) { return FirstExt; }
-  template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
-    return FirstExt;
-  }
 };
 
 // Don't start recursion if size 0
 template <class T> struct static_array_impl<0, T> {
   MDSPAN_INLINE_FUNCTION
   constexpr static T get(size_t) { return T(); }
-  template <size_t> MDSPAN_INLINE_FUNCTION constexpr static T get() {
-    return T();
-  }
 };
 
 // Static array, provides get<r>(), get(r) and operator[r]
@@ -294,7 +278,7 @@ public:
         m_dyn_vals[dyn_map_t::get(r)] = values[r];
       }
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(values[r] == static_cast<TDynamic>(static_val));
       }
@@ -309,7 +293,7 @@ public:
   constexpr maybe_static_array(const std::array<T, N> &vals) {
     static_assert((N == m_size), "Invalid number of values.");
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
     assert(N == m_size);
 #endif
     for (size_t r = 0; r < m_size; r++) {
@@ -318,7 +302,7 @@ public:
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
 // Precondition check
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(static_cast<TDynamic>(vals[r]) ==
                static_cast<TDynamic>(static_val));
@@ -334,7 +318,7 @@ public:
   MDSPAN_INLINE_FUNCTION
   constexpr maybe_static_array(const std::span<T, N> &vals) {
     static_assert((N == m_size) || (m_size == dynamic_extent));
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
     assert(N == m_size);
 #endif
     for (size_t r = 0; r < m_size; r++) {
@@ -342,7 +326,7 @@ public:
       if (static_val == dyn_tag) {
         m_dyn_vals[dyn_map_t::get(r)] = static_cast<TDynamic>(vals[r]);
       }
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
       else {
         assert(static_cast<TDynamic>(vals[r]) ==
                static_cast<TDynamic>(static_val));
@@ -439,7 +423,12 @@ public:
            sizeof...(OtherIndexTypes) == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   constexpr explicit extents(OtherIndexTypes... dynvals) noexcept
-      : m_vals(static_cast<index_type>(dynvals)...) {}
+      : m_vals(static_cast<index_type>(dynvals)...) {
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_IMPL_PRECONDITION(
+        detail::all_values_are_nonnegative_and_representable<index_type>(dynvals...));
+#endif
+  }
 
   MDSPAN_TEMPLATE_REQUIRES(
       class OtherIndexType, size_t N,
@@ -452,7 +441,13 @@ public:
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
   constexpr extents(const std::array<OtherIndexType, N> &exts) noexcept
-      : m_vals(std::move(exts)) {}
+      : m_vals(std::move(exts)) {
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_IMPL_PRECONDITION(
+        detail::range_is_nonnegative_and_representable<index_type>(
+            std::begin(exts), std::end(exts)));
+#endif
+  }
 
 #ifdef __cpp_lib_span
   MDSPAN_TEMPLATE_REQUIRES(
@@ -464,7 +459,11 @@ public:
   MDSPAN_INLINE_FUNCTION
   MDSPAN_CONDITIONAL_EXPLICIT(N != m_rank_dynamic)
   constexpr extents(const std::span<OtherIndexType, N> &exts) noexcept
-      : m_vals(std::move(exts)) {}
+      : m_vals(std::move(exts)) {
+    MDSPAN_IMPL_PRECONDITION(
+        detail::range_is_nonnegative_and_representable<index_type>(
+            std::begin(exts), std::end(exts)));
+  }
 #endif
 
 private:
@@ -477,11 +476,11 @@ private:
       /* requires */ ((R < m_rank) && (static_extent(R) == dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
   constexpr
-  vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
+  vals_t impl_construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
                                        DynamicValues... dynamic_values) noexcept {
-    return __construct_vals_from_extents(
+    return impl_construct_vals_from_extents(
         std::integral_constant<size_t, DynCount + 1>(),
         std::integral_constant<size_t, R + 1>(), exts, dynamic_values...,
         exts.extent(R));
@@ -492,11 +491,11 @@ private:
       /* requires */ ((R < m_rank) && (static_extent(R) != dynamic_extent)))
   MDSPAN_INLINE_FUNCTION
   constexpr
-  vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
+  vals_t impl_construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &exts,
                                        DynamicValues... dynamic_values) noexcept {
-    return __construct_vals_from_extents(
+    return impl_construct_vals_from_extents(
         std::integral_constant<size_t, DynCount>(),
         std::integral_constant<size_t, R + 1>(), exts, dynamic_values...);
   }
@@ -506,7 +505,7 @@ private:
       /* requires */ ((R == m_rank) && (DynCount == m_rank_dynamic)))
   MDSPAN_INLINE_FUNCTION
   constexpr
-  vals_t __construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
+  vals_t impl_construct_vals_from_extents(std::integral_constant<size_t, DynCount>,
                                        std::integral_constant<size_t, R>,
                                        const OtherExtents &,
                                        DynamicValues... dynamic_values) noexcept {
@@ -522,7 +521,7 @@ public:
         (
             /* multi-stage check to protect from invalid pack expansion when sizes
             don't match? */
-            decltype(detail::__check_compatible_extents(
+            decltype(detail::impl_check_compatible_extents(
               // using: sizeof...(Extents) == sizeof...(OtherExtents) as the second argument fails with MSVC+NVCC with some obscure expansion error
               // MSVC: 19.38.33133 NVCC: 12.0
               std::integral_constant<bool, extents<int, Extents...>::rank() == extents<int, OtherExtents...>::rank()>{},
@@ -536,10 +535,16 @@ public:
                                ...) ||
                               (std::numeric_limits<index_type>::max() <
                                std::numeric_limits<OtherIndexType>::max()))
-  constexpr extents(const extents<OtherIndexType, OtherExtents...> &other) noexcept
-      : m_vals(__construct_vals_from_extents(
+  constexpr extents(
+      const extents<OtherIndexType, OtherExtents...> &other) noexcept
+      : m_vals(impl_construct_vals_from_extents(
             std::integral_constant<size_t, 0>(),
-            std::integral_constant<size_t, 0>(), other)) {}
+            std::integral_constant<size_t, 0>(), other)) {
+#if MDSPAN_HAS_CXX_17
+    MDSPAN_IMPL_PRECONDITION(
+        detail::extent_is_representable<index_type>(other));
+#endif
+  }
 
   // Comparison operator
   template <class OtherIndexType, size_t... OtherExtents>
@@ -566,13 +571,13 @@ namespace detail {
 
 template <class IndexType, size_t Rank,
           class Extents = ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType>>
-struct __make_dextents;
+struct impl_make_dextents;
 
 template <class IndexType, size_t Rank, size_t... ExtentsPack>
-struct __make_dextents<
+struct impl_make_dextents<
     IndexType, Rank, ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
 {
-  using type = typename __make_dextents<
+  using type = typename impl_make_dextents<
       IndexType, Rank - 1,
       ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType,
                                                 ::MDSPAN_IMPL_STANDARD_NAMESPACE::dynamic_extent,
@@ -580,7 +585,7 @@ struct __make_dextents<
 };
 
 template <class IndexType, size_t... ExtentsPack>
-struct __make_dextents<
+struct impl_make_dextents<
     IndexType, 0, ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
 {
   using type = ::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>;
@@ -590,7 +595,7 @@ struct __make_dextents<
 
 // [mdspan.extents.dextents], alias template
 template <class IndexType, size_t Rank>
-using dextents = typename detail::__make_dextents<IndexType, Rank>::type;
+using dextents = typename detail::impl_make_dextents<IndexType, Rank>::type;
 
 // Deduction guide for extents
 #if defined(MDSPAN_IMPL_USE_CLASS_TEMPLATE_ARGUMENT_DEDUCTION)
@@ -603,10 +608,10 @@ extents(IndexTypes...)
 // Helper type traits for identifying a class as extents.
 namespace detail {
 
-template <class T> struct __is_extents : ::std::false_type {};
+template <class T> struct impl_is_extents : ::std::false_type {};
 
 template <class IndexType, size_t... ExtentsPack>
-struct __is_extents<::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
+struct impl_is_extents<::MDSPAN_IMPL_STANDARD_NAMESPACE::extents<IndexType, ExtentsPack...>>
     : ::std::true_type {};
 
 template <class T>
@@ -615,7 +620,7 @@ inline
 #else
 static
 #endif
-constexpr bool __is_extents_v = __is_extents<T>::value;
+constexpr bool impl_is_extents_v = impl_is_extents<T>::value;
 
 template<class InputIndexType, class ExtentsIndexType>
 MDSPAN_INLINE_FUNCTION
@@ -625,7 +630,7 @@ check_lower_bound(InputIndexType user_index,
                   std::true_type /* is_signed */)
 {
   (void) user_index; // prevent unused variable warning
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
   assert(static_cast<ExtentsIndexType>(user_index) >= 0);
 #endif
 }
@@ -646,7 +651,7 @@ check_upper_bound(InputIndexType user_index,
 {
   (void) user_index; // prevent unused variable warnings
   (void) current_extent;
-#ifdef _MDSPAN_DEBUG
+#ifdef MDSPAN_DEBUG
   assert(static_cast<ExtentsIndexType>(user_index) < current_extent);
 #endif
 }

@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_OFFSETVIEW_HPP_
 #define KOKKOS_OFFSETVIEW_HPP_
@@ -21,7 +8,13 @@
 #define KOKKOS_IMPL_PUBLIC_INCLUDE_NOTDEFINED_OFFSETVIEW
 #endif
 
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+import kokkos.core_impl;
+#else
 #include <Kokkos_Core.hpp>
+#endif
 
 #include <Kokkos_View.hpp>
 
@@ -218,11 +211,15 @@ class OffsetView : public View<DataType, Properties...> {
 
  public:
   //----------------------------------------
+  /** \brief  Compatible view of data type */
+  using type =
+      OffsetView<typename traits::data_type, typename traits::array_layout,
+                 typename traits::device_type, typename traits::memory_traits>;
+
+#ifdef KOKKOS_ENABLE_DEPRECATED_CODE_5
   /** \brief  Compatible view of array of scalar types */
-  using array_type =
-      OffsetView<typename traits::scalar_array_type,
-                 typename traits::array_layout, typename traits::device_type,
-                 typename traits::memory_traits>;
+  using array_type KOKKOS_DEPRECATED_WITH_COMMENT("Use type instead.") = type;
+#endif
 
   /** \brief  Compatible view of const data type */
   using const_type =
@@ -236,10 +233,10 @@ class OffsetView : public View<DataType, Properties...> {
                  typename traits::array_layout, typename traits::device_type,
                  typename traits::memory_traits>;
 
-  /** \brief  Compatible HostMirror view */
-  using HostMirror = OffsetView<typename traits::non_const_data_type,
-                                typename traits::array_layout,
-                                typename traits::host_mirror_space>;
+  /** \brief  Compatible host mirror view */
+  using host_mirror_type = OffsetView<typename traits::non_const_data_type,
+                                      typename traits::array_layout,
+                                      typename traits::host_mirror_space>;
 
   template <size_t... I, class... OtherIndexTypes>
   KOKKOS_FUNCTION typename base_t::reference_type offset_operator(
@@ -248,36 +245,21 @@ class OffsetView : public View<DataType, Properties...> {
   }
 
   template <class OtherIndexType>
-#ifndef KOKKOS_ENABLE_CXX17
     requires(std::is_convertible_v<OtherIndexType, index_type> &&
              std::is_nothrow_constructible_v<index_type, OtherIndexType> &&
              (base_t::rank() == 1))
-#endif
   KOKKOS_FUNCTION constexpr typename base_t::reference_type operator[](
       const OtherIndexType& idx) const {
-#ifdef KOKKOS_ENABLE_CXX17
-    static_assert(std::is_convertible_v<OtherIndexType, index_type> &&
-                  std::is_nothrow_constructible_v<index_type, OtherIndexType> &&
-                  (base_t::rank() == 1));
-#endif
     return base_t::operator[](idx - m_begins[0]);
   }
 
   template <class... OtherIndexTypes>
-#ifndef KOKKOS_ENABLE_CXX17
     requires((std::is_convertible_v<OtherIndexTypes, index_type> && ...) &&
              (std::is_nothrow_constructible_v<index_type, OtherIndexTypes> &&
               ...) &&
              (sizeof...(OtherIndexTypes) == base_t::rank()))
-#endif
   KOKKOS_FUNCTION constexpr typename base_t::reference_type operator()(
       OtherIndexTypes... indices) const {
-#ifdef KOKKOS_ENABLE_CXX17
-    static_assert(
-        (std::is_convertible_v<OtherIndexTypes, index_type> && ...) &&
-        (std::is_nothrow_constructible_v<index_type, OtherIndexTypes> && ...) &&
-        (sizeof...(OtherIndexTypes) == base_t::rank()));
-#endif
     return offset_operator(std::make_index_sequence<base_t::rank()>(),
                            indices...);
   }
@@ -300,7 +282,7 @@ class OffsetView : public View<DataType, Properties...> {
   // interoperability with View
  private:
   using view_type =
-      View<typename traits::scalar_array_type, typename traits::array_layout,
+      View<typename traits::data_type, typename traits::array_layout,
            typename traits::device_type, typename traits::memory_traits>;
 
  public:
@@ -483,6 +465,7 @@ class OffsetView : public View<DataType, Properties...> {
     KOKKOS_IF_ON_HOST((return runtime_check_begins_ends_host(begins, ends);))
     KOKKOS_IF_ON_DEVICE(
         (return runtime_check_begins_ends_device(begins, ends);))
+    KOKKOS_IMPL_UNREACHABLE();
   }
 
   // Constructor around unmanaged data after checking begins < ends for all
@@ -722,410 +705,42 @@ KOKKOS_INLINE_FUNCTION void map_arg_to_new_begin(
     std::enable_if_t<N == 0, const Arg> /*shiftedArg*/, const Arg /*arg*/,
     const A /*viewBegins*/, size_t& /*counter*/) {}
 
-template <class D, class... P, class T>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<void /* deduce subview type from
-                                                   source view traits */
-                                           ,
-                                           ViewTraits<D, P...>, T>::type>::type
-    subview_offset(const OffsetView<D, P...>& src, T arg) {
-  auto theView = src.view();
-  auto begins  = src.begins();
+template <size_t... Idx, class V, class... Slices>
+KOKKOS_FUNCTION auto subview_offset(std::index_sequence<Idx...>, const V& src,
+                                    Slices... slices) {
+  // Create a subview via shifted slices
+  auto sub_view = subview(src.view(), shift_input(slices, src.begin(Idx))...);
+  using sub_view_t = decltype(sub_view);
 
-  T shiftedArg = shift_input(arg, begins[0]);
-
-  constexpr size_t rank =
-      Kokkos::Impl::ViewMapping<void /* deduce subview type from source view
-                                        traits */
-                                ,
-                                ViewTraits<D, P...>, T>::type::rank;
-
-  auto theSubview = Kokkos::subview(theView, shiftedArg);
-
-  Kokkos::Array<int64_t, rank> subviewBegins;
+  // extract the subview_begins
+  Kokkos::Array<int64_t, sub_view_t::rank()> subview_begins;
   size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(0, subviewBegins, shiftedArg,
-                                                   arg, begins, counter);
+  auto begins    = src.begins();
+  (Impl::map_arg_to_new_begin(Idx, subview_begins,
+                              shift_input(slices, src.begin(Idx)), slices,
+                              begins, counter),
+   ...);
 
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<void /* deduce subview type from source
-                                                 view traits */
-                                         ,
-                                         ViewTraits<D, P...>, T>::type>::type
-      offsetView(theSubview, subviewBegins);
-
-  return offsetView;
-}
-
-template <class D, class... P, class T0, class T1>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, T0, T1>::type>::type
-    subview_offset(const Kokkos::Experimental::OffsetView<D, P...>& src,
-                   T0 arg0, T1 arg1) {
-  auto theView = src.view();
-  auto begins  = src.begins();
-
-  T0 shiftedArg0 = shift_input(arg0, begins[0]);
-  T1 shiftedArg1 = shift_input(arg1, begins[1]);
-
-  auto theSubview = Kokkos::subview(theView, shiftedArg0, shiftedArg1);
-  constexpr size_t rank =
-      Kokkos::Impl::ViewMapping<void /* deduce subview type from source view
-                                        traits */
-                                ,
-                                ViewTraits<D, P...>, T0, T1>::type::rank;
-
-  Kokkos::Array<int64_t, rank> subviewBegins;
-  size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      0, subviewBegins, shiftedArg0, arg0, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      1, subviewBegins, shiftedArg1, arg1, begins, counter);
-
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<
-          void /* deduce subview type from source view traits */
-          ,
-          ViewTraits<D, P...>, T0, T1>::type>::type offsetView(theSubview,
-                                                               subviewBegins);
-
-  return offsetView;
-}
-
-template <class D, class... P, class T0, class T1, class T2>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, T0, T1, T2>::type>::type
-    subview_offset(const OffsetView<D, P...>& src, T0 arg0, T1 arg1, T2 arg2) {
-  auto theView = src.view();
-  auto begins  = src.begins();
-
-  T0 shiftedArg0 = shift_input(arg0, begins[0]);
-  T1 shiftedArg1 = shift_input(arg1, begins[1]);
-  T2 shiftedArg2 = shift_input(arg2, begins[2]);
-
-  auto theSubview =
-      Kokkos::subview(theView, shiftedArg0, shiftedArg1, shiftedArg2);
-
-  constexpr size_t rank =
-      Kokkos::Impl::ViewMapping<void /* deduce subview type from source view
-                                        traits */
-                                ,
-                                ViewTraits<D, P...>, T0, T1, T2>::type::rank;
-
-  Kokkos::Array<int64_t, rank> subviewBegins;
-
-  size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      0, subviewBegins, shiftedArg0, arg0, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      1, subviewBegins, shiftedArg1, arg1, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      2, subviewBegins, shiftedArg2, arg2, begins, counter);
-
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<
-          void /* deduce subview type from source view traits */
-          ,
-          ViewTraits<D, P...>, T0, T1, T2>::type>::type
-      offsetView(theSubview, subviewBegins);
-
-  return offsetView;
-}
-
-template <class D, class... P, class T0, class T1, class T2, class T3>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, T0, T1, T2, T3>::type>::type
-    subview_offset(const OffsetView<D, P...>& src, T0 arg0, T1 arg1, T2 arg2,
-                   T3 arg3) {
-  auto theView = src.view();
-  auto begins  = src.begins();
-
-  T0 shiftedArg0 = shift_input(arg0, begins[0]);
-  T1 shiftedArg1 = shift_input(arg1, begins[1]);
-  T2 shiftedArg2 = shift_input(arg2, begins[2]);
-  T3 shiftedArg3 = shift_input(arg3, begins[3]);
-
-  auto theSubview = Kokkos::subview(theView, shiftedArg0, shiftedArg1,
-                                    shiftedArg2, shiftedArg3);
-
-  constexpr size_t rank = Kokkos::Impl::ViewMapping<
-      void /* deduce subview type from source view traits */
-      ,
-      ViewTraits<D, P...>, T0, T1, T2, T3>::type::rank;
-  Kokkos::Array<int64_t, rank> subviewBegins;
-
-  size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      0, subviewBegins, shiftedArg0, arg0, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      1, subviewBegins, shiftedArg1, arg1, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      2, subviewBegins, shiftedArg2, arg2, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      3, subviewBegins, shiftedArg3, arg3, begins, counter);
-
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<
-          void /* deduce subview type from source view traits */
-          ,
-          ViewTraits<D, P...>, T0, T1, T2, T3>::type>::type
-      offsetView(theSubview, subviewBegins);
-
-  return offsetView;
-}
-
-template <class D, class... P, class T0, class T1, class T2, class T3, class T4>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, T0, T1, T2, T3, T4>::type>::type
-    subview_offset(const OffsetView<D, P...>& src, T0 arg0, T1 arg1, T2 arg2,
-                   T3 arg3, T4 arg4) {
-  auto theView = src.view();
-  auto begins  = src.begins();
-
-  T0 shiftedArg0 = shift_input(arg0, begins[0]);
-  T1 shiftedArg1 = shift_input(arg1, begins[1]);
-  T2 shiftedArg2 = shift_input(arg2, begins[2]);
-  T3 shiftedArg3 = shift_input(arg3, begins[3]);
-  T4 shiftedArg4 = shift_input(arg4, begins[4]);
-
-  auto theSubview = Kokkos::subview(theView, shiftedArg0, shiftedArg1,
-                                    shiftedArg2, shiftedArg3, shiftedArg4);
-
-  constexpr size_t rank = Kokkos::Impl::ViewMapping<
-      void /* deduce subview type from source view traits */
-      ,
-      ViewTraits<D, P...>, T0, T1, T2, T3, T4>::type::rank;
-  Kokkos::Array<int64_t, rank> subviewBegins;
-
-  size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      0, subviewBegins, shiftedArg0, arg0, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      1, subviewBegins, shiftedArg1, arg1, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      2, subviewBegins, shiftedArg2, arg2, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      3, subviewBegins, shiftedArg3, arg3, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      4, subviewBegins, shiftedArg4, arg4, begins, counter);
-
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<
-          void /* deduce subview type from source view traits */
-          ,
-          ViewTraits<D, P...>, T0, T1, T2, T3, T4>::type>::type
-      offsetView(theSubview, subviewBegins);
-
-  return offsetView;
-}
-
-template <class D, class... P, class T0, class T1, class T2, class T3, class T4,
-          class T5>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5>::type>::type
-    subview_offset(const OffsetView<D, P...>& src, T0 arg0, T1 arg1, T2 arg2,
-                   T3 arg3, T4 arg4, T5 arg5) {
-  auto theView = src.view();
-  auto begins  = src.begins();
-
-  T0 shiftedArg0 = shift_input(arg0, begins[0]);
-  T1 shiftedArg1 = shift_input(arg1, begins[1]);
-  T2 shiftedArg2 = shift_input(arg2, begins[2]);
-  T3 shiftedArg3 = shift_input(arg3, begins[3]);
-  T4 shiftedArg4 = shift_input(arg4, begins[4]);
-  T5 shiftedArg5 = shift_input(arg5, begins[5]);
-
-  auto theSubview =
-      Kokkos::subview(theView, shiftedArg0, shiftedArg1, shiftedArg2,
-                      shiftedArg3, shiftedArg4, shiftedArg5);
-
-  constexpr size_t rank = Kokkos::Impl::ViewMapping<
-      void /* deduce subview type from source view traits */
-      ,
-      ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5>::type::rank;
-
-  Kokkos::Array<int64_t, rank> subviewBegins;
-
-  size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      0, subviewBegins, shiftedArg0, arg0, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      1, subviewBegins, shiftedArg1, arg1, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      2, subviewBegins, shiftedArg2, arg2, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      3, subviewBegins, shiftedArg3, arg3, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      4, subviewBegins, shiftedArg4, arg4, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      5, subviewBegins, shiftedArg5, arg5, begins, counter);
-
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<
-          void /* deduce subview type from source view traits */
-          ,
-          ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5>::type>::type
-      offsetView(theSubview, subviewBegins);
-
-  return offsetView;
-}
-template <class D, class... P, class T0, class T1, class T2, class T3, class T4,
-          class T5, class T6>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5, T6>::type>::type
-    subview_offset(const OffsetView<D, P...>& src, T0 arg0, T1 arg1, T2 arg2,
-                   T3 arg3, T4 arg4, T5 arg5, T6 arg6) {
-  auto theView = src.view();
-  auto begins  = src.begins();
-
-  T0 shiftedArg0 = shift_input(arg0, begins[0]);
-  T1 shiftedArg1 = shift_input(arg1, begins[1]);
-  T2 shiftedArg2 = shift_input(arg2, begins[2]);
-  T3 shiftedArg3 = shift_input(arg3, begins[3]);
-  T4 shiftedArg4 = shift_input(arg4, begins[4]);
-  T5 shiftedArg5 = shift_input(arg5, begins[5]);
-  T6 shiftedArg6 = shift_input(arg6, begins[6]);
-
-  auto theSubview =
-      Kokkos::subview(theView, shiftedArg0, shiftedArg1, shiftedArg2,
-                      shiftedArg3, shiftedArg4, shiftedArg5, shiftedArg6);
-
-  constexpr size_t rank = Kokkos::Impl::ViewMapping<
-      void /* deduce subview type from source view traits */
-      ,
-      ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5, T6>::type::rank;
-
-  Kokkos::Array<int64_t, rank> subviewBegins;
-
-  size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      0, subviewBegins, shiftedArg0, arg0, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      1, subviewBegins, shiftedArg1, arg1, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      2, subviewBegins, shiftedArg2, arg2, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      3, subviewBegins, shiftedArg3, arg3, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      4, subviewBegins, shiftedArg4, arg4, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      5, subviewBegins, shiftedArg5, arg5, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      6, subviewBegins, shiftedArg6, arg6, begins, counter);
-
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<
-          void /* deduce subview type from source view traits */
-          ,
-          ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5, T6>::type>::type
-      offsetView(theSubview, subviewBegins);
-
-  return offsetView;
-}
-
-template <class D, class... P, class T0, class T1, class T2, class T3, class T4,
-          class T5, class T6, class T7>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5, T6, T7>::type>::type
-    subview_offset(const OffsetView<D, P...>& src, T0 arg0, T1 arg1, T2 arg2,
-                   T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) {
-  auto theView = src.view();
-  auto begins  = src.begins();
-
-  T0 shiftedArg0 = shift_input(arg0, begins[0]);
-  T1 shiftedArg1 = shift_input(arg1, begins[1]);
-  T2 shiftedArg2 = shift_input(arg2, begins[2]);
-  T3 shiftedArg3 = shift_input(arg3, begins[3]);
-  T4 shiftedArg4 = shift_input(arg4, begins[4]);
-  T5 shiftedArg5 = shift_input(arg5, begins[5]);
-  T6 shiftedArg6 = shift_input(arg6, begins[6]);
-  T7 shiftedArg7 = shift_input(arg7, begins[7]);
-
-  auto theSubview = Kokkos::subview(theView, shiftedArg0, shiftedArg1,
-                                    shiftedArg2, shiftedArg3, shiftedArg4,
-                                    shiftedArg5, shiftedArg6, shiftedArg7);
-
-  constexpr size_t rank = Kokkos::Impl::ViewMapping<
-      void /* deduce subview type from source view traits */
-      ,
-      ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5, T6, T7>::type::rank;
-
-  Kokkos::Array<int64_t, rank> subviewBegins;
-
-  size_t counter = 0;
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      0, subviewBegins, shiftedArg0, arg0, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      1, subviewBegins, shiftedArg1, arg1, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      2, subviewBegins, shiftedArg2, arg2, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      3, subviewBegins, shiftedArg3, arg3, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      4, subviewBegins, shiftedArg4, arg4, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      5, subviewBegins, shiftedArg5, arg5, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      6, subviewBegins, shiftedArg6, arg6, begins, counter);
-  Kokkos::Experimental::Impl::map_arg_to_new_begin(
-      7, subviewBegins, shiftedArg7, arg7, begins, counter);
-
-  typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-      typename Kokkos::Impl::ViewMapping<
-          void /* deduce subview type from source view traits */
-          ,
-          ViewTraits<D, P...>, T0, T1, T2, T3, T4, T5, T6, T7>::type>::type
-      offsetView(theSubview, subviewBegins);
-
-  return offsetView;
+  // construct and return the new OffsetView
+  return OffsetView<
+      typename sub_view_t::data_type, typename sub_view_t::array_layout,
+      typename sub_view_t::device_type, typename sub_view_t::memory_traits>(
+      sub_view, subview_begins);
 }
 }  // namespace Impl
+}  // namespace Experimental
 
 template <class D, class... P, class... Args>
-KOKKOS_INLINE_FUNCTION
-    typename Kokkos::Experimental::Impl::GetOffsetViewTypeFromViewType<
-        typename Kokkos::Impl::ViewMapping<
-            void /* deduce subview type from source view traits */
-            ,
-            ViewTraits<D, P...>, Args...>::type>::type
-    subview(const OffsetView<D, P...>& src, Args... args) {
+KOKKOS_INLINE_FUNCTION auto subview(
+    const Kokkos::Experimental::OffsetView<D, P...>& src, Args... args) {
   static_assert(
-      OffsetView<D, P...>::rank() == sizeof...(Args),
+      Kokkos::Experimental::OffsetView<D, P...>::rank() == sizeof...(Args),
       "subview requires one argument for each source OffsetView rank");
 
-  return Kokkos::Experimental::Impl::subview_offset(src, args...);
+  return Kokkos::Experimental::Impl::subview_offset(
+      std::make_index_sequence<sizeof...(Args)>(), src, args...);
 }
 
-}  // namespace Experimental
 }  // namespace Kokkos
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -1145,16 +760,12 @@ KOKKOS_INLINE_FUNCTION bool operator==(const OffsetView<LT, LP...>& lhs,
                         typename rhs_traits::array_layout> &&
          std::is_same_v<typename lhs_traits::memory_space,
                         typename rhs_traits::memory_space> &&
-         unsigned(lhs_traits::rank) == unsigned(rhs_traits::rank) &&
          lhs.data() == rhs.data() && lhs.span() == rhs.span() &&
-         lhs.extent(0) == rhs.extent(0) && lhs.extent(1) == rhs.extent(1) &&
-         lhs.extent(2) == rhs.extent(2) && lhs.extent(3) == rhs.extent(3) &&
-         lhs.extent(4) == rhs.extent(4) && lhs.extent(5) == rhs.extent(5) &&
-         lhs.extent(6) == rhs.extent(6) && lhs.extent(7) == rhs.extent(7) &&
-         lhs.begin(0) == rhs.begin(0) && lhs.begin(1) == rhs.begin(1) &&
-         lhs.begin(2) == rhs.begin(2) && lhs.begin(3) == rhs.begin(3) &&
-         lhs.begin(4) == rhs.begin(4) && lhs.begin(5) == rhs.begin(5) &&
-         lhs.begin(6) == rhs.begin(6) && lhs.begin(7) == rhs.begin(7);
+         lhs.extents() == rhs.extents() && lhs.begin(0) == rhs.begin(0) &&
+         lhs.begin(1) == rhs.begin(1) && lhs.begin(2) == rhs.begin(2) &&
+         lhs.begin(3) == rhs.begin(3) && lhs.begin(4) == rhs.begin(4) &&
+         lhs.begin(5) == rhs.begin(5) && lhs.begin(6) == rhs.begin(6) &&
+         lhs.begin(7) == rhs.begin(7);
 }
 
 template <class LT, class... LP, class RT, class... RP>
@@ -1176,12 +787,8 @@ KOKKOS_INLINE_FUNCTION bool operator==(const View<LT, LP...>& lhs,
                         typename rhs_traits::array_layout> &&
          std::is_same_v<typename lhs_traits::memory_space,
                         typename rhs_traits::memory_space> &&
-         unsigned(lhs_traits::rank) == unsigned(rhs_traits::rank) &&
          lhs.data() == rhs.data() && lhs.span() == rhs.span() &&
-         lhs.extent(0) == rhs.extent(0) && lhs.extent(1) == rhs.extent(1) &&
-         lhs.extent(2) == rhs.extent(2) && lhs.extent(3) == rhs.extent(3) &&
-         lhs.extent(4) == rhs.extent(4) && lhs.extent(5) == rhs.extent(5) &&
-         lhs.extent(6) == rhs.extent(6) && lhs.extent(7) == rhs.extent(7);
+         lhs.extents() == rhs.extents();
 }
 
 template <class LT, class... LP, class RT, class... RP>
@@ -1309,13 +916,9 @@ inline auto create_mirror(const Kokkos::Experimental::OffsetView<T, P...>& src,
                                          src.begin(4), src.begin(5),
                                          src.begin(6), src.begin(7)});
   } else {
-    return typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror(
+    return typename Kokkos::Experimental::OffsetView<T, P...>::host_mirror_type(
         Kokkos::create_mirror(arg_prop, src.view()), src.begins());
   }
-#if defined(KOKKOS_COMPILER_NVCC) && KOKKOS_COMPILER_NVCC >= 1130 && \
-    !defined(KOKKOS_COMPILER_MSVC)
-  __builtin_unreachable();
-#endif
 }
 
 }  // namespace Impl
@@ -1383,16 +986,18 @@ inline auto create_mirror_view(
     const Kokkos::Experimental::OffsetView<T, P...>& src,
     [[maybe_unused]] const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop) {
   if constexpr (!Impl::ViewCtorProp<ViewCtorArgs...>::has_memory_space) {
-    if constexpr (std::is_same_v<typename Kokkos::Experimental::OffsetView<
-                                     T, P...>::memory_space,
-                                 typename Kokkos::Experimental::OffsetView<
-                                     T, P...>::HostMirror::memory_space> &&
+    if constexpr (std::is_same_v<
+                      typename Kokkos::Experimental::OffsetView<
+                          T, P...>::memory_space,
+                      typename Kokkos::Experimental::OffsetView<
+                          T, P...>::host_mirror_type::memory_space> &&
                   std::is_same_v<typename Kokkos::Experimental::OffsetView<
                                      T, P...>::data_type,
                                  typename Kokkos::Experimental::OffsetView<
-                                     T, P...>::HostMirror::data_type>) {
+                                     T, P...>::host_mirror_type::data_type>) {
       return
-          typename Kokkos::Experimental::OffsetView<T, P...>::HostMirror(src);
+          typename Kokkos::Experimental::OffsetView<T, P...>::host_mirror_type(
+              src);
     } else {
       return Kokkos::Impl::choose_create_mirror(src, arg_prop);
     }
@@ -1407,10 +1012,6 @@ inline auto create_mirror_view(
       return Kokkos::Impl::choose_create_mirror(src, arg_prop);
     }
   }
-#if defined(KOKKOS_COMPILER_NVCC) && KOKKOS_COMPILER_NVCC >= 1130 && \
-    !defined(KOKKOS_COMPILER_MSVC)
-  __builtin_unreachable();
-#endif
 }
 
 }  // namespace Impl
@@ -1478,6 +1079,16 @@ create_mirror_view_and_copy(
     std::string const& name = "") {
   return {create_mirror_view_and_copy(space, src.view(), name), src.begins()};
 }
+
+template <class T, class... P>
+auto create_mirror_view_and_copy(
+    const Kokkos::Experimental::OffsetView<T, P...>& src) {
+  return create_mirror_view_and_copy(
+      typename Kokkos::Experimental::OffsetView<
+          T, P...>::host_mirror_type::memory_space{},
+      src);
+}
+
 } /* namespace Kokkos */
 
 //----------------------------------------------------------------------------

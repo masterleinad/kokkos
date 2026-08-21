@@ -1,22 +1,16 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #include <gtest/gtest.h>
+#include <Kokkos_Macros.hpp>
+#ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
+import kokkos.core;
+import kokkos.std_algorithms;
+#else
 #include <Kokkos_Core.hpp>
 #include <Kokkos_StdAlgorithms.hpp>
+#endif
+#include <std_algorithms/impl/Kokkos_Constraints.hpp>
 
 namespace Test {
 namespace stdalgos {
@@ -104,7 +98,6 @@ TEST(std_algorithms_DeathTest, expect_no_overlap) {
 
 // Overlapping because iterators are identical
 #if defined(KOKKOS_ENABLE_DEBUG)
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   auto first_s = KE::begin(static_view_1d);
   auto last_s  = first_s + extent0;

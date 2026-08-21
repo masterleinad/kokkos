@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_HIP_TEAM_HPP
 #define KOKKOS_HIP_TEAM_HPP
@@ -46,7 +33,7 @@ struct HIPJoinFunctor {
   }
 };
 
-/**\brief  Team member_type passed to TeamPolicy or TeamTask closures.
+/**\brief  Team member_type passed to the TeamPolicy closure.
  *
  *  HIP thread blocks for team closures are dimensioned as:
  *    blockDim.x == number of "vector lanes" per "thread"
@@ -66,11 +53,11 @@ struct HIPJoinFunctor {
  */
 class HIPTeamMember {
  public:
-  using execution_space      = HIP;
-  using scratch_memory_space = execution_space::scratch_memory_space;
+  using execution_space         = HIP;
+  using scratch_memory_space    = execution_space::scratch_memory_space;
   using scratch_memory_space_l0 = execution_space::scratch_memory_space_l0;
   using scratch_memory_space_l1 = execution_space::scratch_memory_space_l1;
-  using team_handle          = HIPTeamMember;
+  using team_handle             = HIPTeamMember;
 
  private:
   mutable void* m_team_reduce;
@@ -86,8 +73,7 @@ class HIPTeamMember {
   }
 
   template <int Level>
-  KOKKOS_INLINE_FUNCTION const auto&
-  team_scratch() const {
+  KOKKOS_INLINE_FUNCTION const auto& team_scratch() const {
     return m_team_shared.template set_team_thread_mode<Level>(1, 0);
   }
 
@@ -98,9 +84,9 @@ class HIPTeamMember {
   }
 
   template <int Level>
-  KOKKOS_INLINE_FUNCTION const auto&
-  thread_scratch() const {
-    return m_team_shared.template set_team_thread_mode<Level>(team_size(), team_rank());
+  KOKKOS_INLINE_FUNCTION const auto& thread_scratch() const {
+    return m_team_shared.template set_team_thread_mode<Level>(team_size(),
+                                                              team_rank());
   }
 
   KOKKOS_INLINE_FUNCTION
@@ -376,13 +362,14 @@ struct TeamThreadRangeBoundariesStruct<iType, HIPTeamMember> {
   const iType end;
 
   KOKKOS_INLINE_FUNCTION
-  TeamThreadRangeBoundariesStruct(const HIPTeamMember& thread_, iType count)
-      : member(thread_), start(0), end(count) {}
+  TeamThreadRangeBoundariesStruct(const HIPTeamMember& arg_thread,
+                                  iType arg_count)
+      : member(arg_thread), start(0), end(arg_count) {}
 
   KOKKOS_INLINE_FUNCTION
-  TeamThreadRangeBoundariesStruct(const HIPTeamMember& thread_, iType begin_,
-                                  iType end_)
-      : member(thread_), start(begin_), end(end_) {}
+  TeamThreadRangeBoundariesStruct(const HIPTeamMember& arg_thread,
+                                  iType arg_begin, iType arg_end)
+      : member(arg_thread), start(arg_begin), end(arg_end) {}
 };
 
 template <typename iType>
@@ -393,14 +380,14 @@ struct TeamVectorRangeBoundariesStruct<iType, HIPTeamMember> {
   const iType end;
 
   KOKKOS_INLINE_FUNCTION
-  TeamVectorRangeBoundariesStruct(const HIPTeamMember& thread_,
-                                  const iType& count)
-      : member(thread_), start(0), end(count) {}
+  TeamVectorRangeBoundariesStruct(const HIPTeamMember& arg_thread,
+                                  const iType& arg_count)
+      : member(arg_thread), start(0), end(arg_count) {}
 
   KOKKOS_INLINE_FUNCTION
-  TeamVectorRangeBoundariesStruct(const HIPTeamMember& thread_,
-                                  const iType& begin_, const iType& end_)
-      : member(thread_), start(begin_), end(end_) {}
+  TeamVectorRangeBoundariesStruct(const HIPTeamMember& arg_thread,
+                                  const iType& arg_begin, const iType& arg_end)
+      : member(arg_thread), start(arg_begin), end(arg_end) {}
 };
 
 template <typename iType>
@@ -410,8 +397,8 @@ struct ThreadVectorRangeBoundariesStruct<iType, HIPTeamMember> {
   const index_type end;
 
   KOKKOS_INLINE_FUNCTION
-  ThreadVectorRangeBoundariesStruct(const HIPTeamMember, index_type count)
-      : start(static_cast<index_type>(0)), end(count) {}
+  ThreadVectorRangeBoundariesStruct(const HIPTeamMember, index_type arg_count)
+      : start(static_cast<index_type>(0)), end(arg_count) {}
 
   KOKKOS_INLINE_FUNCTION
   ThreadVectorRangeBoundariesStruct(const HIPTeamMember, index_type arg_begin,
@@ -593,7 +580,7 @@ parallel_reduce(const Impl::TeamThreadRangeBoundariesStruct<
  *  less than N) and a scan operation is performed. The last call to closure has
  *  final == true.
  */
-// This is the same code as in CUDA and largely the same as in OpenMPTarget
+// This is the same code as in CUDA.
 template <typename iType, typename FunctorType, typename ValueType>
 KOKKOS_INLINE_FUNCTION void parallel_scan(
     const Impl::TeamThreadRangeBoundariesStruct<iType, Impl::HIPTeamMember>&
@@ -623,7 +610,7 @@ KOKKOS_INLINE_FUNCTION void parallel_scan(
     // perform team scan
     local_accum = member.team_scan(local_accum);
     // add this blocks accum to total accumulation
-    auto val = accum + local_accum;
+    ValueType val = accum + local_accum;
     // user updates their data with total accumulation
     if (ii < loop_bounds.end) lambda(ii, val, true);
     // the last value needs to be propogated to next chunk

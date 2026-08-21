@@ -1,18 +1,5 @@
-//@HEADER
-// ************************************************************************
-//
-//                        Kokkos v. 4.0
-//       Copyright (2022) National Technology & Engineering
-//               Solutions of Sandia, LLC (NTESS).
-//
-// Under the terms of Contract DE-NA0003525 with NTESS,
-// the U.S. Government retains certain rights in this software.
-//
-// Part of Kokkos, under the Apache License v2.0 with LLVM Exceptions.
-// See https://kokkos.org/LICENSE for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
-//@HEADER
+// SPDX-FileCopyrightText: Copyright Contributors to the Kokkos project
 
 #ifndef KOKKOS_IMPL_PUBLIC_INCLUDE
 static_assert(false,
@@ -29,6 +16,18 @@ static_assert(false,
 #include <iostream>
 #endif
 
+// backport padded layouts to experimental
+namespace Kokkos::Experimental {
+template <size_t Pad = dynamic_extent>
+using layout_left_padded KOKKOS_DEPRECATED_WITH_COMMENT(
+    "Use Kokkos::layout_left_padded instead.") =
+    Kokkos::layout_left_padded<Pad>;
+template <size_t Pad = dynamic_extent>
+using layout_right_padded KOKKOS_DEPRECATED_WITH_COMMENT(
+    "Use Kokkos::layout_right_padded instead.") =
+    Kokkos::layout_right_padded<Pad>;
+}  // namespace Kokkos::Experimental
+
 // The difference between a legacy Kokkos array layout and an
 // mdspan layout is that the array layouts can have state, but don't have the
 // nested mapping. This file provides interoperability helpers.
@@ -40,32 +39,62 @@ template <class>
 struct IsLayoutRightPadded : std::false_type {};
 
 template <size_t Pad>
-struct IsLayoutRightPadded<Experimental::layout_right_padded<Pad>>
+struct IsLayoutRightPadded<::Kokkos::layout_right_padded<Pad>>
     : std::true_type {};
 
 template <class>
 struct IsLayoutLeftPadded : std::false_type {};
 
 template <size_t Pad>
-struct IsLayoutLeftPadded<Experimental::layout_left_padded<Pad>>
-    : std::true_type {};
+struct IsLayoutLeftPadded<::Kokkos::layout_left_padded<Pad>> : std::true_type {
+};
 
 template <class ArrayLayout>
-struct LayoutFromArrayLayout;
+struct LayoutFromArrayLayout {
+  using type = void;
+};
 
 template <>
 struct LayoutFromArrayLayout<LayoutLeft> {
-  using type = Experimental::layout_left_padded<dynamic_extent>;
+  using type = ::Kokkos::layout_left_padded<dynamic_extent>;
 };
 
 template <>
 struct LayoutFromArrayLayout<LayoutRight> {
-  using type = Experimental::layout_right_padded<dynamic_extent>;
+  using type = ::Kokkos::layout_right_padded<dynamic_extent>;
 };
 
 template <>
 struct LayoutFromArrayLayout<LayoutStride> {
   using type = layout_stride;
+};
+
+template <class Layout>
+struct ArrayLayoutFromLayout;
+
+template <>
+struct ArrayLayoutFromLayout<layout_left> {
+  using type = LayoutLeft;
+};
+
+template <size_t Padding>
+struct ArrayLayoutFromLayout<Kokkos::layout_left_padded<Padding>> {
+  using type = LayoutLeft;
+};
+
+template <>
+struct ArrayLayoutFromLayout<layout_right> {
+  using type = LayoutRight;
+};
+
+template <size_t Padding>
+struct ArrayLayoutFromLayout<Kokkos::layout_right_padded<Padding>> {
+  using type = LayoutRight;
+};
+
+template <>
+struct ArrayLayoutFromLayout<layout_stride> {
+  using type = LayoutStride;
 };
 
 template <class ArrayLayout, class MDSpanType>
@@ -111,20 +140,18 @@ KOKKOS_INLINE_FUNCTION auto array_layout_from_mapping(
 
     if constexpr (rank > 1 &&
                   std::is_same_v<typename mapping_type::layout_type,
-                                 Kokkos::Experimental::layout_left_padded<
-                                     dynamic_extent>>) {
+                                 Kokkos::layout_left_padded<dynamic_extent>>) {
       layout.stride = mapping.stride(1);
     }
     if constexpr (std::is_same_v<typename mapping_type::layout_type,
-                                 Kokkos::Experimental::layout_right_padded<
-                                     dynamic_extent>>) {
-      if constexpr (rank == 2) {
-        layout.stride = mapping.stride(0);
-      }
-      if constexpr (rank > 2) {
-        if (mapping.stride(rank - 2) != mapping.extents().extent(rank - 1))
-          Kokkos::abort(
-              "Invalid conversion from layout_right_padded to LayoutRight");
+                                 Kokkos::layout_right_padded<dynamic_extent>>) {
+      // layout_right_padded has a custom stride associated with the right most
+      // extent
+      if constexpr (rank > 1) {
+        layout.stride = mapping.stride(rank - 2);
+      } else {
+        // Just setting the stride to 1 for rank 0/1
+        layout.stride = 1;
       }
     }
     return layout;
@@ -169,6 +196,7 @@ KOKKOS_INLINE_FUNCTION auto mapping_from_array_layout_impl(
           }))
 #endif
 
+      // NOLINTNEXTLINE(bugprone-branch-clone)
       if (layout.stride == KOKKOS_IMPL_CTOR_DEFAULT_ARG) {
         return MappingType{extents_type{
             dextents<index_type, MappingType::extents_type::rank()>{
@@ -221,7 +249,7 @@ KOKKOS_INLINE_FUNCTION auto mapping_from_view_mapping(const VM &view_mapping) {
   // std::span is not available in C++17 (our current requirements),
   // so we need to use the std::array constructor for layout mappings.
   // FIXME When C++20 is available, we can use std::span here instead
-  std::size_t strides[VM::Rank];
+  std::size_t strides[VM::Rank == 0 ? 1 : VM::Rank];
   view_mapping.stride_fill(&strides[0]);
   if constexpr (std::is_same_v<typename mapping_type::layout_type,
                                Kokkos::layout_stride>) {
@@ -230,13 +258,13 @@ KOKKOS_INLINE_FUNCTION auto mapping_from_view_mapping(const VM &view_mapping) {
                         strides);
   } else if constexpr (VM::Rank > 1 &&
                        std::is_same_v<typename mapping_type::layout_type,
-                                      Kokkos::Experimental::layout_left_padded<
+                                      Kokkos::layout_left_padded<
                                           Kokkos::dynamic_extent>>) {
     return mapping_type(extents_from_view_mapping<extents_type>(view_mapping),
                         strides[1]);
   } else if constexpr (VM::Rank > 1 &&
                        std::is_same_v<typename mapping_type::layout_type,
-                                      Kokkos::Experimental::layout_right_padded<
+                                      Kokkos::layout_right_padded<
                                           Kokkos::dynamic_extent>>) {
     return mapping_type(extents_from_view_mapping<extents_type>(view_mapping),
                         strides[VM::Rank - 2]);
