@@ -203,18 +203,25 @@ void test_team_policy_launch_with_maximum_scratch_size(int level) {
   policy_type policy(1, 1);
   policy.set_scratch_size(
       level, Kokkos::PerThread(policy_type::scratch_size_max(level)));
+
+  bool check_team_size = level == 0;
+#ifdef KOKKOS_ENABLE_OPENMP
+  // OpenMP's team size isn't limited by the max scratch size
+  check_team_size &= !std::is_same_v<TEST_EXECSPACE, Kokkos::OpenMP>;
+#endif
+
   {
     auto dummy_functor = KOKKOS_LAMBDA(const policy_type::member_type&){};
 
     int team_size_max =
         policy.team_size_max(dummy_functor, Kokkos::ParallelForTag());
-    if (level == 0) {
+    if (check_team_size) {
       EXPECT_EQ(team_size_max, 1);
     }
 
     int team_size_recommended =
         policy.team_size_max(dummy_functor, Kokkos::ParallelForTag());
-    if (level == 0) {
+    if (check_team_size) {
       EXPECT_EQ(team_size_recommended, 1);
     }
 
@@ -225,13 +232,13 @@ void test_team_policy_launch_with_maximum_scratch_size(int level) {
 
     int team_size_max =
         policy.team_size_max(dummy_functor, Kokkos::ParallelReduceTag());
-    if (level == 0) {
+    if (check_team_size) {
       EXPECT_EQ(team_size_max, 1);
     }
 
     int team_size_recommended =
         policy.team_size_max(dummy_functor, Kokkos::ParallelReduceTag());
-    if (level == 0) {
+    if (check_team_size) {
       EXPECT_EQ(team_size_recommended, 1);
     }
 
