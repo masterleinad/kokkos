@@ -1221,10 +1221,14 @@ inline void deep_copy(typename ViewTraits<ST, SP...>::non_const_value_type& dst,
  * A rank mismatch will error out in the attempt to convert to a View
  */
 template <class ExecSpace, class DstType, class SrcType>
-inline void deep_copy(
-    const ExecSpace& exec_space, const DstType& dst, const SrcType& src,
-    std::enable_if_t<((Kokkos::is_dyn_rank_view<DstType>::value ||
-                       Kokkos::is_dyn_rank_view<SrcType>::value))>* = nullptr) {
+  requires((Kokkos::is_dyn_rank_view<DstType>::value ||
+            Kokkos::is_dyn_rank_view<SrcType>::value) &&
+           (Kokkos::is_view<DstType>::value ||
+            Kokkos::is_dyn_rank_view<DstType>::value) &&
+           (Kokkos::is_view<SrcType>::value ||
+            Kokkos::is_dyn_rank_view<SrcType>::value))
+inline void deep_copy(const ExecSpace& exec_space, const DstType& dst,
+                      const SrcType& src) {
   static_assert(std::is_same_v<typename DstType::traits::value_type,
                                typename DstType::traits::non_const_value_type>,
                 "deep_copy requires non-const destination type");
@@ -1270,10 +1274,13 @@ inline void deep_copy(
 }
 
 template <class DstType, class SrcType>
-inline void deep_copy(
-    const DstType& dst, const SrcType& src,
-    std::enable_if_t<((Kokkos::is_dyn_rank_view<DstType>::value ||
-                       Kokkos::is_dyn_rank_view<SrcType>::value))>* = nullptr) {
+  requires((Kokkos::is_dyn_rank_view<DstType>::value ||
+            Kokkos::is_dyn_rank_view<SrcType>::value) &&
+           (Kokkos::is_view<DstType>::value ||
+            Kokkos::is_dyn_rank_view<DstType>::value) &&
+           (Kokkos::is_view<SrcType>::value ||
+            Kokkos::is_dyn_rank_view<SrcType>::value))
+inline void deep_copy(const DstType& dst, const SrcType& src) {
   static_assert(std::is_same_v<typename DstType::traits::value_type,
                                typename DstType::traits::non_const_value_type>,
                 "deep_copy requires non-const destination type");
