@@ -806,11 +806,8 @@ KOKKOS_INLINE_FUNCTION bool operator==(const OffsetView<LT, LP...>& lhs,
 namespace Kokkos {
 
 template <class DT, class... DP>
-inline void deep_copy(
-    const Experimental::OffsetView<DT, DP...>& dst,
-    typename ViewTraits<DT, DP...>::const_value_type& value,
-    std::enable_if_t<std::is_same_v<typename ViewTraits<DT, DP...>::specialize,
-                                    void>>* = nullptr) {
+inline void deep_copy(const Experimental::OffsetView<DT, DP...>& dst,
+                      typename ViewTraits<DT, DP...>::const_value_type& value) {
   static_assert(
       std::is_same_v<typename ViewTraits<DT, DP...>::non_const_value_type,
                      typename ViewTraits<DT, DP...>::value_type>,
@@ -821,11 +818,8 @@ inline void deep_copy(
 }
 
 template <class DT, class... DP, class ST, class... SP>
-inline void deep_copy(
-    const Experimental::OffsetView<DT, DP...>& dst,
-    const Experimental::OffsetView<ST, SP...>& value,
-    std::enable_if_t<std::is_same_v<typename ViewTraits<DT, DP...>::specialize,
-                                    void>>* = nullptr) {
+inline void deep_copy(const Experimental::OffsetView<DT, DP...>& dst,
+                      const Experimental::OffsetView<ST, SP...>& value) {
   static_assert(
       std::is_same_v<typename ViewTraits<DT, DP...>::value_type,
                      typename ViewTraits<ST, SP...>::non_const_value_type>,
@@ -835,11 +829,8 @@ inline void deep_copy(
   Kokkos::deep_copy(dstView, value.view());
 }
 template <class DT, class... DP, class ST, class... SP>
-inline void deep_copy(
-    const Experimental::OffsetView<DT, DP...>& dst,
-    const View<ST, SP...>& value,
-    std::enable_if_t<std::is_same_v<typename ViewTraits<DT, DP...>::specialize,
-                                    void>>* = nullptr) {
+inline void deep_copy(const Experimental::OffsetView<DT, DP...>& dst,
+                      const View<ST, SP...>& value) {
   static_assert(
       std::is_same_v<typename ViewTraits<DT, DP...>::value_type,
                      typename ViewTraits<ST, SP...>::non_const_value_type>,
@@ -850,11 +841,8 @@ inline void deep_copy(
 }
 
 template <class DT, class... DP, class ST, class... SP>
-inline void deep_copy(
-    const View<DT, DP...>& dst,
-    const Experimental::OffsetView<ST, SP...>& value,
-    std::enable_if_t<std::is_same_v<typename ViewTraits<DT, DP...>::specialize,
-                                    void>>* = nullptr) {
+inline void deep_copy(const View<DT, DP...>& dst,
+                      const Experimental::OffsetView<ST, SP...>& value) {
   static_assert(
       std::is_same_v<typename ViewTraits<DT, DP...>::value_type,
                      typename ViewTraits<ST, SP...>::non_const_value_type>,
@@ -924,18 +912,14 @@ inline auto create_mirror(const Kokkos::Experimental::OffsetView<T, P...>& src,
 }  // namespace Impl
 
 // public interface
-template <class T, class... P,
-          typename = std::enable_if_t<
-              std::is_void_v<typename ViewTraits<T, P...>::specialize>>>
+template <class T, class... P>
 inline auto create_mirror(
     const Kokkos::Experimental::OffsetView<T, P...>& src) {
   return Impl::create_mirror(src, Impl::ViewCtorProp<>{});
 }
 
 // public interface that accepts a without initializing flag
-template <class T, class... P,
-          typename = std::enable_if_t<
-              std::is_void_v<typename ViewTraits<T, P...>::specialize>>>
+template <class T, class... P>
 inline auto create_mirror(
     Kokkos::Impl::WithoutInitializing_t wi,
     const Kokkos::Experimental::OffsetView<T, P...>& src) {
@@ -944,9 +928,7 @@ inline auto create_mirror(
 
 // public interface that accepts a space
 template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<
-              Kokkos::is_space<Space>::value &&
-              std::is_void_v<typename ViewTraits<T, P...>::specialize>>>
+          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
 inline auto create_mirror(
     const Space&, const Kokkos::Experimental::OffsetView<T, P...>& src) {
   return Impl::create_mirror(
@@ -955,9 +937,7 @@ inline auto create_mirror(
 
 // public interface that accepts a space and a without initializing flag
 template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<
-              Kokkos::is_space<Space>::value &&
-              std::is_void_v<typename ViewTraits<T, P...>::specialize>>>
+          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
 inline auto create_mirror(
     Kokkos::Impl::WithoutInitializing_t wi, const Space&,
     const Kokkos::Experimental::OffsetView<T, P...>& src) {
@@ -967,9 +947,7 @@ inline auto create_mirror(
 
 // public interface that accepts arbitrary view constructor args passed by a
 // view_alloc
-template <class T, class... P, class... ViewCtorArgs,
-          typename = std::enable_if_t<
-              std::is_void_v<typename ViewTraits<T, P...>::specialize>>>
+template <class T, class... P, class... ViewCtorArgs>
 inline auto create_mirror(
     const Impl::ViewCtorProp<ViewCtorArgs...>& arg_prop,
     const Kokkos::Experimental::OffsetView<T, P...>& src) {

@@ -10,19 +10,13 @@
 namespace Kokkos {
 namespace Impl {
 
-template <class Specialize, typename A, typename B>
-struct CommonViewValueType;
-
 template <typename A, typename B>
-struct CommonViewValueType<void, A, B> {
+struct CommonViewValueType {
   using value_type = std::common_type_t<A, B>;
 };
 
-template <class Specialize, class ValueType>
-struct CommonViewAllocProp;
-
 template <class ValueType>
-struct CommonViewAllocProp<void, ValueType> {
+struct CommonViewAllocProp {
   using value_type = ValueType;
   using data_type  = ValueType;
 
@@ -46,7 +40,7 @@ struct DeduceCommonViewAllocProp<FirstView> {
 
   enum : bool { is_view = is_view<FirstView>::value };
 
-  using prop_type = CommonViewAllocProp<void, value_type>;
+  using prop_type = CommonViewAllocProp<value_type>;
 };
 
 template <class FirstView, class... NextViews>
@@ -63,12 +57,12 @@ struct DeduceCommonViewAllocProp<FirstView, NextViews...> {
 
   // common types
 
-  using value_type = typename CommonViewValueType<void, first_value_type,
+  using value_type = typename CommonViewValueType<first_value_type,
                                                   next_value_type>::value_type;
 
   enum : bool { is_view = (first_is_view && next_is_view) };
 
-  using prop_type = CommonViewAllocProp<void, value_type>;
+  using prop_type = CommonViewAllocProp<value_type>;
 };
 
 }  // end namespace Impl
