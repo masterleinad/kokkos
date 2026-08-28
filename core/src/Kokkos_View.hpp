@@ -1581,8 +1581,8 @@ struct RankDataType<ValueType, 0> {
 };
 
 template <unsigned N, typename... Args>
-KOKKOS_FUNCTION std::enable_if_t<N == View<Args...>::rank(), View<Args...> >
-as_view_of_rank_n(View<Args...> v) {
+  requires(N == View<Args...>::rank())
+KOKKOS_FUNCTION View<Args...> as_view_of_rank_n(View<Args...> v) {
   return v;
 }
 

@@ -313,8 +313,8 @@ struct ViewTraits<
 };
 
 template <class ArrayLayout, class... Prop>
-struct ViewTraits<std::enable_if_t<Kokkos::is_array_layout<ArrayLayout>::value>,
-                  ArrayLayout, Prop...> {
+  requires Kokkos::is_array_layout_v<ArrayLayout>
+struct ViewTraits<void, ArrayLayout, Prop...> {
   // Specify layout, keep subsequent space and memory traits arguments
 
   using execution_space = typename ViewTraits<void, Prop...>::execution_space;
@@ -326,9 +326,8 @@ struct ViewTraits<std::enable_if_t<Kokkos::is_array_layout<ArrayLayout>::value>,
   using hooks_policy  = typename ViewTraits<void, Prop...>::hooks_policy;
 };
 
-template <class Space, class... Prop>
-struct ViewTraits<std::enable_if_t<Kokkos::is_space<Space>::value>, Space,
-                  Prop...> {
+template <Kokkos::Space Space, class... Prop>
+struct ViewTraits<void, Space, Prop...> {
   // Specify Space, memory traits should be the only subsequent argument.
 
   static_assert(

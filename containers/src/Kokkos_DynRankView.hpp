@@ -1400,8 +1400,7 @@ inline auto create_mirror(Kokkos::Impl::WithoutInitializing_t wi,
 }
 
 // public interface that accepts a space
-template <class Space, class T, class... P,
-          class Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror(const Space&,
                           const Kokkos::DynRankView<T, P...>& src) {
   return Impl::create_mirror(
@@ -1409,8 +1408,7 @@ inline auto create_mirror(const Space&,
 }
 
 // public interface that accepts a space and a without initializing flag
-template <class Space, class T, class... P,
-          class Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror(Kokkos::Impl::WithoutInitializing_t wi, const Space&,
                           const Kokkos::DynRankView<T, P...>& src) {
   return Impl::create_mirror(
@@ -1475,8 +1473,7 @@ inline auto create_mirror_view(Kokkos::Impl::WithoutInitializing_t wi,
 }
 
 // public interface that accepts a space
-template <class Space, class T, class... P,
-          class Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror_view(const Space&,
                                const Kokkos::DynRankView<T, P...>& src) {
   return Impl::create_mirror_view(
@@ -1484,8 +1481,7 @@ inline auto create_mirror_view(const Space&,
 }
 
 // public interface that accepts a space and a without initializing flag
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror_view(Kokkos::Impl::WithoutInitializing_t wi,
                                const Space&,
                                const Kokkos::DynRankView<T, P...>& src) {
@@ -1543,7 +1539,7 @@ auto create_mirror_view_and_copy(
   }
 }
 
-template <class Space, class T, class... P>
+template <Kokkos::Space Space, class T, class... P>
 auto create_mirror_view_and_copy(const Space&,
                                  const Kokkos::DynRankView<T, P...>& src,
                                  std::string const& name = "") {

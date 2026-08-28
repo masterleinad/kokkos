@@ -1124,11 +1124,9 @@ inline void check_deep_copy_view_arguments_are_distinct(void const* dst,
 }  // namespace Impl
 
 template <class DT, class... DP, class ST, class... SP>
-inline void deep_copy(
-    const View<DT, DP...>& dst, const View<ST, SP...>& src,
-    std::enable_if_t<unsigned(ViewTraits<DT, DP...>::rank) == unsigned(0) &&
-                     unsigned(ViewTraits<ST, SP...>::rank) == unsigned(0)>* =
-        nullptr) {
+  requires(unsigned(ViewTraits<DT, DP...>::rank) == unsigned(0) &&
+           unsigned(ViewTraits<ST, SP...>::rank) == unsigned(0))
+inline void deep_copy(const View<DT, DP...>& dst, const View<ST, SP...>& src) {
   Impl::check_deep_copy_view_arguments_are_distinct(std::addressof(dst),
                                                     std::addressof(src));
 
@@ -1196,10 +1194,9 @@ inline void deep_copy(
  * type, same non-zero rank, same contiguous layout.
  */
 template <class DT, class... DP, class ST, class... SP>
-inline void deep_copy(
-    const View<DT, DP...>& dst, const View<ST, SP...>& src,
-    std::enable_if_t<unsigned(ViewTraits<DT, DP...>::rank) != 0 ||
-                     unsigned(ViewTraits<ST, SP...>::rank) != 0>* = nullptr) {
+  requires(unsigned(ViewTraits<DT, DP...>::rank) != 0 ||
+           unsigned(ViewTraits<ST, SP...>::rank) != 0)
+inline void deep_copy(const View<DT, DP...>& dst, const View<ST, SP...>& src) {
   Impl::check_deep_copy_view_arguments_are_distinct(std::addressof(dst),
                                                     std::addressof(src));
 
@@ -2285,12 +2282,10 @@ inline void deep_copy(
 }
 
 /** \brief  Deep copy into a value in Host memory from a view.  */
-template <class ExecSpace, class ST, class... SP>
-inline void deep_copy(
-    const ExecSpace& exec_space,
-    typename ViewTraits<ST, SP...>::non_const_value_type& dst,
-    const View<ST, SP...>& src,
-    std::enable_if_t<Kokkos::is_execution_space<ExecSpace>::value>* = nullptr) {
+template <Kokkos::ExecutionSpace ExecSpace, class ST, class... SP>
+inline void deep_copy(const ExecSpace& exec_space,
+                      typename ViewTraits<ST, SP...>::non_const_value_type& dst,
+                      const View<ST, SP...>& src) {
   using src_traits       = ViewTraits<ST, SP...>;
   using src_memory_space = typename src_traits::memory_space;
   static_assert(src_traits::rank == 0,
@@ -2321,14 +2316,12 @@ inline void deep_copy(
 
 //----------------------------------------------------------------------------
 /** \brief  A deep copy between views of compatible type, and rank zero.  */
-template <class ExecSpace, class DT, class... DP, class ST, class... SP>
-inline void deep_copy(
-    const ExecSpace& exec_space, const View<DT, DP...>& dst,
-    const View<ST, SP...>& src,
-    std::enable_if_t<(Kokkos::is_execution_space<ExecSpace>::value &&
-                      (unsigned(ViewTraits<DT, DP...>::rank) == unsigned(0) &&
-                       unsigned(ViewTraits<ST, SP...>::rank) ==
-                           unsigned(0)))>* = nullptr) {
+template <Kokkos::ExecutionSpace ExecSpace, class DT, class... DP, class ST,
+          class... SP>
+  requires(unsigned(ViewTraits<DT, DP...>::rank) == unsigned(0) &&
+           unsigned(ViewTraits<ST, SP...>::rank) == unsigned(0))
+inline void deep_copy(const ExecSpace& exec_space, const View<DT, DP...>& dst,
+                      const View<ST, SP...>& src) {
   Impl::check_deep_copy_view_arguments_are_distinct(std::addressof(dst),
                                                     std::addressof(src));
 
@@ -2380,14 +2373,12 @@ inline void deep_copy(
 /** \brief  A deep copy between views of the default specialization, compatible
  * type, same non-zero rank
  */
-template <class ExecSpace, class DT, class... DP, class ST, class... SP>
-inline void deep_copy(
-    const ExecSpace& exec_space, const View<DT, DP...>& dst,
-    const View<ST, SP...>& src,
-    std::enable_if_t<(Kokkos::is_execution_space<ExecSpace>::value &&
-                      (unsigned(ViewTraits<DT, DP...>::rank) != 0 ||
-                       unsigned(ViewTraits<ST, SP...>::rank) != 0))>* =
-        nullptr) {
+template <Kokkos::ExecutionSpace ExecSpace, class DT, class... DP, class ST,
+          class... SP>
+  requires(unsigned(ViewTraits<DT, DP...>::rank) != 0 ||
+           unsigned(ViewTraits<ST, SP...>::rank) != 0)
+inline void deep_copy(const ExecSpace& exec_space, const View<DT, DP...>& dst,
+                      const View<ST, SP...>& src) {
   Impl::check_deep_copy_view_arguments_are_distinct(std::addressof(dst),
                                                     std::addressof(src));
 
@@ -3159,8 +3150,7 @@ auto create_mirror(Kokkos::Impl::WithoutInitializing_t wi,
 }
 
 // public interface that accepts a space
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 auto create_mirror(Space const&, Kokkos::View<T, P...> const& src) {
   return Impl::create_mirror(src, view_alloc(typename Space::memory_space{}));
 }
@@ -3174,8 +3164,7 @@ auto create_mirror(Impl::ViewCtorProp<ViewCtorArgs...> const& arg_prop,
 }
 
 // public interface that accepts a space and a without initializing flag
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 auto create_mirror(Kokkos::Impl::WithoutInitializing_t wi, Space const&,
                    Kokkos::View<T, P...> const& src) {
   return Impl::create_mirror(src,
@@ -3232,16 +3221,14 @@ auto create_mirror_view(Kokkos::Impl::WithoutInitializing_t wi,
 }
 
 // public interface that accepts a space
-template <class Space, class T, class... P,
-          class Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 auto create_mirror_view(const Space&, const Kokkos::View<T, P...>& src) {
   return Impl::create_mirror_view(src,
                                   view_alloc(typename Space::memory_space()));
 }
 
 // public interface that accepts a space and a without initializing flag
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 auto create_mirror_view(Kokkos::Impl::WithoutInitializing_t wi, Space const&,
                         Kokkos::View<T, P...> const& src) {
   return Impl::create_mirror_view(
@@ -3321,8 +3308,7 @@ auto create_mirror_view_and_copy(
 // Previously when using auto here, the intel compiler 19.3 would
 // sometimes not create a symbol, guessing that it somehow is a combination
 // of auto and just forwarding arguments (see issue #5196)
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 typename Impl::MirrorViewType<Space, T, P...>::view_type
 create_mirror_view_and_copy(const Space&, const Kokkos::View<T, P...>& src,
                             std::string const& name = "") {

@@ -927,8 +927,7 @@ inline auto create_mirror(
 }
 
 // public interface that accepts a space
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror(
     const Space&, const Kokkos::Experimental::OffsetView<T, P...>& src) {
   return Impl::create_mirror(
@@ -936,8 +935,7 @@ inline auto create_mirror(
 }
 
 // public interface that accepts a space and a without initializing flag
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror(
     Kokkos::Impl::WithoutInitializing_t wi, const Space&,
     const Kokkos::Experimental::OffsetView<T, P...>& src) {
@@ -1010,8 +1008,7 @@ inline auto create_mirror_view(
 }
 
 // public interface that accepts a space
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror_view(
     const Space&, const Kokkos::Experimental::OffsetView<T, P...>& src) {
   return Impl::create_mirror_view(
@@ -1019,8 +1016,7 @@ inline auto create_mirror_view(
 }
 
 // public interface that accepts a space and a without initializing flag
-template <class Space, class T, class... P,
-          typename Enable = std::enable_if_t<Kokkos::is_space<Space>::value>>
+template <Kokkos::Space Space, class T, class... P>
 inline auto create_mirror_view(
     Kokkos::Impl::WithoutInitializing_t wi, const Space&,
     const Kokkos::Experimental::OffsetView<T, P...>& src) {
@@ -1050,7 +1046,7 @@ create_mirror_view_and_copy(
   return {create_mirror_view_and_copy(arg_prop, src.view()), src.begins()};
 }
 
-template <class Space, class T, class... P>
+template <Kokkos::Space Space, class T, class... P>
 typename Kokkos::Impl::MirrorOffsetViewType<Space, T, P...>::view_type
 create_mirror_view_and_copy(
     const Space& space, const Kokkos::Experimental::OffsetView<T, P...>& src,
