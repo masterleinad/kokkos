@@ -46,6 +46,8 @@ template <unsigned N, typename T, typename... Args>
 KOKKOS_FUNCTION View<typename ViewDataTypeFromRank<T, N>::type, Args...>
 as_view_of_rank_n(DynRankView<T, Args...> v);
 
+// TODO: Replace this specialized with a bool
+template <typename Specialize>
 struct DynRankDimTraits {
   enum : size_t { unspecified = KOKKOS_INVALID_INDEX };
 
@@ -338,7 +340,8 @@ class DynRankView : private View<DataType*******, Properties...> {
   using view_type = View<DataType*******, Properties...>;
 
  private:
-  using drdtraits = Impl::DynRankDimTraits;
+  using drdtraits = Impl::DynRankDimTraits<
+      std::conditional_t<view_type::traits::impl_is_customized, bool, void>>;
 
  public:
   // typedefs from ViewTraits, overriden
