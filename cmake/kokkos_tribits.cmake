@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 message(STATUS "The project name is: ${PROJECT_NAME}")
 
 if(Kokkos_ENABLE_TESTS OR Kokkos_INSTALL_TESTING)
-  find_package(GTest QUIET 1.14.0)
+  find_package(GTest 1.14.0 CONFIG QUIET)
   message(STATUS "GTest_FOUND:       '${GTest_FOUND}'")
   message(STATUS "GTest_VERSION:     '${GTest_VERSION}'")
   message(STATUS "GTest_DIR:         '${GTest_DIR}'")
