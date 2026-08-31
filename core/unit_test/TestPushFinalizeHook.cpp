@@ -105,7 +105,7 @@ TEST_F(PushFinalizeHook_DeathTest, ignore_late_registration) {
         Kokkos::initialize();
         Kokkos::finalize();
         // legal to register after finalize but will never be called
-        Kokkos::push_finalize_hook([] { throw 42; });
+        Kokkos::push_finalize_hook([] { throw std::runtime_error("42"); });
         std::exit(EXIT_SUCCESS);
       },
       ::testing::ExitedWithCode(EXIT_SUCCESS), "");
