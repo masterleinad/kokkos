@@ -241,7 +241,9 @@ TEST(TEST_CATEGORY, basic_view_atomic_accessor) {
   test_atomic_accessor<int>();
   test_atomic_accessor<double>();
 // FIXME OPENACC atomics
-#ifndef KOKKOS_ENABLE_OPENACC
+#if !defined(KOKKOS_ENABLE_OPENACC) && \
+    (!defined(KOKKOS_ENABLE_SYCL) ||   \
+     defined(KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED))
   test_atomic_accessor<Kokkos::complex<double>>();
 #endif
 }
