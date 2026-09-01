@@ -42,13 +42,6 @@ kokkos_add_library(
   ${KOKKOS_CONTAINERS_MODULES}
 )
 
-if(Kokkos_ENABLE_EXPERIMENTAL_CXX20_MODULES AND (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID
-                                                                                           STREQUAL "AppleClang")
-   AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 22
-)
-  target_compile_options(kokkoscontainers PRIVATE -fno-modules-reduced-bmi)
-endif()
-
 kokkos_lib_include_directories(
   kokkoscontainers ${KOKKOS_TOP_BUILD_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
 )
