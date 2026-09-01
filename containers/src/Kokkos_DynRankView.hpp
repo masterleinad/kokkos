@@ -1217,21 +1217,10 @@ inline void deep_copy(typename ViewTraits<ST, SP...>::non_const_value_type& dst,
   deep_copy(dst, Impl::as_view_of_rank_n<0>(src));
 }
 
-//----------------------------------------------------------------------------
-/** \brief  A deep copy between views of the default specialization, compatible
- * type, same rank, same contiguous layout.
- *
- * A rank mismatch will error out in the attempt to convert to a View
- */
+namespace Impl {
 template <class ExecSpace, class DstType, class SrcType>
-  requires((Kokkos::is_dyn_rank_view<DstType>::value ||
-            Kokkos::is_dyn_rank_view<SrcType>::value) &&
-           (Kokkos::is_view<DstType>::value ||
-            Kokkos::is_dyn_rank_view<DstType>::value) &&
-           (Kokkos::is_view<SrcType>::value ||
-            Kokkos::is_dyn_rank_view<SrcType>::value))
-inline void deep_copy(const ExecSpace& exec_space, const DstType& dst,
-                      const SrcType& src) {
+void deep_copy_dynrankview(const ExecSpace& exec_space, const DstType& dst,
+                           const SrcType& src) {
   static_assert(std::is_same_v<typename DstType::traits::value_type,
                                typename DstType::traits::non_const_value_type>,
                 "deep_copy requires non-const destination type");
@@ -1277,13 +1266,7 @@ inline void deep_copy(const ExecSpace& exec_space, const DstType& dst,
 }
 
 template <class DstType, class SrcType>
-  requires((Kokkos::is_dyn_rank_view<DstType>::value ||
-            Kokkos::is_dyn_rank_view<SrcType>::value) &&
-           (Kokkos::is_view<DstType>::value ||
-            Kokkos::is_dyn_rank_view<DstType>::value) &&
-           (Kokkos::is_view<SrcType>::value ||
-            Kokkos::is_dyn_rank_view<SrcType>::value))
-inline void deep_copy(const DstType& dst, const SrcType& src) {
+void deep_copy_dynrankview(const DstType& dst, const SrcType& src) {
   static_assert(std::is_same_v<typename DstType::traits::value_type,
                                typename DstType::traits::non_const_value_type>,
                 "deep_copy requires non-const destination type");
@@ -1326,6 +1309,64 @@ inline void deep_copy(const DstType& dst, const SrcType& src) {
           "Calling DynRankView deep_copy with a view of unexpected rank " +
           std::to_string(rank(dst)));
   }
+}
+}  // namespace Impl
+
+//----------------------------------------------------------------------------
+/** \brief  A deep copy between views of the default specialization, compatible
+ * type, same rank, same contiguous layout.
+ *
+ * A rank mismatch will error out in the attempt to convert to a View
+ */
+template <class ExecSpace, typename DstDataType, class... DstProperties,
+          typename SrcDataType, class... SrcProperties>
+inline void deep_copy(
+    const ExecSpace& exec_space,
+    const Kokkos::DynRankView<DstDataType, DstProperties...>& dst,
+    const Kokkos::DynRankView<SrcDataType, SrcProperties...>& src) {
+  Impl::deep_copy_dynrankview(exec_space, dst, src);
+}
+
+template <class ExecSpace, typename DstDataType, class... DstProperties,
+          typename SrcDataType, class... SrcProperties>
+inline void deep_copy(
+    const ExecSpace& exec_space,
+    const Kokkos::DynRankView<DstDataType, DstProperties...>& dst,
+    const Kokkos::View<SrcDataType, SrcProperties...>& src) {
+  Impl::deep_copy_dynrankview(exec_space, dst, src);
+}
+
+template <class ExecSpace, typename DstDataType, class... DstProperties,
+          typename SrcDataType, class... SrcProperties>
+inline void deep_copy(
+    const ExecSpace& exec_space,
+    const Kokkos::View<DstDataType, DstProperties...>& dst,
+    const Kokkos::DynRankView<SrcDataType, SrcProperties...>& src) {
+  Impl::deep_copy_dynrankview(exec_space, dst, src);
+}
+
+template <typename DstDataType, class... DstProperties, typename SrcDataType,
+          class... SrcProperties>
+inline void deep_copy(
+    const Kokkos::DynRankView<DstDataType, DstProperties...>& dst,
+    const Kokkos::DynRankView<SrcDataType, SrcProperties...>& src) {
+  Impl::deep_copy_dynrankview(dst, src);
+}
+
+template <typename DstDataType, class... DstProperties, typename SrcDataType,
+          class... SrcProperties>
+inline void deep_copy(
+    const Kokkos::DynRankView<DstDataType, DstProperties...>& dst,
+    const Kokkos::View<SrcDataType, SrcProperties...>& src) {
+  Impl::deep_copy_dynrankview(dst, src);
+}
+
+template <typename DstDataType, class... DstProperties, typename SrcDataType,
+          class... SrcProperties>
+inline void deep_copy(
+    const Kokkos::View<DstDataType, DstProperties...>& dst,
+    const Kokkos::DynRankView<SrcDataType, SrcProperties...>& src) {
+  Impl::deep_copy_dynrankview(dst, src);
 }
 
 }  // namespace Kokkos
