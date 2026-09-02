@@ -237,22 +237,26 @@ void test_atomic_accessor() {
                        MDRangeTestFunctor<um_view_type>{um_view});
 }
 
-TEST(TEST_CATEGORY, basic_view_atomic_accessor) {
+TEST(TEST_CATEGORY, basic_view_atomic_accessor_int) {
   test_atomic_accessor<int>();
-  test_atomic_accessor<double>();
-// FIXME OPENACC atomics
-#ifdef KOKKOS_ENABLE_OPENACC
-  return;
-  KOKKOS_IMPL_UNREACHABLE();
-#endif
+}
 
+TEST(TEST_CATEGORY, basic_view_atomic_accessor_double) {
+  test_atomic_accessor<double>();
+}
+
+TEST(TEST_CATEGORY, basic_view_atomic_accessor_complex_double) {
+  // FIXME OPENACC atomics
+#ifdef KOKKOS_ENABLE_OPENACC
+  GTEST_SKIP() << "unsupported atomic data type for OpenACC+NVHPC";
+#endif
 #if defined(KOKKOS_ENABLE_SYCL) && \
     !defined(KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED)
-  if (std::is_same_v<TEST_EXECSPACE, Kokkos::SYCL>) {
-    return;
-    KOKKOS_IMPL_UNREACHABLE();
-  }
+  if (std::is_same_v<TEST_EXECSPACE, Kokkos::SYCL>)
+    GTEST_SKIP() << "unsupported atomic data type for SYCL without global "
+                    "device support";
 #endif
+
   test_atomic_accessor<Kokkos::complex<double>>();
 }
 
