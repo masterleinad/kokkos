@@ -13,8 +13,8 @@ TEST(TEST_CATEGORY, atomic_operations_int8) {
 #if defined(KOKKOS_ENABLE_SYCL) && \
     !defined(KOKKOS_IMPL_SYCL_DEVICE_GLOBAL_SUPPORTED)
   if (std::is_same_v<TEST_EXECSPACE, Kokkos::SYCL>)
-    GTEST_SKIP()
-        << "unsupported atomic data type for SYCL without global device support";
+    GTEST_SKIP() << "unsupported atomic data type for SYCL without global "
+                    "device support";
 #endif
   const int8_t start = -5;
   const int8_t end   = 11;
