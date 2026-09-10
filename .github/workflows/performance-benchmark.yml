@@ -71,7 +71,7 @@ jobs:
 
           echo "Copying benchmark results"
 
-          cp -a "../${BUILD_ID}" "${BUILD_ID}"
+          cp -a "../${BUILD_ID}" "."
           git add "${BUILD_ID}"
 
           git commit -m "Update benchmark results for ${BUILD_ID}"
