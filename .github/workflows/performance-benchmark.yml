@@ -62,7 +62,7 @@ jobs:
         run: |
           echo "Cloning benchmark-results repository"
           git clone \
-            "https://x-access-token:${GH_TOKEN}@github.com/kokkos/kokkos-benchmark-results.git" \
+            "https://x-access-token:${GH_TOKEN}@github.com/masterleinad/kokkos-benchmark-results.git" \
               benchmark-results
           cd benchmark-results
 
