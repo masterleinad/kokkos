@@ -60,7 +60,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.MASTERLEINAD_PUSH_BENCHMARK_RESULTS }}
         run: |
-          set -euo pipefail
           echo "Cloning benchmark-results repository"
           git clone \
             "https://x-access-token:${GH_TOKEN}@github.com/kokkos/kokkos-benchmark-results.git" \
