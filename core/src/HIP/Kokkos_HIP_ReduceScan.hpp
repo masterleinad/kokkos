@@ -146,12 +146,15 @@ struct HIPReductionsFunctor<FunctorType, false> {
         (threadIdx.y * blockDim.x + threadIdx.x) % HIPTraits::WarpSize;
 // HIP added support for __syncwarp() in version 7.0
 // Using an unconditional 64bit mask here
-// In HIP the upper bits are unused when the warp size is 32
+// FIXME_HIP Using
+//   unsigned long long mask = std::uint64_t(-1) >> (64 - width);
+//   if (width != HIPTraits::WarpSize)
+//     mask <<= ((threadIdx.y * blockDim.x + threadIdx.x) / width) * width;
+// fails in Debug mode with
+// HSA_STATUS_ERROR_EXCEPTION: An HSAIL operation resulted in a hardware
+// exception.
 #if HIP_VERSION_MAJOR >= 7
-    unsigned long long mask = std::uint64_t(-1) >> (64 - width);
-    if (width != HIPTraits::WarpSize)
-      mask <<= ((threadIdx.y * blockDim.x + threadIdx.x) / width) * width;
-    __syncwarp(mask);
+    unsigned long long mask = __activemask();
 #else
 #if __has_builtin(__builtin_amdgcn_wave_barrier)
     __builtin_amdgcn_wave_barrier();
