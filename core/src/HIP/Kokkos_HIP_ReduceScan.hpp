@@ -155,6 +155,7 @@ struct HIPReductionsFunctor<FunctorType, false> {
 // exception.
 #if HIP_VERSION_MAJOR >= 7
     unsigned long long mask = __activemask();
+    __syncwarp(mask);
 #else
 #if __has_builtin(__builtin_amdgcn_wave_barrier)
     __builtin_amdgcn_wave_barrier();
