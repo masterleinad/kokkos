@@ -154,8 +154,7 @@ struct HIPReductionsFunctor<FunctorType, false> {
 // HSA_STATUS_ERROR_EXCEPTION: An HSAIL operation resulted in a hardware
 // exception.
 #if HIP_VERSION_MAJOR >= 7
-    unsigned long long mask = __activemask();
-    __syncwarp(mask);
+    __syncwarp();
 #else
 #if __has_builtin(__builtin_amdgcn_wave_barrier)
     __builtin_amdgcn_wave_barrier();
@@ -166,7 +165,7 @@ struct HIPReductionsFunctor<FunctorType, false> {
         functor.join(value, value + delta);
       }
 #if HIP_VERSION_MAJOR >= 7
-      __syncwarp(mask);
+      __syncwarp();
 #else
 #if __has_builtin(__builtin_amdgcn_wave_barrier)
       __builtin_amdgcn_wave_barrier();
