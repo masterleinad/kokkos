@@ -21,7 +21,7 @@
 
 NVIDIA-RTX6000-OPENACC:
   extends: .common-setup
-  tags: [nvidia--rtx6000, hpsf-gpu]
+  tags: [nvidia-rtx6000, hpsf-gpu]
   image: nvcr.io/nvidia/nvhpc:26.5-devel-cuda13.2-ubuntu24.04
   script:
     - apt-get update && apt-get install -y cmake git
