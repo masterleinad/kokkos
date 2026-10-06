@@ -19,9 +19,9 @@
   after_script:
     - sed -n "s/[0-9]*:[ ]\[[ ]*OK \] \([^ ]*\) (\([0-9]*\) ms)/\2 \1/p" test_results.txt | sort -nr | head
 
-NVIDIA-H100-OPENACC:
+NVIDIA-RTX6000-OPENACC:
   extends: .common-setup
-  tags: [nvidia-h100, hpsf-gpu]
+  tags: [nvidia--rtx6000, hpsf-gpu]
   image: nvcr.io/nvidia/nvhpc:26.5-devel-cuda13.2-ubuntu24.04
   script:
     - apt-get update && apt-get install -y cmake git
@@ -30,7 +30,7 @@ NVIDIA-H100-OPENACC:
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_BUILD_TYPE=${BUILD_TYPE}"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_COMPILER=nvc++
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D CMAKE_CXX_FLAGS='-Werror'"
-    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ARCH_HOPPER90=ON"
+    - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ARCH_BLACKWELL120=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_OPENACC=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_COMPILER_WARNINGS=ON"
     - export ENV_CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS};-D Kokkos_ENABLE_TESTS=ON"
@@ -39,7 +39,7 @@ NVIDIA-H100-OPENACC:
         -D CDASH_MODEL=${CDASH_MODEL}
         -D GITHUB_PR_ID="${GITHUB_PR_ID}"
         -D CMAKE_OPTIONS="${ENV_CMAKE_OPTIONS}"
-        -D OUTPUT_JUNIT_FILE=result_h100_openacc.xml
+        -D OUTPUT_JUNIT_FILE=result_rtx6000_openacc.xml
         -S scripts/CTestRun.cmake
         -D CTEST_SITE="gitlab.spack.io"
         -D CTEST_BUILD_NAME="${CTEST_BUILD_NAME}"
@@ -48,10 +48,9 @@ NVIDIA-H100-OPENACC:
   artifacts:
     when: always
     paths:
-      - build/result_h100_openacc.xml
+      - build/result_rtx6000_openacc.xml
     reports:
-      junit: build/result_h100_openacc.xml
-
+      junit: build/result_rtx6000_openacc.xml
 
 NVIDIA-RTX5080:
   extends: .common-setup
