@@ -1,6 +1,7 @@
 name: github-Linux
 
 on:
+  push:
   workflow_call:
 
 concurrency:
@@ -101,7 +102,7 @@ jobs:
       image: ghcr.io/kokkos/ci-containers/${{ matrix.distro }}
     steps:
       - name: Checkout desul
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@v6.0.1
         with:
           repository: desul/desul
           ref: 1c7564729c309fcffaa1262d036ec586a6a8b5cf
