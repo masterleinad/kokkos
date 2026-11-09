@@ -304,9 +304,14 @@ class HPX {
               ex::ensure_started();
       } else {
         sen = std::move(sen) |
+#if HPX_VERSION_MAJOR >= 2
+              ex::continues_on(
+                  ex::with_stacksize(ex::thread_pool_scheduler{}, stacksize))
+#else
               ex::transfer(
-                  ex::with_stacksize(ex::thread_pool_scheduler{}, stacksize)) |
-              ex::bulk(n, std::move(f)) |
+                  ex::with_stacksize(ex::thread_pool_scheduler{}, stacksize))
+#endif
+              | ex::bulk(n, std::move(f)) |
               ex::then(Kokkos::Experimental::HPX::
                            impl_decrement_active_parallel_region_count) |
               ex::ensure_started();
@@ -362,9 +367,14 @@ class HPX {
               ex::ensure_started();
       } else {
         sen = std::move(sen) |
+#if HPX_VERSION_MAJOR >= 2
+              ex::continues_on(
+                  ex::with_stacksize(ex::thread_pool_scheduler{}, stacksize))
+#else
               ex::transfer(
-                  ex::with_stacksize(ex::thread_pool_scheduler{}, stacksize)) |
-              ex::then(std::move(f_setup)) | ex::bulk(n, std::move(f)) |
+                  ex::with_stacksize(ex::thread_pool_scheduler{}, stacksize))
+#endif
+              | ex::then(std::move(f_setup)) | ex::bulk(n, std::move(f)) |
               ex::then(std::move(f_finalize)) |
               ex::then(Kokkos::Experimental::HPX::
                            impl_decrement_active_parallel_region_count) |
