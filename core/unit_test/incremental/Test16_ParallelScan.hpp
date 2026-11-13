@@ -11,12 +11,15 @@ import kokkos.core;
 
 /// @Kokkos_Feature_Level_Required:16
 // Incremental test for parallel_scan.
-// perform scan on a 1D view of double's and check for correctness.
+// perform scan on a 1D view of value_type's and check for correctness.
 
 namespace Test {
-
+#ifdef __ACPP__
+using value_type = float;
+#else
 using value_type = double;
-const int N      = 10;
+#endif
+const int N = 10;
 
 template <typename ExecSpace>
 struct TrivialScanFunctor {
@@ -68,7 +71,7 @@ struct GenericExclusiveScanFunctor {
 
 template <class ExecSpace>
 struct TestScan {
-  // 1D  View of double
+  // 1D  View of value_type
   using View_1D = typename Kokkos::View<value_type *, ExecSpace>;
 
   template <typename FunctorType>
@@ -77,8 +80,9 @@ struct TestScan {
 
     // Initialize data.
     Kokkos::parallel_for(
-        Kokkos::RangePolicy<ExecSpace>(0, N),
-        KOKKOS_LAMBDA(const int i) { d_data(i) = i * 0.5; });
+        Kokkos::RangePolicy<ExecSpace>(0, N), KOKKOS_LAMBDA(const int i) {
+          d_data(i) = i * static_cast<value_type>(0.5);
+        });
 
     // Exclusive parallel_scan call
     Kokkos::parallel_scan(Kokkos::RangePolicy<ExecSpace>(0, N),
@@ -91,7 +95,7 @@ struct TestScan {
     ASSERT_EQ(h_data(0), 0.0);
     value_type upd = h_data(0);
     for (int i = 1; i < N; ++i) {
-      upd += (i - 1) * 0.5;
+      upd += (i - 1) * static_cast<value_type>(0.5);
       ASSERT_EQ(h_data(i), upd);
     }
   }
@@ -99,13 +103,13 @@ struct TestScan {
 
 template <class ExecSpace>
 struct TestScanWithTotal {
-  // 1D  View of double
+  // 1D  View of value_type
   using View_1D  = typename Kokkos::View<value_type *, ExecSpace>;
   View_1D d_data = View_1D("data", N);
 
   template <typename IndexType>
   KOKKOS_FUNCTION void operator()(IndexType i) const {
-    d_data(i) = i * 0.5;
+    d_data(i) = i * static_cast<value_type>(0.5);
   }
 
   template <typename FunctorType>
@@ -125,7 +129,7 @@ struct TestScanWithTotal {
     ASSERT_EQ(h_data(0), 0.0);
     value_type upd = h_data(0);
     for (int i = 1; i < N; ++i) {
-      upd += (i - 1) * 0.5;
+      upd += (i - 1) * static_cast<value_type>(0.5);
       ASSERT_EQ(h_data(i), upd);
     }
     ASSERT_EQ(total, N * (N - 1) * 0.25);

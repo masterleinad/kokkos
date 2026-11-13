@@ -14,9 +14,13 @@ import kokkos.core;
 #include <gtest/gtest.h>
 
 namespace Test {
+#ifdef __ACPP__
+using value_type = float;
+#else
 using value_type = double;
-const int N      = 10;
-const int M      = 10;
+#endif
+const int N = 10;
+const int M = 10;
 
 // A structure for complex number.
 struct MyComplex {
@@ -36,10 +40,10 @@ struct MyComplex {
 
 template <class ExecSpace>
 struct TestMDRangeReduce {
-  // 1D  View of double
+  // 1D  View of value_type
   using View_1D = Kokkos::View<value_type*, ExecSpace>;
 
-  // 2D  View of double
+  // 2D  View of value_type
   using View_2D = Kokkos::View<value_type**, ExecSpace>;
 
   // Index Type for the iterator
@@ -66,12 +70,12 @@ struct TestMDRangeReduce {
     // Compute reference solution on the host.
     for (int i = 0; i < N; ++i)
       for (int j = 0; j < M; ++j) h_result += i * j;
-    h_result *= 0.5;
+    h_result *= static_cast<value_type>(0.5);
 
     // Fill data.
     Kokkos::parallel_for(
         mdPolicy_2D, KOKKOS_LAMBDA(const int i, const int j) {
-          d_data(i, j) = i * j * 0.5;
+          d_data(i, j) = i * j * static_cast<value_type>(0.5);
         });
 
     // Parallel reduce on a scalar.
@@ -117,7 +121,8 @@ struct TestMDRangeReduce {
     // Fill data
     Kokkos::parallel_for(
         Kokkos::RangePolicy<ExecSpace>(0, N), KOKKOS_LAMBDA(const int i) {
-          d_data(i) = MyComplex(i * 0.5, -i * 0.5);
+          d_data(i) = MyComplex(i * static_cast<value_type>(0.5),
+                                -i * static_cast<value_type>(0.5));
         });
 
     // Reduction for complex number.
@@ -131,8 +136,8 @@ struct TestMDRangeReduce {
     // Correctness Check
     for (int i = 0; i < N; ++i) sum += i;
 
-    ASSERT_EQ(result._re, sum * 0.5);
-    ASSERT_EQ(result._im, -sum * 0.5);
+    ASSERT_EQ(result._re, sum * static_cast<value_type>(0.5));
+    ASSERT_EQ(result._im, -sum * static_cast<value_type>(0.5));
   }
 #endif
 };
