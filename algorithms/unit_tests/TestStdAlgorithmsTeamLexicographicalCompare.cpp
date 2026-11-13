@@ -248,26 +248,32 @@ void run_all_scenarios(const TestCaseType testCase) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_lexicographical_compare_team_test, views_are_equal) {
   constexpr TestCaseType testCaseType = TestCaseType::ViewsAreEqual;
   run_all_scenarios<DynamicTag, double>(testCaseType);
   run_all_scenarios<StridedTwoRowsTag, int>(testCaseType);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(testCaseType);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_lexicographical_compare_team_test, first_view_is_less) {
   constexpr TestCaseType testCaseType = TestCaseType::FirstIsLess;
   run_all_scenarios<DynamicTag, double>(testCaseType);
   run_all_scenarios<StridedTwoRowsTag, int>(testCaseType);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(testCaseType);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_lexicographical_compare_team_test, first_view_is_greater) {
   constexpr TestCaseType testCaseType = TestCaseType::FirstIsGreater;
   run_all_scenarios<DynamicTag, double>(testCaseType);
   run_all_scenarios<StridedTwoRowsTag, int>(testCaseType);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(testCaseType);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamLexicographicalCompare
 }  // namespace stdalgos

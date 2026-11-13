@@ -43,9 +43,11 @@ TEST(sycl_multi_gpu, unmanaged_views) {
   sycl::free(p1, execs[1].sycl_queue());
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(sycl_multi_gpu, scratch_space) {
   std::array<TEST_EXECSPACE, 2> execs = get_execution_spaces();
 
   test_scratch(execs[0], execs[1]);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 }  // namespace

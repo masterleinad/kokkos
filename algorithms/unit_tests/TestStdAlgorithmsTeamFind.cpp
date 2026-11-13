@@ -178,6 +178,7 @@ void run_all_scenarios(const bool searchedValuesExist) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_find_team_test, searched_values_exist) {
   constexpr bool searchedValuesExist = true;
 
@@ -185,7 +186,9 @@ TEST(std_algorithms_find_team_test, searched_values_exist) {
   run_all_scenarios<StridedTwoRowsTag, int>(searchedValuesExist);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(searchedValuesExist);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_find_team_test, searched_values_do_not_exist) {
   constexpr bool searchedValuesExist = false;
 
@@ -193,6 +196,7 @@ TEST(std_algorithms_find_team_test, searched_values_do_not_exist) {
   run_all_scenarios<StridedTwoRowsTag, int>(searchedValuesExist);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(searchedValuesExist);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamFind
 }  // namespace stdalgos

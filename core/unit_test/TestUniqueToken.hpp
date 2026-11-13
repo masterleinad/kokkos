@@ -125,15 +125,19 @@ class TestUniqueToken {
   }
 };
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, unique_token_global) {
   TestUniqueToken<TEST_EXECSPACE,
                   Kokkos::Experimental::UniqueTokenScope::Global>::run();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, unique_token_instance) {
   TestUniqueToken<TEST_EXECSPACE,
                   Kokkos::Experimental::UniqueTokenScope::Instance>::run();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 template <class Space>
 class TestAcquireTeamUniqueToken {
@@ -239,8 +243,10 @@ class TestAcquireTeamUniqueToken {
   }
 };
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, unique_token_team_acquire) {
   TestAcquireTeamUniqueToken<TEST_EXECSPACE>::run();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace

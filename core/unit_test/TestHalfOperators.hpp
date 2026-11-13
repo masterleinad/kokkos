@@ -270,6 +270,17 @@ enum OP_TESTS {
   N_OP_TESTS
 };
 
+// half_type may be a wrapper with an impl_type, or a plain float if the
+// respective (b)half type is emulated by float.
+template <class T, class = void>
+struct half_impl_of {
+  using type = T;
+};
+template <class T>
+struct half_impl_of<T, std::void_t<typename T::impl_type>> {
+  using type = typename T::impl_type;
+};
+
 template <class view_type, class half_type>
 struct Functor_TestHalfOperators {
   half_type h_lhs, h_rhs;
@@ -409,11 +420,7 @@ struct Functor_TestHalfOperators {
   }
   // END: Binary Arithmetic test helpers
 
-#if !KOKKOS_HALF_T_IS_FLOAT
-  using half_impl_type = typename half_type::impl_type;
-#else
-  using half_impl_type = half_type;
-#endif  // !KOKKOS_HALF_T_IS_FLOAT
+  using half_impl_type = typename half_impl_of<half_type>::type;
 
   KOKKOS_FUNCTION
   void operator()(Batch0, int) const {

@@ -171,18 +171,22 @@ void run_all_scenarios(bool makeDataSortedOnPurpose) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_is_sorted_team_test,
      test_data_almost_certainly_not_sorted) {
   run_all_scenarios<DynamicTag, double>(false);
   run_all_scenarios<StridedTwoRowsTag, double>(false);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(false);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_is_sorted_team_test, test_data_certainly_sorted) {
   run_all_scenarios<DynamicTag, double>(true);
   run_all_scenarios<StridedTwoRowsTag, double>(true);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(true);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamIsSorted
 }  // namespace stdalgos

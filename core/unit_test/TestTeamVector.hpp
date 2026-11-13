@@ -1063,6 +1063,7 @@ struct checkScan {
 };
 }  // namespace VectorScanReducer
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_vector) {
   ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(0)));
   ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(1)));
@@ -1079,7 +1080,9 @@ TEST(TEST_CATEGORY, team_vector) {
   ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(12)));
   ASSERT_TRUE((TestTeamVector::Test<TEST_EXECSPACE>(13)));
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, triple_nested_parallelism) {
 // With KOKKOS_ENABLE_DEBUG enabled, the functor uses too many registers to run
 // with a team size of 32 on GPUs, 16 is the max possible (at least on a K80
@@ -1106,6 +1109,7 @@ TEST(TEST_CATEGORY, triple_nested_parallelism) {
   TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 16, 16);
   TestTripleNestedReduce<double, TEST_EXECSPACE>(8192, 2048, 7, 16);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 TEST(TEST_CATEGORY, parallel_scan_with_reducers) {
   using T = double;

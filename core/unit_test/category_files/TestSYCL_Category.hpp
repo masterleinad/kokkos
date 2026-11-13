@@ -6,6 +6,12 @@
 
 #include <gtest/gtest.h>
 
+// Features that AdaptiveCpp does not support (e.g. team-level reductions,
+// UniqueToken) are excluded from the tests with this macro.
+#ifdef __ACPP__
+#define KOKKOS_TEST_SYCL_ACPP
+#endif
+
 #define TEST_CATEGORY sycl
 #define TEST_CATEGORY_NUMBER 7
 #define TEST_CATEGORY_DEATH sycl_DeathTest

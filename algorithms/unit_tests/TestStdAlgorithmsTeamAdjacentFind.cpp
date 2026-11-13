@@ -221,6 +221,7 @@ void run_all_scenarios(const bool ensureAdjacentFindCanFind) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_adjacent_find_team_test,
      two_consecutive_equal_elements_exist) {
   constexpr bool ensureAdjacentFindCanFind = true;
@@ -229,7 +230,9 @@ TEST(std_algorithms_adjacent_find_team_test,
   run_all_scenarios<StridedTwoRowsTag, int>(ensureAdjacentFindCanFind);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(ensureAdjacentFindCanFind);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_adjacent_find_team_test,
      two_consecutive_equal_elements_might_exist) {
   constexpr bool ensureAdjacentFindCanFind = false;
@@ -238,6 +241,7 @@ TEST(std_algorithms_adjacent_find_team_test,
   run_all_scenarios<StridedTwoRowsTag, int>(ensureAdjacentFindCanFind);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(ensureAdjacentFindCanFind);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamAdjacentFind
 }  // namespace stdalgos

@@ -247,19 +247,23 @@ void run_all_scenarios(const bool viewsAreEqual) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_equal_team_test, views_are_equal) {
   constexpr bool viewsAreEqual = true;
   run_all_scenarios<DynamicTag, double>(viewsAreEqual);
   run_all_scenarios<StridedTwoRowsTag, int>(viewsAreEqual);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(viewsAreEqual);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_equal_team_test, views_are_not_equal) {
   constexpr bool viewsAreEqual = false;
   run_all_scenarios<DynamicTag, double>(viewsAreEqual);
   run_all_scenarios<StridedTwoRowsTag, int>(viewsAreEqual);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(viewsAreEqual);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamEqual
 }  // namespace stdalgos

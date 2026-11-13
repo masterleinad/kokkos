@@ -164,11 +164,13 @@ void run_all_scenarios() {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_rotate_copy_team_test, test) {
   run_all_scenarios<DynamicTag, double>();
   run_all_scenarios<StridedTwoRowsTag, int>();
   run_all_scenarios<StridedThreeRowsTag, int>();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamRotateCopy
 }  // namespace stdalgos

@@ -238,6 +238,7 @@ void run_all_scenarios(const bool sequencesExist) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_find_end_team_test, sequences_exist) {
   constexpr bool sequencesExist = true;
 
@@ -245,7 +246,9 @@ TEST(std_algorithms_find_end_team_test, sequences_exist) {
   run_all_scenarios<StridedTwoRowsTag, int>(sequencesExist);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(sequencesExist);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_find_end_team_test, sequences_do_not_exist) {
   constexpr bool sequencesExist = false;
 
@@ -253,6 +256,7 @@ TEST(std_algorithms_find_end_team_test, sequences_do_not_exist) {
   run_all_scenarios<StridedTwoRowsTag, int>(sequencesExist);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(sequencesExist);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamFindEnd
 }  // namespace stdalgos

@@ -218,6 +218,7 @@ void run_all_scenarios(const std::string& name, const std::vector<int>& cols) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_is_sorted_until_team_test, test_trivialA) {
   const std::string name      = "trivialEmpty";
   const std::vector<int> cols = {0};
@@ -226,7 +227,9 @@ TEST(std_algorithms_is_sorted_until_team_test, test_trivialA) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_is_sorted_until_team_test, test_trivialB) {
   const std::string name      = "trivialOneElement";
   const std::vector<int> cols = {1};
@@ -234,7 +237,9 @@ TEST(std_algorithms_is_sorted_until_team_test, test_trivialB) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_is_sorted_until_team_test, test_nontrivialA) {
   const std::string name      = "nontrivialUntilLast";
   const std::vector<int> cols = {13, 101, 1444, 5153};
@@ -242,7 +247,9 @@ TEST(std_algorithms_is_sorted_until_team_test, test_nontrivialA) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_is_sorted_until_team_test, test_nontrivialB) {
   const std::string name      = "nontrivialRandom";
   const std::vector<int> cols = {13, 101, 1444, 5153};
@@ -250,6 +257,7 @@ TEST(std_algorithms_is_sorted_until_team_test, test_nontrivialB) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamIsSortedUntil
 }  // namespace stdalgos

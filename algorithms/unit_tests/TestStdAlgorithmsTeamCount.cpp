@@ -169,19 +169,23 @@ void run_all_scenarios(const bool searchedValueExist) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_count_team_test, count_returns_nonzero) {
   constexpr bool searchedValueExist = true;
   run_all_scenarios<DynamicTag, double>(searchedValueExist);
   run_all_scenarios<StridedTwoRowsTag, int>(searchedValueExist);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(searchedValueExist);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_count_team_test, count_returns_zero) {
   constexpr bool searchedValueExist = false;
   run_all_scenarios<DynamicTag, double>(searchedValueExist);
   run_all_scenarios<StridedTwoRowsTag, int>(searchedValueExist);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(searchedValueExist);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamCount
 }  // namespace stdalgos

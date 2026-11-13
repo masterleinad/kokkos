@@ -788,6 +788,14 @@ struct Random_UniqueIndex<Kokkos::Device<Kokkos::SYCL, MemorySpace>> {
 #if defined(KOKKOS_COMPILER_INTEL_LLVM) && \
     KOKKOS_COMPILER_INTEL_LLVM >= 20250000
     auto item = sycl::ext::oneapi::this_work_item::get_nd_item<3>();
+#elif defined(__ACPP__)
+    // AdaptiveCpp does not provide this_nd_item outside of PCUDA mode; build
+    // the item from the SSCP thread-hierarchy builtins instead.
+    const sycl::id<3> zero_offset{};
+    sycl::nd_item<3> item{&zero_offset, sycl::detail::get_group_id<3>(),
+                          sycl::detail::get_local_id<3>(),
+                          sycl::detail::get_local_size<3>(),
+                          sycl::detail::get_grid_size<3>()};
 #else
     auto item = sycl::ext::oneapi::experimental::this_nd_item<3>();
 #endif

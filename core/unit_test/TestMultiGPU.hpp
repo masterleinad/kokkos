@@ -68,6 +68,7 @@ void test_policies(TEST_EXECSPACE exec0, Kokkos::View<int *, TEST_EXECSPACE> v0,
   Kokkos::parallel_for("Test::Team",
                        Kokkos::TeamPolicy<TEST_EXECSPACE>(exec, 10, 10),
                        Test::FunctorTeam<MemorySpace, TEST_EXECSPACE>(v));
+#ifndef KOKKOS_TEST_SYCL_ACPP
   Kokkos::parallel_reduce(
       "Test::Team_0",
       Kokkos::TeamPolicy<TEST_EXECSPACE, Kokkos::LaunchBounds<128, 2>>(exec0,
@@ -80,8 +81,10 @@ void test_policies(TEST_EXECSPACE exec0, Kokkos::View<int *, TEST_EXECSPACE> v0,
       Test::FunctorTeamReduce<MemorySpace, TEST_EXECSPACE>(v), sum);
   ASSERT_EQ(800, sum0);
   ASSERT_EQ(800, sum);
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 struct ScratchFunctor {
   int scratch_size;
   int R;
@@ -122,7 +125,9 @@ struct ScratchFunctor {
                    [&]() { error_accum += team_error_accum; });
   }
 };
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 void test_scratch(TEST_EXECSPACE exec0, TEST_EXECSPACE exec1) {
   constexpr int N            = 10;
   constexpr int R            = 1000;
@@ -168,6 +173,7 @@ void test_scratch(TEST_EXECSPACE exec0, TEST_EXECSPACE exec1) {
   ASSERT_EQ(error0, 0);
   ASSERT_EQ(error1, 0);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 #if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)
 template <int N>

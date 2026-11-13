@@ -152,11 +152,13 @@ void run_all_scenarios() {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_transform_team_test, test_unary_op) {
   run_all_scenarios<DynamicTag, double>();
   run_all_scenarios<StridedTwoRowsTag, int>();
   run_all_scenarios<StridedThreeRowsTag, unsigned>();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamTransformUnaryOp
 }  // namespace stdalgos

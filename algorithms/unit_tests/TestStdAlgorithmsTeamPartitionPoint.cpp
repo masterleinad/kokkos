@@ -210,6 +210,7 @@ void run_all_scenarios(const std::string& name, const std::vector<int>& cols) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_partition_point_team_test, empty) {
   const std::string name      = "trivialEmpty";
   const std::vector<int> cols = {0};
@@ -217,7 +218,9 @@ TEST(std_algorithms_partition_point_team_test, empty) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_partition_point_team_test, all_true) {
   const std::string name      = "allTrue";
   const std::vector<int> cols = {13, 101, 1444, 5153};
@@ -225,7 +228,9 @@ TEST(std_algorithms_partition_point_team_test, all_true) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_partition_point_team_test, all_false) {
   const std::string name      = "allFalse";
   const std::vector<int> cols = {13, 101, 1444, 5153};
@@ -233,7 +238,9 @@ TEST(std_algorithms_partition_point_team_test, all_false) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_partition_point_team_test, random) {
   const std::string name      = "random";
   const std::vector<int> cols = {13, 101, 1444, 5153};
@@ -241,6 +248,7 @@ TEST(std_algorithms_partition_point_team_test, random) {
   run_all_scenarios<StridedTwoRowsTag, double>(name, cols);
   run_all_scenarios<StridedThreeRowsTag, int>(name, cols);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamPartitionPoint
 }  // namespace stdalgos

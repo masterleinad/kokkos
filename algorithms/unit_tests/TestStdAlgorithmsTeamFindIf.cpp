@@ -195,6 +195,7 @@ void run_all_scenarios(const bool predicatesReturnTrue) {
   }
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_find_if_team_test, predicates_return_true) {
   constexpr bool predicatesReturnTrue = true;
 
@@ -202,7 +203,9 @@ TEST(std_algorithms_find_if_team_test, predicates_return_true) {
   run_all_scenarios<StridedTwoRowsTag, int>(predicatesReturnTrue);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(predicatesReturnTrue);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(std_algorithms_find_if_team_test, predicates_return_false) {
   constexpr bool predicatesReturnTrue = false;
 
@@ -210,6 +213,7 @@ TEST(std_algorithms_find_if_team_test, predicates_return_false) {
   run_all_scenarios<StridedTwoRowsTag, int>(predicatesReturnTrue);
   run_all_scenarios<StridedThreeRowsTag, unsigned>(predicatesReturnTrue);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamFindIf
 }  // namespace stdalgos

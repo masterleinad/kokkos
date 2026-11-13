@@ -1818,6 +1818,7 @@ constexpr auto Right = Kokkos::Iterate::Right;
 int dims[]      = {3, 5, 7, 11, 13, 17, 19, 23};
 int smallDims[] = {2, 3, 2, 3, 5, 2, 3, 5};
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, TeamThreadMDRangeParallelFor) {
   TestTeamThreadMDRangeParallelFor<
       TEST_EXECSPACE>::test_parallel_for_3D_TeamThreadMDRange<Left>(dims);
@@ -1869,6 +1870,7 @@ TEST(TEST_CATEGORY, TeamThreadMDRangeParallelFor) {
   TestTeamThreadMDRangeParallelFor<
       TEST_EXECSPACE>::test_parallel_single_direction_test<Right>(dims);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 TEST(TEST_CATEGORY, ThreadVectorMDRangeParallelFor) {
   TestThreadVectorMDRangeParallelFor<
@@ -1967,6 +1969,7 @@ TEST(TEST_CATEGORY, TeamVectorMDRangeParallelFor) {
       TEST_EXECSPACE>::test_parallel_double_direction_test<Right>(dims);
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, TeamThreadMDRangeParallelReduce) {
   TestTeamThreadMDRangeParallelReduce<TEST_EXECSPACE>::
       test_parallel_reduce_for_3D_TeamThreadMDRange<Left>(dims);
@@ -2016,7 +2019,9 @@ TEST(TEST_CATEGORY, TeamThreadMDRangeParallelReduce) {
       test_parallel_reduce_for_8D_TeamThreadMDRange<Right>(smallDims);
 #endif
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, ThreadVectorMDRangeParallelReduce) {
 // FIXME_SYCL sycl::group_barrier doesn't work correctly for non-Intel GPUs
 #if defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ARCH_INTEL_GPU)
@@ -2067,7 +2072,9 @@ TEST(TEST_CATEGORY, ThreadVectorMDRangeParallelReduce) {
       test_parallel_reduce_for_8D_ThreadVectorMDRange<Right>(smallDims);
 #endif
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, TeamVectorMDRangeParallelReduce) {
 // FIXME_SYCL sycl::group_barrier doesn't work correctly for non-Intel GPUs
 #if defined(KOKKOS_ENABLE_SYCL) && !defined(KOKKOS_ARCH_INTEL_GPU)
@@ -2118,6 +2125,7 @@ TEST(TEST_CATEGORY, TeamVectorMDRangeParallelReduce) {
       test_parallel_reduce_for_8D_TeamVectorMDRange<Right>(smallDims);
 #endif
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace TeamMDRange
 }  // namespace Test

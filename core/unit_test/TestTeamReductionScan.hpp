@@ -7,6 +7,7 @@
 
 namespace Test {
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_reduction_scan) {
 // FIXME_NEXTSILICON
 #ifdef KOKKOS_ENABLE_NEXTSILICON
@@ -21,7 +22,9 @@ TEST(TEST_CATEGORY, team_reduction_scan) {
   TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >(10000);
   TestScanTeam<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic> >(10000);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_long_reduce) {
   {
     TestReduceTeam<long, TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >{}
@@ -38,7 +41,9 @@ TEST(TEST_CATEGORY, team_long_reduce) {
         .run_test(100000);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_double_reduce) {
   {
     TestReduceTeam<double, TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >{}
@@ -55,7 +60,9 @@ TEST(TEST_CATEGORY, team_double_reduce) {
         .run_test(100000);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_long_array_reduce) {
 // FIXME_WINDOWS FIXME_32BIT Test is known to fail
 #if defined(_WIN32) || defined(KOKKOS_IMPL_32BIT)
@@ -77,7 +84,9 @@ TEST(TEST_CATEGORY, team_long_array_reduce) {
         .run_array_test(100000);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_double_array_reduce) {
 // FIXME_MSVC FIXME_32BIT Test is known to fail
 #if defined(KOKKOS_COMPILER_MSVC) || defined(KOKKOS_IMPL_32BIT)
@@ -99,10 +108,12 @@ TEST(TEST_CATEGORY, team_double_array_reduce) {
         .run_array_test(100000);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 // The maximum work sizes below are chosen such that the sum
 // nwork*(nwork+1)/2 still fits into the unsigned integer type.
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_uint8_array_reduce) {
   {
     TestReduceTeam<uint8_t, TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static> >{}
@@ -138,7 +149,9 @@ TEST(TEST_CATEGORY, team_uint8_array_reduce) {
         .run_large_array_test(600, 300);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_uint16_array_reduce) {
   {
     TestReduceTeam<uint16_t, TEST_EXECSPACE,
@@ -161,6 +174,7 @@ TEST(TEST_CATEGORY, team_uint16_array_reduce) {
         .run_array_test(361);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 template <typename ExecutionSpace>
 struct DummyTeamReductionFunctor {
@@ -190,13 +204,16 @@ void test_team_parallel_reduce(const int num_loop_size) {
   ASSERT_EQ(result, 0.);
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_parallel_dummy_with_reducer_and_scratch_space) {
   {
     test_team_parallel_reduce<TEST_EXECSPACE>(0);
     test_team_parallel_reduce<TEST_EXECSPACE>(1);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, repeated_team_reduce) {
 #ifdef KOKKOS_IMPL_32BIT
   GTEST_SKIP() << "Failing KOKKOS_IMPL_32BIT";  // FIXME_32BIT
@@ -204,7 +221,9 @@ TEST(TEST_CATEGORY, repeated_team_reduce) {
 
   TestRepeatedTeamReduce<TEST_EXECSPACE>();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, nested_team_reduce_functor_as_reducer) {
   {
     TestTeamNestedReducerFunctor<TEST_EXECSPACE>().run_test_team_thread();
@@ -212,6 +231,7 @@ TEST(TEST_CATEGORY, nested_team_reduce_functor_as_reducer) {
     TestTeamNestedReducerFunctor<TEST_EXECSPACE>().run_test_team_vector();
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace Test
 #endif

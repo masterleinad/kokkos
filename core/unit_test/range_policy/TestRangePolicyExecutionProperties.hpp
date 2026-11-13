@@ -103,9 +103,11 @@ struct CheckInvocationOrder {
 };
 }  // namespace
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, range_policy_check_runtime_values) {
   CheckRuntimeValues<TEST_EXECSPACE>{}();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 TEST(TEST_CATEGORY, range_policy_check_invocation_order) {
   CheckInvocationOrder<TEST_EXECSPACE>{}();

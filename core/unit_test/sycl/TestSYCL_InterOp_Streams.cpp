@@ -54,12 +54,14 @@ TEST(sycl, raw_sycl_queues) {
                            Kokkos::TeamPolicy<TEST_EXECSPACE>(space0, 10, 10),
                            FunctorTeam<MemorySpace, TEST_EXECSPACE>(v));
       space0.fence();
+#ifndef KOKKOS_TEST_SYCL_ACPP
       Kokkos::parallel_reduce(
           "Test::sycl::raw_sycl_queue::Team",
           Kokkos::TeamPolicy<TEST_EXECSPACE>(space0, 10, 10),
           FunctorTeamReduce<MemorySpace, TEST_EXECSPACE>(v), sum);
       space0.fence();
       ASSERT_EQ(8 * 100, sum);
+#endif  // !KOKKOS_TEST_SYCL_ACPP
     }
   }
   Kokkos::finalize();

@@ -6,6 +6,13 @@
 
 #include <gtest/gtest.h>
 #include <Kokkos_Macros.hpp>
+
+// Features that AdaptiveCpp does not support (e.g. team-level reductions) are
+// excluded from the tests with this macro.
+#if defined(__ACPP__) && defined(KOKKOS_ENABLE_SYCL) && \
+    !defined(KOKKOS_TEST_SYCL_ACPP)
+#define KOKKOS_TEST_SYCL_ACPP
+#endif
 #ifdef KOKKOS_ENABLE_EXPERIMENTAL_CXX20_MODULES
 import kokkos.core;
 import kokkos.random;

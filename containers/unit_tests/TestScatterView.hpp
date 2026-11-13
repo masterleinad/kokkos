@@ -826,6 +826,7 @@ void test_scatter_view(int64_t n) {
   TestDuplicatedScatterView<DeviceType, ScatterType, NumberType> duptest(n);
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, scatterview) {
   test_scatter_view<TEST_EXECSPACE, Kokkos::Experimental::ScatterSum>(10);
   test_scatter_view<TEST_EXECSPACE, Kokkos::Experimental::ScatterProd>(10);
@@ -862,6 +863,7 @@ TEST(TEST_CATEGORY, scatterview) {
   test_scatter_view<TEST_EXECSPACE, Kokkos::Experimental::ScatterMax, int>(
       big_n);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 TEST(TEST_CATEGORY, scatterview_devicetype) {
 #if defined(KOKKOS_ENABLE_CUDA) || defined(KOKKOS_ENABLE_HIP)

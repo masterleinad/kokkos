@@ -15,6 +15,7 @@ namespace {
 
 struct TeamTeamCombinedReducer {
  public:
+#ifndef KOKKOS_TEST_SYCL_ACPP
   void test_team_thread_range_only_scalars(const int n) {
     auto policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, Kokkos::AUTO);
     using team_member_type = decltype(policy)::member_type;
@@ -60,7 +61,9 @@ struct TeamTeamCombinedReducer {
       EXPECT_EQ(n * n, hostView(3));
     }
   }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
   void test_team_thread_range_only_builtin(const int n) {
     auto policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, Kokkos::AUTO);
     using team_member_type = decltype(policy)::member_type;
@@ -107,7 +110,9 @@ struct TeamTeamCombinedReducer {
       EXPECT_EQ(n, hostView(3));
     }
   }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
   void test_team_thread_range_combined_reducers(const int n) {
     auto policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, Kokkos::AUTO);
     using team_member_type = decltype(policy)::member_type;
@@ -154,6 +159,7 @@ struct TeamTeamCombinedReducer {
       EXPECT_EQ(n * n, hostView(3));
     }
   }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
   void test_thread_vector_range_only_scalars(const int n) {
     auto policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, Kokkos::AUTO);
@@ -298,6 +304,7 @@ struct TeamTeamCombinedReducer {
     }
   }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
   void test_team_vector_range_only_scalars(const int n) {
     auto policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, Kokkos::AUTO);
     using team_member_type = decltype(policy)::member_type;
@@ -343,7 +350,9 @@ struct TeamTeamCombinedReducer {
       EXPECT_EQ(n * n, hostView(3));
     }
   }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
   void test_team_vector_range_only_builtin(const int n) {
     auto policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, Kokkos::AUTO);
     using team_member_type = decltype(policy)::member_type;
@@ -390,7 +399,9 @@ struct TeamTeamCombinedReducer {
       EXPECT_EQ(n, hostView(3));
     }
   }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
   void test_team_vector_range_combined_reducers(const int n) {
     auto policy = Kokkos::TeamPolicy<TEST_EXECSPACE>(1, Kokkos::AUTO);
     using team_member_type = decltype(policy)::member_type;
@@ -437,8 +448,10 @@ struct TeamTeamCombinedReducer {
       EXPECT_EQ(n * n, hostView(3));
     }
   }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 };
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_thread_range_combined_reducers) {
 #if defined(KOKKOS_ENABLE_OPENACC)
   if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::Experimental::OpenACC>)
@@ -452,6 +465,7 @@ TEST(TEST_CATEGORY, team_thread_range_combined_reducers) {
   tester.test_team_thread_range_combined_reducers(0);
   tester.test_team_thread_range_combined_reducers(9);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 TEST(TEST_CATEGORY, thread_vector_range_combined_reducers) {
 #if defined(KOKKOS_ENABLE_OPENACC)
@@ -467,6 +481,7 @@ TEST(TEST_CATEGORY, thread_vector_range_combined_reducers) {
   tester.test_thread_vector_range_combined_reducers(9);
 }
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_vector_range_combined_reducers) {
 #ifdef KOKKOS_ENABLE_OPENACC  // FIXME_OPENACC
   if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::Experimental::OpenACC>)
@@ -480,5 +495,6 @@ TEST(TEST_CATEGORY, team_vector_range_combined_reducers) {
   tester.test_team_vector_range_combined_reducers(0);
   tester.test_team_vector_range_combined_reducers(9);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 }  // namespace

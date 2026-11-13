@@ -332,6 +332,7 @@ void test_exceed_max_team_size() {
 TEST(TEST_CATEGORY_DEATH, exceed_max_team_size) { test_exceed_max_team_size(); }
 
 #if !defined(KOKKOS_ENABLE_OPENACC)
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_broadcast_long) {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
                     long>::test_teambroadcast(0, 1);
@@ -353,6 +354,7 @@ TEST(TEST_CATEGORY, team_broadcast_long) {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
                     long>::test_teambroadcast(1000, 1);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 struct long_wrapper {
   long value;
@@ -382,6 +384,7 @@ struct reduction_identity<Test::long_wrapper>
 namespace Test {
 
 // Test for non-arithmetic type
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_broadcast_long_wrapper) {
   static_assert(!std::is_arithmetic_v<long_wrapper>);
 
@@ -404,7 +407,9 @@ TEST(TEST_CATEGORY, team_broadcast_long_wrapper) {
   TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Dynamic>,
                     long_wrapper>::test_teambroadcast(1000, 1);
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_broadcast_char) {
   {
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
@@ -428,7 +433,9 @@ TEST(TEST_CATEGORY, team_broadcast_char) {
                       long>::test_teambroadcast(1000, 1);
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_broadcast_float) {
   {
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
@@ -462,7 +469,9 @@ TEST(TEST_CATEGORY, team_broadcast_float) {
       }
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_broadcast_double) {
   {
     TestTeamBroadcast<TEST_EXECSPACE, Kokkos::Schedule<Kokkos::Static>,
@@ -497,6 +506,7 @@ TEST(TEST_CATEGORY, team_broadcast_double) {
       }
   }
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 #endif
 
 #if !defined(KOKKOS_ENABLE_OPENACC)
@@ -556,10 +566,12 @@ struct TeamSingleThreadIntPtrFunctor {
   Kokkos::View<int, TEST_EXECSPACE> view;
 };
 
+#ifndef KOKKOS_TEST_SYCL_ACPP
 TEST(TEST_CATEGORY, team_single_thread_int_ptr) {
   TeamSingleThreadIntPtrFunctor team_single_thread_functor;
   team_single_thread_functor.run();
 }
+#endif  // !KOKKOS_TEST_SYCL_ACPP
 
 #if !defined(KOKKOS_ENABLE_OPENACC)
 struct TeamSingleTeamIntPtrFunctor {
