@@ -5,6 +5,9 @@
 
 namespace Test {
 TEST(TEST_CATEGORY, dyn_rank_view_api_operator_rank12345) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestDynViewAPI<double, TEST_EXECSPACE>::run_operator_test_rank12345();
 }
 
@@ -50,6 +53,9 @@ void test_dyn_rank_view_realloc() {
 
 #ifdef KOKKOS_HAS_SHARED_SPACE
 TEST(TEST_CATEGORY, dyn_rank_view_check_fence_resize_realloc) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   if constexpr (std::is_same_v<TEST_EXECSPACE, Kokkos::DefaultExecutionSpace>) {
     test_dyn_rank_view_resize<Kokkos::SharedSpace>();
     test_dyn_rank_view_realloc<Kokkos::SharedSpace>();

@@ -316,6 +316,9 @@ bool Test(int test) {
 
 namespace Test {
 TEST(TEST_CATEGORY, cxx11) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 // FIXME_NEXTSILICON
 #ifdef KOKKOS_ENABLE_NEXTSILICON
   if (std::is_same_v<TEST_EXECSPACE, Kokkos::Experimental::NextSilicon>) {

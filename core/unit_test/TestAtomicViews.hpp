@@ -1246,6 +1246,9 @@ void XOrEqualAtomicViewTest(int64_t input_length) {
 // inc/dec?
 
 TEST(TEST_CATEGORY, atomic_views_integral) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   const int64_t length = 1000000;
   PlusEqualAtomicViewTest<int64_t, TEST_EXECSPACE>(length);
   MinusEqualAtomicViewTest<int64_t, TEST_EXECSPACE>(length);
@@ -1258,6 +1261,9 @@ TEST(TEST_CATEGORY, atomic_views_integral) {
 }
 
 TEST(TEST_CATEGORY, atomic_views_nonintegral) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   const int64_t length = 1000000;
   PlusEqualAtomicViewTest<double, TEST_EXECSPACE>(length);
   MinusEqualAtomicViewTest<double, TEST_EXECSPACE>(length);

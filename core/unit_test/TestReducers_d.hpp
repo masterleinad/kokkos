@@ -12,6 +12,9 @@ import kokkos.core;
 
 namespace Test {
 TEST(TEST_CATEGORY, reducers_complex_double) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestReducers<Kokkos::complex<double>, TEST_EXECSPACE>::execute_basic();
 }
 
@@ -24,6 +27,9 @@ TEST(TEST_CATEGORY, reducers_struct) {
 }
 
 TEST(TEST_CATEGORY, reducers_half_t) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ThisTestType = Kokkos::Experimental::half_t;
   TestReducers<ThisTestType, TEST_EXECSPACE>::test_sum(2);
   TestReducers<ThisTestType, TEST_EXECSPACE>::test_sum(101);

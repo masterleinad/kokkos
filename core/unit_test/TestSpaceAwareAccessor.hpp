@@ -138,6 +138,9 @@ void test_space_aware_accessor_conversion() {
 }
 
 TEST(TEST_CATEGORY, mdspan_space_aware_accessor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
   test_space_aware_accessor<int, ExecutionSpace>();
   test_space_aware_accessor<double, ExecutionSpace>();

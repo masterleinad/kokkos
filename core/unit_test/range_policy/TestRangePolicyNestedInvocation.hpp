@@ -208,22 +208,37 @@ struct CheckRangePolicyWithConstructedThreadHandleInSingle {
 }  // namespace
 
 TEST(TEST_CATEGORY, self_similar_range_policy_with_execution_space) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   CheckRangePolicyWithExecSpace<TEST_EXECSPACE>{}();
 }
 
 TEST(TEST_CATEGORY, self_similar_range_policy_with_team_handle) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   CheckRangePolicyWithTeamHandle<TEST_EXECSPACE>{}();
 }
 
 TEST(TEST_CATEGORY, self_similar_range_policy_with_thread_handle) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   CheckRangePolicyWithThreadHandle<TEST_EXECSPACE>{}();
 }
 
 TEST(TEST_CATEGORY, self_similar_range_policy_with_constructed_thread_handle) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   CheckRangePolicyWithConstructedThreadHandle<TEST_EXECSPACE>{}();
 }
 
 TEST(TEST_CATEGORY,
      self_similar_range_policy_with_constructed_thread_handle_in_single) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   CheckRangePolicyWithConstructedThreadHandleInSingle<TEST_EXECSPACE>{}();
 }

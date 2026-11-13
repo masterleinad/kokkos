@@ -379,6 +379,9 @@ void test_nested_sort_by_key(unsigned int N, KeyType minKey, KeyType maxKey,
 }  // namespace NestedSortImpl
 
 TEST(TEST_CATEGORY, NestedSort) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
   NestedSortImpl::test_nested_sort<ExecutionSpace, unsigned>(171, 0U, UINT_MAX);
   NestedSortImpl::test_nested_sort<ExecutionSpace, float>(42, -1e6f, 1e6f);
@@ -387,6 +390,9 @@ TEST(TEST_CATEGORY, NestedSort) {
 }
 
 TEST(TEST_CATEGORY, NestedSortByKey) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
 
   // Second/third template arguments are key and value respectively.

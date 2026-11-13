@@ -394,6 +394,9 @@ void test_deep_copy(uint32_t num_nodes) {
 
 #if !defined(_WIN32)
 TEST(TEST_CATEGORY, UnorderedMap_insert) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   for (int i = 0; i < 500; ++i) {
     test_inserts<TEST_EXECSPACE>(100000, 90000, 100, true);
     test_inserts<TEST_EXECSPACE>(100000, 90000, 100, false);
@@ -406,10 +409,16 @@ TEST(TEST_CATEGORY, UnorderedMap_insert) {
 #endif
 
 TEST(TEST_CATEGORY, UnorderedMap_failed_insert) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   for (int i = 0; i < 1000; ++i) test_failed_insert<TEST_EXECSPACE>(10000);
 }
 
 TEST(TEST_CATEGORY, UnorderedMap_deep_copy) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   for (int i = 0; i < 2; ++i) test_deep_copy<TEST_EXECSPACE>(10000);
 }
 
@@ -470,6 +479,9 @@ struct UnorderedMapInsert {
 };
 
 TEST(TEST_CATEGORY, UnorderedMap_clear_zero_size) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using map_type = Kokkos::UnorderedMap<int, void, TEST_EXECSPACE>;
 
   map_type m(11);
@@ -488,6 +500,9 @@ TEST(TEST_CATEGORY, UnorderedMap_clear_zero_size) {
 }
 
 TEST(TEST_CATEGORY, UnorderedMap_consistent_size) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using map_type = Kokkos::UnorderedMap<int, void, TEST_EXECSPACE>;
 
   map_type m(11);
@@ -524,6 +539,9 @@ struct TestMapCopy {
 };
 
 TEST(TEST_CATEGORY, UnorderedMap_shallow_copyable_on_device) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestMapCopy test_map_copy;
 
   Kokkos::parallel_for(Kokkos::RangePolicy<TEST_EXECSPACE>(0, 1),
@@ -542,6 +560,9 @@ void test_unordered_map_device_capture() {
 }
 
 TEST(TEST_CATEGORY, UnorderedMap_lambda_capturable) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_unordered_map_device_capture();
 }
 

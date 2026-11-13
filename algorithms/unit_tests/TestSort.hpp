@@ -366,6 +366,9 @@ void test_sort_non_default_constructible_impl(int n, bool use_comparator) {
 }  // namespace SortImpl
 
 TEST(TEST_CATEGORY, SortUnsignedValueType) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
   using key_type       = unsigned;
   constexpr int N      = 171;

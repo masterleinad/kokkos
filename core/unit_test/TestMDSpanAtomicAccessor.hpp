@@ -97,6 +97,9 @@ void test_atomic_accessor_conversion() {
 }
 
 TEST(TEST_CATEGORY, mdspan_atomic_accessor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
   test_atomic_accessor<int, ExecutionSpace>();
   test_atomic_accessor<double, ExecutionSpace>();

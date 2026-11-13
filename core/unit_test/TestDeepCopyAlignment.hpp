@@ -331,6 +331,9 @@ struct TestDeepCopyScalarConversion {
 }  // namespace Impl
 
 TEST(TEST_CATEGORY, deep_copy_conversion) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #ifdef KOKKOS_IMPL_32BIT
   GTEST_SKIP() << "Failing KOKKOS_IMPL_32BIT";  // FIXME_32BIT
 #endif

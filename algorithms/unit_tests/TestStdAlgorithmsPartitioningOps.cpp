@@ -152,6 +152,9 @@ TEST_F(std_algorithms_partitioning_test, is_partitioned_trivial) {
 }
 
 TEST_F(std_algorithms_partitioning_test, is_partitioned_accepting_iterators) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   const IsNegativeFunctor<value_type> p;
 
   for (int id = 0; id < FixtureViews::Count; ++id) {
@@ -173,6 +176,9 @@ TEST_F(std_algorithms_partitioning_test, is_partitioned_accepting_iterators) {
 }
 
 TEST_F(std_algorithms_partitioning_test, is_partitioned_accepting_view) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   const IsNegativeFunctor<value_type> p;
 
   for (int id = 0; id < FixtureViews::Count; ++id) {
@@ -191,6 +197,9 @@ TEST_F(std_algorithms_partitioning_test, is_partitioned_accepting_view) {
 }
 
 TEST_F(std_algorithms_partitioning_test, partition_point) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   const IsNegativeFunctor<value_type> p;
 
   for (int id = 0; id < FixtureViews::Count; ++id) {

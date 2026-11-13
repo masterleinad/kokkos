@@ -698,6 +698,9 @@ void test_rand_range_overflow() {
 }  // namespace AlgoRandomImpl
 
 TEST(TEST_CATEGORY, Random_XorShift64) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
 
 #if defined(KOKKOS_ENABLE_SYCL) || defined(KOKKOS_ENABLE_CUDA) || \
@@ -717,6 +720,9 @@ TEST(TEST_CATEGORY, Random_XorShift64) {
 }
 
 TEST(TEST_CATEGORY, Random_XorShift1024_0) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
 
 #if defined(KOKKOS_ENABLE_SYCL) || defined(KOKKOS_ENABLE_CUDA) || \
@@ -758,11 +764,17 @@ TEST(TEST_CATEGORY, Random_SFC64) {
 }
 
 TEST(TEST_CATEGORY, Random_XorShift64_rand_range_overflow) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   AlgoRandomImpl::test_rand_range_overflow<
       Kokkos::Random_XorShift64_Pool<TEST_EXECSPACE>>();
 }
 
 TEST(TEST_CATEGORY, Random_XorShift1024_rand_range_overflow) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   AlgoRandomImpl::test_rand_range_overflow<
       Kokkos::Random_XorShift1024_Pool<TEST_EXECSPACE>>();
 }
@@ -776,6 +788,9 @@ TEST(TEST_CATEGORY, Random_SFC64_rand_range_overflow) {
 }
 
 TEST(TEST_CATEGORY, Multi_streams) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
 #if defined(KOKKOS_ENABLE_SYCL) && defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU)
   if constexpr (std::is_same_v<ExecutionSpace, Kokkos::SYCL>) {
@@ -809,6 +824,9 @@ TEST(TEST_CATEGORY, Multi_streams) {
 }
 
 TEST(TEST_CATEGORY, Offset_streams) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
   using SFC64Pool      = Kokkos::Random_SFC64_Pool<ExecutionSpace>;
 

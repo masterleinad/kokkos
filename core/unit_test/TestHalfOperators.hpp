@@ -1045,6 +1045,9 @@ void test_bhalf_operators() {
 }
 
 TEST(TEST_CATEGORY, half_operators) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 // FIXME_NEXTSILICON: projection errors in 1.3.0-120
 #ifdef KOKKOS_ENABLE_NEXTSILICON
   if (std::is_same_v<Kokkos::DefaultExecutionSpace,
@@ -1054,6 +1057,9 @@ TEST(TEST_CATEGORY, half_operators) {
   test_half_operators();
 }
 TEST(TEST_CATEGORY, bhalf_operators) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 // FIXME_NEXTSILICON: projection errors in 1.3.0-120
 #ifdef KOKKOS_ENABLE_NEXTSILICON
   if (std::is_same_v<Kokkos::DefaultExecutionSpace,

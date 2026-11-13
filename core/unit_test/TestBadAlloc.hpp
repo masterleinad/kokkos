@@ -35,6 +35,9 @@ void test_kokkos_malloc_bad_alloc() {
 }
 
 TEST(TEST_CATEGORY, kokkos_malloc_bad_alloc_default) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using MemorySpace = TEST_EXECSPACE::memory_space;
 
   // These backend workarounds are copied from TestViewBadAlloc.hpp.

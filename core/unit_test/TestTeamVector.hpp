@@ -1112,6 +1112,9 @@ TEST(TEST_CATEGORY, triple_nested_parallelism) {
 #endif  // !KOKKOS_TEST_SYCL_ACPP
 
 TEST(TEST_CATEGORY, parallel_scan_with_reducers) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using T = double;
   using namespace VectorScanReducer;
 
@@ -1202,6 +1205,9 @@ void check_scan_return_value() {
 }  // namespace ThreadVectorScanReturnValue
 
 TEST(TEST_CATEGORY, thread_vector_scan_return_value) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using T = double;
   ThreadVectorScanReturnValue::check_scan_return_value<
       TEST_EXECSPACE, Kokkos::Max<T, TEST_EXECSPACE>>();

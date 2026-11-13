@@ -204,6 +204,9 @@ void test_accessor_from_mapping() {
 }
 
 TEST(TEST_CATEGORY, view_customization_accessor_from_mapping) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_accessor_from_mapping();
 }
 
@@ -334,6 +337,9 @@ void test_scratch_memory_allocation() {
 }
 
 TEST(TEST_CATEGORY, view_customization_scratch_memory) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #ifdef KOKKOS_ENABLE_HPX  // FIXME_HPX
   if (std::is_same_v<Kokkos::Experimental::HPX, TEST_EXECSPACE>)
     GTEST_SKIP() << "HPX backend fails this test intermittently, since its the "

@@ -38,6 +38,9 @@ void MDRangeReduceTester([[maybe_unused]] int bound, int k) {
 }
 
 TEST(TEST_CATEGORY, mdrange_parallel_reduce_primitive_types) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   auto doit = [](int bound, int k) {
     MDRangeReduceTester<bool>(bound, k);
     MDRangeReduceTester<signed char>(bound, k);

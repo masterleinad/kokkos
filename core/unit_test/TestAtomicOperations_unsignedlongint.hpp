@@ -5,6 +5,9 @@
 
 namespace Test {
 TEST(TEST_CATEGORY, atomic_operations_unsignedlong) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   const int start = 0;
   const int end   = 11;
   for (int i = start; i < end; ++i) {

@@ -111,6 +111,9 @@ struct TestComplexConstruction {
 };
 
 TEST(TEST_CATEGORY, complex_construction) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestComplexConstruction<TEST_EXECSPACE> test;
   test.testit();
 }
@@ -260,6 +263,9 @@ struct TestComplexBasicMath {
 };
 
 TEST(TEST_CATEGORY, complex_basic_math) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestComplexBasicMath<TEST_EXECSPACE> test;
   test.testit();
 }
@@ -397,6 +403,9 @@ void testComplexIO() {
 }
 
 TEST(TEST_CATEGORY, complex_special_funtions) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestComplexSpecialFunctions<TEST_EXECSPACE> test;
   test.testit();
 }
@@ -439,6 +448,9 @@ struct TestBugPowAndLogComplex {
 };
 
 TEST(TEST_CATEGORY, complex_issue_3865) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestBugPowAndLogComplex<TEST_EXECSPACE>();
 }
 
@@ -612,6 +624,9 @@ struct TestComplexStructuredBindings {
 };
 
 TEST(TEST_CATEGORY, complex_structured_bindings) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestComplexStructuredBindings<TEST_EXECSPACE> test;
   test.testit();
 }

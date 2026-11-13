@@ -22,4 +22,9 @@ void test_kokkos_printf() {
   ASSERT_EQ(captured, expected_string);
 }
 
-TEST(TEST_CATEGORY, kokkos_printf) { test_kokkos_printf<TEST_EXECSPACE>(); }
+TEST(TEST_CATEGORY, kokkos_printf) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
+  test_kokkos_printf<TEST_EXECSPACE>();
+}

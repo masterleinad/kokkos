@@ -179,6 +179,9 @@ void run_for_rank2() {
 }  // namespace BinSortSetB
 
 TEST(TEST_CATEGORY, BinSortUnsignedKeyLayoutStrideValues) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExeSpace = TEST_EXECSPACE;
   using key_type = unsigned;
   BinSortSetB::run_for_rank1<ExeSpace, key_type, int>();

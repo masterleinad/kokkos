@@ -128,6 +128,9 @@ struct TeamPolicyFunctor {
 }  // namespace
 
 TEST(TEST_CATEGORY, reduce_device_view_range_policy) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   // Avoid running out of memory
 #ifdef KOKKOS_ENABLE_SYCL
   int N = 100 * 1024 * 1024;
@@ -139,6 +142,9 @@ TEST(TEST_CATEGORY, reduce_device_view_range_policy) {
 }
 
 TEST(TEST_CATEGORY, reduce_device_view_mdrange_policy) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   int N = 1000 * 1024 * 1024;
   test_reduce_device_view(
       N,
@@ -148,6 +154,9 @@ TEST(TEST_CATEGORY, reduce_device_view_mdrange_policy) {
 }
 
 TEST(TEST_CATEGORY, reduce_device_view_team_policy) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 // FIXME_SYCL The number of workgroups on CUDA devices can not be larger than
 // 65535
 #ifdef KOKKOS_ENABLE_SYCL

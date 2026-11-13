@@ -52,59 +52,98 @@ void test_deep_copy_scalar_representation() {
 }
 
 TEST(TEST_CATEGORY, deep_copy_scalar_representation) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_scalar_representation<float>();
   test_deep_copy_scalar_representation<double>();
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_0) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double, Foo>();
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_1) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double*, Foo*>(1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_2) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double**, Foo**>(1, 1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_3) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double***, Foo***>(1, 1, 1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_4) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double****, Foo****>(1, 1, 1, 1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_5) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double*****, Foo*****>(1, 1, 1, 1, 1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_6) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double******, Foo******>(1, 1, 1, 1, 1, 1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_7) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double*******, Foo*******>(1, 1, 1, 1, 1, 1,
                                                              1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_8) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double********, Foo********>(1, 1, 1, 1, 1, 1,
                                                                1, 1);
 }
 
 // Half types used to work just for rank 1-3
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_1_half) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double*, Kokkos::Experimental::half_t*>(1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_2_half) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double**, Kokkos::Experimental::half_t**>(1,
                                                                             1);
 }
 
 TEST(TEST_CATEGORY, deep_copy_assignable_types_rank_3_half) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_assignable_types<double***, Kokkos::Experimental::half_t***>(
       1, 1, 1);
 }

@@ -1901,6 +1901,9 @@ struct TestComplexBesselH2Function {
 };
 
 TEST(TEST_CATEGORY, mathspecialfunc_expint1) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -1909,6 +1912,9 @@ TEST(TEST_CATEGORY, mathspecialfunc_expint1) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_errorfunc) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -1928,6 +1934,9 @@ TEST(TEST_CATEGORY, mathspecialfunc_errorfunc) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesselj0y0) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -1936,6 +1945,9 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesselj0y0) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesselj1y1) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -1944,6 +1956,9 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesselj1y1) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesseli0k0) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -1952,6 +1967,9 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesseli0k0) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesseli1k1) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -1960,6 +1978,9 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesseli1k1) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesselh1stkind) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   // Disable the test when using 6.2 due to a known compiler bug. The test
   // always fails on MI100.
 #if defined(KOKKOS_ENABLE_HIP) &&                          \
@@ -1977,6 +1998,9 @@ TEST(TEST_CATEGORY, mathspecialfunc_cbesselh1stkind) {
 }
 
 TEST(TEST_CATEGORY, mathspecialfunc_cbesselh2ndkind) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif

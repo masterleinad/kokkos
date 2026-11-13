@@ -178,6 +178,9 @@ void test_access() {
 }
 
 TEST(TEST_CATEGORY, basic_view_access) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_access<double, Kokkos::layout_left_padded<Kokkos::dynamic_extent>>();
   test_access<std::size_t,
               Kokkos::layout_right_padded<Kokkos::dynamic_extent>>();
@@ -242,6 +245,9 @@ TEST(TEST_CATEGORY, basic_view_atomic_accessor_int) {
 }
 
 TEST(TEST_CATEGORY, basic_view_atomic_accessor_double) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_atomic_accessor<double>();
 }
 

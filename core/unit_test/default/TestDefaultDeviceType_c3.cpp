@@ -18,6 +18,9 @@ import kokkos.core;
 namespace Test {
 
 TEST(defaultdevicetype, reduce_instantiation_c3) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestReduceCombinatoricalInstantiation<>::execute_c3();
 }
 

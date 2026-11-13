@@ -109,6 +109,9 @@ struct TestTeamScan {
 };
 
 TEST(TEST_CATEGORY, team_scan) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestTeamScan<TEST_EXECSPACE, int32_t>{}(0, 0);
   TestTeamScan<TEST_EXECSPACE, int32_t>{}(0, 1);
   TestTeamScan<TEST_EXECSPACE, int32_t>{}(1, 0);
@@ -239,6 +242,9 @@ struct TestTeamScanRetVal {
 };
 
 TEST(TEST_CATEGORY, team_scan_ret_val) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestTeamScanRetVal<TEST_EXECSPACE, int32_t>{}(0, 0);
   TestTeamScanRetVal<TEST_EXECSPACE, int32_t>{}(0, 1);
   TestTeamScanRetVal<TEST_EXECSPACE, int32_t>{}(1, 0);

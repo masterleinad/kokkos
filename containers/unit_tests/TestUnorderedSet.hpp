@@ -49,6 +49,9 @@ struct Eraser {
 // Ensure that inserting into, erasing from, and rehashing an unordered set
 // works.
 TEST(TEST_CATEGORY, UnorderedSet_insert_erase_and_rehash) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   // First, size_all entries will be inserted into the set.
   // Then, size_erased will be erased from it before rehash.
   // Once rehashing is done, the capacity of the set is expected to

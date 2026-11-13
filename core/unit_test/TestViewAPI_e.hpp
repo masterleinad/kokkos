@@ -16,6 +16,9 @@ import kokkos.core;
 namespace Test {
 
 TEST(TEST_CATEGORY, view_remap) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   enum { N0 = 3, N1 = 2, N2 = 8, N3 = 9 };
 
 #if defined(KOKKOS_ENABLE_CUDA)

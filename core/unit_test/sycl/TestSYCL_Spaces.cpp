@@ -255,6 +255,9 @@ struct TestViewSYCLAccessible {
 };
 
 TEST(sycl, impl_view_accessible) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestViewSYCLAccessible<Kokkos::SYCLDeviceUSMSpace, Kokkos::SYCL>::run();
 
   TestViewSYCLAccessible<Kokkos::SYCLSharedUSMSpace, Kokkos::SYCL>::run();

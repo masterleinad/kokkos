@@ -206,6 +206,9 @@ struct TestNumericTraits<
 
 // NOLINTBEGIN(bugprone-unused-raii)
 TEST(TEST_CATEGORY, numeric_traits_infinity) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -217,6 +220,9 @@ TEST(TEST_CATEGORY, numeric_traits_infinity) {
 }
 
 TEST(TEST_CATEGORY, numeric_traits_epsilon) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestNumericTraits<TEST_EXECSPACE, Kokkos::Experimental::half_t, Epsilon>();
   TestNumericTraits<TEST_EXECSPACE, Kokkos::Experimental::bhalf_t, Epsilon>();
   TestNumericTraits<TEST_EXECSPACE, float, Epsilon>();
@@ -382,6 +388,9 @@ TEST(TEST_CATEGORY, numeric_traits_min_max_exponent10) {
 
 KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_PUSH()
 TEST(TEST_CATEGORY, numeric_traits_quiet_and_signaling_nan) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #ifdef KOKKOS_COMPILER_NVHPC  // FIXME_NVHPC
   GTEST_SKIP() << "This test is known to fail with the NVHPC compiler";
 #endif

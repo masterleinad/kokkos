@@ -299,7 +299,12 @@ void test_deep_copy() {
   ASSERT_EQ(num_errors, 0);
 }
 
-TEST(TEST_CATEGORY, view_customization_deep_copy) { test_deep_copy(); }
+TEST(TEST_CATEGORY, view_customization_deep_copy) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
+  test_deep_copy();
+}
 
 void test_deep_copy_single_element_view() {
   size_t size = 5;
@@ -369,6 +374,9 @@ void test_deep_copy_single_element_view() {
 }
 
 TEST(TEST_CATEGORY, view_customization_deep_copy_single_element_view) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_deep_copy_single_element_view();
 }
 

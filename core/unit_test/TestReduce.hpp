@@ -759,6 +759,9 @@ struct FunctorReductionWithLargeIterationCount {
 };
 
 TEST(TEST_CATEGORY, reduction_with_large_iteration_count) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   if constexpr (std::is_same_v<typename TEST_EXECSPACE::memory_space,
                                Kokkos::HostSpace>) {
     GTEST_SKIP() << "Disabling for host backends";
@@ -822,6 +825,9 @@ class TestReductionOverInfiniteFloat {
 
 KOKKOS_IMPL_DISABLE_UNREACHABLE_WARNINGS_PUSH()
 TEST(TEST_CATEGORY, reduction_identity_min_max_floating_point_types) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif

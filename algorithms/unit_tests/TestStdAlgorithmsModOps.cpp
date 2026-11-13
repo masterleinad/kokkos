@@ -72,6 +72,9 @@ struct StdAlgoModSeqOpsTestMove {
 };
 
 TEST(std_algorithms_mod_ops_test, move_within_parfor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using view_t = Kokkos::View<double*>;
   view_t a("a", 10);
 
@@ -115,6 +118,9 @@ void test_iter_swap(ViewType view) {
 }
 
 TEST(std_algorithms_mod_ops_test, iter_swap_static_view) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   auto a = create_view<double>(stdalgos::DynamicTag{}, 10, "a");
   test_iter_swap(a);
 

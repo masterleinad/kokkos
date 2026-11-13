@@ -216,6 +216,9 @@ void test_sort_integer_overflow() {
 }  // namespace BinSortSetA
 
 TEST(TEST_CATEGORY, BinSortGenericTests) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
   using key_type       = unsigned;
   constexpr int N      = 171;
@@ -269,6 +272,9 @@ TEST(TEST_CATEGORY, BinSortEmptyKeysView) {
 // the boundaries of the bin. Should be used in conjunction with a memory
 // sanitizer or bounds check.
 TEST(TEST_CATEGORY, BinSort_issue_7221) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
 
   using KeyViewType = Kokkos::View<int*, ExecutionSpace>;

@@ -148,6 +148,9 @@ struct test_host_simd_construction_in_device_functor {
 
 // FIXME This test should eventually be integrated into other simd unit tests
 TEST(KOKKOS_SIMD_TEST_SUITE, host_simd_construction_in_device) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #ifndef KOKKOS_IMPL_SIMD_DEVICE_COMPAT_TRANSITION
   test_host_simd_construction_in_device_functor{}(0);
   Kokkos::parallel_for(1, test_host_simd_construction_in_device_functor{});

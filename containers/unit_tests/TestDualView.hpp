@@ -477,6 +477,9 @@ TEST(TEST_CATEGORY, dualview_combinations_without_init) {
 }
 
 TEST(TEST_CATEGORY, dualview_deep_copy) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   test_dualview_deep_copy<int, TEST_EXECSPACE>();
   test_dualview_deep_copy<double, TEST_EXECSPACE>();
 }
@@ -769,6 +772,9 @@ TEST(TEST_CATEGORY, dualview_default_constructed) {
 }
 
 TEST(TEST_CATEGORY, dualview_resize_single_device) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using dv_t = Kokkos::DualView<double*, TEST_EXECSPACE>;
   dv_t dv("DV", 10);
   bool is_same_device = std::is_same_v<typename dv_t::t_host::device_type,

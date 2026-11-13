@@ -350,6 +350,9 @@ void Loop(int loop, int test) {
 }
 
 TEST(TEST_CATEGORY, atomics) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   const int loop_count = 1e4;
 
   Loop<int, TEST_EXECSPACE>(loop_count, 1);

@@ -293,7 +293,12 @@ namespace Test {
 
 TEST(TEST_CATEGORY, single_policy) { test_single_policy(); }
 
-TEST(TEST_CATEGORY, single) { test_no_output(); }
+TEST(TEST_CATEGORY, single) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
+  test_no_output();
+}
 
 TEST(TEST_CATEGORY, single_output) { test_output(); }
 

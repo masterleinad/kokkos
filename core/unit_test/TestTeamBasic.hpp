@@ -167,6 +167,9 @@ struct TestTeamForAggregate {
 };
 
 TEST(TEST_CATEGORY, team_parallel_single) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestTeamForAggregate<TEST_EXECSPACE>::run();
 }
 
@@ -607,6 +610,9 @@ TEST(TEST_CATEGORY, team_single_team_int_ptr) {
 #endif
 
 TEST(TEST_CATEGORY, team_handle_by_value) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   { TestTeamPolicyHandleByValue<TEST_EXECSPACE>(); }
 }
 

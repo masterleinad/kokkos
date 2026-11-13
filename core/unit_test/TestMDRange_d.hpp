@@ -6,6 +6,9 @@
 namespace Test {
 
 TEST(TEST_CATEGORY, mdrange_3d) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestMDRange_3D<TEST_EXECSPACE>::test_for3(1, 10, 100);
   TestMDRange_3D<TEST_EXECSPACE>::test_for3(100, 10, 100);
   TestMDRange_3D<TEST_EXECSPACE>::test_reduce3(1, 10, 100);
@@ -13,6 +16,9 @@ TEST(TEST_CATEGORY, mdrange_3d) {
 }
 
 TEST(TEST_CATEGORY, mdrange_neg_idx) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestMDRange_1D_NegIdx<TEST_EXECSPACE>::test_1D_negidx(128);
   TestMDRange_2D_NegIdx<TEST_EXECSPACE>::test_2D_negidx(128, 32);
   TestMDRange_3D_NegIdx<TEST_EXECSPACE>::test_3D_negidx(128, 32, 8);

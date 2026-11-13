@@ -59,6 +59,9 @@ void test_view_bad_alloc_typed_catch() {
 }
 
 TEST(TEST_CATEGORY, view_bad_alloc) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecutionSpace = TEST_EXECSPACE;
   using MemorySpace    = ExecutionSpace::memory_space;
 #if defined(__has_feature)

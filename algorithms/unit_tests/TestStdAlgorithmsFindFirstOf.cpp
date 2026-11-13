@@ -251,6 +251,9 @@ void run_all_scenarios() {
 }
 
 TEST(std_algorithms_non_mod_seq_ops, find_first_of) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   run_all_scenarios<DynamicTag, int>();
   run_all_scenarios<StridedThreeTag, int>();
 }

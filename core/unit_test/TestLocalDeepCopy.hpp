@@ -715,6 +715,9 @@ void impl_test_local_deepcopy_rangepolicy_rank_7(const int N) {
 //-------------------------------------------------------------------------------------------------------------
 
 TEST(TEST_CATEGORY, local_deepcopy_teampolicy_layoutleft) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecSpace = TEST_EXECSPACE;
 
   {  // Rank-1
@@ -749,6 +752,9 @@ TEST(TEST_CATEGORY, local_deepcopy_teampolicy_layoutleft) {
 }
 //-------------------------------------------------------------------------------------------------------------
 TEST(TEST_CATEGORY, local_deepcopy_rangepolicy_layoutleft) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecSpace = TEST_EXECSPACE;
 
   {  // Rank-1
@@ -783,6 +789,9 @@ TEST(TEST_CATEGORY, local_deepcopy_rangepolicy_layoutleft) {
 }
 //-------------------------------------------------------------------------------------------------------------
 TEST(TEST_CATEGORY, local_deepcopy_teampolicy_layoutright) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecSpace = TEST_EXECSPACE;
 
   {  // Rank-1
@@ -818,6 +827,9 @@ TEST(TEST_CATEGORY, local_deepcopy_teampolicy_layoutright) {
 }
 //-------------------------------------------------------------------------------------------------------------
 TEST(TEST_CATEGORY, local_deepcopy_rangepolicy_layoutright) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using ExecSpace = TEST_EXECSPACE;
 
   {  // Rank-1
@@ -893,6 +905,9 @@ struct DeepCopyScratchFunctor {
 }  // namespace Impl
 
 TEST(TEST_CATEGORY, deep_copy_scratch) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using TestDeviceTeamPolicy = Kokkos::TeamPolicy<TEST_EXECSPACE>;
 
   const int N = 8;

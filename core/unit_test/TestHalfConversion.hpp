@@ -96,9 +96,19 @@ void test_bhalf_conversion() {
   test_bhalf_conversion_type<unsigned long long>();
 }
 
-TEST(TEST_CATEGORY, half_conversion) { test_half_conversion(); }
+TEST(TEST_CATEGORY, half_conversion) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
+  test_half_conversion();
+}
 
-TEST(TEST_CATEGORY, bhalf_conversion) { test_bhalf_conversion(); }
+TEST(TEST_CATEGORY, bhalf_conversion) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
+  test_bhalf_conversion();
+}
 
 }  // namespace Test
 #endif

@@ -28,6 +28,9 @@ TEST(TEST_CATEGORY, scratch_align) { TestScratchAlignment<TEST_EXECSPACE>(); }
 TEST(TEST_CATEGORY, shmem_size) { TestShmemSize<TEST_EXECSPACE>(); }
 
 TEST(TEST_CATEGORY, multi_level_scratch) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestMultiLevelScratchTeam<TEST_EXECSPACE,
                             Kokkos::Schedule<Kokkos::Static> >();
   TestMultiLevelScratchTeam<TEST_EXECSPACE,

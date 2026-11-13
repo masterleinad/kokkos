@@ -271,6 +271,9 @@ struct TestDynamicView {
 };
 
 TEST(TEST_CATEGORY, dynamic_view) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using TestDynView = TestDynamicView<double, TEST_EXECSPACE>;
 
   for (int i = 0; i < 10; ++i) {

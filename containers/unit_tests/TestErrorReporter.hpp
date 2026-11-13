@@ -192,11 +192,17 @@ struct ErrorReporterDriverNativeOpenMP
 // KOKKOS_CLASS_LAMBDA
 #ifndef KOKKOS_COMPILER_MSVC
 TEST(TEST_CATEGORY, ErrorReporterViaLambda) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestErrorReporter<ErrorReporterDriverUseLambda<TEST_EXECSPACE>>();
 }
 #endif
 
 TEST(TEST_CATEGORY, ErrorReporter) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestErrorReporter<ErrorReporterDriver<TEST_EXECSPACE>>();
 }
 

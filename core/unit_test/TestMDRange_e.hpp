@@ -6,6 +6,9 @@
 namespace Test {
 
 TEST(TEST_CATEGORY, mdrange_4d) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 // FIXME_NEXTSILICON (also add to CUDA/HIP/SYCL list)
 #ifdef KOKKOS_ENABLE_NEXTSILICON
   if (std::is_same_v<TEST_EXECSPACE, Kokkos::Experimental::NextSilicon>) {

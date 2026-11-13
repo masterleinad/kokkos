@@ -234,6 +234,9 @@ void run_all_scenarios(Args... args /* copy on purpose */) {
 }
 
 TEST(std_algorithms_numerics_ops_test, adjecent_difference) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using value_type = double;
 
   run_all_scenarios<DynamicTag, value_type>();

@@ -78,6 +78,9 @@ struct StdAlgoMinMaxOpsTestMax {
 };
 
 TEST(TEST_CATEGORY, max_within_parfor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   namespace KE = Kokkos::Experimental;
 
   using view_t = Kokkos::View<double*, TEST_EXECSPACE>;
@@ -140,6 +143,9 @@ struct StdAlgoMinMaxOpsTestMin {
 };
 
 TEST(TEST_CATEGORY, min_within_parfor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   namespace KE = Kokkos::Experimental;
   using view_t = Kokkos::View<double*, TEST_EXECSPACE>;
   view_t a("a", 10);
@@ -217,6 +223,9 @@ struct StdAlgoMinMaxOpsTestMinMax {
 };
 
 TEST(TEST_CATEGORY, minmax_within_parfor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using view_t = Kokkos::View<double*, TEST_EXECSPACE>;
   view_t a("a", 10);
 
@@ -273,6 +282,9 @@ struct StdAlgoMinMaxOpsTestClamp {
 };
 
 TEST(TEST_CATEGORY, clamp_within_parfor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using view_t = Kokkos::View<double*, TEST_EXECSPACE>;
   view_t a("a", 10);
 

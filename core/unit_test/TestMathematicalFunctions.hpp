@@ -1103,6 +1103,9 @@ void do_test_math_ternary_function(Arg1 arg1, Arg2 arg2, Arg3 arg3) {
 #ifndef KOKKOS_MATHEMATICAL_FUNCTIONS_SKIP_1
 
 TEST(TEST_CATEGORY, mathematical_functions_trigonometric_functions) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TEST_MATH_FUNCTION(sin)({true, false});
   TEST_MATH_FUNCTION(sin)({-3, -2, -1, 0, 1});
   TEST_MATH_FUNCTION(sin)({-3l, -2l, -1l, 0l, 1l});
@@ -1206,6 +1209,9 @@ TEST(TEST_CATEGORY, mathematical_functions_trigonometric_functions) {
 
 #ifndef KOKKOS_MATHEMATICAL_FUNCTIONS_SKIP_2
 TEST(TEST_CATEGORY, mathematical_functions_power_functions) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TEST_MATH_FUNCTION(sqrt)({0, 1, 2, 3, 5, 7, 11});
   TEST_MATH_FUNCTION(sqrt)({0l, 1l, 2l, 3l, 5l, 7l, 11l});
   TEST_MATH_FUNCTION(sqrt)({0ll, 1ll, 2ll, 3ll, 5ll, 7ll, 11ll});
@@ -1294,6 +1300,9 @@ TEST(TEST_CATEGORY, mathematical_functions_power_functions) {
 }
 
 TEST(TEST_CATEGORY, mathematical_functions_modf) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using Func = MathBinaryPtrFunction_modf;
 
   do_test_math_binary_ptr_function<TEST_EXECSPACE, Func>(42.765f);
@@ -1306,6 +1315,9 @@ TEST(TEST_CATEGORY, mathematical_functions_modf) {
 }
 
 TEST(TEST_CATEGORY, mathematical_functions_frexp) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   using Func = MathBinaryIntPtrFunction_frexp;
 
   do_test_math_binary_int_ptr_function<TEST_EXECSPACE, Func>(42.765f);
@@ -1318,6 +1330,9 @@ TEST(TEST_CATEGORY, mathematical_functions_frexp) {
 }
 
 TEST(TEST_CATEGORY, mathematical_functions_fma) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   do_test_math_ternary_function<TEST_EXECSPACE, kk3_fma>(2.f, 3.f, 4.f);
   do_test_math_ternary_function<TEST_EXECSPACE, kk3_fma>(2., 3., 4.);
   do_test_math_ternary_function<TEST_EXECSPACE, kk3_fma>(2, 3.f, 4.);
@@ -1327,6 +1342,9 @@ TEST(TEST_CATEGORY, mathematical_functions_fma) {
 }
 
 TEST(TEST_CATEGORY, mathematical_functions_remquo) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   do_test_math_ternary_int_ptr_function<TEST_EXECSPACE, kk3_remquo>(
       static_cast<KE::half_t>(2.f), static_cast<KE::half_t>(3.f));
   do_test_math_ternary_int_ptr_function<TEST_EXECSPACE, kk3_remquo>(
@@ -1340,6 +1358,9 @@ TEST(TEST_CATEGORY, mathematical_functions_remquo) {
 }
 
 TEST(TEST_CATEGORY, mathematical_functions_fmax_fmin) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   do_test_math_binary_function<TEST_EXECSPACE, kk_fmax>(
       static_cast<KE::half_t>(2.f), static_cast<KE::half_t>(3.f));
   do_test_math_binary_function<TEST_EXECSPACE, kk_fmin>(
@@ -1363,6 +1384,9 @@ TEST(TEST_CATEGORY, mathematical_functions_fmax_fmin) {
 
 #ifndef KOKKOS_MATHEMATICAL_FUNCTIONS_SKIP_3
 TEST(TEST_CATEGORY, mathematical_functions_exponential_functions) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #ifdef KOKKOS_ENABLE_NEXTSILICON  // FIXME_NEXTSILICON
   if (std::is_same_v<TEST_EXECSPACE, Kokkos::Experimental::NextSilicon>) {
     GTEST_SKIP() << "incorrect results on 1.4.0-136";
@@ -1476,6 +1500,9 @@ TEST(TEST_CATEGORY, mathematical_functions_exponential_functions) {
 
 #ifndef KOKKOS_MATHEMATICAL_FUNCTIONS_SKIP_1
 TEST(TEST_CATEGORY, mathematical_functions_hyperbolic_functions) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TEST_MATH_FUNCTION(sinh)({-3, -2, -1, 0, 1});
   TEST_MATH_FUNCTION(sinh)({-3l, -2l, -1l, 0l, 1l});
   TEST_MATH_FUNCTION(sinh)({-3ll, -2ll, -1ll, 0ll, 1ll});
@@ -1564,6 +1591,9 @@ TEST(TEST_CATEGORY, mathematical_functions_hyperbolic_functions) {
 }
 
 TEST(TEST_CATEGORY, mathematical_functions_non_standard) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TEST_MATH_FUNCTION(rsqrt)({1, 2, 3, 5, 7, 11});
   TEST_MATH_FUNCTION(rsqrt)({1l, 2l, 3l, 5l, 7l, 11l});
   TEST_MATH_FUNCTION(rsqrt)({1ll, 2ll, 3ll, 5ll, 7ll, 11ll});
@@ -1597,6 +1627,9 @@ TEST(TEST_CATEGORY, mathematical_functions_non_standard) {
 #ifndef KOKKOS_MATHEMATICAL_FUNCTIONS_SKIP_2
 
 TEST(TEST_CATEGORY, mathematical_functions_error_and_gamma_functions) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TEST_MATH_FUNCTION(erf)({-3, -2, -1, 0, 1});
   TEST_MATH_FUNCTION(erf)({-3l, -2l, -1l, 0l, 1l});
   TEST_MATH_FUNCTION(erf)({-3ll, -2ll, -1ll, 0ll, 1ll});
@@ -1668,6 +1701,9 @@ TEST(TEST_CATEGORY, mathematical_functions_error_and_gamma_functions) {
 
 TEST(TEST_CATEGORY,
      mathematical_functions_nearest_interger_floating_point_operations) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TEST_MATH_FUNCTION(ceil)({-3, -2, -1, 0, 1});
   TEST_MATH_FUNCTION(ceil)({-3l, -2l, -1l, 0l, 1l});
   TEST_MATH_FUNCTION(ceil)({-3ll, -2ll, -1ll, 0ll, 1ll});
@@ -1837,6 +1873,9 @@ TEST(TEST_CATEGORY,
 
 TEST(TEST_CATEGORY,
      mathematical_functions_floating_point_manipulation_functions) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TEST_INT_MATH_FUNCTION(ilogb)({1, 13, 132, 1282, 7839});
   TEST_INT_MATH_FUNCTION(ilogb)({1l, 13l, 132l, 1282l, 7839l});
   TEST_INT_MATH_FUNCTION(ilogb)({1ll, 13ll, 132ll, 1282ll, 7839ll});
@@ -1982,6 +2021,9 @@ struct TestAbsoluteValueFunction {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_absolute_value) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestAbsoluteValueFunction<TEST_EXECSPACE>();
 }
 
@@ -2042,6 +2084,9 @@ struct TestFloatingPointAbsoluteValueFunction {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_floating_point_absolute_value) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestFloatingPointAbsoluteValueFunction<TEST_EXECSPACE>();
 }
 
@@ -2120,6 +2165,9 @@ struct TestFloatingPointRemainderFunction
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_remainder_function) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestFloatingPointRemainderFunction<TEST_EXECSPACE>();
 }
 
@@ -2199,6 +2247,9 @@ struct TestIEEEFloatingPointRemainderFunction
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_ieee_remainder_function) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestIEEEFloatingPointRemainderFunction<TEST_EXECSPACE>();
 }
 
@@ -2302,6 +2353,9 @@ struct TestIsFinite {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_isfinite) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -2384,6 +2438,9 @@ struct TestIsInf {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_isinf) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -2518,6 +2575,9 @@ struct TestFpClassify {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_fpclassify) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if defined(KOKKOS_ENABLE_OPENACC) && (KOKKOS_COMPILER_NVHPC > 240500) && \
     (KOKKOS_COMPILER_NVHPC <= 260500)
   // FIXME_OPENACC: Test is known to fail if 24.5 < NVHPC version <= 26.5.
@@ -2609,6 +2669,9 @@ struct TestIsNaN {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_isnan) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -2729,6 +2792,9 @@ struct TestIsNormal {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_isnormal) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -2868,6 +2934,9 @@ struct TestSignbit {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_signbit) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if __FINITE_MATH_ONLY__
   GTEST_SKIP() << "skipping when compiling with -ffinite-math-only";
 #endif
@@ -2875,6 +2944,9 @@ TEST(TEST_CATEGORY, mathematical_functions_signbit) {
 }
 
 TEST(TEST_CATEGORY, mathematical_functions_binary_predicates) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   auto test_all_predicates = [](auto x, auto y) {
     do_test_math_binary_predicate<TEST_EXECSPACE, kk_isgreater>(x, y);
     do_test_math_binary_predicate<TEST_EXECSPACE, kk_isgreaterequal>(x, y);
@@ -2952,6 +3024,9 @@ DEFINE_UNARY_FUNCTION_EVAL_CUSTOM(test_fallback_bhalf, 0,
                                   ref_test_fallback_bhalf(x));
 
 TEST(TEST_CATEGORY, mathematical_functions_impl_half_fallback) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestMathUnaryFunction<TEST_EXECSPACE, MathUnaryFunction_test_fallback_half,
                         KE::half_t, 1>({KE::half_t(1.f)});
   TestMathUnaryFunction<TEST_EXECSPACE, MathUnaryFunction_test_fallback_bhalf,
@@ -3071,6 +3146,9 @@ struct TestNextAfterHalf {
 };
 
 TEST(TEST_CATEGORY, mathematical_functions_nextafter_fp16) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
 #if defined(KOKKOS_ENABLE_CUDA) &&                         \
     defined(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE) && \
     defined(KOKKOS_COMPILER_CLANG)

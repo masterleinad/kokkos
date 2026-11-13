@@ -1873,6 +1873,9 @@ TEST(TEST_CATEGORY, TeamThreadMDRangeParallelFor) {
 #endif  // !KOKKOS_TEST_SYCL_ACPP
 
 TEST(TEST_CATEGORY, ThreadVectorMDRangeParallelFor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestThreadVectorMDRangeParallelFor<
       TEST_EXECSPACE>::test_parallel_for_4D_ThreadVectorMDRange<Left>(dims);
   TestThreadVectorMDRangeParallelFor<
@@ -1917,6 +1920,9 @@ TEST(TEST_CATEGORY, ThreadVectorMDRangeParallelFor) {
 }
 
 TEST(TEST_CATEGORY, TeamVectorMDRangeParallelFor) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   TestTeamVectorMDRangeParallelFor<
       TEST_EXECSPACE>::test_parallel_for_3D_TeamVectorMDRange<Left>(dims);
   TestTeamVectorMDRangeParallelFor<

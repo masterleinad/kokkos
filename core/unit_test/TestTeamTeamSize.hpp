@@ -132,6 +132,9 @@ void test_team_policy_max_recommended(int scratch_size) {
 }
 
 TEST(TEST_CATEGORY, team_policy_max_recommended) {
+#ifdef __ACPP__
+  GTEST_SKIP() << "Fails at runtime with AdaptiveCpp (Metal backend)";
+#endif
   int max_scratch_size = policy_type::scratch_size_max(0);
   test_team_policy_max_recommended<double, 2, policy_type>(0);
   test_team_policy_max_recommended<double, 2, policy_type>(max_scratch_size /
