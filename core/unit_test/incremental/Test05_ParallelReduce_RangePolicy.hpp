@@ -15,9 +15,12 @@ import kokkos.core;
 // Performs an reduction over the addition operation.
 
 namespace Test {
-
-using value_type       = double;
-constexpr double value = 0.5;
+#ifdef __ACPP__
+using value_type = float;
+#else
+using value_type = double;
+#endif
+constexpr value_type value = 0.5;
 
 struct ReduceFunctor {
   // The functor is templated on purpose to check that the value_type deduction
@@ -31,7 +34,7 @@ struct ReduceFunctor {
 
 struct NonTrivialReduceFunctor {
   KOKKOS_INLINE_FUNCTION
-  void operator()(const int i, double &UpdateSum) const {
+  void operator()(const int i, value_type &UpdateSum) const {
     UpdateSum += (i + 1) * value;
   }
 

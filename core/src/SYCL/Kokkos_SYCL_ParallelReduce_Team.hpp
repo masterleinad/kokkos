@@ -317,6 +317,11 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
             shmem_begin, global_scratch_ptr, num_teams_done, scratch_flags,
             /*scratch_locks*/ nullptr, /*num_scratch_locks*/ 0);
 
+#if defined(__ACPP__)
+        auto max_sg_size =
+            Kokkos::Impl::sycl_device_kernel_limits(q.get_device())
+                .max_sub_group_size;
+#else
         static sycl::kernel kernel = [&] {
           sycl::kernel_id functor_kernel_id =
               sycl::get_kernel_id<decltype(dummy_reduction_lambda)>();
@@ -328,6 +333,7 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
         auto max_sg_size = kernel.get_info<
             sycl::info::kernel_device_specific::max_sub_group_size>(
             q.get_device());
+#endif
         auto final_vector_size = std::min<int>(m_vector_size, max_sg_size);
         // FIXME_SYCL For some reason, explicitly enforcing the kernel bundle to
         // be used gives a runtime error.
@@ -487,12 +493,14 @@ class Kokkos::Impl::ParallelReduce<CombinedFunctorReducerType,
     const Kokkos::Impl::SYCLInternal& instance =
         *m_policy.space().impl_internal_space_instance();
 
+    const int reserved_shmem =
+        instance.m_reservedLocalMemPerWorkItem * m_team_size * m_vector_size;
     if (static_cast<int>(instance.m_maxShmemPerBlock) <
-        m_shmem_size + m_shmem_begin) {
+        m_shmem_size + m_shmem_begin + reserved_shmem) {
       std::stringstream out;
       out << "Kokkos::parallel_reduce<SYCL> Requested too much scratch memory "
              "on level 0. Requested: "
-          << m_shmem_size + m_shmem_begin << ", Maximum "
+          << m_shmem_size + m_shmem_begin + reserved_shmem << ", Maximum "
           << instance.m_maxShmemPerBlock;
       Kokkos::Impl::throw_runtime_exception(out.str());
     }

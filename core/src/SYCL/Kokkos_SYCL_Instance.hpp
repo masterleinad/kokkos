@@ -5,7 +5,9 @@
 #define KOKKOS_SYCL_INSTANCE_HPP_
 
 #include <atomic>
+#include <algorithm>
 #include <optional>
+#include <vector>
 #include <sycl/sycl.hpp>
 
 #include <impl/Kokkos_Error.hpp>
@@ -14,6 +16,32 @@
 
 namespace Kokkos {
 namespace Impl {
+
+#if defined(__ACPP__)
+// FIXME_ACPP AdaptiveCpp does not implement SYCL 2020 kernel bundles
+// (sycl::kernel_id, sycl::get_kernel_bundle), so per-kernel limits
+// (kernel_device_specific::max_sub_group_size, work_group_size,
+// preferred_work_group_size_multiple) cannot be queried. Use device-level
+// limits instead. On backends where a kernel's real limit can be lower than
+// the device's (e.g. Metal pipelines with high register pressure) this may
+// over-estimate work_group_size.
+struct SYCLDeviceKernelLimits {
+  size_t max_sub_group_size;
+  size_t work_group_size;
+  size_t preferred_work_group_size_multiple;
+};
+
+inline SYCLDeviceKernelLimits sycl_device_kernel_limits(const sycl::device& d) {
+  const std::vector<size_t> sub_group_sizes =
+      d.get_info<sycl::info::device::sub_group_sizes>();
+  const size_t max_sg =
+      sub_group_sizes.empty()
+          ? 1
+          : *std::max_element(sub_group_sizes.begin(), sub_group_sizes.end());
+  return {max_sg, d.get_info<sycl::info::device::max_work_group_size>(),
+          max_sg};
+}
+#endif
 
 class SYCLInternal {
  public:
@@ -46,6 +74,10 @@ class SYCLInternal {
   size_t m_maxWorkgroupSize   = 0;
   uint32_t m_maxConcurrency   = 0;
   uint64_t m_maxShmemPerBlock = 0;
+  // Local memory the SYCL implementation itself adds to every launch, per
+  // work-item, on top of the requested local memory and not reflected in
+  // local_mem_size. Nonzero only for AdaptiveCpp's Metal backend.
+  size_t m_reservedLocalMemPerWorkItem = 0;
 
   std::size_t m_scratchSpaceCount            = 0;
   sycl::global_ptr<size_type> m_scratchSpace = nullptr;

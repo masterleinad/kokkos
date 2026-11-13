@@ -117,6 +117,23 @@ class SYCLTeamMember {
       typename WrappedReducerType::value_type& value) const noexcept {
     using value_type = typename WrappedReducerType::value_type;
 
+#if defined(__ACPP__)
+    // FIXME_ACPP The multi-sub-group step below needs the oneAPI
+    // group_local_memory_for_overwrite extension, which AdaptiveCpp does not
+    // provide. Team-level reductions (team_reduce, parallel_reduce over
+    // TeamThreadRange/ThreadVectorRange) are therefore not supported.
+    // KOKKOS_IMPL_ACPP_UNSUPPORTED_AS_NOOP is only for building Kokkos' own
+    // test suite, whose executables mix supported and unsupported features:
+    // the reduction is skipped (wrong result, test fails) instead of
+    // rejecting the whole executable at compile time.
+#if !defined(KOKKOS_IMPL_ACPP_UNSUPPORTED_AS_NOOP)
+    static_assert(Kokkos::Impl::dependent_false_v<WrappedReducerType>,
+                  "Kokkos SYCL team-level reductions are not supported with "
+                  "AdaptiveCpp");
+#endif
+    (void)wrapped_reducer;
+    (void)value;
+#else
     auto sg                       = m_item.get_sub_group();
     const auto sub_group_range    = sg.get_local_range()[0];
     const auto vector_range       = m_item.get_local_range(1);
@@ -187,6 +204,7 @@ class SYCLTeamMember {
 
     // Make sure that every thread is done using the reduction array.
     sycl::group_barrier(m_item.get_group());
+#endif
   }
 
   //--------------------------------------------------------------------------

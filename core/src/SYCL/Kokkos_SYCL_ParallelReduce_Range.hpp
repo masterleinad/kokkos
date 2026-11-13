@@ -239,6 +239,12 @@ class Kokkos::Impl::ParallelReduce<
         auto dummy_reduction_lambda =
             reduction_lambda_factory({1, cgh}, num_teams_done, nullptr, 1);
 
+#if defined(__ACPP__)
+        const auto limits =
+            Kokkos::Impl::sycl_device_kernel_limits(q.get_device());
+        auto multiple = limits.preferred_work_group_size_multiple;
+        auto max      = limits.work_group_size;
+#else
         static sycl::kernel kernel = [&] {
           sycl::kernel_id functor_kernel_id =
               sycl::get_kernel_id<decltype(dummy_reduction_lambda)>();
@@ -254,6 +260,7 @@ class Kokkos::Impl::ParallelReduce<
             kernel
                 .get_info<sycl::info::kernel_device_specific::work_group_size>(
                     q.get_device());
+#endif
 
         auto max_local_memory =
             q.get_device().get_info<sycl::info::device::local_mem_size>();
@@ -267,7 +274,8 @@ class Kokkos::Impl::ParallelReduce<
             {Kokkos::bit_ceil(size),
              Kokkos::bit_floor(static_cast<size_t>(max / multiple) * multiple),
              Kokkos::bit_floor(static_cast<size_t>(max_local_memory * .99) /
-                               (sizeof(value_type) * value_count))});
+                               (sizeof(value_type) * value_count +
+                                instance.m_reservedLocalMemPerWorkItem))});
 
         // FIXME_SYCL Find a better way to determine a good limit for the
         // maximum number of work groups, also see

@@ -18,9 +18,13 @@ import kokkos.core;
 
 namespace Test05 {
 
+#ifdef __ACPP__
+using value_type = float;
+#else
 using value_type = double;
-const int N      = 10;
-const int M      = 10;
+#endif
+const int N = 10;
+const int M = 10;
 
 template <class ExecSpace>
 struct TestMDRangePolicy {

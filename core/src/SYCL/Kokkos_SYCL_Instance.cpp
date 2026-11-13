@@ -6,6 +6,9 @@
 #endif
 
 #include <Kokkos_Macros.hpp>
+#if defined(__ACPP__)
+#include <cstdlib>
+#endif
 #include <impl/Kokkos_CStyleMemoryManagement.hpp>
 #include <Kokkos_CopyViews.hpp>  // ZeroMemset
 #include <impl/Kokkos_CheckedIntegerOps.hpp>
@@ -48,24 +51,48 @@ int SYCLInternal::verify_is_initialized(const char* const label) const {
   return static_cast<bool>(default_instance);
 }
 
-SYCLInternal::SYCLInternal(const sycl::device& d)
-    : SYCLInternal(sycl::queue{
-          d,
-          [](sycl::exception_list exceptions) {
-            bool asynchronous_error = false;
-            for (std::exception_ptr const& e : exceptions) {
-              try {
-                std::rethrow_exception(e);
-              } catch (sycl::exception const& e) {
-                std::cerr << e.what() << '\n';
-                asynchronous_error = true;
-              }
-            }
-            if (asynchronous_error)
-              Kokkos::Impl::throw_runtime_exception(
-                  "There was an asynchronous SYCL error!\n");
-          }
+#if defined(__ACPP__)
+// Opt-in for queues owned by Kokkos. User-provided queues keep their
+// properties.
+sycl::property_list acpp_queue_properties() {
+  const char* setting = std::getenv("KOKKOS_ACPP_COARSE_GRAINED_EVENTS");
+  const bool coarse   = setting && setting[0] == '1' && setting[1] == '\0';
+  if (coarse) {
+    return sycl::property_list{
 #ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
+        sycl::property::queue::in_order{},
+#endif
+        sycl::property::queue::AdaptiveCpp_coarse_grained_events{}};
+  }
+#ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
+  return sycl::property_list{sycl::property::queue::in_order{}};
+#else
+  return sycl::property_list{};
+#endif
+}
+#endif
+
+SYCLInternal::SYCLInternal(const sycl::device& d)
+    : SYCLInternal(sycl::queue {
+        d,
+            [](sycl::exception_list exceptions) {
+              bool asynchronous_error = false;
+              for (std::exception_ptr const& e : exceptions) {
+                try {
+                  std::rethrow_exception(e);
+                } catch (sycl::exception const& e) {
+                  std::cerr << e.what() << '\n';
+                  asynchronous_error = true;
+                }
+              }
+              if (asynchronous_error)
+                Kokkos::Impl::throw_runtime_exception(
+                    "There was an asynchronous SYCL error!\n");
+            }
+#if defined(__ACPP__)
+        ,
+            acpp_queue_properties()
+#elif defined(KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES)
 
           ,
           sycl::property::queue::in_order()
@@ -107,6 +134,14 @@ SYCLInternal::SYCLInternal(const sycl::queue& q) : m_queue(q) {
 
   m_maxShmemPerBlock =
       d.template get_info<sycl::info::device::local_mem_size>();
+#if defined(__ACPP__) && defined(SYCL_EXT_ACPP_BACKEND_METAL)
+  // FIXME_ACPP AdaptiveCpp's Metal backend adds work_group_size *
+  // sizeof(uint64_t) bytes of threadgroup memory to every launch for its group
+  // algorithms (src/runtime/metal/metal_queue.cpp). Exceeding the device
+  // limit is not diagnosed and silently corrupts local memory.
+  if (d.get_backend() == sycl::backend::metal)
+    m_reservedLocalMemPerWorkItem = sizeof(uint64_t);
+#endif
 
   for (auto& usm_mem : m_indirectKernelMem) {
     usm_mem.reset(m_queue, m_instance_id);

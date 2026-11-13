@@ -49,7 +49,17 @@ KOKKOS_SYCL_HALF_BINARY_FUNCTION(remainder)
 KOKKOS_SYCL_HALF_BINARY_FUNCTION(fmax)
 KOKKOS_SYCL_HALF_BINARY_FUNCTION(fmin)
 KOKKOS_SYCL_HALF_BINARY_FUNCTION(fdim)
+#if defined(__ACPP__)
+// FIXME_ACPP no sycl::remquo; use the float replacement from
+// Kokkos_MathematicalFunctions.hpp.
+inline Experimental::half_t impl_remquo(Experimental::half_t x,
+                                        Experimental::half_t y, int* z) {
+  return static_cast<Experimental::half_t>(Kokkos::Impl::acpp_math::remquo(
+      static_cast<float>(x), static_cast<float>(y), z));
+}
+#else
 KOKKOS_SYCL_HALF_TERNARY_INT_PTR_FUNCTION(remquo)
+#endif
 // Exponential functions
 KOKKOS_SYCL_HALF_UNARY_FUNCTION(exp)
 KOKKOS_SYCL_HALF_UNARY_FUNCTION(exp2)

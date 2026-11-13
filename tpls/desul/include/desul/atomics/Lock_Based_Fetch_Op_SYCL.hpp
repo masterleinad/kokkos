@@ -10,6 +10,9 @@ SPDX-License-Identifier: (BSD-3-Clause)
 #define DESUL_ATOMICS_LOCK_BASED_FETCH_OP_SYCL_HPP_
 
 #include <desul/atomics/Common.hpp>
+#if defined(__ACPP__)
+#include <hipSYCL/sycl/libkernel/sscp/builtins/assert.hpp>
+#endif
 #include <desul/atomics/Compare_Exchange_SYCL.hpp>
 #include <desul/atomics/Lock_Array_SYCL.hpp>
 #include <desul/atomics/Operator_Function_Objects.hpp>
@@ -32,6 +35,20 @@ T device_atomic_fetch_oper(const Oper& op,
   // This is a way to avoid deadlock in a subgroup
   T return_val{};
   int done = 0;
+#if defined(__ACPP__)
+  // FIXME_ACPP The lock-based path for types that are not 4 or 8 bytes
+  // needs the oneAPI sub-group extensions (this_sub_group, group_ballot,
+  // sub_group_mask), which AdaptiveCpp does not provide. This cannot be a
+  // static_assert: acpp compiles host and device in one pass and
+  // DESUL_IF_ON_DEVICE is a runtime branch there, so host-only callers
+  // (e.g. the HostThreadTeam work stealing on a 16-byte pair) instantiate
+  // this function too. A kernel that actually reaches it reports a device
+  // assertion (abort on the host device; on Metal the kernel continues).
+  __acpp_if_target_device(__acpp_sscp_assert_fail(
+      "desul: SYCL atomics on types that are not 4 or 8 bytes are not "
+      "supported with AdaptiveCpp",
+      __FILE__, __LINE__, __func__);)
+#else
 #if defined(__INTEL_LLVM_COMPILER) && __INTEL_LLVM_COMPILER >= 20250000
   auto sg = sycl::ext::oneapi::this_work_item::get_sub_group();
 #else
@@ -55,6 +72,7 @@ T device_atomic_fetch_oper(const Oper& op,
     }
     done_active = group_ballot(sg, done);
   }
+#endif
   return return_val;
 }
 

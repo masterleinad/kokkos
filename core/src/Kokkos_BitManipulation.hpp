@@ -17,7 +17,11 @@ namespace Kokkos::Impl {
 // NextSilicon compiler doesn't permit it to be used in a constexpr way, so work
 // around: KOKKOS_IF_ON_HOST here really just means "can we call the host
 // compiler intrinsic", which we are allowed to do on NextSilicon
-#if !defined(KOKKOS_ENABLE_NEXTSILICON)
+// FIXME_ACPP Same for AdaptiveCpp's generic single-pass compiler: there
+// KOKKOS_IF_ON_HOST/DEVICE are runtime branches on __acpp_sscp_is_host/device,
+// which cannot appear in a constant expression. Use the portable
+// constant-evaluated implementation on both host and device.
+#if !defined(KOKKOS_ENABLE_NEXTSILICON) && !defined(__ACPP__)
 template <template <bool /*constant_evaluated*/, bool /*device*/> class Op,
           class T>
 KOKKOS_FUNCTION constexpr auto dispatch_helper(T x) noexcept {

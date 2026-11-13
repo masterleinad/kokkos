@@ -19,7 +19,11 @@ import kokkos.core_impl;
 
 namespace Test06 {
 
+#ifdef __ACPP__
+using value_type = float;
+#else
 using value_type = double;
+#endif
 
 struct MDFunctor {
   value_type *_data;

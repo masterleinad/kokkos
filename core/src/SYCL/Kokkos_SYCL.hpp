@@ -23,7 +23,10 @@ static_assert(false,
 namespace Kokkos {
 namespace Impl {
 class SYCLInternal;
-}
+#if defined(__ACPP__)
+sycl::property_list acpp_queue_properties();
+#endif
+}  // namespace Impl
 
 /// \class SYCL
 /// \brief Kokkos device for multicore processors in the host memory space.
@@ -125,15 +128,18 @@ std::vector<SYCL> impl_partition_space(const SYCL& base_instance,
 
   std::vector<SYCL> instances;
   instances.reserve(weights.size());
-  std::generate_n(std::back_inserter(instances), weights.size(),
-                  [&context, &device]() {
-                    return SYCL(sycl::queue(context, device
-#ifdef KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES
+  std::generate_n(
+      std::back_inserter(instances), weights.size(), [&context, &device]() {
+        return SYCL(sycl::queue(context, device
+#if defined(__ACPP__)
+                                ,
+                                Kokkos::Impl::acpp_queue_properties()
+#elif defined(KOKKOS_IMPL_SYCL_USE_IN_ORDER_QUEUES)
                                             ,
                                             sycl::property::queue::in_order()
 #endif
-                                                ));
-                  });
+                                    ));
+      });
 
   return instances;
 }

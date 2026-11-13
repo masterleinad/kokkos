@@ -545,6 +545,18 @@
   }
 #endif
 
+#if defined(KOKKOS_ENABLE_SYCL) && defined(__ACPP__) && \
+    !defined(KOKKOS_IF_ON_HOST) && !defined(KOKKOS_IF_ON_DEVICE)
+// AdaptiveCpp compiles host and device code in a single pass, so
+// __SYCL_DEVICE_ONLY__ is never defined. Use its target-dispatch macros, which
+// are resolved when the kernel is JIT-compiled (host-only code such as
+// reference-count tracking is then removed from device kernels).
+#define KOKKOS_IF_ON_DEVICE(CODE) \
+  __acpp_if_target_device(KOKKOS_IMPL_STRIP_PARENS(CODE))
+#define KOKKOS_IF_ON_HOST(CODE) \
+  __acpp_if_target_host(KOKKOS_IMPL_STRIP_PARENS(CODE))
+#endif
+
 #if !defined(KOKKOS_IF_ON_HOST) && !defined(KOKKOS_IF_ON_DEVICE)
 #if (defined(KOKKOS_ENABLE_CUDA) && defined(__CUDA_ARCH__)) ||         \
     (defined(KOKKOS_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) || \

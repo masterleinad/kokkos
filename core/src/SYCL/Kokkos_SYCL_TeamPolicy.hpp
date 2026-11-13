@@ -146,7 +146,8 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
     const size_t max_possible_team_size = sycl_instance.m_maxWorkgroupSize;
 #endif
     const size_t max_reserved_shared_mem_per_team =
-        (max_possible_team_size + 2) * sizeof(double);
+        (max_possible_team_size + 2) * sizeof(double) +
+        max_possible_team_size * sycl_instance.m_reservedLocalMemPerWorkItem;
     // arbitrarily setting level 1 scratch limit to 20MB
     constexpr size_t max_l1_scratch_size =
         static_cast<size_t>(80) * 1024 * 1024;
@@ -325,7 +326,8 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
     const int max_threads_for_memory =
         (space().impl_internal_space_instance()->m_maxShmemPerBlock -
          2 * sizeof(double) - m_team_scratch_size[0]) /
-        (sizeof(double) + m_thread_scratch_size[0]);
+        (sizeof(double) + m_thread_scratch_size[0] +
+         space().impl_internal_space_instance()->m_reservedLocalMemPerWorkItem);
 
     auto& instance          = *m_space.impl_internal_space_instance();
     auto& indirectKernelMem = instance.get_indirect_kernel_mem();
@@ -355,6 +357,11 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
           /*global_scratch_ptr*/ nullptr, /*scratch_locks*/ nullptr,
           /*num_scratch_locks*/ 0);
 
+#if defined(__ACPP__)
+      const auto limits =
+          Kokkos::Impl::sycl_device_kernel_limits(q.get_device());
+      max_threads_kernel = limits.work_group_size;
+#else
       sycl::kernel_id functor_kernel_id =
           sycl::get_kernel_id<decltype(lambda)>();
       auto kernel_bundle =
@@ -364,6 +371,7 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
       max_threads_kernel =
           kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
               q.get_device());
+#endif
 
       cgh.parallel_for(
           sycl::nd_range<2>(sycl::range<2>(0, 0), sycl::range<2>(1, 1)),
@@ -394,7 +402,8 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
         (space().impl_internal_space_instance()->m_maxShmemPerBlock -
          2 * sizeof(double) - m_team_scratch_size[0]) /
         (sizeof(double) + sizeof(value_type) * value_count +
-         m_thread_scratch_size[0]);
+         m_thread_scratch_size[0] +
+         space().impl_internal_space_instance()->m_reservedLocalMemPerWorkItem);
 
     auto& instance          = *m_space.impl_internal_space_instance();
     auto& indirectKernelMem = instance.get_indirect_kernel_mem();
@@ -430,6 +439,11 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
                   /*scratch_flags*/ nullptr, /*scratch_locks*/ nullptr,
                   /*num_scratcht_locks*/ 0);
 
+#if defined(__ACPP__)
+      const auto limits =
+          Kokkos::Impl::sycl_device_kernel_limits(q.get_device());
+      max_threads_kernel = limits.work_group_size;
+#else
       sycl::kernel_id functor_kernel_id =
           sycl::get_kernel_id<decltype(lambda)>();
       auto kernel_bundle =
@@ -439,7 +453,7 @@ class Kokkos::Impl::TeamPolicyInternal<Kokkos::SYCL, Properties...>
       max_threads_kernel =
           kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
               q.get_device());
-
+#endif
       cgh.parallel_for(
           sycl::nd_range<2>(sycl::range<2>(0, 0), sycl::range<2>(1, 1)),
           lambda);

@@ -57,10 +57,15 @@ struct Hierarchical_Red_B {
 };
 
 TEST(TEST_CATEGORY, IncrTest_13b_Hierarchical_Red) {
-  Hierarchical_Red_B<TEST_EXECSPACE> test;
-  test.run(4, 16);
-  test.run(2, 39);
-  test.run(39, 3);
+#if defined(__ACPP__) && defined(KOKKOS_ENABLE_SYCL)
+  if constexpr (!std::is_same_v<TEST_EXECSPACE, Kokkos::SYCL>)
+#endif
+  {
+    Hierarchical_Red_B<TEST_EXECSPACE> test;
+    test.run(4, 16);
+    test.run(2, 39);
+    test.run(39, 3);
+  }
 }
 
 }  // namespace Test

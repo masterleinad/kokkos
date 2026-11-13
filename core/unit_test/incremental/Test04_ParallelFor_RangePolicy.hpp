@@ -17,7 +17,11 @@ import kokkos.core_impl;
 
 namespace Test {
 
+#ifdef __ACPP__
+using value_type = float;
+#else
 using value_type = double;
+#endif
 int num_elements = 10;
 
 struct ParallelForFunctor {

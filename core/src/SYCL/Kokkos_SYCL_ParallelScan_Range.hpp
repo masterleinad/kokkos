@@ -275,6 +275,12 @@ class ParallelScanSYCLBase {
       auto dummy_scan_lambda =
           scan_lambda_factory({1, cgh}, num_teams_done, nullptr, nullptr);
 
+#if defined(__ACPP__)
+      const auto limits =
+          Kokkos::Impl::sycl_device_kernel_limits(q.get_device());
+      auto multiple = limits.preferred_work_group_size_multiple;
+      auto max      = limits.work_group_size;
+#else
       static sycl::kernel kernel = [&] {
         sycl::kernel_id functor_kernel_id =
             sycl::get_kernel_id<decltype(dummy_scan_lambda)>();
@@ -289,6 +295,7 @@ class ParallelScanSYCLBase {
       auto max =
           kernel.get_info<sycl::info::kernel_device_specific::work_group_size>(
               q.get_device());
+#endif
 
       wgroup_size = static_cast<size_t>(max / multiple) * multiple;
       n_wgroups   = (size + wgroup_size - 1) / wgroup_size;

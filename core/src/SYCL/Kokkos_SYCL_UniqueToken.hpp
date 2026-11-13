@@ -47,6 +47,21 @@ class UniqueToken<SYCL, UniqueTokenScope::Global> {
             max_size)) {}
 
  private:
+#if defined(__ACPP__)
+  // FIXME_ACPP impl_acquire needs the oneAPI this_nd_item extension, which
+  // AdaptiveCpp does not provide. acquire() and impl_acquire() are templates
+  // here only so that the static_assert fires when device code actually uses
+  // UniqueToken, not whenever this header is included.
+  template <class Dummy = void>
+  size_type impl_acquire() const {
+#if !defined(KOKKOS_IMPL_ACPP_UNSUPPORTED_AS_NOOP)  // see Kokkos_SYCL_Team.hpp
+    static_assert(
+        Kokkos::Impl::dependent_false_v<Dummy>,
+        "Kokkos::UniqueToken<SYCL> is not supported with AdaptiveCpp");
+#endif
+    return 0;
+  }
+#else
   /// \brief acquire value such that 0 <= value < size()
   size_type impl_acquire() const {
 #if defined(KOKKOS_COMPILER_INTEL_LLVM) && \
@@ -76,13 +91,22 @@ class UniqueToken<SYCL, UniqueTokenScope::Global> {
                                desul::MemoryScopeDevice());
     return idx;
   }
+#endif
 
  public:
   /// \brief acquire value such that 0 <= value < size()
+#if defined(__ACPP__)
+  template <class Dummy = void>
+  size_type acquire() const {
+    KOKKOS_IF_ON_DEVICE(return impl_acquire<Dummy>();)
+    KOKKOS_IF_ON_HOST(return 0;)
+  }
+#else
   size_type acquire() const {
     KOKKOS_IF_ON_DEVICE(return impl_acquire();)
     KOKKOS_IF_ON_HOST(return 0;)
   }
+#endif
 
   /// \brief release an acquired value
   void release(size_type idx) const noexcept {

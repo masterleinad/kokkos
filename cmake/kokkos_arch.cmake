@@ -953,7 +953,24 @@ if(KOKKOS_ENABLE_HIP)
   endif()
 endif()
 
+# AdaptiveCpp's acpp driver wraps clang and reports as Clang, but it is a
+# different SYCL implementation than DPC++: it predefines __ACPP__ and rejects
+# DPC++ driver flags such as -fsycl. Detect it so those flags can be skipped.
 if(KOKKOS_ENABLE_SYCL)
+  include(CheckCXXSourceCompiles)
+  check_cxx_source_compiles(
+    "
+    #ifndef __ACPP__
+    #error not AdaptiveCpp
+    #endif
+    int main() { return 0; }
+    "
+    KOKKOS_IMPL_CXX_COMPILER_IS_ACPP
+  )
+endif()
+
+# DPC++ driver flags. AdaptiveCpp needs none of them.
+if(KOKKOS_ENABLE_SYCL AND NOT KOKKOS_IMPL_CXX_COMPILER_IS_ACPP)
   compiler_specific_flags(DEFAULT -fsycl -fno-sycl-id-queries-fit-in-int -fsycl-dead-args-optimization)
   compiler_specific_options(DEFAULT -fsycl-unnamed-lambda)
   if(KOKKOS_CXX_COMPILER_ID STREQUAL IntelLLVM AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 2024.1.0)

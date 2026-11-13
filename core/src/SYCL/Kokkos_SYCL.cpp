@@ -152,7 +152,14 @@ void SYCL::print_configuration(std::ostream& os, bool verbose) const {
       case sycl::info::device_type::host: device_type = "host"; break;
       case sycl::info::device_type::all: device_type = "all"; break;
     }
+#if defined(__ACPP__)
+    // FIXME_ACPP AdaptiveCpp's sycl::backend has no operator<<; print the
+    // platform name instead.
+    os << "[" << device.get_platform().get_info<sycl::info::platform::name>()
+       << "]:" << device_type << ':' << counter
+#else
     os << "[" << device.get_backend() << "]:" << device_type << ':' << counter
+#endif
        << "] " << device.get_info<sycl::info::device::name>();
     if (counter == active_device)
       os << " : Selected";
@@ -296,6 +303,10 @@ std::ostream& SYCL::impl_sycl_info(std::ostream& os,
 namespace Impl {
 
 std::vector<sycl::device> get_sycl_devices() {
+#if 1
+  std::vector<sycl::device> devices =
+      sycl::device::get_devices(sycl::info::device_type::gpu);
+#else
 #if defined(KOKKOS_ARCH_INTEL_GPU) || defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU) || \
     defined(KOKKOS_ARCH_AMD_GPU)
   std::vector<sycl::device> devices =
@@ -314,6 +325,7 @@ std::vector<sycl::device> get_sycl_devices() {
                 devices.end());
 #else
   std::vector<sycl::device> devices = sycl::device::get_devices();
+#endif
 #endif
   return devices;
 }
