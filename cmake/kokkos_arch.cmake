@@ -157,6 +157,7 @@ kokkos_arch_option(INTEL_GEN12LP GPU "Intel GPU Gen12LP" "KOKKOS_SHOW_SYCL_ARCHS
 kokkos_arch_option(INTEL_XEHP GPU "Intel GPU Xe-HP" "KOKKOS_SHOW_SYCL_ARCHS")
 kokkos_arch_option(INTEL_PVC GPU "Intel GPU Ponte Vecchio" "KOKKOS_SHOW_SYCL_ARCHS")
 kokkos_arch_option(INTEL_BMG GPU "Intel Battlemage" "KOKKOS_SHOW_SYCL_ARCHS")
+kokkos_arch_option(APPLE_GPU GPU "Apple GPU" "KOKKOS_SHOW_SYCL_ARCHS")
 
 if(KOKKOS_ENABLE_COMPILER_WARNINGS)
   set(COMMON_WARNINGS
@@ -971,6 +972,9 @@ endif()
 
 # DPC++ driver flags. AdaptiveCpp needs none of them.
 if(KOKKOS_ENABLE_SYCL AND NOT KOKKOS_IMPL_CXX_COMPILER_IS_ACPP)
+  if(KOKKOS_ARCH_APPLE_GPU)
+    message(FATAL_ERROR "Kokkos_ARCH_APPLE_GPU can only be used with the AdaptiveCpp compiler!")
+  endif()
   compiler_specific_flags(DEFAULT -fsycl -fno-sycl-id-queries-fit-in-int -fsycl-dead-args-optimization)
   compiler_specific_options(DEFAULT -fsycl-unnamed-lambda)
   if(KOKKOS_CXX_COMPILER_ID STREQUAL IntelLLVM AND KOKKOS_CXX_COMPILER_VERSION VERSION_LESS 2024.1.0)

@@ -303,12 +303,8 @@ std::ostream& SYCL::impl_sycl_info(std::ostream& os,
 namespace Impl {
 
 std::vector<sycl::device> get_sycl_devices() {
-#if 1
-  std::vector<sycl::device> devices =
-      sycl::device::get_devices(sycl::info::device_type::gpu);
-#else
 #if defined(KOKKOS_ARCH_INTEL_GPU) || defined(KOKKOS_IMPL_ARCH_NVIDIA_GPU) || \
-    defined(KOKKOS_ARCH_AMD_GPU)
+    defined(KOKKOS_ARCH_AMD_GPU) || defined(KOKKOS_ARCH_APPLE_GPU)
   std::vector<sycl::device> devices =
       sycl::device::get_devices(sycl::info::device_type::gpu);
 #if defined(KOKKOS_ARCH_INTEL_GPU)
@@ -317,6 +313,8 @@ std::vector<sycl::device> get_sycl_devices() {
   sycl::backend backend = sycl::backend::ext_oneapi_cuda;
 #elif defined(KOKKOS_ARCH_AMD_GPU)
   sycl::backend backend = sycl::backend::ext_oneapi_hip;
+#elif defined(KOKKOS_ARCH_APPLE_GPU)
+  sycl::backend backend = sycl::backend::metal;
 #endif
   devices.erase(std::remove_if(devices.begin(), devices.end(),
                                [backend](const sycl::device& d) {
@@ -325,7 +323,6 @@ std::vector<sycl::device> get_sycl_devices() {
                 devices.end());
 #else
   std::vector<sycl::device> devices = sycl::device::get_devices();
-#endif
 #endif
   return devices;
 }
