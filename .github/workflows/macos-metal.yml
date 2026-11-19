@@ -69,6 +69,7 @@ jobs:
           -DKokkos_ARCH_APPLE_GPU=ON \
           -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
           -DKokkos_ENABLE_DEPRECATED_CODE_5=OFF \
+          -DKokkos_ENABLE_ONEDPL=OFF \
           -DKokkos_ENABLE_TESTS=ON
 
     - name: Build
