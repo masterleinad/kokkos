@@ -1,0 +1,68 @@
+name: macOS Metal backend
+
+on:
+  push:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build_metal:
+    name: Metal backend [macOS, LLVM 20]
+    # macos-26 is specified explicitly: as of early 2026 it is in public preview
+    # on GitHub Actions and is not yet selected by 'macos-latest'. We need it
+    # because metal-cpp requires macOS 26 SDK (MTL::LanguageVersion4_0 etc.).
+    runs-on: macos-26
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        submodules: 'recursive'
+        repository: masterleinad/AdaptiveCpp
+        path: kokkos
+
+    - name: install dependencies
+      run: |
+        set +e
+        brew update
+        brew install llvm@20 lld@20 libomp boost ninja lit
+        set -e
+
+    - name: build AdaptiveCpp
+      working-directory: AdaptiveCpp
+      run: |
+        LLVM_PREFIX=$(brew --prefix llvm@20)
+        LLD_PREFIX=$(brew --prefix lld@20)
+        OMP_PREFIX=$(brew --prefix libomp)
+
+        mkdir build && cd build
+        cmake .. -GNinja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=/usr/bin/clang \
+          -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+          -DCLANG_EXECUTABLE_PATH=${LLVM_PREFIX}/bin/clang++ \
+          -DLLVM_DIR=${LLVM_PREFIX}/lib/cmake/llvm \
+          -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
+          -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/adaptivecpp-install \
+          -DWITH_OPENCL_BACKEND=OFF \
+          -DWITH_METAL_BACKEND=ON \
+          -DACPP_COMPILER_FEATURE_PROFILE=full \
+          -DACPP_LLD_PATH=${LLD_PREFIX}/bin/ld64.lld \
+          -DSEQUENTIAL_LINK_LINE=${OMP_PREFIX}/lib/libomp.dylib \
+          "-DOMP_LINK_LINE=-fopenmp ${OMP_PREFIX}/lib/libomp.dylib -L${OMP_PREFIX}/lib/" \
+          "-DOMP_CXX_FLAGS=-fopenmp -D_ENABLE_EXTENDED_ALIGNED_STORAGE -I${OMP_PREFIX}/include"
+        ninja install
+
+      - name: configure
+        run:
+          cmake -B build .
+            -DKokkos_ENABLE_SYCL=ON
+            -DCMAKE_CXX_COMPILER=${GITHUB_WORKSPACE}/adaptivecpp-install
+            -DCMAKE_CXX_FLAGS="-02 -g"
+            -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }}
+            -DKokkos_ARCH_APPLE_GPU=ON
+            -DKokkos_ENABLE_COMPILER_WARNINGS=ON
+            -DKokkos_ENABLE_DEPRECATED_CODE_5=OFF
+            -DKokkos_ENABLE_TESTS=ON
+      - name: build
+        run: cmake --build build --parallel $(sysctl -n hw.ncpu)
+      - name: test
+        run: ctest --test-dir build -j$(sysctl -n hw.ncpu) --output-on-failure
