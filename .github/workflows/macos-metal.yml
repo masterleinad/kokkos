@@ -27,6 +27,11 @@ jobs:
         brew update
         brew install llvm@20 lld@20 libomp boost ninja lit
 
+    - uses: actions/checkout@v7
+      with:
+        repository: apple/metal-cpp
+        path: metal-cpp
+
     - name: Build AdaptiveCpp
       working-directory: AdaptiveCpp
       run: |
@@ -44,7 +49,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/adaptivecpp-install \
           -DWITH_OPENCL_BACKEND=OFF \
           -DWITH_METAL_BACKEND=ON \
-          -DMETAL_INCLUDE_DIR=${METAL_CPP_DIR} \
+          -DMETAL_INCLUDE_DIR=${GITHUB_WORKSPACE}/metal-cpp \
           -DACPP_COMPILER_FEATURE_PROFILE=full \
           -DACPP_LLD_PATH=${LLD_PREFIX}/bin/ld64.lld \
           -DSEQUENTIAL_LINK_LINE=${OMP_PREFIX}/lib/libomp.dylib \
