@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_metal:
-    name: Metal backend [macOS, LLVM 20]
+    name: Metal backend [macOS, LLVM 21]
     runs-on: macos-26
 
     steps:
@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew update
-        brew install boost ccache libomp lit llvm@20 lld@20 ninja
+        brew install boost ccache libomp lit llvm@21 lld@21 ninja
 
     - uses: actions/checkout@v7
       with:
@@ -34,8 +34,8 @@ jobs:
     - name: Build AdaptiveCpp
       working-directory: AdaptiveCpp
       run: |
-        LLVM_PREFIX=$(brew --prefix llvm@20)
-        LLD_PREFIX=$(brew --prefix lld@20)
+        LLVM_PREFIX=$(brew --prefix llvm@21)
+        LLD_PREFIX=$(brew --prefix lld@21)
         OMP_PREFIX=$(brew --prefix libomp)
 
         cmake -S . -B build -GNinja \
