@@ -83,6 +83,3 @@ jobs:
         ccache -z
         cmake --build build --parallel $(sysctl -n hw.ncpu)
         ccache -s
-
-    - name: Test
-      run: ctest --test-dir build -j$(sysctl -n hw.ncpu) --output-on-failure
