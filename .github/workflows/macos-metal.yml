@@ -61,7 +61,7 @@ jobs:
 
     - name: Configure Kokkos
       run: |
-        cmake -B build -S . \
+        cmake -B build -S . -GNinja \
           -DCMAKE_CXX_COMPILER=${GITHUB_WORKSPACE}/adaptivecpp-install/bin/acpp \
           -DCMAKE_CXX_FLAGS="-O2 -g" \
           -DCMAKE_CXX_STANDARD=20 \
