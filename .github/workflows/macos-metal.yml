@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew update
-        brew install llvm@20 lld@20 libomp boost ninja lit
+        brew install boost ccache libomp lit llvm@20 lld@20 ninja
 
     - uses: actions/checkout@v7
       with:
@@ -57,11 +57,6 @@ jobs:
 
         cmake --build build --parallel
         cmake --install build
-
-    - name: Install ccache
-      run: |
-        sudo apt-get update
-        sudo apt-get install ccache
 
     - uses: actions/cache@v6.1.0
       with:
