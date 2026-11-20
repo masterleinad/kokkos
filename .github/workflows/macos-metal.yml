@@ -68,6 +68,7 @@ jobs:
       run: |
         cmake -B build -S . -GNinja \
           -DCMAKE_CXX_COMPILER=${GITHUB_WORKSPACE}/adaptivecpp-install/bin/acpp \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           -DCMAKE_CXX_FLAGS="-O2 -g" \
           -DCMAKE_CXX_STANDARD=20 \
           -DKokkos_ENABLE_SYCL=ON \
