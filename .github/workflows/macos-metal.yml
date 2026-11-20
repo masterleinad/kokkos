@@ -9,7 +9,6 @@ jobs:
   build_metal:
     name: Metal backend [macOS, LLVM 20]
     runs-on: macos-26
-    timeout-minutes: 120
 
     steps:
     - uses: actions/checkout@v7
@@ -59,6 +58,17 @@ jobs:
         cmake --build build --parallel
         cmake --install build
 
+    - name: Install ccache
+      run: |
+        sudo apt-get update
+        sudo apt-get install ccache
+
+    - uses: actions/cache@v6.1.0
+      with:
+        path: ~/.cache/ccache
+        key: kokkos-metal-test-${{ github.ref }}-${{ github.sha }}
+        restore-keys: kokkos-metal-test-${{ github.ref }}
+
     - name: Configure Kokkos
       run: |
         cmake -B build -S . -GNinja \
@@ -73,7 +83,10 @@ jobs:
           -DKokkos_ENABLE_TESTS=ON
 
     - name: Build
-      run: cmake --build build --parallel $(sysctl -n hw.ncpu)
+      run:  |
+        ccache -z
+        cmake --build build --parallel $(sysctl -n hw.ncpu)
+        ccache -s
 
     - name: Test
       run: ctest --test-dir build -j$(sysctl -n hw.ncpu) --output-on-failure
