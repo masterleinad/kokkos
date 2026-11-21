@@ -537,11 +537,28 @@ TEST(kokkosp, global_fence_on_destruction) {
       "", Kokkos::Tools::Experimental::device_id_root<Kokkos::Serial>());
   Kokkos::Serial{};
 #endif
+{
   void* foo =
       Kokkos::kokkos_malloc<Kokkos::DefaultExecutionSpace::memory_space>("dogs",
                                                                          1000);
-
   expect_fence_events(expected, [=]() { Kokkos::kokkos_free(foo); });
+}
+#ifdef KOKKOS_HAS_SHARED_SPACE
+{
+  void* foo =
+      Kokkos::kokkos_malloc<Kokkos::SharedSpace::memory_space>("dogs",
+                                                                         1000);
+  expect_fence_events(expected, [=]() { Kokkos::kokkos_free(foo); });
+}
+#endif
+#ifdef KOKKOS_HAS_SHARED_HOST_PINNED_SPACE
+{
+  void* foo =
+      Kokkos::kokkos_malloc<Kokkos::SharedHostPinnedSpace::memory_space>("dogs",
+                                                                         1000);
+  expect_fence_events(expected, [=]() { Kokkos::kokkos_free(foo); });
+}
+#endif
 }
 
 TEST(kokkosp, view) {
