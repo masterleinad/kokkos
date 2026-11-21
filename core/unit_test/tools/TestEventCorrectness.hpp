@@ -496,35 +496,43 @@ TEST(kokkosp, global_fence_on_destruction) {
 #if defined(KOKKOS_ENABLE_CUDA)
   expected.emplace_back(
       "", Kokkos::Tools::Experimental::device_id_root<Kokkos::Cuda>());
+  Kokkos::Cuda{};
 #endif
 #if defined(KOKKOS_ENABLE_HIP)
   expected.emplace_back(
       "", Kokkos::Tools::Experimental::device_id_root<Kokkos::HIP>());
+  Kokkos::HIP{};
 #endif
 #if defined(KOKKOS_ENABLE_SYCL)
   expected.emplace_back(
       "", Kokkos::Tools::Experimental::device_id_root<Kokkos::SYCL>());
+  Kokkos::SYCL{};
 #endif
 #if defined(KOKKOS_ENABLE_OPENACC)
   expected.emplace_back("", Kokkos::Tools::Experimental::device_id_root<
                                 Kokkos::Experimental::OpenACC>());
+  Kokkos::Experimental::OpenACC{};
 #endif
 #if defined(KOKKOS_ENABLE_NEXTSILICON)
   expected.emplace_back("", Kokkos::Tools::Experimental::device_id_root<
                                 Kokkos::Experimental::NextSilicon>());
+  Kokkos::NextSilicon{};
 #endif
 #if defined(KOKKOS_ENABLE_OPENMP)
   expected.emplace_back(
       "", Kokkos::Tools::Experimental::device_id_root<Kokkos::OpenMP>());
+  Kokkos::OpenMP{};
 #endif
 #if defined(KOKKOS_ENABLE_THREADS)
   expected.emplace_back(
       "", Kokkos::Tools::Experimental::device_id_root<Kokkos::Threads>());
+  Kokkos::Threads{};
 #endif
 #if defined(KOKKOS_ENABLE_HPX)
   expected.emplace_back(
       "",
       Kokkos::Tools::Experimental::device_id_root<Kokkos::Experimental::HPX>());
+  Kokkos::Experimental::HPX{};
 #endif
 #if defined(KOKKOS_ENABLE_SERIAL)
   expected.emplace_back(
