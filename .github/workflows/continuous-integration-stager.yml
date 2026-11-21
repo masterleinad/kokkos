@@ -2,8 +2,6 @@ name: staged-continuous-integration
 
 on:
   push:
-    branches:
-      - develop
   pull_request:
 
 concurrency:
@@ -15,29 +13,9 @@ permissions: read-all
 jobs:
   # pre-stage
   pre-commit-check:
-    if: ${{ github.repository == 'kokkos/kokkos' || github.event_name == 'pull_request' }}
     uses: ./.github/workflows/pre-commit.yml
 
-  files-changed:
-    runs-on: ubuntu-latest
-    if: ${{ github.repository == 'kokkos/kokkos' || github.event_name == 'pull_request' }}
-    outputs:
-      src: ${{ steps.changes.outputs.src }}
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - id: changes
-        uses: dorny/paths-filter@v4.0.3
-        with:
-          predicate-quantifier: 'every'
-          base: ${{ github.ref_name }}
-          filters: |
-            src:
-              - '**'
-              - '!**/*.md'
-
   smoketest:
-    needs: files-changed
-    if: needs.files-changed.outputs.src == 'true'
     uses: ./.github/workflows/continuous-integration-smoketest.yml
 
   # primary testing
