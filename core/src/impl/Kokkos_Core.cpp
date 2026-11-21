@@ -212,7 +212,6 @@ Kokkos::Impl::ExecSpaceManager& Kokkos::Impl::ExecSpaceManager::get_instance() {
 
 void Kokkos::Impl::ExecSpaceManager::register_space_factory(
     const std::string name, std::unique_ptr<ExecSpaceBase> space) {
-  std::cout << "Registering: " << name << std::endl;
   exec_space_factory_list[name] = std::move(space);
 }
 
@@ -240,10 +239,8 @@ void Kokkos::Impl::ExecSpaceManager::finalize_spaces() {
 }
 
 void Kokkos::Impl::ExecSpaceManager::static_fence(const std::string& name) {
-  std::cout << "List length: " << exec_space_factory_list.size() << std::endl;
   for (auto& to_fence : exec_space_factory_list) {
-    std::cout << "Fencing " << to_fence.first << std::endl;
-    to_fence.second->static_fence(name + to_fence.first);
+    to_fence.second->static_fence(name);
   }
 }
 void Kokkos::Impl::ExecSpaceManager::print_configuration(std::ostream& os,
