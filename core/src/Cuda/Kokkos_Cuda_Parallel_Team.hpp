@@ -437,7 +437,8 @@ __device__ inline int64_t cuda_get_scratch_index(Cuda::size_type league_size,
     threadid *= static_cast<int64_t>(blockDim.x) * blockDim.y;
     int done = 0;
     while (!done) {
-      done = (0 == atomicCAS(&scratch_locks[threadid], 0, 1));
+      done = (0 ==
+              Kokkos::atomic_compare_exchange(&scratch_locks[threadid], 0, 1));
       if (!done) {
         threadid += static_cast<int64_t>(blockDim.x) * blockDim.y;
         if ((threadid + static_cast<int64_t>(blockDim.x) * blockDim.y) >=
@@ -456,7 +457,7 @@ __device__ inline void cuda_release_scratch_index(int32_t* scratch_locks,
                                                   int64_t threadid) {
   __syncthreads();
   if (threadIdx.x == 0 && threadIdx.y == 0) {
-    scratch_locks[threadid] = 0;
+    Kokkos::atomic_store(&scratch_locks[threadid], 0);
   }
 }
 
