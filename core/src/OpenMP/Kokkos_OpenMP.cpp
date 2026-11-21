@@ -140,6 +140,7 @@ void OpenMP::print_configuration(std::ostream &os, bool /*verbose*/) const {
 int OpenMP::concurrency() const { return impl_thread_pool_size(); }
 
 void OpenMP::impl_static_fence(std::string const &name) {
+  std::cout << "Fencing OpenMP: " << std::endl;
   Kokkos::Tools::Experimental::Impl::profile_fence_event<Kokkos::OpenMP>(
       name,
       Kokkos::Tools::Experimental::SpecialSynchronizationCases::

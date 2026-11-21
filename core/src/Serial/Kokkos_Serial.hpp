@@ -20,6 +20,8 @@ static_assert(false,
 #include <iterator>
 #include <mutex>
 #include <thread>
+#include <iostream>
+
 #include <Kokkos_Core_fwd.hpp>
 #include <Kokkos_Layout.hpp>
 #include <Kokkos_HostSpace.hpp>
@@ -127,6 +129,7 @@ class Serial {
   /// method does not return until all dispatched functors on this
   /// device have completed.
   static void impl_static_fence(const std::string& name) {
+    std::cout << "Fencing Serial: " << std::endl;
 #ifdef KOKKOS_ENABLE_ATOMICS_BYPASS
     auto fence = []() {};
 #else
