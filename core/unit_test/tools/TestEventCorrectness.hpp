@@ -23,8 +23,6 @@ class HPX;
 namespace Test {
 struct FencePayload {
   std::string name;
-  //  enum distinguishable_devices { yes, no };
-  //  distinguishable_devices distinguishable;
   uint32_t dev_id;
 };
 
