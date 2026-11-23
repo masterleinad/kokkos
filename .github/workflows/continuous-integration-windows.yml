@@ -41,10 +41,18 @@ jobs:
       shell: bash
       run: |
         vcpkg install gtest
-    - name: configure
-      shell: bash
-      run: |
-        cmake -B build -DBUILD_SHARED_LIBS=ON -DKokkos_ENABLE_SERIAL=ON -DKokkos_ENABLE_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake -DCMAKE_REQUIRE_FIND_PACKAGE_GTest=ON
+    # FIXME the windows-2025 image would ICE with 14.52
+    - name: Configure
+      run: >
+        cmake -B build
+          -G "Visual Studio 17 2022"
+          -A x64
+          -T "version=14.51"
+          -DBUILD_SHARED_LIBS=ON
+          -DKokkos_ENABLE_SERIAL=ON
+          -DKokkos_ENABLE_TESTS=ON
+          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+          -DCMAKE_REQUIRE_FIND_PACKAGE_GTest=ON
     - name: build library
       shell: bash
       run: |
