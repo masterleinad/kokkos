@@ -2,7 +2,6 @@ name: github-windows
 
 on:
   workflow_call:
-  push:
 
 concurrency:
   group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}-win-x64
@@ -34,7 +33,7 @@ jobs:
   windows-serial:
     # Serial build on Windows
     name: Serial VS-2022
-    runs-on: windows-11-vs2026-arm
+    runs-on: windows-2025
 
     steps:
     - uses: actions/checkout@v7.0.1
@@ -42,20 +41,10 @@ jobs:
       shell: bash
       run: |
         vcpkg install gtest
-    - name: Check MSVC installation
-      shell: pwsh
-      run: |
-        & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -all -products * -format json
-    # FIXME the windows-2025 image would ICE with 14.52
-    - name: Configure
+    - name: configure
       shell: bash
       run: |
-        cmake -B build \
-          -DBUILD_SHARED_LIBS=ON \
-          -DKokkos_ENABLE_SERIAL=ON \
-          -DKokkos_ENABLE_TESTS=ON \
-          -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
-          -DCMAKE_REQUIRE_FIND_PACKAGE_GTest=ON   
+        cmake -B build -DBUILD_SHARED_LIBS=ON -DKokkos_ENABLE_SERIAL=ON -DKokkos_ENABLE_TESTS=ON -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake -DCMAKE_REQUIRE_FIND_PACKAGE_GTest=ON
     - name: build library
       shell: bash
       run: |
