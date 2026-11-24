@@ -34,7 +34,7 @@ jobs:
   windows-serial:
     # Serial build on Windows
     name: Serial VS-2022
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     steps:
     - uses: actions/checkout@v7.0.1
@@ -51,9 +51,8 @@ jobs:
       shell: bash
       run: |
         cmake -B build \
-          -G "Visual Studio 17 2022" \
+          -G "Visual Studio 18 2022" \
           -A x64 \
-          -T "version=14.51" \
           -DBUILD_SHARED_LIBS=ON \
           -DKokkos_ENABLE_SERIAL=ON \
           -DKokkos_ENABLE_TESTS=ON \
