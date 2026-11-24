@@ -403,6 +403,59 @@ layout_left_padded<PaddingValue>::mapping<Extents>::submdspan_mapping_impl(
 //*********************************
 namespace detail {
 
+// Check whether a slice at position I is compatible with a layout_right
+// submapping of rank SubRank.
+//
+// This is expressed recursively below rather than using a pack fold in
+// layout_right_value(). Besides making the individual conditions easier to
+// inspect, this avoids a compiler ICE with MSVC 14.52 on ARM64.
+template <size_t I, size_t Rank, size_t SubRank, class IndexType,
+          class SliceSpecifier>
+struct deduce_layout_right_submapping_slice_is_valid
+    : std::bool_constant<
+          ((I >= Rank - SubRank) &&
+           std::is_same_v<SliceSpecifier, full_extent_t>) ||
+          ((I == Rank - SubRank) &&
+           is_range_like_slice_v<SliceSpecifier, IndexType>) ||
+          ((I < Rank - SubRank) &&
+           is_index_slice_v<SliceSpecifier, IndexType>)> {};
+
+// A rank-zero submapping is always layout_right.
+template <size_t I, size_t Rank, class IndexType, class SliceSpecifier>
+struct deduce_layout_right_submapping_slice_is_valid<
+    I, Rank, 0, IndexType, SliceSpecifier> : std::true_type {};
+
+// For a rank-one submapping, only the final slice must be range-like.
+template <size_t I, size_t Rank, class IndexType, class SliceSpecifier>
+struct deduce_layout_right_submapping_slice_is_valid<
+    I, Rank, 1, IndexType, SliceSpecifier>
+    : std::bool_constant<
+          (I < Rank - 1) ||
+          is_range_like_slice_v<SliceSpecifier, IndexType>> {};
+
+// Recursively check all slice specifiers, preserving their original indices.
+template <size_t I, size_t Rank, size_t SubRank, class IndexType,
+          class... SliceSpecifiers>
+struct deduce_layout_right_submapping_slices_are_valid;
+
+template <size_t I, size_t Rank, size_t SubRank, class IndexType>
+struct deduce_layout_right_submapping_slices_are_valid<
+    I, Rank, SubRank, IndexType> : std::true_type {};
+
+template <size_t I, size_t Rank, size_t SubRank, class IndexType,
+          class SliceSpecifier, class... RemainingSliceSpecifiers>
+struct deduce_layout_right_submapping_slices_are_valid<
+    I, Rank, SubRank, IndexType, SliceSpecifier,
+    RemainingSliceSpecifiers...>
+    : std::bool_constant<
+          deduce_layout_right_submapping_slice_is_valid<
+              I, Rank, SubRank, IndexType, SliceSpecifier>::value &&
+          deduce_layout_right_submapping_slices_are_valid<
+              I + 1, Rank, SubRank, IndexType,
+              RemainingSliceSpecifiers...>::value> {};
+
+
+
 // Figure out whether to preserve layout_right
 template <class IndexType, size_t SubRank, class IndexSequence,
           class... SliceSpecifiers>
@@ -426,26 +479,8 @@ struct deduce_layout_right_submapping<
 
   MDSPAN_INLINE_FUNCTION
   constexpr static bool layout_right_value() {
-    // Use layout_right for rank 0
-    if constexpr (SubRank == 0) {
-      return true;
-      // Use layout_right for rank 1 result if rightmost slice specifier is
-      // range like
-    } else if constexpr (SubRank == 1) {
-      return ((Idx < Rank - 1 ||
-               is_range_like_slice_v<SliceSpecifiers, IndexType>)&&...);
-    } else {
-      // Preserve if rightmost SubRank-1 slices are full_extent_t and
-      // the slice at idx Rank-Subrank is a range and
-      // for idx < Rank - SubRank the slice is an index
-      return ((((Idx >= Rank - SubRank) &&
-                std::is_same_v<SliceSpecifiers, full_extent_t>) ||
-               ((Idx == Rank - SubRank) &&
-                is_range_like_slice_v<SliceSpecifiers, IndexType>) ||
-               ((Idx < Rank - SubRank) &&
-                is_index_slice_v<SliceSpecifiers, IndexType>)) &&
-              ...);
-    }
+    return deduce_layout_right_submapping_slices_are_valid<
+        0, Rank, SubRank, IndexType, SliceSpecifiers...>::value;
 #if defined(__NVCC__) && !defined(__CUDA_ARCH__) && defined(__GNUC__)
     __builtin_unreachable();
 #endif
