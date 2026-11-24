@@ -43,6 +43,7 @@ jobs:
         vcpkg install gtest
     # FIXME the windows-2025 image would ICE with 14.52
     - name: Configure
+      shell: bash
       run: >
         cmake -B build
           -G "Visual Studio 17 2022"
