@@ -42,6 +42,10 @@ jobs:
       shell: bash
       run: |
         vcpkg install gtest
+    - name: Check MSVC installation
+      shell: pwsh
+      run: |
+        & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -all -products * -format json
     # FIXME the windows-2025 image would ICE with 14.52
     - name: Configure
       shell: bash
