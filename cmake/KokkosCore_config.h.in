@@ -115,6 +115,7 @@
 #cmakedefine KOKKOS_ARCH_INTEL_PVC
 #cmakedefine KOKKOS_ARCH_INTEL_BMG
 #cmakedefine KOKKOS_ARCH_INTEL_GPU
+#cmakedefine KOKKOS_ARCH_APPLE_GPU
 #cmakedefine KOKKOS_ARCH_MAXWELL
 #cmakedefine KOKKOS_ARCH_MAXWELL50
 #cmakedefine KOKKOS_ARCH_MAXWELL52

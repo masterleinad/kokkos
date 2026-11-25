@@ -1,0 +1,88 @@
+name: macOS Metal backend
+
+on:
+  push:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build_metal:
+    name: Metal backend [macOS, LLVM 21]
+    runs-on: macos-26
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        submodules: recursive
+
+    - uses: actions/checkout@v7
+      with:
+        repository: masterleinad/AdaptiveCpp
+        path: AdaptiveCpp
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        brew update
+        brew install boost ccache libomp lit llvm@21 lld@21 ninja
+
+    - uses: actions/checkout@v7
+      with:
+        repository: apple/metal-cpp
+        path: metal-cpp
+
+    - name: Build AdaptiveCpp
+      working-directory: AdaptiveCpp
+      run: |
+        LLVM_PREFIX=$(brew --prefix llvm@21)
+        LLD_PREFIX=$(brew --prefix lld@21)
+        OMP_PREFIX=$(brew --prefix libomp)
+
+        cmake -S . -B build -GNinja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=/usr/bin/clang \
+          -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+          -DCLANG_EXECUTABLE_PATH=${LLVM_PREFIX}/bin/clang++ \
+          -DLLVM_DIR=${LLVM_PREFIX}/lib/cmake/llvm \
+          -DCMAKE_OSX_SYSROOT="$(xcrun --show-sdk-path)" \
+          -DCMAKE_INSTALL_PREFIX=${GITHUB_WORKSPACE}/adaptivecpp-install \
+          -DWITH_OPENCL_BACKEND=OFF \
+          -DWITH_METAL_BACKEND=ON \
+          -DMETAL_INCLUDE_DIR=${GITHUB_WORKSPACE}/metal-cpp \
+          -DACPP_COMPILER_FEATURE_PROFILE=full \
+          -DACPP_LLD_PATH=${LLD_PREFIX}/bin/ld64.lld \
+          -DSEQUENTIAL_LINK_LINE=${OMP_PREFIX}/lib/libomp.dylib \
+          "-DOMP_LINK_LINE=-fopenmp ${OMP_PREFIX}/lib/libomp.dylib -L${OMP_PREFIX}/lib/" \
+          "-DOMP_CXX_FLAGS=-fopenmp -D_ENABLE_EXTENDED_ALIGNED_STORAGE -I${OMP_PREFIX}/include"
+
+        cmake --build build --parallel
+        cmake --install build
+
+    - uses: actions/cache@v6.1.0
+      with:
+        path: ~/.cache/ccache
+        key: kokkos-metal-test-${{ github.ref }}-${{ github.sha }}
+        restore-keys: kokkos-metal-test-${{ github.ref }}
+
+    - name: Configure Kokkos
+      run: |
+        cmake -B build -S . -GNinja \
+          -DCMAKE_CXX_COMPILER=${GITHUB_WORKSPACE}/adaptivecpp-install/bin/acpp \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_FLAGS="-O2 -g -Wno-deprecated-declarations" \
+          -DCMAKE_CXX_STANDARD=20 \
+          -DKokkos_ENABLE_SYCL=ON \
+          -DKokkos_ARCH_APPLE_GPU=ON \
+          -DKokkos_ENABLE_COMPILER_WARNINGS=ON \
+          -DKokkos_ENABLE_DEPRECATED_CODE_5=OFF \
+          -DKokkos_ENABLE_ONEDPL=OFF \
+          -DKokkos_ENABLE_TESTS=ON
+
+    - name: Build
+      run:  |
+        ccache -z
+        cmake --build build --parallel $(sysctl -n hw.ncpu)
+        ccache -s
+
+    - name: Test
+      run: ctest --test-dir build -j$(sysctl -n hw.ncpu) --output-on-failure -R "Kokkos_IncrementalTest_SYCL" 
